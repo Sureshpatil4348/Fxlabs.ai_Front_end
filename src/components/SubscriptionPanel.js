@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useMarketStore from '../store/useMarketStore';
+import useMarketStore, { formatSymbol } from '../store/useMarketStore';
 import { Plus, Minus, TrendingUp, BarChart3 } from 'lucide-react';
 
 const SubscriptionPanel = () => {
@@ -22,7 +22,7 @@ const SubscriptionPanel = () => {
   const handleSubscribe = () => {
     if (!isConnected || !symbolInput.trim()) return;
     
-    const symbol = symbolInput.toUpperCase().trim();
+    const symbol = formatSymbol(symbolInput);
     subscribe(symbol, selectedTimeframe, dataTypes);
     setSelectedSymbol(symbol);
   };
@@ -52,11 +52,27 @@ const SubscriptionPanel = () => {
             <input
               type="text"
               value={symbolInput}
-              onChange={(e) => setSymbolInput(e.target.value.toUpperCase())}
-              placeholder="EURUSD"
+              onChange={(e) => setSymbolInput(formatSymbol(e.target.value))}
+              placeholder="EURUSDm"
               className="input-field w-full"
               disabled={!isConnected}
             />
+            <div className="mt-1 text-xs text-gray-500">
+              💡 MT5 symbols often have lowercase 'm' suffix (e.g., EURUSDm)
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              <span className="text-xs text-gray-600 mr-2">Quick select:</span>
+              {['EURUSDm', 'GBPUSDm', 'USDJPYm', 'AUDUSDm', 'USDCADm'].map(symbol => (
+                <button
+                  key={symbol}
+                  onClick={() => setSymbolInput(symbol)}
+                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition-colors"
+                  disabled={!isConnected}
+                >
+                  {symbol}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>

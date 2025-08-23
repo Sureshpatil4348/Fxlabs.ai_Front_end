@@ -1,7 +1,18 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-const WEBSOCKET_URL = 'ws://localhost:8000/ws/market';
+// WebSocket URL configuration - can be overridden with environment variables
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'ws://127.0.0.2:8080/ws/market';
+
+// Smart symbol formatting - keeps 'm' suffix lowercase
+const formatSymbol = (input) => {
+  const trimmed = input.trim();
+  if (trimmed.toLowerCase().endsWith('m')) {
+    const base = trimmed.slice(0, -1);
+    return base + 'm';
+  }
+  return trimmed;
+};
 
 const useMarketStore = create(
   subscribeWithSelector((set, get) => ({
@@ -18,7 +29,7 @@ const useMarketStore = create(
     initialOhlcReceived: new Set(), // symbols that received initial OHLC
     
     // UI state
-    selectedSymbol: 'EURUSD',
+    selectedSymbol: 'EURUSDm',
     selectedTimeframe: '1M',
     dataTypes: ['ticks', 'ohlc'],
     logs: [],
@@ -49,11 +60,31 @@ const useMarketStore = create(
         
         ws.onmessage = (event) => {
           try {
-            const message = JSON.parse(event.data);
-            get().handleMessage(message);
+            let data;
+            
+            // Handle both text and Blob data
+            if (event.data instanceof Blob) {
+              // Convert Blob to text first
+              event.data.text().then(text => {
+                try {
+                  const message = JSON.parse(text);
+                  get().handleMessage(message);
+                } catch (parseError) {
+                  console.error('Error parsing WebSocket message:', parseError);
+                  get().addLog(`Error parsing message: ${parseError.message}`, 'error');
+                }
+              }).catch(blobError => {
+                console.error('Error reading Blob data:', blobError);
+                get().addLog(`Error reading message data: ${blobError.message}`, 'error');
+              });
+            } else {
+              // Handle text data directly
+              const message = JSON.parse(event.data);
+              get().handleMessage(message);
+            }
           } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
-            get().addLog(`Error parsing message: ${error.message}`, 'error');
+            console.error('Error handling WebSocket message:', error);
+            get().addLog(`Error handling message: ${error.message}`, 'error');
           }
         };
         
@@ -104,28 +135,32 @@ const useMarketStore = create(
       const { websocket, isConnected } = get();
       if (!isConnected || !websocket) return;
       
+      const formattedSymbol = formatSymbol(symbol);
+      
       const subscription = {
         action: 'subscribe',
-        symbol: symbol.toUpperCase(),
+        symbol: formattedSymbol,
         timeframe,
         data_types: dataTypes
       };
       
       websocket.send(JSON.stringify(subscription));
-      get().addLog(`Subscribing to ${symbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
+      get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
     },
     
     unsubscribe: (symbol) => {
       const { websocket, isConnected } = get();
       if (!isConnected || !websocket) return;
       
+      const formattedSymbol = formatSymbol(symbol);
+      
       const message = {
         action: 'unsubscribe',
-        symbol: symbol.toUpperCase()
+        symbol: formattedSymbol
       };
       
       websocket.send(JSON.stringify(message));
-      get().addLog(`Unsubscribing from ${symbol}`, 'info');
+      get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
     },
     
     handleMessage: (message) => {
@@ -255,7 +290,7 @@ const useMarketStore = create(
     },
     
     setSelectedSymbol: (symbol) => {
-      set({ selectedSymbol: symbol.toUpperCase() });
+      set({ selectedSymbol: formatSymbol(symbol) });
     },
     
     setSelectedTimeframe: (timeframe) => {
@@ -294,3 +329,4 @@ const useMarketStore = create(
 );
 
 export default useMarketStore;
+export { formatSymbol };
