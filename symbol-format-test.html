@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Symbol Format Test</title>
+</head>
+<body>
+    <h2>Symbol Formatting Test</h2>
+    <p>Test the symbol formatting logic:</p>
+    
+    <script>
+        // Smart symbol formatting function
+        const formatSymbol = (input) => {
+            const trimmed = input.trim();
+            if (trimmed.toLowerCase().endsWith('m')) {
+                // Keep the 'm' suffix lowercase
+                const base = trimmed.slice(0, -1).toUpperCase();
+                return base + 'm';
+            }
+            return trimmed.toUpperCase();
+        };
+
+        // Test cases
+        const testCases = [
+            'eurusdm',     // Should become: EURUSDm
+            'EURUSDM',     // Should become: EURUSDm  
+            'EURUSDm',     // Should stay: EURUSDm
+            'eurusd',      // Should become: EURUSD
+            'EURUSD',      // Should stay: EURUSD
+            'gbpusdm',     // Should become: GBPUSDm
+            'GBPUSDM',     // Should become: GBPUSDm
+            ' eurusdm ',   // Should become: EURUSDm (trimmed)
+        ];
+
+        console.log('Symbol Formatting Test Results:');
+        console.log('=====================================');
+        
+        testCases.forEach(test => {
+            const result = formatSymbol(test);
+            console.log(`Input: "${test}" → Output: "${result}"`);
+        });
+
+        // Display results on page
+        document.body.innerHTML += '<div style="font-family: monospace; background: #f5f5f5; padding: 20px; margin-top: 20px;">';
+        document.body.innerHTML += '<h3>Test Results:</h3>';
+        testCases.forEach(test => {
+            const result = formatSymbol(test);
+            document.body.innerHTML += `<div>Input: "<strong>${test}</strong>" → Output: "<strong style="color: green;">${result}</strong>"</div>`;
+        });
+        document.body.innerHTML += '</div>';
+    </script>
+</body>
+</html>

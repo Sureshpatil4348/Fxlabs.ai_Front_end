@@ -52,9 +52,9 @@ const ConnectionPanel = () => {
 
         {/* Server Info */}
         <div className="text-xs text-gray-500 space-y-1">
-          <div><strong>Server:</strong> localhost:8000</div>
+          <div><strong>Server:</strong> FXLABS</div>
           <div><strong>Protocol:</strong> WebSocket</div>
-          <div><strong>Endpoint:</strong> /ws/market</div>
+          <div><strong>Endpoint:</strong> Market Endpoint</div>
         </div>
 
         {/* Connection Controls */}
