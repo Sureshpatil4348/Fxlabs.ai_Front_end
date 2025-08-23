@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import useMarketStore from '../store/useMarketStore';
 import TickDataView from './TickDataView';
 import OHLCDataView from './OHLCDataView';
-import OHLCChart from './OHLCChart';
+import TradingViewChart from './TradingViewChart';
 import { TrendingUp, BarChart3, LineChart, Activity } from 'lucide-react';
 
 const MarketDataPanel = () => {
@@ -17,7 +17,7 @@ const MarketDataPanel = () => {
   const tabs = [
     { id: 'ticks', label: 'Live Ticks', icon: TrendingUp },
     { id: 'ohlc', label: 'OHLC Data', icon: BarChart3 },
-    { id: 'chart', label: 'Chart', icon: LineChart },
+    { id: 'chart', label: 'TradingView Chart', icon: LineChart },
   ];
 
   if (subscriptions.size === 0) {
@@ -82,7 +82,7 @@ const MarketDataPanel = () => {
       <div className="min-h-96">
         {activeTab === 'ticks' && <TickDataView symbol={currentSymbol} />}
         {activeTab === 'ohlc' && <OHLCDataView symbol={currentSymbol} />}
-        {activeTab === 'chart' && <OHLCChart symbol={currentSymbol} />}
+        {activeTab === 'chart' && <TradingViewChart symbol={currentSymbol} />}
       </div>
     </div>
   );

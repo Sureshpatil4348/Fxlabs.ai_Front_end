@@ -4,7 +4,8 @@ import ConnectionPanel from './components/ConnectionPanel';
 import SubscriptionPanel from './components/SubscriptionPanel';
 import MarketDataPanel from './components/MarketDataPanel';
 import LogsPanel from './components/LogsPanel';
-import { Activity, TrendingUp } from 'lucide-react';
+import { Activity } from 'lucide-react';
+import navLogo from './assets/nav-logo.jpeg';
 
 function App() {
   const { connect, isConnected } = useMarketStore();
@@ -23,12 +24,12 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-primary-600 p-2 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className='w-40 h-10'>
+                <img src={navLogo} alt="Market Data Dashboard" className='w-full h-full object-contain' />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  MT5 Market Data Dashboard
+                  Market Data Dashboard
                 </h1>
                 <p className="text-sm text-gray-500">
                   Real-time Forex data visualization
@@ -47,22 +48,23 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Top Section - Controls and Market Data */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           {/* Left Sidebar - Controls */}
           <div className="lg:col-span-1 space-y-6">
             <ConnectionPanel />
             <SubscriptionPanel />
           </div>
 
-          {/* Main Content - Market Data */}
-          <div className="lg:col-span-2">
+          {/* Expanded Market Data Panel */}
+          <div className="lg:col-span-3">
             <MarketDataPanel />
           </div>
+        </div>
 
-          {/* Right Sidebar - Logs */}
-          <div className="lg:col-span-1">
-            <LogsPanel />
-          </div>
+        {/* Bottom Section - Activity Logs (on large screens) */}
+        <div className="lg:block">
+          <LogsPanel />
         </div>
       </main>
 

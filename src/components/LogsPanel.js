@@ -5,9 +5,13 @@ import { ScrollText, Trash2, AlertCircle, CheckCircle, AlertTriangle, Info } fro
 const LogsPanel = () => {
   const { logs, clearLogs } = useMarketStore();
   const logsEndRef = useRef(null);
+  const logsContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll within the logs container, not the entire page
+    if (logsContainerRef.current) {
+      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -76,7 +80,7 @@ const LogsPanel = () => {
             </p>
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto custom-scrollbar space-y-2">
+          <div ref={logsContainerRef} className="max-h-64 overflow-y-auto custom-scrollbar space-y-2">
             {logs.map((log) => (
               <div
                 key={log.id}
@@ -103,7 +107,7 @@ const LogsPanel = () => {
       {/* Log Statistics */}
       {logs.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-4 gap-4 text-xs">
             <div className="flex justify-between">
               <span className="text-gray-600">Success:</span>
               <span className="text-success-600 font-medium">

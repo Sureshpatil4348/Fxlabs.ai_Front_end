@@ -60,8 +60,6 @@ const useMarketStore = create(
         
         ws.onmessage = (event) => {
           try {
-            let data;
-            
             // Handle both text and Blob data
             if (event.data instanceof Blob) {
               // Convert Blob to text first
@@ -243,14 +241,15 @@ const useMarketStore = create(
             const lastBar = bars[bars.length - 1];
             
             if (lastBar && lastBar.time === message.data.time) {
-              // Update existing bar
+              // Update existing bar - don't log
               bars[bars.length - 1] = message.data;
             } else {
-              // Add new bar and keep only last 100
+              // Add new bar and keep only last 100 - log this as it's a new candle
               bars.push(message.data);
               if (bars.length > 100) {
                 bars.shift();
               }
+              get().addLog(`New candle: ${message.data.symbol} - ${message.data.close}`, 'info');
             }
             
             symbolData.bars = bars;
@@ -258,7 +257,6 @@ const useMarketStore = create(
             currentOhlcData.set(message.data.symbol, symbolData);
             set({ ohlcData: currentOhlcData });
           }
-          get().addLog(`OHLC update: ${message.data.symbol} - ${message.data.close}`, 'info');
           break;
           
         case 'pong':

@@ -1,29 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import useMarketStore from '../store/useMarketStore';
-import { BarChart3, TrendingUp, TrendingDown, Clock } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
 
 const OHLCDataView = ({ symbol }) => {
-  const { getOhlcForSymbol, getLatestOhlcForSymbol, subscriptions } = useMarketStore();
+  const { getOhlcForSymbol, getLatestOhlcForSymbol, subscriptions, ohlcData } = useMarketStore();
   const [ohlcBars, setOhlcBars] = useState([]);
   const [latestBar, setLatestBar] = useState(null);
 
   useEffect(() => {
     if (!symbol) return;
 
-    const updateOHLC = () => {
-      const newBars = getOhlcForSymbol(symbol);
-      const newLatest = getLatestOhlcForSymbol(symbol);
-      setOhlcBars(newBars);
-      setLatestBar(newLatest);
-    };
-
-    // Update immediately
-    updateOHLC();
-
-    // Update every 1 second for OHLC data
-    const interval = setInterval(updateOHLC, 1000);
-    return () => clearInterval(interval);
-  }, [symbol, getOhlcForSymbol, getLatestOhlcForSymbol]);
+    // Update reactively when OHLC data changes
+    const newBars = getOhlcForSymbol(symbol);
+    const newLatest = getLatestOhlcForSymbol(symbol);
+    setOhlcBars(newBars);
+    setLatestBar(newLatest);
+  }, [symbol, ohlcData]);
 
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleString();

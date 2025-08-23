@@ -3,27 +3,19 @@ import useMarketStore from '../store/useMarketStore';
 import { Clock, TrendingUp, TrendingDown } from 'lucide-react';
 
 const TickDataView = ({ symbol }) => {
-  const { getTicksForSymbol, getLatestTickForSymbol } = useMarketStore();
+  const { getTicksForSymbol, getLatestTickForSymbol, tickData } = useMarketStore();
   const [ticks, setTicks] = useState([]);
   const [latestTick, setLatestTick] = useState(null);
 
   useEffect(() => {
     if (!symbol) return;
 
-    const updateTicks = () => {
-      const newTicks = getTicksForSymbol(symbol);
-      const newLatest = getLatestTickForSymbol(symbol);
-      setTicks(newTicks);
-      setLatestTick(newLatest);
-    };
-
-    // Update immediately
-    updateTicks();
-
-    // Update every 100ms for smooth real-time updates
-    const interval = setInterval(updateTicks, 100);
-    return () => clearInterval(interval);
-  }, [symbol, getTicksForSymbol, getLatestTickForSymbol]);
+    // Update reactively when tick data changes
+    const newTicks = getTicksForSymbol(symbol);
+    const newLatest = getLatestTickForSymbol(symbol);
+    setTicks(newTicks);
+    setLatestTick(newLatest);
+  }, [symbol, tickData]);
 
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString();
