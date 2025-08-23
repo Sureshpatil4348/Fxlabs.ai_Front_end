@@ -72,7 +72,7 @@ function App() {
           <div className="text-center text-sm text-gray-500">
             <p>MT5 Market Data Dashboard v1.0</p>
             <p className="mt-1">
-              Connected to: <code className="bg-gray-100 px-2 py-1 rounded">ws://localhost:8000/ws/market</code>
+              Connected to: <code className="bg-gray-100 px-2 py-1 rounded">wss://localhost:8000/ws/market</code>
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 // WebSocket URL configuration - can be overridden with environment variables
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'ws://api.fxlabs.ai/ws/market';
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
 
 // Smart symbol formatting - keeps 'm' suffix lowercase
 const formatSymbol = (input) => {
