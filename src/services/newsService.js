@@ -1,21 +1,7 @@
 // News service for ForexFactory API integration and AI analysis
 
-import axios from 'axios';
-
-// ForexFactory API configuration
-const FOREX_FACTORY_BASE_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
-
 // Perplexity AI configuration
-const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
-const PERPLEXITY_API_KEY = process.env.REACT_APP_PERPLEXITY_API_KEY;
-
-// Create axios instance for API calls
-const apiClient = axios.create({
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const PERPLEXITY_API_KEY = "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";
 
 // Mock data for development (replace with real API calls in production)
 const mockNewsData = [
@@ -117,28 +103,7 @@ export const fetchForexFactoryNews = async () => {
   }
 };
 
-/**
- * Generate AI analysis prompt for Perplexity AI
- */
-const generateAnalysisPrompt = (newsItem) => {
-  const { title, forecast, previous, actual, currency } = newsItem;
-  
-  return `Analyze the following economic news for Forex trading impact:
 
-News: ${title}
-Currency: ${currency}
-Forecast: ${forecast || 'Not provided'}
-Previous: ${previous || 'Not provided'}
-Actual: ${actual || 'Not yet released'}
-
-Provide a concise analysis in the following format:
-1. Expected effect (Bullish, Bearish, or Neutral)
-2. Which currencies are most impacted
-3. Suggested currency pairs to monitor
-4. Brief explanation (max 100 words)
-
-Focus on immediate market impact and trading opportunities.`;
-};
 
 /**
  * Analyze news using Perplexity AI
@@ -208,7 +173,6 @@ export const analyzeNewsWithAI = async (newsItem) => {
 
     // Production API call (commented out for now)
     /*
-    const prompt = generateAnalysisPrompt(newsItem);
     
     const response = await apiClient.post(
       PERPLEXITY_API_URL,
@@ -256,32 +220,7 @@ export const analyzeNewsWithAI = async (newsItem) => {
   }
 };
 
-/**
- * Parse AI response into structured format
- * This would be more sophisticated in production
- */
-const parseAIResponse = (aiResponse, newsItem) => {
-  // Simple parsing logic - would be more robust in production
-  const lines = aiResponse.split('\n').filter(line => line.trim());
-  
-  let effect = 'Neutral';
-  let impactedCurrencies = [newsItem.currency];
-  let suggestedPairs = ['EURUSD'];
-  let explanation = 'Analysis processing...';
 
-  lines.forEach(line => {
-    if (line.toLowerCase().includes('bullish')) effect = 'Bullish';
-    if (line.toLowerCase().includes('bearish')) effect = 'Bearish';
-    if (line.toLowerCase().includes('neutral')) effect = 'Neutral';
-  });
-
-  return {
-    effect,
-    impactedCurrencies,
-    suggestedPairs,
-    explanation: aiResponse.substring(0, 200) + '...'
-  };
-};
 
 /**
  * Get upcoming news events (next 24 hours)
@@ -334,10 +273,12 @@ export const subscribeToNewsUpdates = (callback) => {
   return () => clearInterval(interval);
 };
 
-export default {
+const newsService = {
   fetchForexFactoryNews,
   analyzeNewsWithAI,
   getUpcomingNews,
   getHighImpactNews,
   subscribeToNewsUpdates
 };
+
+export default newsService;

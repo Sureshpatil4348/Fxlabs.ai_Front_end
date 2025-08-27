@@ -912,6 +912,55 @@ const useMarketStore = create(
           showLoader: visible
         }
       }));
+    },
+
+    // Disconnect all WebSocket connections and reset state
+    disconnectAll: () => {
+      const state = get();
+      
+      // Clear any existing timeouts
+      if (state.globalConnectionState.timeoutId) {
+        clearTimeout(state.globalConnectionState.timeoutId);
+      }
+
+      // Reset global connection state
+      set(state => ({
+        globalConnectionState: {
+          status: 'INITIALIZING',
+          dashboardConnections: {
+            rsiCorrelation: { connected: false, connecting: false, error: null },
+            rsiTracker: { connected: false, connecting: false, error: null },
+            currencyStrength: { connected: false, connecting: false, error: null }
+          },
+          connectionAttempts: 0,
+          maxRetries: 2,
+          timeoutDuration: 5000,
+          startTime: null,
+          showLoader: false,
+          timeoutId: null
+        }
+      }));
+
+      // Close individual dashboard WebSocket connections
+      try {
+        // Import and disconnect from each store
+        import('./useRSICorrelationStore').then(({ default: useRSICorrelationStore }) => {
+          const store = useRSICorrelationStore.getState();
+          if (store.disconnect) store.disconnect();
+        });
+        
+        import('./useRSITrackerStore').then(({ default: useRSITrackerStore }) => {
+          const store = useRSITrackerStore.getState();
+          if (store.disconnect) store.disconnect();
+        });
+        
+        import('./useCurrencyStrengthStore').then(({ default: useCurrencyStrengthStore }) => {
+          const store = useCurrencyStrengthStore.getState();
+          if (store.disconnect) store.disconnect();
+        });
+      } catch (error) {
+        console.error('Error disconnecting dashboard stores:', error);
+      }
     }
   }))
 );
