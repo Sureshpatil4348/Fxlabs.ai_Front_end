@@ -7,7 +7,7 @@ const WishlistItem = ({ symbol, onRemove }) => {
   return (
     <div className="flex h-8 items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-xs">
       <div className="flex items-center space-x-2">
-        <Star className="w-3 h-3 text-yellow-500" />
+        <Star className="w-3 h-3 text-green-500" />
         <span className="font-medium text-gray-900">
           {formatSymbolDisplay(symbol)}
         </span>
@@ -40,7 +40,7 @@ const WishlistPanel = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center space-x-2">
-          <Star className="w-5 h-5 text-yellow-500" />
+          <Star className="w-5 h-5 text-green-500" />
           <h2 className="text-lg font-semibold text-gray-900">Watchlist</h2>
         </div>
         

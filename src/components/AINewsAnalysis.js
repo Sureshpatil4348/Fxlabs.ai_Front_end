@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsTime, getImpactColor, formatCurrency } from '../utils/formatters';
 import { 
@@ -7,22 +7,160 @@ import {
   TrendingUp, 
   TrendingDown, 
   AlertCircle, 
-  RefreshCw, 
-  ChevronDown, 
-  ChevronRight,
+  RefreshCw,
   Brain,
-  Target
+  Target,
+  Info,
+  X
 } from 'lucide-react';
 
-const NewsCard = ({ news, analysis, isUpcoming }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
+const NewsModal = ({ news, analysis, isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  const { time, timezone } = formatNewsTime(news.time);
+  const currencyInfo = formatCurrency(news.currency);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between py-2 px-6 border-b">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">{currencyInfo.flag}</span>
+            <div className="flex flex-row items-center w-full justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">{news.title.split('(')[0]}</h2>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex items-center space-x-2 mt-1 px-6">
+          <Clock className="w-3 h-3 text-gray-500" />
+          <span className="text-xs text-gray-600">{time} {timezone}</span>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(news.impact)}`}>
+            {news.impact?.toUpperCase() || 'MEDIUM'}
+          </span>
+        </div>
+
+        {/* Modal Content */}
+        <div className="p-6 space-y-6">
+          {/* Economic Data */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">Economic Data</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-2 bg-gray-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Previous</div>
+                <div className="text-lg font-bold text-gray-900">{news.previous || '--'}</div>
+              </div>
+              <div className="text-center p-2 bg-blue-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Forecast</div>
+                <div className="text-lg font-bold text-blue-900">{news.forecast || '--'}</div>
+              </div>
+              <div className="text-center p-2 bg-green-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Actual</div>
+                <div className="text-lg font-bold text-green-900">
+                  {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Analysis */}
+          {analysis && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                <Brain className="w-5 h-5 text-primary-600" />
+                <span>AI Analysis</span>
+              </h3>
+              
+              <div className="space-y-4">
+                {/* Effect */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <span className="text-gray-700 font-medium">Expected Effect:</span>
+                  <div className="flex items-center space-x-2">
+                    {analysis.effect === 'Bullish' ? (
+                      <TrendingUp className="w-5 h-5 text-success-600" />
+                    ) : analysis.effect === 'Bearish' ? (
+                      <TrendingDown className="w-5 h-5 text-danger-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-gray-600" />
+                    )}
+                    <span className={`text-lg font-semibold ${
+                      analysis.effect === 'Bullish' ? 'text-success-600' :
+                      analysis.effect === 'Bearish' ? 'text-danger-600' :
+                      'text-gray-600'
+                    }`}>
+                      {analysis.effect}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Impacted Currencies */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-gray-700 font-medium mb-3">Impacted Currencies:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.impactedCurrencies.map(currency => {
+                      const info = formatCurrency(currency);
+                      return (
+                        <span key={currency} className="flex items-center space-x-2 px-3 py-2 bg-white rounded-lg border">
+                          <span className="text-lg">{info.flag}</span>
+                          <span className="font-medium">{currency}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Suggested Pairs */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-gray-700 font-medium mb-3 flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-primary-600" />
+                    <span>Suggested Pairs to Watch</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.suggestedPairs.map(pair => (
+                      <span 
+                        key={pair}
+                        className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
+                      >
+                        {pair}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Full Analysis */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="text-gray-700 font-medium mb-3">Detailed Analysis</div>
+                  <div 
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: analysis.explanation
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br />')
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const NewsCard = ({ news, analysis, onShowDetails }) => {
   const { time, timezone } = formatNewsTime(news.time);
   const currencyInfo = formatCurrency(news.currency);
   
   // Determine if actual vs forecast shows positive/negative surprise
   let surprise = null;
-  if (news.actual !== null && news.forecast !== null) {
+  if (news.actual !== 'N/A' && news.forecast !== 'N/A' && news.actual !== null && news.forecast !== null) {
     const actualNum = parseFloat(news.actual);
     const forecastNum = parseFloat(news.forecast);
     if (!isNaN(actualNum) && !isNaN(forecastNum)) {
@@ -30,9 +168,12 @@ const NewsCard = ({ news, analysis, isUpcoming }) => {
     }
   }
 
+  // Check if this is an upcoming event (no actual data yet)
+  const isUpcomingEvent = news.actual === 'N/A' || news.actual === null;
+
   return (
     <div className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${
-      isUpcoming ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200 bg-white'
+      isUpcomingEvent ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200 bg-white'
     }`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -42,7 +183,7 @@ const NewsCard = ({ news, analysis, isUpcoming }) => {
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
               {news.impact?.toUpperCase() || 'MEDIUM'}
             </span>
-            {isUpcoming && (
+            {isUpcomingEvent && (
               <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
                 UPCOMING
               </span>
@@ -50,7 +191,7 @@ const NewsCard = ({ news, analysis, isUpcoming }) => {
           </div>
           
           <h3 className="text-sm font-semibold text-gray-900 mb-1">
-            {news.title}
+            {news.title.split('(')[0]}
           </h3>
           
           <div className="flex items-center space-x-4 text-xs text-gray-600">
@@ -58,9 +199,8 @@ const NewsCard = ({ news, analysis, isUpcoming }) => {
               <Clock className="w-3 h-3" />
               <span>{time} {timezone}</span>
             </div>
-            {isUpcoming && (
+            {isUpcomingEvent && (
               <div className="text-yellow-600 font-medium">
-                {/* In a real implementation, this would show countdown */}
                 Starting soon
               </div>
             )}
@@ -68,14 +208,11 @@ const NewsCard = ({ news, analysis, isUpcoming }) => {
         </div>
         
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          onClick={() => onShowDetails(news, analysis)}
+          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-colors"
+          title="View Details"
         >
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
+          <Info className="w-4 h-4" />
         </button>
       </div>
 
@@ -96,86 +233,34 @@ const NewsCard = ({ news, analysis, isUpcoming }) => {
         }`}>
           <div className="text-gray-600 mb-1">Actual</div>
           <div className="font-bold">
-            {news.actual !== null ? news.actual : isUpcoming ? 'TBA' : '--'}
+            {news.actual !== 'N/A' && news.actual !== null ? news.actual : isUpcomingEvent ? 'TBA' : '--'}
           </div>
         </div>
       </div>
 
-      {/* AI Analysis */}
+      {/* Quick Analysis Preview */}
       {analysis && (
         <div className="border-t pt-3">
-          <div className="flex items-center space-x-2 mb-2">
-            <Brain className="w-4 h-4 text-primary-600" />
-            <span className="text-sm font-medium text-gray-900">AI Analysis</span>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Expected Effect:</span>
-              <div className="flex items-center space-x-1">
-                {analysis.effect === 'Bullish' ? (
-                  <TrendingUp className="w-3 h-3 text-success-600" />
-                ) : analysis.effect === 'Bearish' ? (
-                  <TrendingDown className="w-3 h-3 text-danger-600" />
-                ) : (
-                  <AlertCircle className="w-3 h-3 text-gray-600" />
-                )}
-                <span className={`text-xs font-medium ${
-                  analysis.effect === 'Bullish' ? 'text-success-600' :
-                  analysis.effect === 'Bearish' ? 'text-danger-600' :
-                  'text-gray-600'
-                }`}>
-                  {analysis.effect}
-                </span>
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Brain className="w-4 h-4 text-primary-600" />
+              <span className="text-xs text-gray-600">AI Analysis</span>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Impacted Currencies:</span>
-              <div className="flex items-center space-x-1">
-                {analysis.impactedCurrencies.map(currency => {
-                  const info = formatCurrency(currency);
-                  return (
-                    <span key={currency} className="text-xs flex items-center space-x-1">
-                      <span>{info.flag}</span>
-                      <span>{currency}</span>
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Expanded Details */}
-      {isExpanded && analysis && (
-        <div className="border-t pt-3 mt-3">
-          <div className="space-y-3">
-            {/* Suggested Pairs */}
-            <div>
-              <div className="flex items-center space-x-2 mb-2">
-                <Target className="w-4 h-4 text-primary-600" />
-                <span className="text-sm font-medium text-gray-900">Suggested Pairs to Watch</span>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {analysis.suggestedPairs.map(pair => (
-                  <span 
-                    key={pair}
-                    className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-full"
-                  >
-                    {pair}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Explanation */}
-            <div>
-              <div className="text-sm font-medium text-gray-900 mb-1">Analysis</div>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                {analysis.explanation}
-              </p>
+            <div className="flex items-center space-x-1">
+              {analysis.effect === 'Bullish' ? (
+                <TrendingUp className="w-3 h-3 text-success-600" />
+              ) : analysis.effect === 'Bearish' ? (
+                <TrendingDown className="w-3 h-3 text-danger-600" />
+              ) : (
+                <AlertCircle className="w-3 h-3 text-gray-600" />
+              )}
+              <span className={`text-xs font-medium ${
+                analysis.effect === 'Bullish' ? 'text-success-600' :
+                analysis.effect === 'Bearish' ? 'text-danger-600' :
+                'text-gray-600'
+              }`}>
+                {analysis.effect}
+              </span>
             </div>
           </div>
         </div>
@@ -193,12 +278,37 @@ const AINewsAnalysis = () => {
   } = useBaseMarketStore();
   
   const [filter, setFilter] = useState('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await fetchNews();
-    setTimeout(() => setIsRefreshing(false), 1000);
+  // Initialize news data when component mounts
+  useEffect(() => {
+    // Fetch news data immediately when component mounts
+    console.log('AINewsAnalysis component mounted, fetching initial news data...');
+    
+    // Only fetch if we don't already have news data
+    if (newsData.length === 0) {
+      fetchNews();
+    }
+    
+    // Set up polling every 10 minutes (600,000 ms)
+    const interval = setInterval(() => {
+      console.log('Polling for fresh news data...');
+      fetchNews();
+    }, 10 * 60 * 1000);
+    
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []); // Remove fetchNews dependency to prevent multiple calls
+
+  const handleShowDetails = (news, analysis) => {
+    setSelectedNews(news);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedNews(null);
   };
 
   // Filter news based on selected filter
@@ -207,9 +317,9 @@ const AINewsAnalysis = () => {
       case 'high':
         return news.impact === 'high';
       case 'upcoming':
-        return news.actual === null;
+        return news.actual === 'N/A' || news.actual === null;
       case 'released':
-        return news.actual !== null;
+        return news.actual !== 'N/A' && news.actual !== null;
       default:
         return true;
     }
@@ -218,8 +328,11 @@ const AINewsAnalysis = () => {
   // Sort news: upcoming first, then by impact
   const sortedNews = filteredNews.sort((a, b) => {
     // Upcoming news first
-    if (a.actual === null && b.actual !== null) return -1;
-    if (b.actual === null && a.actual !== null) return 1;
+    const aIsUpcoming = a.actual === 'N/A' || a.actual === null;
+    const bIsUpcoming = b.actual === 'N/A' || b.actual === null;
+    
+    if (aIsUpcoming && !bIsUpcoming) return -1;
+    if (bIsUpcoming && !aIsUpcoming) return 1;
     
     // Then by impact
     const impactOrder = { 'high': 3, 'medium': 2, 'low': 1 };
@@ -229,8 +342,8 @@ const AINewsAnalysis = () => {
   const filters = [
     { id: 'all', label: 'All News', count: newsData.length },
     { id: 'high', label: 'High Impact', count: newsData.filter(n => n.impact === 'high').length },
-    { id: 'upcoming', label: 'Upcoming', count: newsData.filter(n => n.actual === null).length },
-    { id: 'released', label: 'Released', count: newsData.filter(n => n.actual !== null).length }
+    { id: 'upcoming', label: 'Upcoming', count: newsData.filter(n => n.actual === 'N/A' || n.actual === null).length },
+    { id: 'released', label: 'Released', count: newsData.filter(n => n.actual !== 'N/A' && n.actual !== null).length }
   ];
 
   return (
@@ -244,15 +357,6 @@ const AINewsAnalysis = () => {
             <p className="text-sm text-gray-500">AI-powered forex news insights</p>
           </div>
         </div>
-        
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing || newsLoading}
-          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-          title="Refresh News"
-        >
-          <RefreshCw className={`w-4 h-4 ${(isRefreshing || newsLoading) ? 'animate-spin' : ''}`} />
-        </button>
       </div>
 
       {/* Filter Tabs */}
@@ -278,14 +382,15 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* News Feed */}
-      <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+      <div className="space-y-4 overflow-y-auto max-h-[550px]">
+        
         {sortedNews.length > 0 ? (
           sortedNews.map((news) => (
             <NewsCard
               key={news.id}
               news={news}
               analysis={aiAnalysis.get(news.id)}
-              isUpcoming={news.actual === null}
+              onShowDetails={handleShowDetails}
             />
           ))
         ) : newsLoading ? (
@@ -310,21 +415,14 @@ const AINewsAnalysis = () => {
         )}
       </div>
 
-      {/* Footer Info */}
-      {sortedNews.length > 0 && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-2">
-              <Brain className="w-4 h-4 text-primary-600" />
-              <span className="text-gray-600">
-                Analysis powered by AI • Updates every 5 minutes
-              </span>
-            </div>
-            <div className="text-gray-500">
-              {sortedNews.length} news item{sortedNews.length !== 1 ? 's' : ''}
-            </div>
-          </div>
-        </div>
+      {/* News Modal */}
+      {selectedNews && (
+        <NewsModal
+          news={selectedNews}
+          analysis={aiAnalysis.get(selectedNews.id)}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
       )}
     </div>
   );

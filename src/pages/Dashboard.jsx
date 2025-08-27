@@ -57,7 +57,7 @@ const Dashboard = () => {
             <div className="flex items-center space-x-3">
               <div className="flex flex-col ml-2 items-center justify-center">
                 <div className="text-green-500 font-bold text-2xl leading-none">FX<span className="text-gray-500 font-normal">LABS</span></div>
-                <div className="text-gray-500 text-xs leading-none">Decode the market</div>
+                <div className="text-gray-500 text-xs leading-none">Decode the Market</div>
               </div>
             </div>
             
@@ -86,7 +86,7 @@ const Dashboard = () => {
         </div>
 
         {/* Bottom Row - Currency Strength & News Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 h-[700px]">
           {/* Section 3: Currency Strength Meter */}
           <CurrencyStrengthMeter />
           
@@ -95,7 +95,7 @@ const Dashboard = () => {
         </div>
 
         {/* Footer */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-16">
           <div className="text-center text-sm text-gray-500">
             <p>FXLabs.AI Dashboard v1.0 - Advanced Forex Analysis Platform</p>
           </div>

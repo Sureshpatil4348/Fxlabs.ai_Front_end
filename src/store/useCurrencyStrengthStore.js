@@ -271,10 +271,11 @@ const useCurrencyStrengthStore = create(
           });
           set({ tickData });
           
-          // If live mode, recalculate strength on tick updates
-          if (state.settings.mode === 'live') {
-            get().calculateCurrencyStrength();
-          }
+          // Remove automatic recalculation on tick updates to prevent flickering
+          // Currency strength will only update on manual refresh or scheduled intervals
+          // if (state.settings.mode === 'live') {
+          //   get().calculateCurrencyStrength();
+          // }
           break;
           
         case 'ohlc_update':
@@ -302,10 +303,11 @@ const useCurrencyStrengthStore = create(
             currentOhlcData.set(message.data.symbol, symbolData);
             set({ ohlcData: currentOhlcData });
             
-            // Trigger strength recalculation when new data arrives
-            setTimeout(() => {
-              get().calculateCurrencyStrength();
-            }, 100);
+            // Remove automatic strength recalculation to prevent flickering
+            // Currency strength will only update on manual refresh or scheduled intervals
+            // setTimeout(() => {
+            //   get().calculateCurrencyStrength();
+            // }, 100);
           }
           break;
           

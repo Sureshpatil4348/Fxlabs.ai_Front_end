@@ -8,14 +8,14 @@ const CurrencyStrengthBar = ({ currency, strength, isTop, isBottom }) => {
   const currencyInfo = formatCurrency(currency);
   
   return (
-    <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+    <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
       <div className="flex items-center space-x-2 w-16">
         <span className="text-lg">{currencyInfo.flag}</span>
         <span className="text-sm font-medium text-gray-900">{currency}</span>
       </div>
       
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {isTop && <TrendingUp className="w-3 h-3 text-success-600" />}
             {isBottom && <TrendingDown className="w-3 h-3 text-danger-600" />}
@@ -119,7 +119,6 @@ const CurrencyStrengthMeter = () => {
     settings,
     calculateCurrencyStrength,
     subscriptions,
-    ohlcData,
     isConnected,
     autoSubscribeToMajorPairs,
     updateSettings,
@@ -154,19 +153,20 @@ const CurrencyStrengthMeter = () => {
     }
   }, [subscriptions.size, settings.timeframe, settings.mode, calculateCurrencyStrength]);
 
-  // React to OHLC data changes to ensure currency strength updates automatically
-  useEffect(() => {
-    if (subscriptions.size > 0 && ohlcData.size > 0) {
-      console.log('OHLC data changed, currency strength should update automatically via store');
-    }
-  }, [ohlcData, subscriptions.size]);
+  // Remove the OHLC data change effect that was causing frequent updates
+  // useEffect(() => {
+  //   if (subscriptions.size > 0 && ohlcData.size > 0) {
+  //     console.log('OHLC data changed, currency strength should update automatically via store');
+  //   }
+  // }, [ohlcData, subscriptions.size]);
 
-  // Auto-refresh every 30 seconds if we have subscriptions
+  // Auto-refresh every 60 seconds if we have subscriptions (changed from 30 seconds)
   useEffect(() => {
     if (subscriptions.size > 0) {
       const interval = setInterval(() => {
+        console.log('Auto-refreshing currency strength (60s interval)');
         calculateCurrencyStrength();
-      }, 30000);
+      }, 60000); // Changed to 60 seconds
       return () => clearInterval(interval);
     }
   }, [subscriptions.size, calculateCurrencyStrength]);
@@ -214,7 +214,7 @@ const CurrencyStrengthMeter = () => {
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
           <p className="text-sm text-gray-500">
-            {settings.timeframe} • {settings.mode === 'live' ? 'Live Updates' : 'Closed Candles'}
+            {settings.timeframe} • Updates on candle close
             <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}>
@@ -294,7 +294,7 @@ const CurrencyStrengthMeter = () => {
           )}
 
           {/* Summary */}
-          <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="mt-10 grid grid-cols-2 gap-4">
             <div className="p-4 bg-success-50 rounded-lg">
               <h4 className="text-sm font-medium text-success-700 mb-2">Strongest Currencies</h4>
               <div className="space-y-1">
