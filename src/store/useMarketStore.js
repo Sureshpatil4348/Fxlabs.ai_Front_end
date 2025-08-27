@@ -82,6 +82,22 @@ const useMarketStore = create(
     correlationPairs: CORRELATION_PAIRS,
     correlationStatus: new Map(), // pairKey -> { status: 'match'|'mismatch'|'neutral', rsi1, rsi2 }
     
+    // Global Connection Management
+    globalConnectionState: {
+      status: 'INITIALIZING', // 'INITIALIZING' | 'CONNECTING' | 'RETRYING' | 'CONNECTED' | 'FAILED'
+      dashboardConnections: {
+        rsiCorrelation: { connected: false, connecting: false, error: null },
+        rsiTracker: { connected: false, connecting: false, error: null },
+        currencyStrength: { connected: false, connecting: false, error: null }
+      },
+      connectionAttempts: 0,
+      maxRetries: 2,
+      timeoutDuration: 5000,
+      startTime: null,
+      showLoader: true,
+      timeoutId: null
+    },
+    
     // UI state
     selectedSymbol: 'EURUSDm',
     selectedTimeframe: '1M',
@@ -89,7 +105,7 @@ const useMarketStore = create(
     logs: [],
     
     // Available options
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'],
+    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D'],
     
     // Actions
     connect: () => {
@@ -102,7 +118,6 @@ const useMarketStore = create(
         const ws = new WebSocket(WEBSOCKET_URL);
         
         ws.onopen = () => {
-          console.log('WebSocket connected');
           set({ 
             isConnected: true, 
             isConnecting: false, 
@@ -141,7 +156,6 @@ const useMarketStore = create(
         };
         
         ws.onclose = () => {
-          console.log('WebSocket disconnected');
           set({ 
             isConnected: false, 
             isConnecting: false, 
@@ -276,7 +290,6 @@ const useMarketStore = create(
           
           // Trigger calculations when initial data is received
           setTimeout(() => {
-            console.log('🚀 Auto-updating indicators due to initial OHLC data for', message.symbol);
             get().recalculateAllRsi();
             get().calculateCurrencyStrength();
           }, 200);
@@ -320,7 +333,6 @@ const useMarketStore = create(
             
             // Trigger RSI and Currency Strength recalculation when new data arrives
             setTimeout(() => {
-              console.log('🔄 Auto-updating indicators due to new OHLC data for', message.data.symbol);
               get().recalculateAllRsi();
               get().calculateCurrencyStrength();
             }, 100);
@@ -336,7 +348,6 @@ const useMarketStore = create(
           break;
           
         default:
-          console.log('Unknown message type:', message.type);
       }
     },
     
@@ -402,7 +413,6 @@ const useMarketStore = create(
       
       // If timeframe changed, update all subscriptions
       if (newSettings.timeframe && newSettings.timeframe !== oldSettings.timeframe) {
-        console.log(`Global timeframe changed from ${oldSettings.timeframe} to ${newSettings.timeframe}, updating all subscriptions...`);
         
         const { subscribe } = get();
         const currentSubscriptions = Array.from(state.subscriptions.entries());
@@ -410,7 +420,6 @@ const useMarketStore = create(
         // Update subscriptions to use new timeframe
         const updatedSubscriptions = new Map();
         currentSubscriptions.forEach(([symbol, subscription]) => {
-          console.log(`Updating subscription for ${symbol} to timeframe ${newSettings.timeframe}`);
           
           // Update subscription info with new timeframe
           const updatedSubscription = {
@@ -428,7 +437,6 @@ const useMarketStore = create(
         
         // Recalculate both indicators with new timeframe data
         setTimeout(() => {
-          console.log('Recalculating all indicators due to global timeframe change');
           get().recalculateAllRsi();
           get().calculateCurrencyStrength();
         }, 1500);
@@ -449,15 +457,12 @@ const useMarketStore = create(
 
     calculateRsi: (symbol, period = 14) => {
       const bars = get().getOhlcForSymbol(symbol);
-      console.log(`Calculating RSI for ${symbol}:`, { bars: bars.length, period });
       
       if (bars.length < period + 1) {
-        console.log(`Insufficient data for RSI calculation: ${bars.length} bars, need ${period + 1}`);
         return null;
       }
 
       const closes = bars.slice(-period - 1).map(bar => bar.close);
-      console.log(`Using ${closes.length} closes for RSI:`, closes.slice(0, 3), '...');
       
       let gains = 0;
       let losses = 0;
@@ -475,14 +480,12 @@ const useMarketStore = create(
       const avgLoss = losses / period;
       
       if (avgLoss === 0) {
-        console.log(`RSI calculation: avgLoss is 0, returning 100 for ${symbol}`);
         return 100;
       }
       
       const rs = avgGain / avgLoss;
       const rsi = 100 - (100 / (1 + rs));
       
-      console.log(`RSI calculated for ${symbol}:`, { avgGain, avgLoss, rs, rsi });
       return rsi;
     },
 
@@ -490,8 +493,6 @@ const useMarketStore = create(
       const state = get();
       const newRsiData = new Map();
       const newCorrelationStatus = new Map();
-
-      console.log('Starting RSI recalculation for', state.subscriptions.size, 'subscriptions');
 
       // Calculate RSI for all subscribed symbols
       state.subscriptions.forEach((sub, symbol) => {
@@ -502,11 +503,8 @@ const useMarketStore = create(
             timestamp: new Date(),
             period: state.rsiSettings.period
           });
-          console.log(`RSI set for ${symbol}:`, rsi);
         }
       });
-
-      console.log('RSI data calculated for', newRsiData.size, 'symbols');
 
       // Update correlation status
       [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair, index) => {
@@ -516,11 +514,6 @@ const useMarketStore = create(
         const rsi1 = newRsiData.get(sym1)?.value;
         const rsi2 = newRsiData.get(sym2)?.value;
         
-        console.log(`Checking correlation for ${symbol1}/${symbol2}:`, { 
-          sym1, sym2, rsi1, rsi2, 
-          hasRsi1: rsi1 !== undefined, 
-          hasRsi2: rsi2 !== undefined 
-        });
         
         if (rsi1 !== undefined && rsi2 !== undefined) {
           const isPositiveCorrelation = index < state.correlationPairs.positive.length;
@@ -542,12 +535,8 @@ const useMarketStore = create(
             rsi2,
             type: isPositiveCorrelation ? 'positive' : 'negative'
           });
-          
-          console.log(`Correlation status for ${pairKey}:`, { status, rsi1, rsi2, type: isPositiveCorrelation ? 'positive' : 'negative' });
         }
       });
-
-      console.log('Correlation status calculated for', newCorrelationStatus.size, 'pairs');
 
       set({ 
         rsiData: newRsiData,
@@ -557,8 +546,7 @@ const useMarketStore = create(
 
     // Currency Strength Actions
     updateStrengthSettings: (newSettings) => {
-      const state = get();
-      const oldSettings = state.strengthSettings;
+      const oldSettings = get().strengthSettings;
       const updatedSettings = { ...oldSettings, ...newSettings };
       
       set({ strengthSettings: updatedSettings });
@@ -568,7 +556,6 @@ const useMarketStore = create(
     },
 
     calculateCurrencyStrength: () => {
-      const state = get();
       const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
       const strengthMap = new Map();
       
@@ -615,7 +602,7 @@ const useMarketStore = create(
     fetchNews: async () => {
       set({ newsLoading: true });
       try {
-        const { fetchForexFactoryNews, analyzeNewsWithAI } = await import('../services/newsService');
+        const { fetchForexFactoryNews } = await import('../services/newsService');
         const newsData = await fetchForexFactoryNews();
         
         set({ newsData, newsLoading: false });
@@ -721,6 +708,210 @@ const useMarketStore = create(
       });
       
       return wishlistData;
+    },
+
+    // Global Connection Management Actions
+    initiateGlobalConnection: () => {
+      const state = get();
+      
+      // Don't initiate if we're already connected or connecting
+      if (state.globalConnectionState.status === 'CONNECTED' || 
+          state.globalConnectionState.status === 'CONNECTING') {
+        return;
+      }
+
+      
+      set(state => ({
+        globalConnectionState: {
+          ...state.globalConnectionState,
+          status: 'CONNECTING',
+          startTime: Date.now(),
+          connectionAttempts: state.globalConnectionState.connectionAttempts + 1,
+          showLoader: true
+        }
+      }));
+
+      // Import dashboard stores dynamically to avoid circular imports
+      const initConnections = async () => {
+        try {
+          const [
+            { default: useRSICorrelationStore },
+            { default: useRSITrackerStore },
+            { default: useCurrencyStrengthStore }
+          ] = await Promise.all([
+            import('./useRSICorrelationStore'),
+            import('./useRSITrackerStore'),
+            import('./useCurrencyStrengthStore')
+          ]);
+
+          // Set connecting status for all dashboards
+          set(state => ({
+            globalConnectionState: {
+              ...state.globalConnectionState,
+              dashboardConnections: {
+                rsiCorrelation: { connected: false, connecting: true, error: null },
+                rsiTracker: { connected: false, connecting: true, error: null },
+                currencyStrength: { connected: false, connecting: true, error: null }
+              }
+            }
+          }));
+
+          // Initiate connections with staggered timing
+          setTimeout(() => useRSICorrelationStore.getState().connect(), 100);
+          setTimeout(() => useRSITrackerStore.getState().connect(), 300);
+          setTimeout(() => useCurrencyStrengthStore.getState().connect(), 500);
+
+          // Set timeout for connection attempts
+          const timeoutId = setTimeout(() => {
+            // Only trigger timeout if we're still in CONNECTING state
+            const currentState = get().globalConnectionState;
+            if (currentState.status === 'CONNECTING') {
+              get().handleConnectionTimeout();
+            }
+          }, get().globalConnectionState.timeoutDuration);
+
+          set(state => ({
+            globalConnectionState: {
+              ...state.globalConnectionState,
+              timeoutId
+            }
+          }));
+
+        } catch (error) {
+          console.error('Failed to import dashboard stores:', error);
+          get().handleConnectionFailure('Failed to initialize dashboard stores');
+        }
+      };
+
+      initConnections();
+    },
+
+    updateDashboardConnection: (dashboard, connectionStatus) => {
+      
+      set(state => ({
+        globalConnectionState: {
+          ...state.globalConnectionState,
+          dashboardConnections: {
+            ...state.globalConnectionState.dashboardConnections,
+            [dashboard]: connectionStatus
+          }
+        }
+      }));
+
+      // Check if all dashboards are connected (only if we're still in CONNECTING state)
+      const currentState = get().globalConnectionState;
+      if (currentState.status === 'CONNECTING') {
+        setTimeout(() => get().checkAllConnectionsReady(), 100);
+      }
+    },
+
+    checkAllConnectionsReady: () => {
+      const state = get();
+      const { dashboardConnections, status } = state.globalConnectionState;
+      
+      // Don't check if we're not in CONNECTING state
+      if (status !== 'CONNECTING') {
+        return;
+      }
+      
+      const allConnected = Object.values(dashboardConnections).every(conn => conn.connected);
+      const anyFailed = Object.values(dashboardConnections).some(conn => conn.error);
+
+
+      if (allConnected) {
+        
+        // Clear timeout immediately to prevent retry
+        if (state.globalConnectionState.timeoutId) {
+          clearTimeout(state.globalConnectionState.timeoutId);
+        }
+
+        set(state => ({
+          globalConnectionState: {
+            ...state.globalConnectionState,
+            status: 'CONNECTED',
+            showLoader: false,
+            timeoutId: null
+          }
+        }));
+      } else if (anyFailed && state.globalConnectionState.status !== 'RETRYING') {
+        get().handleConnectionTimeout();
+      }
+    },
+
+    handleConnectionTimeout: () => {
+      const state = get();
+      const { connectionAttempts, maxRetries, status } = state.globalConnectionState;
+
+      // Don't handle timeout if we're already connected or in a different state
+      if (status !== 'CONNECTING') {
+        return;
+      }
+
+      if (connectionAttempts <= maxRetries) {
+        // Retry connections
+        set(state => ({
+          globalConnectionState: {
+            ...state.globalConnectionState,
+            status: 'RETRYING'
+          }
+        }));
+
+        // Wait 2 seconds before retry
+        setTimeout(() => {
+          get().initiateGlobalConnection();
+        }, 2000);
+      } else {
+        // Max retries reached
+        
+        set(state => ({
+          globalConnectionState: {
+            ...state.globalConnectionState,
+            status: 'FAILED',
+            showLoader: true // Keep loader visible to show error
+          }
+        }));
+      }
+    },
+
+    handleConnectionFailure: (error) => {
+      
+      set(state => ({
+        globalConnectionState: {
+          ...state.globalConnectionState,
+          status: 'FAILED',
+          showLoader: true
+        }
+      }));
+    },
+
+    retryAllConnections: () => {
+      
+      // Reset connection state
+      set(state => ({
+        globalConnectionState: {
+          ...state.globalConnectionState,
+          status: 'INITIALIZING',
+          connectionAttempts: 0,
+          dashboardConnections: {
+            rsiCorrelation: { connected: false, connecting: false, error: null },
+            rsiTracker: { connected: false, connecting: false, error: null },
+            currencyStrength: { connected: false, connecting: false, error: null }
+          },
+          showLoader: true
+        }
+      }));
+
+      // Initiate new connection attempt
+      setTimeout(() => get().initiateGlobalConnection(), 500);
+    },
+
+    setLoaderVisibility: (visible) => {
+      set(state => ({
+        globalConnectionState: {
+          ...state.globalConnectionState,
+          showLoader: visible
+        }
+      }));
     }
   }))
 );

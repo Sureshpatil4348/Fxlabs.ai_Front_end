@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import useMarketStore from '../store/useMarketStore';
+import React, { useState } from 'react';
+import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsTime, getImpactColor, formatCurrency } from '../utils/formatters';
-import { formatDistanceToNow, parseISO, isFuture } from 'date-fns';
 import { 
   Newspaper, 
   Clock, 
@@ -191,7 +190,7 @@ const AINewsAnalysis = () => {
     aiAnalysis, 
     newsLoading, 
     fetchNews 
-  } = useMarketStore();
+  } = useBaseMarketStore();
   
   const [filter, setFilter] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);

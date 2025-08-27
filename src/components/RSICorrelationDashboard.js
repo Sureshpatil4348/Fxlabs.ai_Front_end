@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import useMarketStore from '../store/useMarketStore';
+import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, getStatusColor, getStatusIcon, formatRsi, sortCorrelationPairs } from '../utils/formatters';
-import { RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
+import { RefreshCw, TrendingUp, TrendingDown, Settings } from 'lucide-react';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair }) => {
   const [symbol1, symbol2] = pair;
@@ -32,16 +32,12 @@ const CorrelationPairCard = ({ pairKey, pairData, pair }) => {
       </div>
       
       <div className="space-y-1">
-        <div className="text-xs font-semibold text-center">
-          {formatSymbolDisplay(symbol1)} / {formatSymbolDisplay(symbol2)}
-        </div>
-        
         <div className="grid grid-cols-2 gap-1 text-xs">
-          <div className="text-center p-1 bg-white bg-opacity-50 rounded transition-all duration-300">
+          <div className="text-center p-1 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
             <div className="font-medium text-xs">{formatSymbolDisplay(symbol1)}</div>
             <div className="font-bold text-sm transition-all duration-300">{formatRsi(rsi1)}</div>
           </div>
-          <div className="text-center p-1 bg-white bg-opacity-50 rounded transition-all duration-300">
+          <div className="text-center p-1 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
             <div className="font-medium text-xs">{formatSymbolDisplay(symbol2)}</div>
             <div className="font-bold text-sm transition-all duration-300">{formatRsi(rsi2)}</div>
           </div>
@@ -53,77 +49,80 @@ const CorrelationPairCard = ({ pairKey, pairData, pair }) => {
 
 const RSICorrelationDashboard = () => {
   const { 
-    correlationPairs, 
     correlationStatus, 
-    rsiSettings,
-    globalSettings, 
+    settings,
     recalculateAllRsi,
     subscriptions,
-    isConnected
-  } = useMarketStore();
+    isConnected,
+    updateSettings,
+    autoSubscribeToCorrelationPairs,
+    timeframes
+  } = useRSICorrelationStore();
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [localSettings, setLocalSettings] = useState({
+    timeframe: settings.timeframe,
+    rsiPeriod: settings.rsiPeriod,
+    rsiOverbought: settings.rsiOverbought,
+    rsiOversold: settings.rsiOversold
+  });
 
   // Auto-subscribe to correlation pairs when connection is established (only once)
   useEffect(() => {
     if (!isConnected || hasAutoSubscribed) {
-      console.log('Not connected or already auto-subscribed, skipping');
       return;
     }
 
     // Small delay to ensure connection is fully established
     const timer = setTimeout(() => {
-      const { subscribe } = useMarketStore.getState();
-      const allPairs = [...correlationPairs.positive, ...correlationPairs.negative];
-      console.log('Auto-subscribing to correlation pairs:', allPairs, 'with timeframe:', globalSettings.timeframe);
-      
-      let subscriptionCount = 0;
-      allPairs.forEach(([symbol1, symbol2]) => {
-        const sym1 = symbol1 + 'm';
-        const sym2 = symbol2 + 'm';
-        
-        if (!subscriptions.has(sym1)) {
-          console.log('Auto-subscribing to', sym1);
-          subscribe(sym1, globalSettings.timeframe, ['ticks', 'ohlc']);
-          subscriptionCount++;
-        }
-        if (!subscriptions.has(sym2)) {
-          console.log('Auto-subscribing to', sym2);
-          subscribe(sym2, globalSettings.timeframe, ['ticks', 'ohlc']);
-          subscriptionCount++;
-        }
-      });
-      
-      console.log(`Auto-subscribed to ${subscriptionCount} new symbols`);
+      autoSubscribeToCorrelationPairs();
       setHasAutoSubscribed(true);
     }, 1000); // 1 second delay to ensure connection is stable
 
     return () => clearTimeout(timer);
-  }, [isConnected, hasAutoSubscribed, correlationPairs, globalSettings.timeframe, subscriptions]);
+  }, [isConnected, hasAutoSubscribed, autoSubscribeToCorrelationPairs]);
 
   // Trigger initial RSI calculation when we have data
   useEffect(() => {
     if (subscriptions.size > 0) {
-      console.log('Triggering RSI calculation for', subscriptions.size, 'subscriptions');
       recalculateAllRsi();
     }
   }, [subscriptions.size, recalculateAllRsi]);
 
   // React to RSI data changes to ensure UI updates
   useEffect(() => {
-    console.log('RSI data updated, correlation pairs:', correlationStatus.size);
   }, [correlationStatus]);
 
-  // Reset hasAutoSubscribed when global timeframe changes to ensure re-subscription
+  // Reset hasAutoSubscribed when timeframe changes to ensure re-subscription
   useEffect(() => {
     setHasAutoSubscribed(false);
-  }, [globalSettings.timeframe]);
+  }, [settings.timeframe]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     recalculateAllRsi();
     setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
+  const handleSaveSettings = () => {
+    updateSettings({
+      timeframe: localSettings.timeframe,
+      rsiPeriod: localSettings.rsiPeriod,
+      rsiOverbought: localSettings.rsiOverbought,
+      rsiOversold: localSettings.rsiOversold
+    });
+    setShowSettings(false);
+  };
+
+  const handleResetSettings = () => {
+    setLocalSettings({
+      timeframe: settings.timeframe,
+      rsiPeriod: settings.rsiPeriod,
+      rsiOverbought: settings.rsiOverbought,
+      rsiOversold: settings.rsiOversold
+    });
   };
 
   // Get sorted pairs with mismatches first
@@ -140,40 +139,30 @@ const RSICorrelationDashboard = () => {
 
   return (
     <div className="card">
-      {/* Status Info */}
-      <div className="mb-4 p-3 bg-blue-50 rounded text-sm text-blue-800">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="font-medium">Analysis:</span> {subscriptions.size} subscriptions • {correlationStatus.size} pairs analyzed
-          </div>
-        </div>
-        {subscriptions.size === 0 && isConnected && (
-          <div className="mt-2 text-xs">
-            🔄 <strong>Auto-subscribing to correlation pairs...</strong> Please wait a moment for data to load.
-          </div>
-        )}
-        {subscriptions.size > 0 && correlationStatus.size === 0 && (
-          <div className="mt-2 text-xs text-blue-600">
-            📊 Calculating RSI for {globalSettings.timeframe} timeframe...
-          </div>
-        )}
-        {!isConnected && (
-          <div className="mt-2 text-xs">
-            💡 <strong>Tip:</strong> Correlation pairs will auto-subscribe once WebSocket connection is established.
-          </div>
-        )}
-      </div>
-
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Period: {rsiSettings.period} | Overbought: {rsiSettings.overbought} | Oversold: {rsiSettings.oversold} | {globalSettings.timeframe}
+          <div className="flex items-center space-x-2">
+            <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {isConnected ? '● Connected' : '● Disconnected'}
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Period: {settings.rsiPeriod} | Overbought: {settings.rsiOverbought} | Oversold: {settings.rsiOversold} | {settings.timeframe}
           </p>
         </div>
         
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            title="Dashboard Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -230,24 +219,98 @@ const RSICorrelationDashboard = () => {
         ))}
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-        <div className="text-xs font-medium text-gray-700 mb-2">Legend:</div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs">✅</span>
-            <span>Match: Correlation aligns with RSI</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs">❌</span>
-            <span>Mismatch: Correlation conflicts with RSI</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs">⚪</span>
-            <span>Neutral: No strong RSI signals</span>
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Correlation Settings</h3>
+            
+            <div className="space-y-4">
+              {/* Timeframe */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Timeframe
+                </label>
+                <select
+                  value={localSettings.timeframe}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {timeframes.map(tf => (
+                    <option key={tf} value={tf}>{tf}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* RSI Period */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  RSI Period
+                </label>
+                <input
+                  type="number"
+                  min="2"
+                  max="50"
+                  value={localSettings.rsiPeriod}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiPeriod: parseInt(e.target.value) }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Overbought Level */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Overbought Level
+                </label>
+                <input
+                  type="number"
+                  min="50"
+                  max="90"
+                  value={localSettings.rsiOverbought}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOverbought: parseInt(e.target.value) }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Oversold Level */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Oversold Level
+                </label>
+                <input
+                  type="number"
+                  min="10"
+                  max="50"
+                  value={localSettings.rsiOversold}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOversold: parseInt(e.target.value) }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={handleResetSettings}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
     </div>
   );

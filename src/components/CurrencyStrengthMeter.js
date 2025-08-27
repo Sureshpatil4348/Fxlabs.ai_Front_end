@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
-import useMarketStore from '../store/useMarketStore';
+import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { formatCurrency, getCurrencyStrengthColor } from '../utils/formatters';
-import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings } from 'lucide-react';
 
 const CurrencyStrengthBar = ({ currency, strength, isTop, isBottom }) => {
   const currencyInfo = formatCurrency(currency);
@@ -116,23 +116,43 @@ const StrengthChart = ({ data, type }) => {
 const CurrencyStrengthMeter = () => {
   const { 
     currencyStrength, 
-    strengthSettings,
-    globalSettings, 
+    settings,
     calculateCurrencyStrength,
     subscriptions,
-    ohlcData
-  } = useMarketStore();
+    ohlcData,
+    isConnected,
+    autoSubscribeToMajorPairs,
+    updateSettings,
+    timeframes
+  } = useCurrencyStrengthStore();
   
   const [viewMode, setViewMode] = useState('bars');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
+  const [localSettings, setLocalSettings] = useState({
+    timeframe: settings.timeframe,
+    mode: settings.mode
+  });
+
+  // Auto-subscribe to major pairs when connection is established
+  useEffect(() => {
+    if (!isConnected || hasAutoSubscribed) return;
+
+    const timer = setTimeout(() => {
+      autoSubscribeToMajorPairs();
+      setHasAutoSubscribed(true);
+    }, 1400);
+
+    return () => clearTimeout(timer);
+  }, [isConnected, hasAutoSubscribed, autoSubscribeToMajorPairs]);
 
   // Calculate currency strength when subscriptions change or settings change
   useEffect(() => {
     if (subscriptions.size > 0) {
-      console.log('Recalculating currency strength due to settings or subscription change');
       calculateCurrencyStrength();
     }
-  }, [subscriptions.size, globalSettings.timeframe, strengthSettings.mode, calculateCurrencyStrength]);
+  }, [subscriptions.size, settings.timeframe, settings.mode, calculateCurrencyStrength]);
 
   // React to OHLC data changes to ensure currency strength updates automatically
   useEffect(() => {
@@ -145,7 +165,6 @@ const CurrencyStrengthMeter = () => {
   useEffect(() => {
     if (subscriptions.size > 0) {
       const interval = setInterval(() => {
-        console.log('Auto-refreshing currency strength');
         calculateCurrencyStrength();
       }, 30000);
       return () => clearInterval(interval);
@@ -156,6 +175,21 @@ const CurrencyStrengthMeter = () => {
     setIsRefreshing(true);
     calculateCurrencyStrength();
     setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
+  const handleSaveSettings = () => {
+    updateSettings({
+      timeframe: localSettings.timeframe,
+      mode: localSettings.mode
+    });
+    setShowSettings(false);
+  };
+
+  const handleResetSettings = () => {
+    setLocalSettings({
+      timeframe: settings.timeframe,
+      mode: settings.mode
+    });
   };
 
   // Convert Map to array and sort by strength
@@ -180,16 +214,28 @@ const CurrencyStrengthMeter = () => {
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
           <p className="text-sm text-gray-500">
-            {globalSettings.timeframe} • {strengthSettings.mode === 'live' ? 'Live Updates' : 'Closed Candles'}
+            {settings.timeframe} • {settings.mode === 'live' ? 'Live Updates' : 'Closed Candles'}
+            <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {isConnected ? '● Connected' : '● Disconnected'}
+            </span>
           </p>
           {strengthData.length === 0 && subscriptions.size > 0 && (
             <p className="text-xs text-blue-600 mt-1">
-              📊 Calculating strength for {globalSettings.timeframe} timeframe...
+              📊 Calculating strength for {settings.timeframe} timeframe...
             </p>
           )}
         </div>
         
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            title="Dashboard Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -301,6 +347,75 @@ const CurrencyStrengthMeter = () => {
           <p className="text-gray-500 text-sm">
             Currency strength will be calculated based on subscribed pairs.
           </p>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Currency Strength Settings</h3>
+            
+            <div className="space-y-4">
+              {/* Timeframe */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Timeframe
+                </label>
+                <select
+                  value={localSettings.timeframe}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {timeframes.map(tf => (
+                    <option key={tf} value={tf}>{tf}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mode */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Calculation Mode
+                </label>
+                <select
+                  value={localSettings.mode}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, mode: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="closed">Closed Candles</option>
+                  <option value="live">Live Updates</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {localSettings.mode === 'live' 
+                    ? 'Updates with every tick (real-time)'
+                    : 'Uses completed candles only (more stable)'
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={handleResetSettings}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
