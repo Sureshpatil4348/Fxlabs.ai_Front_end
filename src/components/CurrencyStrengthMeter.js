@@ -208,7 +208,7 @@ const CurrencyStrengthMeter = () => {
   ];
 
   return (
-    <div className="card">
+    <div className="card z-9 relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

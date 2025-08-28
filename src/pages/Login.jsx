@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../auth/AuthProvider'
+import Orb from '../components/ui/Orb'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -42,7 +43,15 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 z-0">
+        <Orb
+          hoverIntensity={0.5}
+          rotateOnHover={true}
+          hue={100}
+          forceHoverState={false}
+        />
+      </div>
       <div className="flex flex-col items-center justify-center">
         <div className="text-2xl font-bold"><span className="text-green-600">FX</span><span className="text-gray-500 font-light">LABS</span></div>
         <div className="text-sm text-gray-500">Decode the Market</div>

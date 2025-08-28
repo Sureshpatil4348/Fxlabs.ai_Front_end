@@ -138,7 +138,7 @@ const RSICorrelationDashboard = () => {
   const neutral = sortedPairs.filter(([, data]) => data.status === 'neutral').length;
 
   return (
-    <div className="card">
+    <div className="card z-10 relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -221,7 +221,7 @@ const RSICorrelationDashboard = () => {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-100">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Correlation Settings</h3>
             
