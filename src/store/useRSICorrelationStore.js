@@ -14,7 +14,7 @@ const formatSymbol = (input) => {
   return trimmed;
 };
 
-// Correlation pairs data
+// Enhanced correlation pairs data with new pairs
 const CORRELATION_PAIRS = {
   negative: [
     ['AUDUSD', 'GBPNZD'],
@@ -33,9 +33,14 @@ const CORRELATION_PAIRS = {
   positive: [
     ['EURUSD', 'GBPUSD'],
     ['AUDUSD', 'AUDCAD'],
-    ['EURAUD', 'EURNZD']
+    ['EURAUD', 'EURNZD'],
+    ['XAUUSD', 'XAGUSD'],  // Gold-Silver correlation
+    ['BTCUSD', 'ETHUSD']   // Crypto correlation
   ]
 };
+
+// Rolling correlation window options
+const CORRELATION_WINDOWS = [20, 50, 90, 120];
 
 const useRSICorrelationStore = create(
   subscribeWithSelector((set, get) => ({
@@ -59,16 +64,20 @@ const useRSICorrelationStore = create(
       timeframe: '1H',
       rsiPeriod: 14,
       rsiOverbought: 70,
-      rsiOversold: 30
+      rsiOversold: 30,
+      correlationWindow: 50, // Default rolling correlation window
+      calculationMode: 'rsi_threshold' // 'rsi_threshold' | 'real_correlation'
     },
     
     // Correlation Data
     correlationPairs: CORRELATION_PAIRS,
     correlationStatus: new Map(), // pairKey -> { status: 'match'|'mismatch'|'neutral', rsi1, rsi2 }
+    realCorrelationData: new Map(), // pairKey -> { correlation: -1 to 1, strength: 'weak'|'moderate'|'strong', trend: 'increasing'|'decreasing'|'stable' }
     
     // UI state
     logs: [],
     timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D'],
+    correlationWindows: CORRELATION_WINDOWS,
     
     // Connection Actions
     connect: () => {
@@ -212,7 +221,7 @@ const useRSICorrelationStore = create(
       };
       
       websocket.send(JSON.stringify(message));
-      get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
+      get().addLog(`Unsubscribing from ${formattedSymbol}`, 'warning');
     },
     
     handleMessage: (message) => {
@@ -277,6 +286,9 @@ const useRSICorrelationStore = create(
           // Trigger calculations when initial data is received
           setTimeout(() => {
             get().recalculateAllRsi();
+            if (state.settings.calculationMode === 'real_correlation') {
+              get().calculateAllCorrelations();
+            }
           }, 200);
           break;
           
@@ -319,6 +331,9 @@ const useRSICorrelationStore = create(
             // Trigger RSI recalculation when new data arrives
             setTimeout(() => {
               get().recalculateAllRsi();
+              if (state.settings.calculationMode === 'real_correlation') {
+                get().calculateAllCorrelations();
+              }
             }, 100);
           }
           break;
@@ -370,12 +385,31 @@ const useRSICorrelationStore = create(
         // Recalculate RSI with new timeframe data
         setTimeout(() => {
           get().recalculateAllRsi();
+          if (updatedSettings.calculationMode === 'real_correlation') {
+            get().calculateAllCorrelations();
+          }
         }, 1500);
       }
       
       // If RSI settings changed, recalculate
       if (newSettings.rsiPeriod || newSettings.rsiOverbought || newSettings.rsiOversold) {
         get().recalculateAllRsi();
+      }
+      
+      // If correlation window changed, recalculate correlations
+      if (newSettings.correlationWindow && newSettings.correlationWindow !== oldSettings.correlationWindow) {
+        if (updatedSettings.calculationMode === 'real_correlation') {
+          get().calculateAllCorrelations();
+        }
+      }
+      
+      // If calculation mode changed, recalculate appropriate metrics
+      if (newSettings.calculationMode && newSettings.calculationMode !== oldSettings.calculationMode) {
+        if (newSettings.calculationMode === 'real_correlation') {
+          get().calculateAllCorrelations();
+        } else {
+          get().recalculateAllRsi();
+        }
       }
     },
     
@@ -412,6 +446,105 @@ const useRSICorrelationStore = create(
       const rsi = 100 - (100 / (1 + rs));
       
       return rsi;
+    },
+
+    // Real Rolling Correlation Calculation
+    calculateRollingCorrelation: (symbol1, symbol2, window = 50) => {
+      const bars1 = get().getOhlcForSymbol(symbol1);
+      const bars2 = get().getOhlcForSymbol(symbol2);
+      
+      if (bars1.length < window + 1 || bars2.length < window + 1) {
+        return null;
+      }
+      
+      // Calculate log returns for both symbols
+      const returns1 = [];
+      const returns2 = [];
+      
+      for (let i = 1; i <= window; i++) {
+        const price1 = bars1[bars1.length - i].close;
+        const prevPrice1 = bars1[bars1.length - i - 1].close;
+        const price2 = bars2[bars2.length - i].close;
+        const prevPrice2 = bars2[bars2.length - i - 1].close;
+        
+        if (prevPrice1 > 0 && prevPrice2 > 0) {
+          returns1.push(Math.log(price1 / prevPrice1));
+          returns2.push(Math.log(price2 / prevPrice2));
+        }
+      }
+      
+      if (returns1.length < window) {
+        return null;
+      }
+      
+      // Calculate means
+      const mean1 = returns1.reduce((sum, val) => sum + val, 0) / returns1.length;
+      const mean2 = returns2.reduce((sum, val) => sum + val, 0) / returns2.length;
+      
+      // Calculate correlation coefficient
+      let numerator = 0;
+      let sumSq1 = 0;
+      let sumSq2 = 0;
+      
+      for (let i = 0; i < returns1.length; i++) {
+        const diff1 = returns1[i] - mean1;
+        const diff2 = returns2[i] - mean2;
+        
+        numerator += diff1 * diff2;
+        sumSq1 += diff1 * diff1;
+        sumSq2 += diff2 * diff2;
+      }
+      
+      if (sumSq1 === 0 || sumSq2 === 0) {
+        return 0;
+      }
+      
+      const correlation = numerator / Math.sqrt(sumSq1 * sumSq2);
+      return correlation;
+    },
+    
+    // Calculate all correlations
+    calculateAllCorrelations: () => {
+      const state = get();
+      const newCorrelationData = new Map();
+      
+      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
+        const [symbol1, symbol2] = pair;
+        const sym1 = symbol1 + 'm';
+        const sym2 = symbol2 + 'm';
+        
+        const correlation = get().calculateRollingCorrelation(sym1, sym2, state.settings.correlationWindow);
+        
+        if (correlation !== null) {
+          const pairKey = `${symbol1}_${symbol2}`;
+          
+          // Determine correlation strength
+          let strength;
+          if (Math.abs(correlation) >= 0.7) {
+            strength = 'strong';
+          } else if (Math.abs(correlation) >= 0.3) {
+            strength = 'moderate';
+          } else {
+            strength = 'weak';
+          }
+          
+          // Determine trend (simplified - could be enhanced with historical comparison)
+          let trend = 'stable';
+          // TODO: Implement trend calculation by comparing with previous window
+          
+          newCorrelationData.set(pairKey, {
+            correlation: correlation,
+            strength: strength,
+            trend: trend,
+            type: state.correlationPairs.positive.some(
+              p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
+            ) ? 'positive' : 'negative',
+            timestamp: new Date()
+          });
+        }
+      });
+      
+      set({ realCorrelationData: newCorrelationData });
     },
 
     recalculateAllRsi: () => {

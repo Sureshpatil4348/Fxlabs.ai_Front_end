@@ -14,7 +14,31 @@ const formatSymbol = (input) => {
   return trimmed;
 };
 
-// Major currency pairs for strength calculation
+// Enhanced currency pairs for strength calculation - All 28 major/minor combinations
+const ENHANCED_CURRENCY_PAIRS = [
+  // Major pairs (7)
+  'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm',
+  
+  // EUR crosses (6)
+  'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',
+  
+  // GBP crosses (5)
+  'GBPJPYm', 'GBPCHFm', 'GBPAUDm', 'GBPCADm', 'GBPNZDm',
+  
+  // AUD crosses (4)
+  'AUDJPYm', 'AUDCHFm', 'AUDCADm', 'AUDNZDm',
+  
+  // NZD crosses (3)
+  'NZDJPYm', 'NZDCHFm', 'NZDCADm',
+  
+  // CAD crosses (2)
+  'CADJPYm', 'CADCHFm',
+  
+  // CHF crosses (1)
+  'CHFJPYm'
+];
+
+// Major currency pairs for strength calculation (legacy support)
 const MAJOR_PAIRS = [
   'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm',
   'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',
@@ -44,7 +68,8 @@ const useCurrencyStrengthStore = create(
     settings: {
       timeframe: '1H',
       mode: 'closed', // 'closed' | 'live'
-      autoSubscribeSymbols: MAJOR_PAIRS
+      autoSubscribeSymbols: ENHANCED_CURRENCY_PAIRS, // Use enhanced pairs
+      useEnhancedCalculation: true // Toggle between old and new calculation methods
     },
     
     // UI state
@@ -193,7 +218,7 @@ const useCurrencyStrengthStore = create(
       };
       
       websocket.send(JSON.stringify(message));
-      get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
+      get().addLog(`Unsubscribing from ${formattedSymbol}`, 'warning');
     },
     
     handleMessage: (message) => {
@@ -365,10 +390,130 @@ const useCurrencyStrengthStore = create(
       if (newSettings.mode && newSettings.mode !== oldSettings.mode) {
         get().calculateCurrencyStrength();
       }
+      
+      // If calculation method changed, recalculate
+      if (newSettings.useEnhancedCalculation !== undefined && newSettings.useEnhancedCalculation !== oldSettings.useEnhancedCalculation) {
+        get().calculateCurrencyStrength();
+      }
     },
     
-    // Currency Strength Calculation
+    // Enhanced Currency Strength Calculation using client's formula
     calculateCurrencyStrength: () => {
+      const state = get();
+      
+      if (state.settings.useEnhancedCalculation) {
+        get().calculateEnhancedCurrencyStrength();
+      } else {
+        get().calculateLegacyCurrencyStrength();
+      }
+    },
+    
+    // New enhanced calculation method based on client's document
+    calculateEnhancedCurrencyStrength: () => {
+      const state = get();
+      
+      const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
+      const strengthMap = new Map();
+      const currencyContributions = new Map(); // Track contributions for each currency
+      
+      // Initialize all currencies with neutral strength (50)
+      currencies.forEach(currency => {
+        strengthMap.set(currency, 50);
+        currencyContributions.set(currency, []);
+      });
+      
+      // Process each subscribed pair using the enhanced formula
+      state.subscriptions.forEach((subscription, symbol) => {
+        
+        // Extract base and quote currencies from symbol (e.g., EURUSDm -> EUR, USD)
+        const symbolWithoutM = symbol.replace('m', '');
+        let baseCurrency = '';
+        let quoteCurrency = '';
+        
+        // Parse currency pair
+        for (let i = 3; i <= 6; i++) {
+          const potential = symbolWithoutM.substring(0, i);
+          if (currencies.includes(potential)) {
+            baseCurrency = potential;
+            quoteCurrency = symbolWithoutM.substring(i);
+            break;
+          }
+        }
+        
+        if (!baseCurrency || !quoteCurrency || !currencies.includes(quoteCurrency)) {
+          return;
+        }
+        
+        // Get price data based on mode
+        let currentPrice, previousPrice;
+        
+        if (state.settings.mode === 'live') {
+          // Use latest tick data
+          const tickInfo = state.tickData.get(symbol);
+          if (tickInfo && tickInfo.ticks.length >= 2) {
+            currentPrice = tickInfo.ticks[0].bid;
+            previousPrice = tickInfo.ticks[1].bid;
+          }
+        } else {
+          // Use closed candle data
+          const ohlcInfo = state.ohlcData.get(symbol);
+          if (ohlcInfo && ohlcInfo.bars.length >= 2) {
+            const bars = ohlcInfo.bars;
+            currentPrice = bars[bars.length - 1].close;
+            previousPrice = bars[bars.length - 2].close;
+          }
+        }
+        
+        if (currentPrice && previousPrice && currentPrice > 0 && previousPrice > 0) {
+          // Calculate log return as per client's formula: rt = ln(Pt/Pt-1)
+          const logReturn = Math.log(currentPrice / previousPrice);
+          
+          // Store contributions for each currency
+          const baseContributions = currencyContributions.get(baseCurrency);
+          const quoteContributions = currencyContributions.get(quoteCurrency);
+          
+          baseContributions.push(logReturn);
+          quoteContributions.push(-logReturn); // Opposite effect for quote currency
+          
+          currencyContributions.set(baseCurrency, baseContributions);
+          currencyContributions.set(quoteCurrency, quoteContributions);
+        }
+      });
+      
+      // Apply the averaging formula: SC(t) = (1/NC) * Σ sC,j(t)
+      currencies.forEach(currency => {
+        const contributions = currencyContributions.get(currency);
+        if (contributions.length > 0) {
+          const averageContribution = contributions.reduce((sum, val) => sum + val, 0) / contributions.length;
+          
+          // Convert to percentage and scale appropriately
+          const strengthChange = averageContribution * 1000; // Scale for better visualization
+          const newStrength = Math.max(0, Math.min(100, 50 + strengthChange));
+          
+          strengthMap.set(currency, newStrength);
+        }
+      });
+      
+      // Normalize strengths to ensure they're within reasonable bounds and properly distributed
+      const strengthValues = Array.from(strengthMap.values());
+      const minStrength = Math.min(...strengthValues);
+      const maxStrength = Math.max(...strengthValues);
+      const range = maxStrength - minStrength;
+      
+      if (range > 0) {
+        strengthMap.forEach((strength, currency) => {
+          // Normalize to 0-100 range while preserving relative relationships
+          const normalizedStrength = ((strength - minStrength) / range) * 100;
+          strengthMap.set(currency, normalizedStrength);
+        });
+      }
+      
+      set({ currencyStrength: strengthMap });
+      get().addLog('Enhanced currency strength calculation completed', 'info');
+    },
+    
+    // Legacy calculation method (original implementation)
+    calculateLegacyCurrencyStrength: () => {
       const state = get();
       
       const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
@@ -455,6 +600,7 @@ const useCurrencyStrengthStore = create(
       }
       
       set({ currencyStrength: strengthMap });
+      get().addLog('Legacy currency strength calculation completed', 'info');
     },
     
     // Utility Actions
@@ -484,7 +630,7 @@ const useCurrencyStrengthStore = create(
       return tickData ? tickData.ticks : [];
     },
 
-    // Auto-subscription for major pairs
+    // Auto-subscription for enhanced currency pairs
     autoSubscribeToMajorPairs: () => {
       const state = get();
       if (!state.isConnected) return;

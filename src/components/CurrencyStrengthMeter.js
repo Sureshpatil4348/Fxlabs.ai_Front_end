@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { formatCurrency, getCurrencyStrengthColor } from '../utils/formatters';
-import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings } from 'lucide-react';
+import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings, Calculator, Zap } from 'lucide-react';
 
 const CurrencyStrengthBar = ({ currency, strength, isTop, isBottom }) => {
   const currencyInfo = formatCurrency(currency);
@@ -131,7 +131,8 @@ const CurrencyStrengthMeter = () => {
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
-    mode: settings.mode
+    mode: settings.mode,
+    useEnhancedCalculation: settings.useEnhancedCalculation
   });
 
   // Auto-subscribe to major pairs when connection is established
@@ -151,7 +152,7 @@ const CurrencyStrengthMeter = () => {
     if (subscriptions.size > 0) {
       calculateCurrencyStrength();
     }
-  }, [subscriptions.size, settings.timeframe, settings.mode, calculateCurrencyStrength]);
+  }, [subscriptions.size, settings.timeframe, settings.mode, settings.useEnhancedCalculation, calculateCurrencyStrength]);
 
   // Remove the OHLC data change effect that was causing frequent updates
   // useEffect(() => {
@@ -180,7 +181,8 @@ const CurrencyStrengthMeter = () => {
   const handleSaveSettings = () => {
     updateSettings({
       timeframe: localSettings.timeframe,
-      mode: localSettings.mode
+      mode: localSettings.mode,
+      useEnhancedCalculation: localSettings.useEnhancedCalculation
     });
     setShowSettings(false);
   };
@@ -188,7 +190,8 @@ const CurrencyStrengthMeter = () => {
   const handleResetSettings = () => {
     setLocalSettings({
       timeframe: settings.timeframe,
-      mode: settings.mode
+      mode: settings.mode,
+      useEnhancedCalculation: settings.useEnhancedCalculation
     });
   };
 
@@ -221,11 +224,13 @@ const CurrencyStrengthMeter = () => {
               {isConnected ? '● Connected' : '● Disconnected'}
             </span>
           </p>
-          {strengthData.length === 0 && subscriptions.size > 0 && (
-            <p className="text-xs text-blue-600 mt-1">
-              📊 Calculating strength for {settings.timeframe} timeframe...
-            </p>
-          )}
+          <div className="flex items-center space-x-2 mt-1">
+            {strengthData.length === 0 && subscriptions.size > 0 && (
+              <span className="text-xs text-blue-600">
+                📊 Calculating strength for {settings.timeframe} timeframe...
+              </span>
+            )}
+          </div>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -357,6 +362,30 @@ const CurrencyStrengthMeter = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Currency Strength Settings</h3>
             
             <div className="space-y-4">
+              {/* Calculation Method */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Calculation Method
+                </label>
+                <select
+                  value={localSettings.useEnhancedCalculation ? 'enhanced' : 'legacy'}
+                  onChange={(e) => setLocalSettings(prev => ({ 
+                    ...prev, 
+                    useEnhancedCalculation: e.target.value === 'enhanced' 
+                  }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="enhanced">Enhanced Formula (28 pairs, log returns)</option>
+                  <option value="legacy">Legacy Formula (24 pairs, price changes)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {localSettings.useEnhancedCalculation 
+                    ? 'Uses all 28 major/minor pairs with log returns and proper averaging'
+                    : 'Uses 24 pairs with simple price change calculations'
+                  }
+                </p>
+              </div>
+
               {/* Timeframe */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

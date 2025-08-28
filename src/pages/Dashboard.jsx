@@ -81,9 +81,9 @@
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
           {/* Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Left Column - RSI Correlation Dashboard */}
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            {/* Left Column - RSI Correlation Dashboard (expanded to 3 columns) */}
+            <div className="lg:col-span-3">
               <RSICorrelationDashboard />
             </div>
 
