@@ -283,7 +283,7 @@ const RSICorrelationDashboard = () => {
             {localSettings.calculationMode === 'real_correlation' ? (
               <>
                 <Activity className="w-3 h-3" />
-                <span>Real Corr</span>
+                <span>Real Correlation</span>
               </>
             ) : (
               <>

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
-import { TrendingDown, TrendingUp, Plus, Settings } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
 
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   const { symbol, rsi, price, change } = pair;
 
   return (
-    <tr className="hover:bg-gray-50">
+    <tr className={`hover:bg-gray-50 cursor-pointer ${isInWishlist ? 'bg-gray-100' : ''}`} onClick={() => onAddToWishlist(symbol)}>
       <td className="px-1 py-2 text-xs font-medium text-gray-900">
         {formatSymbolDisplay(symbol)}
       </td>
@@ -20,20 +20,6 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
       <td className={`px-1 py-2 text-xs font-medium ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
         {formatPercentage(change)}
       </td>
-      {/* <td className="px-1 py-2 text-xs">
-        <button
-          onClick={() => onAddToWishlist(symbol)}
-          disabled={isInWishlist}
-          className={`p-1 rounded-md transition-colors ${
-            isInWishlist 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
-          }`}
-          title={isInWishlist ? 'Already in wishlist' : 'Add to wishlist'}
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      </td> */}
     </tr>
   );
 };
@@ -199,9 +185,6 @@ const RSIOverboughtOversoldTracker = () => {
                   </th>
                   <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Daily %
-                  </th>
-                  <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    
                   </th>
                 </tr>
               </thead>

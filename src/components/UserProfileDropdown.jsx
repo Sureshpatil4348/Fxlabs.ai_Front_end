@@ -48,8 +48,8 @@ const UserProfileDropdown = () => {
   // Generate random avatar color based on user email
   const getAvatarColor = (email) => {
     const colors = [
-      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
-      'bg-indigo-500', 'bg-red-500', 'bg-yellow-500', 'bg-teal-500'
+      'bg-green-800', 'bg-green-700', 'bg-green-600', 'bg-green-500',
+      'bg-green-400', 'bg-green-300', 'bg-green-200', 'bg-green-100'
     ]
     const index = email?.charCodeAt(0) % colors.length || 0
     return colors[index]
