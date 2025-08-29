@@ -9,7 +9,6 @@
   import UserProfileDropdown from '../components/UserProfileDropdown'
   import useMarketStore from '../store/useMarketStore'
   import useBaseMarketStore from '../store/useBaseMarketStore'
-  import Iridescence from '../components/ui/Iridescence'
 
   const Dashboard = () => {
     const { user } = useAuth()
@@ -41,14 +40,6 @@
 
     return (
       <div className="relative min-h-screen bg-gray-100">
-        <div className="absolute inset-0 z-0">
-          {!showLoader && <Iridescence
-            color={[0.5, 0.5, 0.5]}
-            speed={0.5}
-            amplitude={0.1}
-            mouseReact={false}
-          />}
-        </div>
         {/* Loading Overlay - Render at root level to avoid layout constraints */}
         {showLoader && (
           <LoadingOverlay
