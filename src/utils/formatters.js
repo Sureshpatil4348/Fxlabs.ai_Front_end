@@ -113,16 +113,22 @@ export const getImpactColor = (impact) => {
 export const sortCorrelationPairs = (correlationStatus) => {
   const pairs = Array.from(correlationStatus.entries());
   
-  // Sort by mismatch first, then by RSI extremes
+  // Sort by status priority: non-neutral first, then neutral
   return pairs.sort((a, b) => {
     const [, statusA] = a;
     const [, statusB] = b;
     
-    // Mismatches first
-    if (statusA.status === 'mismatch' && statusB.status !== 'mismatch') return -1;
-    if (statusB.status === 'mismatch' && statusA.status !== 'mismatch') return 1;
+    // Non-neutral pairs (match/mismatch) first, neutral pairs last
+    if (statusA.status !== 'neutral' && statusB.status === 'neutral') return -1;
+    if (statusA.status === 'neutral' && statusB.status !== 'neutral') return 1;
     
-    // Then by RSI extremes (highest or lowest RSI values)
+    // Within non-neutral pairs, prioritize mismatches over matches
+    if (statusA.status !== 'neutral' && statusB.status !== 'neutral') {
+      if (statusA.status === 'mismatch' && statusB.status === 'match') return -1;
+      if (statusA.status === 'match' && statusB.status === 'mismatch') return 1;
+    }
+    
+    // Within same status, sort by RSI extremes (highest or lowest RSI values)
     const extremeA = Math.max(Math.abs(statusA.rsi1 - 50), Math.abs(statusA.rsi2 - 50));
     const extremeB = Math.max(Math.abs(statusB.rsi1 - 50), Math.abs(statusB.rsi2 - 50));
     

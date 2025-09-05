@@ -14,28 +14,28 @@ const formatSymbol = (input) => {
   return trimmed;
 };
 
-// Enhanced correlation pairs data with new pairs
+// Correlation pairs data - only the specified pairs
 const CORRELATION_PAIRS = {
   negative: [
-    ['AUDUSD', 'GBPNZD'],
-    ['EURAUD', 'CADCHF'],
-    ['EURGBP', 'GBPCHF'],
-    ['EURCAD', 'CADJPY'],
-    ['GBPNZD', 'NZDCHF'],
-    ['EURAUD', 'AUDJPY'],
+    ['EURUSD', 'USDCHF'],
     ['GBPUSD', 'USDCHF'],
-    ['EURAUD', 'AUDCHF'],
-    ['USDJPY', 'EURCAD'],
-    ['GBPUSD', 'USDCAD'],
-    ['USDCAD', 'AUDCHF'],
-    ['USDJPY', 'NZDUSD']
+    ['USDJPY', 'EURUSD'],
+    ['USDJPY', 'GBPUSD'],
+    ['USDCAD', 'AUDUSD'],
+    ['USDCHF', 'AUDUSD'],
+    ['XAUUSD', 'USDJPY']  // Gold-USDJPY moderately negative
   ],
   positive: [
     ['EURUSD', 'GBPUSD'],
-    ['AUDUSD', 'AUDCAD'],
-    ['EURAUD', 'EURNZD'],
-    ['XAUUSD', 'XAGUSD'],  // Gold-Silver correlation
-    ['BTCUSD', 'ETHUSD']   // Crypto correlation
+    ['EURUSD', 'AUDUSD'],
+    ['EURUSD', 'NZDUSD'],
+    ['GBPUSD', 'AUDUSD'],
+    ['AUDUSD', 'NZDUSD'],
+    ['USDCHF', 'USDJPY'],
+    ['XAUUSD', 'XAGUSD'],  // Gold-Silver very high positive
+    ['XAUUSD', 'EURUSD'],  // Gold-EUR moderately positive (safe-haven vs USD)
+    ['BTCUSD', 'ETHUSD'],  // Crypto very high positive
+    ['BTCUSD', 'XAUUSD']   // BTC-Gold weak/moderate positive
   ]
 };
 

@@ -218,7 +218,13 @@ const RSICorrelationDashboard = () => {
   let sortedPairs;
   if (localSettings.calculationMode === 'real_correlation') {
     sortedPairs = Array.from(realCorrelationData.entries()).sort(([, a], [, b]) => {
-      // Sort by correlation strength (absolute value)
+      // Prioritize non-neutral pairs first (strong/moderate), then weak
+      if (a.strength === 'strong' && b.strength !== 'strong') return -1;
+      if (b.strength === 'strong' && a.strength !== 'strong') return 1;
+      if (a.strength === 'moderate' && b.strength === 'weak') return -1;
+      if (b.strength === 'weak' && a.strength === 'moderate') return 1;
+      
+      // Within same strength, sort by correlation strength (absolute value)
       return Math.abs(b.correlation) - Math.abs(a.correlation);
     });
   } else {
