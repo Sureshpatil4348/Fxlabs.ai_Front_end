@@ -225,8 +225,8 @@ const RSICorrelationDashboard = () => {
     sortedPairs = sortCorrelationPairs(correlationStatus);
   }
   
-  // Prepare data for grid display (expand to 6x3 grid = 18 pairs)
-  const gridPairs = sortedPairs.slice(0, 18);
+  // Prepare data for grid display (expand to accommodate all pairs)
+  const gridPairs = sortedPairs;
   
   // Calculate statistics based on calculation mode
   let totalPairs, matches, mismatches, neutral;
@@ -337,8 +337,8 @@ const RSICorrelationDashboard = () => {
         </div>
       </div>
 
-      {/* 6x3 Grid of Correlation Pairs */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+      {/* 5-column Grid of Correlation Pairs */}
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
         {gridPairs.map(([pairKey, pairData]) => {
           const [symbol1, symbol2] = pairKey.split('_');
           return (
@@ -353,8 +353,8 @@ const RSICorrelationDashboard = () => {
           );
         })}
         
-        {/* Fill empty slots if less than 18 pairs */}
-        {Array.from({ length: Math.max(0, 18 - gridPairs.length) }).map((_, index) => (
+        {/* Fill empty slots to complete the last row (ensuring multiples of 5) */}
+        {Array.from({ length: Math.max(0, Math.ceil(gridPairs.length / 5) * 5 - gridPairs.length) }).map((_, index) => (
           <div
             key={`empty-${index}`}
             className="p-2 rounded-md border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center"

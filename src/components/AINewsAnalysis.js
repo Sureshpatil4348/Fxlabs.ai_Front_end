@@ -341,9 +341,7 @@ const AINewsAnalysis = () => {
 
   const filters = [
     { id: 'all', label: 'All News', count: newsData.length },
-    { id: 'high', label: 'High Impact', count: newsData.filter(n => n.impact === 'high').length },
-    { id: 'upcoming', label: 'Upcoming', count: newsData.filter(n => n.actual === 'N/A' || n.actual === null).length },
-    { id: 'released', label: 'Released', count: newsData.filter(n => n.actual !== 'N/A' && n.actual !== null).length }
+    { id: 'high', label: 'High Impact', count: newsData.filter(n => n.impact === 'high').length }
   ];
 
   return (
@@ -382,7 +380,7 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* News Feed */}
-      <div className="space-y-4 overflow-y-auto max-h-[550px]">
+      <div className="space-y-4 overflow-y-auto max-h-[565px]">
         
         {sortedNews.length > 0 ? (
           sortedNews.map((news) => (
