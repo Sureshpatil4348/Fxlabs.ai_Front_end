@@ -422,6 +422,9 @@ const useCurrencyStrengthStore = create(
         currencyContributions.set(currency, []);
       });
       
+      console.log('Initialized currencies:', currencies);
+      console.log('Initial strength map:', Array.from(strengthMap.entries()));
+      
       // Process each subscribed pair using the enhanced formula
       state.subscriptions.forEach((subscription, symbol) => {
         
@@ -483,30 +486,62 @@ const useCurrencyStrengthStore = create(
       // Apply the averaging formula: SC(t) = (1/NC) * Σ sC,j(t)
       currencies.forEach(currency => {
         const contributions = currencyContributions.get(currency);
-        if (contributions.length > 0) {
+        if (contributions && contributions.length > 0) {
           const averageContribution = contributions.reduce((sum, val) => sum + val, 0) / contributions.length;
           
-          // Convert to percentage and scale appropriately
-          const strengthChange = averageContribution * 1000; // Scale for better visualization
-          const newStrength = Math.max(0, Math.min(100, 50 + strengthChange));
+          // Convert to percentage and scale more conservatively
+          const strengthChange = averageContribution * 200; // Reduced scale for more balanced values
+          const newStrength = Math.max(20, Math.min(80, 50 + strengthChange)); // Keep within 20-80 range
           
           strengthMap.set(currency, newStrength);
+        } else {
+          // Ensure currencies without data are explicitly set to neutral
+          strengthMap.set(currency, 50);
         }
       });
       
-      // Normalize strengths to ensure they're within reasonable bounds and properly distributed
-      const strengthValues = Array.from(strengthMap.values());
-      const minStrength = Math.min(...strengthValues);
-      const maxStrength = Math.max(...strengthValues);
-      const range = maxStrength - minStrength;
+      // Only normalize currencies that have actual data contributions
+      const currenciesWithData = currencies.filter(currency => {
+        const contributions = currencyContributions.get(currency);
+        return contributions && contributions.length > 0;
+      });
       
-      if (range > 0) {
-        strengthMap.forEach((strength, currency) => {
-          // Normalize to 0-100 range while preserving relative relationships
-          const normalizedStrength = ((strength - minStrength) / range) * 100;
-          strengthMap.set(currency, normalizedStrength);
-        });
+      if (currenciesWithData.length > 1) {
+        // Only normalize currencies that have data
+        const strengthValues = currenciesWithData.map(currency => strengthMap.get(currency));
+        const minStrength = Math.min(...strengthValues);
+        const maxStrength = Math.max(...strengthValues);
+        const range = maxStrength - minStrength;
+        
+        if (range > 0) {
+          currenciesWithData.forEach(currency => {
+            const strength = strengthMap.get(currency);
+            // Normalize to 10-90 range while preserving relative relationships (more conservative)
+            const normalizedStrength = 10 + ((strength - minStrength) / range) * 80;
+            strengthMap.set(currency, normalizedStrength);
+          });
+        }
       }
+      
+      // Final safety check: ensure all currencies have reasonable strength values
+      currencies.forEach(currency => {
+        const currentStrength = strengthMap.get(currency);
+        if (currentStrength === 0 || currentStrength === undefined || isNaN(currentStrength)) {
+          strengthMap.set(currency, 50);
+        } else if (currentStrength < 10) {
+          strengthMap.set(currency, 10); // Minimum strength
+        } else if (currentStrength > 90) {
+          strengthMap.set(currency, 90); // Maximum strength
+        }
+      });
+      
+      // Debug logging
+      console.log('Currency Strength Calculation Debug:');
+      currencies.forEach(currency => {
+        const strength = strengthMap.get(currency);
+        const contributions = currencyContributions.get(currency);
+        console.log(`${currency}: strength=${strength}, contributions=${contributions ? contributions.length : 0}`);
+      });
       
       set({ currencyStrength: strengthMap });
       get().addLog('Enhanced currency strength calculation completed', 'info');
@@ -585,17 +620,23 @@ const useCurrencyStrengthStore = create(
         }
       });
             
-      // Normalize strengths to ensure they're within reasonable bounds
+      // Only normalize if we have meaningful data variation
       const strengthValues = Array.from(strengthMap.values());
       const minStrength = Math.min(...strengthValues);
       const maxStrength = Math.max(...strengthValues);
       const range = maxStrength - minStrength;
       
-      if (range > 0) {
+      // Only normalize if there's sufficient range and not all values are the same
+      if (range > 5) { // Only normalize if there's meaningful variation
         strengthMap.forEach((strength, currency) => {
           // Normalize to 0-100 range
           const normalizedStrength = ((strength - minStrength) / range) * 100;
           strengthMap.set(currency, normalizedStrength);
+        });
+      } else {
+        // If no meaningful variation, ensure all currencies show neutral strength
+        currencies.forEach(currency => {
+          strengthMap.set(currency, 50);
         });
       }
       

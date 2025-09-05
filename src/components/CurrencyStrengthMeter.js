@@ -197,8 +197,14 @@ const CurrencyStrengthMeter = () => {
 
   // Convert Map to array and sort by strength
   const strengthData = Array.from(currencyStrength.entries())
-    .map(([currency, strength]) => ({ currency, strength }))
+    .map(([currency, strength]) => ({ 
+      currency, 
+      strength: strength || 50 // Fallback to 50 if strength is undefined/null/0
+    }))
     .sort((a, b) => b.strength - a.strength);
+
+  // Debug logging
+  console.log('Currency Strength UI Debug:', strengthData);
 
   // Identify top 2 strongest and weakest
   const topCurrencies = strengthData.slice(0, 2).map(d => d.currency);
