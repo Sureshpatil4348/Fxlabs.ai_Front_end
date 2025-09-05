@@ -62,9 +62,9 @@ export const formatNewsTime = (timeString) => {
 export const getStatusColor = (status) => {
   switch (status) {
     case 'match':
-      return 'text-success-600 bg-green-50 border-green-200';
+      return 'text-gray-600 bg-gray-50 border-gray-200'; // Neutral color for matches
     case 'mismatch':
-      return 'text-danger-600 bg-red-50 border-red-200';
+      return 'text-danger-600 bg-red-50 border-red-200'; // Highlight only mismatches
     case 'neutral':
     default:
       return 'text-gray-600 bg-gray-50 border-gray-200';
