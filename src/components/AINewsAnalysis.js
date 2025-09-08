@@ -277,9 +277,10 @@ const AINewsAnalysis = () => {
     fetchNews 
   } = useBaseMarketStore();
   
-  const [filter, setFilter] = useState('high');
+  const [filter, setFilter] = useState('upcoming');
   const [selectedNews, setSelectedNews] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [apiAvailable, setApiAvailable] = useState(true);
 
   // Initialize news data when component mounts
   useEffect(() => {
@@ -301,6 +302,23 @@ const AINewsAnalysis = () => {
     return () => clearInterval(interval);
   }, [fetchNews, newsData.length]);
 
+  // Check API availability once on mount
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const newsService = await import('../services/newsService');
+        const result = await newsService.testAPIEndpoint();
+        if (isMounted) setApiAvailable(!!result?.success);
+      } catch (e) {
+        if (isMounted) setApiAvailable(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleShowDetails = (news, analysis) => {
     setSelectedNews(news);
     setIsModalOpen(true);
@@ -314,8 +332,10 @@ const AINewsAnalysis = () => {
   // Filter news based on selected filter
   const filteredNews = newsData.filter(news => {
     switch (filter) {
-      case 'high':
-        return news.impact === 'high';
+      case 'upcoming':
+        return news.actual === 'N/A' || news.actual === null;
+      case 'released':
+        return news.actual !== 'N/A' && news.actual !== null;
       case 'upcoming':
         return news.actual === 'N/A' || news.actual === null;
       case 'released':
@@ -340,7 +360,9 @@ const AINewsAnalysis = () => {
   });
 
   const filters = [
-    { id: 'high', label: 'High Impact', count: newsData.filter(n => n.impact === 'high').length }
+    { id: 'upcoming', label: 'Upcoming', count: newsData.filter(n => n.actual === 'N/A' || n.actual === null).length },
+    { id: 'released', label: 'Released', count: newsData.filter(n => n.actual !== 'N/A' && n.actual !== null).length },
+    { id: 'all', label: 'All News', count: newsData.length }
   ];
 
   return (
@@ -354,6 +376,11 @@ const AINewsAnalysis = () => {
             <p className="text-sm text-gray-500">AI-powered forex news insights</p>
           </div>
         </div>
+        {!apiAvailable && (
+          <div className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">
+            API unavailable. Showing cached or no data.
+          </div>
+        )}
       </div>
 
       {/* Filter Tabs */}

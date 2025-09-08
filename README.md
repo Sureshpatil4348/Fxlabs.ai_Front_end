@@ -160,11 +160,12 @@ The dashboard is fully responsive and works on:
 ### AI News Analysis
 - Displays AI-powered forex news insights with impact badges and analysis.
 - Timestamps are shown in the device's local timezone (local date and time), timezone name is not displayed.
-- Only high-impact news items are displayed in the feed by default; the filter tab is limited to High Impact.
+- Tabs available: Upcoming, Released, All News (in that order). Default tab is Upcoming.
 - Ordering is handled in the frontend (`src/components/AINewsAnalysis.js`):
   - Upcoming items (where `actual` is `N/A` or `null`) appear first.
-  - Then by impact within the set (high only currently visible).
+  - Then by impact (high, then medium, then low) when applicable within each set.
   - No chronological sorting beyond upcoming-first is currently applied.
+- If the API is unavailable, a banner will display: "API unavailable. Showing cached or no data."
 
 ## 🔄 State Management
 
