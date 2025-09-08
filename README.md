@@ -159,10 +159,11 @@ The dashboard is fully responsive and works on:
 
 ### AI News Analysis
 - Displays AI-powered forex news insights with impact badges and analysis.
-- Timestamps are shown in the device's local timezone (local date and time with the device's IANA timezone name).
+- Timestamps are shown in the device's local timezone (local date and time), timezone name is not displayed.
+- Only high-impact news items are displayed in the feed by default; the filter tab is limited to High Impact.
 - Ordering is handled in the frontend (`src/components/AINewsAnalysis.js`):
   - Upcoming items (where `actual` is `N/A` or `null`) appear first.
-  - Then by impact: high, then medium, then low.
+  - Then by impact within the set (high only currently visible).
   - No chronological sorting beyond upcoming-first is currently applied.
 
 ## 🔄 State Management
