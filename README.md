@@ -157,6 +157,12 @@ The dashboard is fully responsive and works on:
 - Message type filtering
 - Log statistics
 
+### Watchlist
+- Displays Pair, RSI, Price, and Daily % for watchlisted symbols
+- Updates live using data from the RSI Tracker (no manual refresh needed)
+- Add items by clicking a pair row in the RSI Tracker; remove from the Watchlist panel
+- Daily % is color-coded (green for positive, red for negative)
+
 ### AI News Analysis
 - Displays AI-powered forex news insights with impact badges and analysis.
 - Timestamps are shown in the device's local timezone (local date and time), timezone name is not displayed.
