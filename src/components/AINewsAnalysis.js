@@ -282,6 +282,9 @@ const AINewsAnalysis = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apiAvailable, setApiAvailable] = useState(true);
 
+  // Restrict to high-impact news globally
+  const highImpactNews = newsData.filter((n) => n.impact === 'high');
+
   // Initialize news data when component mounts
   useEffect(() => {
     // Fetch news data immediately when component mounts
@@ -329,13 +332,9 @@ const AINewsAnalysis = () => {
     setSelectedNews(null);
   };
 
-  // Filter news based on selected filter
-  const filteredNews = newsData.filter(news => {
+  // Filter news based on selected tab (applied on high-impact set)
+  const filteredNews = highImpactNews.filter(news => {
     switch (filter) {
-      case 'upcoming':
-        return news.actual === 'N/A' || news.actual === null;
-      case 'released':
-        return news.actual !== 'N/A' && news.actual !== null;
       case 'upcoming':
         return news.actual === 'N/A' || news.actual === null;
       case 'released':
@@ -360,9 +359,9 @@ const AINewsAnalysis = () => {
   });
 
   const filters = [
-    { id: 'upcoming', label: 'Upcoming', count: newsData.filter(n => n.actual === 'N/A' || n.actual === null).length },
-    { id: 'released', label: 'Released', count: newsData.filter(n => n.actual !== 'N/A' && n.actual !== null).length },
-    { id: 'all', label: 'All News', count: newsData.length }
+    { id: 'upcoming', label: 'Upcoming', count: highImpactNews.filter(n => n.actual === 'N/A' || n.actual === null).length },
+    { id: 'released', label: 'Released', count: highImpactNews.filter(n => n.actual !== 'N/A' && n.actual !== null).length },
+    { id: 'all', label: 'All News', count: highImpactNews.length }
   ];
 
   return (
