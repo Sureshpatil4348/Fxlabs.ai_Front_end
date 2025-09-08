@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Brain,
   Target,
-  Info,
   X
 } from 'lucide-react';
 
@@ -171,10 +170,22 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   // Check if this is an upcoming event (no actual data yet)
   const isUpcomingEvent = news.actual === 'N/A' || news.actual === null;
 
+  // Border and background classes based on analysis effect
+  const effect = analysis?.effect;
+  const borderClass =
+    effect === 'Bullish' ? 'border-success-600' :
+    effect === 'Bearish' ? 'border-danger-600' :
+    (isUpcomingEvent ? 'border-yellow-300' : 'border-gray-200');
+  const backgroundClass = isUpcomingEvent ? 'bg-yellow-50' : 'bg-white';
+
   return (
-    <div className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${
-      isUpcomingEvent ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200 bg-white'
-    }`}>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onShowDetails(news, analysis)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onShowDetails(news, analysis); } }}
+      className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer ${borderClass} ${backgroundClass}`}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -206,14 +217,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
             )}
           </div>
         </div>
-        
-        <button
-          onClick={() => onShowDetails(news, analysis)}
-          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-colors"
-          title="View Details"
-        >
-          <Info className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Data Values */}
@@ -361,7 +364,7 @@ const AINewsAnalysis = () => {
   const filters = [
     { id: 'upcoming', label: 'Upcoming', count: highImpactNews.filter(n => n.actual === 'N/A' || n.actual === null).length },
     { id: 'released', label: 'Released', count: highImpactNews.filter(n => n.actual !== 'N/A' && n.actual !== null).length },
-    { id: 'all', label: 'All News', count: highImpactNews.length }
+    { id: 'all', label: 'All', count: highImpactNews.length }
   ];
 
   return (

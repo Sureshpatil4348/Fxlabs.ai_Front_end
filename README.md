@@ -167,6 +167,11 @@ The dashboard is fully responsive and works on:
   - Then by impact (high, then medium, then low) when applicable within each set. Currently, only high-impact items are visible.
   - No chronological sorting beyond upcoming-first is currently applied.
 - If the API is unavailable, a banner will display: "API unavailable. Showing cached or no data."
+ - Each news card is clickable to open details. Hover shows a pointer cursor.
+ - News card border color reflects Expected Effect:
+   - Bullish: green border (`border-success-600`)
+   - Bearish: red border (`border-danger-600`)
+   - Neutral: default border (or yellow border if upcoming event)
 
 ## 🔄 State Management
 
