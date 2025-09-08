@@ -7,6 +7,7 @@
   import WishlistPanel from '../components/WishlistPanel'
   import LoadingOverlay from '../components/LoadingOverlay'
   import UserProfileDropdown from '../components/UserProfileDropdown'
+  import Navbar from '../components/Navbar'
   import useMarketStore from '../store/useMarketStore'
   import useBaseMarketStore from '../store/useBaseMarketStore'
 
@@ -50,23 +51,8 @@
           />
         )}
 
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 position-static top-0 z-100 relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="flex flex-col ml-2 items-center justify-center">
-                  <div className="text-green-500 font-bold text-2xl leading-none">FX<span className="text-gray-500 font-normal">LABS</span></div>
-                  <div className="text-gray-500 text-xs leading-none">Decode the Market</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <UserProfileDropdown />
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Navbar */}
+        <Navbar />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
