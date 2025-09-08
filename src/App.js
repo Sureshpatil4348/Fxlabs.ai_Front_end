@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './auth/AuthProvider';
 import { ProtectedRoute } from './auth/ProtectedRoute';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import Reset from './pages/Reset';
@@ -25,14 +26,12 @@ function App() {
   return (
     <Routes>
       {/* Public routes */}
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot" element={<ForgotPassword />} />
       <Route path="/reset" element={<Reset />} />
       
       {/* Protected routes */}
-      <Route path="/" element={
-        user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />
-      } />
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
@@ -44,10 +43,8 @@ function App() {
         </ProtectedRoute>
       } />
       
-      {/* Catch all - redirect to dashboard if authenticated, login if not */}
-      <Route path="*" element={
-        user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />
-      } />
+      {/* Catch all - redirect to home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
