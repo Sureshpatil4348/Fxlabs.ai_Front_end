@@ -59,6 +59,66 @@ export const formatNewsTime = (timeString) => {
   }
 };
 
+// Format a news item's datetime into device's local timezone
+// Accepts either:
+// - ISO string via news.date
+// - Original server-provided time string "YYYY.MM.DD HH:mm:ss" via news.originalTime
+// The function prefers ISO `dateIso` when available for reliable timezone conversion.
+export const formatNewsLocalDateTime = ({ dateIso, originalTime }) => {
+  // Helper: try parse ISO first
+  const parseIso = (iso) => {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  // Helper: parse "YYYY.MM.DD HH:mm:ss" as local time
+  const parseOriginal = (str) => {
+    try {
+      if (!str) return null;
+      const [datePart, timePart] = str.split(' ');
+      if (!datePart || !timePart) return null;
+      const [y, m, d] = datePart.split('.').map((v) => parseInt(v, 10));
+      const [hh, mm, ss] = timePart.split(':').map((v) => parseInt(v, 10));
+      const dt = new Date(y, (m || 1) - 1, d || 1, hh || 0, mm || 0, ss || 0);
+      return isNaN(dt.getTime()) ? null : dt;
+    } catch {
+      return null;
+    }
+  };
+
+  let dateObj = null;
+  if (dateIso) {
+    dateObj = parseIso(dateIso);
+  }
+  if (!dateObj && originalTime) {
+    dateObj = parseOriginal(originalTime);
+  }
+  // Fallback: now
+  if (!dateObj) {
+    dateObj = new Date();
+  }
+
+  // Build localized outputs
+  const localTime = dateObj.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  const localDate = dateObj.toLocaleDateString([], {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit'
+  });
+  const localTzName = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+
+  return {
+    time: localTime,
+    date: localDate,
+    timezone: localTzName,
+    dateObj
+  };
+};
+
 export const getStatusColor = (status) => {
   switch (status) {
     case 'match':

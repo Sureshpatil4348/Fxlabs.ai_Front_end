@@ -157,6 +157,14 @@ The dashboard is fully responsive and works on:
 - Message type filtering
 - Log statistics
 
+### AI News Analysis
+- Displays AI-powered forex news insights with impact badges and analysis.
+- Timestamps are shown in the device's local timezone (local date and time with the device's IANA timezone name).
+- Ordering is handled in the frontend (`src/components/AINewsAnalysis.js`):
+  - Upcoming items (where `actual` is `N/A` or `null`) appear first.
+  - Then by impact: high, then medium, then low.
+  - No chronological sorting beyond upcoming-first is currently applied.
+
 ## 🔄 State Management
 
 Using Zustand for efficient state management:

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useBaseMarketStore from '../store/useBaseMarketStore';
-import { formatNewsTime, getImpactColor, formatCurrency } from '../utils/formatters';
+import { formatNewsTime, formatNewsLocalDateTime, getImpactColor, formatCurrency } from '../utils/formatters';
 import { 
   Newspaper, 
   Clock, 
@@ -17,7 +17,7 @@ import {
 const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   if (!isOpen) return null;
 
-  const { time, timezone } = formatNewsTime(news.time);
+  const { time, date, timezone } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
   const currencyInfo = formatCurrency(news.currency);
 
   return (
@@ -40,7 +40,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
         </div>
         <div className="flex items-center space-x-2 mt-1 px-6">
           <Clock className="w-3 h-3 text-gray-500" />
-          <span className="text-xs text-gray-600">{time} {timezone}</span>
+          <span className="text-xs text-gray-600">{date} {time} {timezone}</span>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(news.impact)}`}>
             {news.impact?.toUpperCase() || 'MEDIUM'}
           </span>
@@ -155,7 +155,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 };
 
 const NewsCard = ({ news, analysis, onShowDetails }) => {
-  const { time, timezone } = formatNewsTime(news.time);
+  const { time, date, timezone } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
   const currencyInfo = formatCurrency(news.currency);
   
   // Determine if actual vs forecast shows positive/negative surprise
@@ -197,7 +197,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
           <div className="flex items-center space-x-4 text-xs text-gray-600">
             <div className="flex items-center space-x-1">
               <Clock className="w-3 h-3" />
-              <span>{time} {timezone}</span>
+              <span>{date} {time} {timezone}</span>
             </div>
             {isUpcomingEvent && (
               <div className="text-yellow-600 font-medium">
