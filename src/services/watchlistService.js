@@ -89,4 +89,5 @@ class WatchlistService {
   }
 }
 
-export default new WatchlistService();
+const watchlistService = new WatchlistService();
+export default watchlistService;
