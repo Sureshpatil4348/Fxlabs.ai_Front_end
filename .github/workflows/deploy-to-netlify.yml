@@ -1,0 +1,57 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches:
+      - main
+      - asoasis/development
+  pull_request:
+    branches:
+      - asoasis/development
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to Netlify (production site)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (main)"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Deploy to Netlify (QA site)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/asoasis/development'
+        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (asoasis/development)"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_QA }}
+
+      - name: Deploy to Netlify (DEV site for PRs)
+        if: github.event_name == 'pull_request' && github.base_ref == 'asoasis/development'
+        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (PR to asoasis/development)"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_DEV }}

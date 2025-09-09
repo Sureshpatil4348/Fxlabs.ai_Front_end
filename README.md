@@ -306,3 +306,19 @@ This project is part of the MT5 Market Data Server suite.
 ---
 
 **Happy Trading! 📈**
+
+---
+
+## CI/CD (Netlify via GitHub Actions)
+
+- **DEV (Preview)**: On pull requests targeting `asoasis/development`, auto-deploys to `NETLIFY_SITE_ID_DEV` with `netlify deploy --prod` using the `build` directory.
+- **QA**: On pushes/merges to `asoasis/development`, auto-deploys to `NETLIFY_SITE_ID_QA` using the `build` directory.
+- **Production**: On pushes/merges to `main`, auto-deploys to `NETLIFY_SITE_ID` using the `build` directory.
+
+Required repository secrets:
+- `NETLIFY_AUTH_TOKEN`
+- `NETLIFY_SITE_ID` (production)
+- `NETLIFY_SITE_ID_QA` (qa)
+- `NETLIFY_SITE_ID_DEV` (dev)
+
+Workflow file: `.github/workflows/deploy-to-netlify.yml`.
