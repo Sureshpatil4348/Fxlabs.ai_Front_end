@@ -135,6 +135,19 @@ The dashboard is fully responsive and works on:
 - **Tablet** (768px-1199px) - Stacked layout
 - **Mobile** (320px-767px) - Single column layout
 
+### Dynamic Grid Layout
+
+The RSI Correlation Dashboard features a dynamic grid system that automatically adjusts the number of columns based on available screen width:
+
+- **Small (sm)**: 3 columns (640px+)
+- **Medium (md)**: 4 columns (768px+)
+- **Large (lg)**: 5 columns (1024px+)
+- **Extra Large (xl)**: 6 columns (1280px+)
+- **2X Large (2xl)**: 8 columns (1536px+)
+- **3X Large (3xl)**: 10 columns (1920px+)
+
+This ensures maximum information density without requiring horizontal scrolling, displaying more correlation pairs as screen space allows.
+
 ## 🎨 UI Components
 
 ### Connection Panel

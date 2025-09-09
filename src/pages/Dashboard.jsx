@@ -55,41 +55,25 @@
         <Navbar />
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <main className="w-full p-1">
 
-          {/* Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Left Column - RSI Correlation Dashboard (2 columns) */}
-            <div className="lg:col-span-2">
+          {/* Dashboard Grid - Responsive columns based on screen width */}
+          <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1">
+            {/* Left Column - RSI Correlation Dashboard and Currency Strength Meter stacked */}
+            <div className="lg:col-span-4 xl:col-span-5 2xl:col-span-6 space-y-1">
               <RSICorrelationDashboard />
-            </div>
-
-            {/* Right Column - RSI Tracker and Wishlist */}
-            <div className="flex flex-col space-y-7 h-full">
-              <RSIOverboughtOversoldTracker />
-              <WishlistPanel />
-            </div>
-          </div>
-
-          {/* Bottom Row - Currency Strength & News Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 h-[700px]">
-            {/* Section 3: Currency Strength Meter (2 columns) */}
-            <div className="lg:col-span-2">
               <CurrencyStrengthMeter />
             </div>
-            
-            {/* Section 4: AI-Based News Analysis (1 column) */}
-            <div>
+
+            {/* Right Column - RSI Tracker, Wishlist, and AI News stacked (even slimmer) */}
+            <div className="lg:col-span-2 xl:col-span-2 2xl:col-span-2 flex flex-col space-y-1 h-full">
+              <RSIOverboughtOversoldTracker />
+              <WishlistPanel />
               <AINewsAnalysis />
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-16 z-9 relative">
-            <div className="text-center text-sm text-white">
-              <p>FXLabs.AI Dashboard v1.0 - Advanced Forex Analysis Platform</p>
-            </div>
-          </div>
+          
         </main>
       </div>
     )

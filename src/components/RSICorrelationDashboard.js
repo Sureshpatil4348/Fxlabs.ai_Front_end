@@ -33,10 +33,10 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     
     if (isMobile) {
       return (
-        <div className={`p-3 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+        <div className={`p-3 pr-4 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${cardColor}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <span className={`text-sm font-medium uppercase tracking-wide ${strengthColor}`}>
+              <span className={`text-sm font-normal uppercase tracking-wide ${strengthColor}`}>
                 {type === 'positive' ? (
                   <span className="flex items-center">
                     <TrendingUp className="w-3 h-3 mr-1" />
@@ -67,42 +67,40 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     }
 
     return (
-      <div className={`p-2 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${cardColor}`}>
-        <div className="mb-2">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center space-x-1">
-              <span className={`text-xs font-medium uppercase tracking-wide ${strengthColor}`}>
-                {type === 'positive' ? (
-                  <span className="flex items-center">
-                    <TrendingUp className="w-2 h-2 mr-1" />
-                    Pos
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <TrendingDown className="w-2 h-2 mr-1" />
-                    Neg
-                  </span>
-                )}
-              </span>
-            </div>
+      <div className={`p-2 pr-3 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+        <div className="mb-2 text-center">
+          <div className="flex items-center justify-center mb-1">
+            <span className={`text-xs font-normal uppercase tracking-wide ${strengthColor}`}>
+              {type === 'positive' ? (
+                <span className="flex items-center">
+                  <TrendingUp className="w-2 h-2 mr-1" />
+                  Pos
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <TrendingDown className="w-2 h-2 mr-1" />
+                  Neg
+                </span>
+              )}
+            </span>
           </div>
           <div className="text-center">
-            <div className={`text-xs font-bold ${strengthColor}`}>
+            <div className={`text-xs font-semibold ${strengthColor}`}>
               {strength.toUpperCase()}
             </div>
           </div>
         </div>
         
         <div>
-          <div className="grid grid-cols-2 gap-1 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="text-center p-1 bg-opacity-50 rounded transition-all duration-300">
-              <div className={`font-medium text-xs ${strengthColor}`}>{formatSymbolDisplay(symbol1)}</div>
+              <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol1)}</div>
             </div>
             <div className="text-center p-1 bg-opacity-50 rounded transition-all duration-300">
-              <div className={`font-medium text-xs ${strengthColor}`}>{formatSymbolDisplay(symbol2)}</div>
+              <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol2)}</div>
             </div>
           </div>
-          <div className={`text-center p-1 rounded text-xs font-bold ${strengthColor}`}>
+          <div className={`text-center p-1 rounded text-xs font-semibold ${strengthColor}`}>
             {correlationValue}%
           </div>
         </div>
@@ -150,28 +148,26 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
 
   return (
-    <div className={`p-2 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${getStatusColor(status)}`}>
-      <div className="mb-2">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center space-x-1">
-            <span className="text-sm">{getStatusIcon(status)}</span>
-            <span className="text-xs font-medium uppercase tracking-wide">
-              {type === 'positive' ? (
-                <span className="flex items-center">
-                  <TrendingUp className="w-2 h-2 mr-1" />
-                  Pos
-                </span>
-              ) : (
-                <span className="flex items-center">
-                  <TrendingDown className="w-2 h-2 mr-1" />
-                  Neg
-                </span>
-              )}
-            </span>
-          </div>
+    <div className={`p-2 pr-3 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${getStatusColor(status)}`}>
+      <div className="mb-2 text-center">
+        <div className="flex items-center justify-center mb-1">
+          <span className="text-sm mr-1">{getStatusIcon(status)}</span>
+          <span className="text-xs font-normal uppercase tracking-wide">
+            {type === 'positive' ? (
+              <span className="flex items-center">
+                <TrendingUp className="w-2 h-2 mr-1" />
+                Pos
+              </span>
+            ) : (
+              <span className="flex items-center">
+                <TrendingDown className="w-2 h-2 mr-1" />
+                Neg
+              </span>
+            )}
+          </span>
         </div>
         <div className="text-center">
-          <div className="text-xs font-bold">
+          <div className="text-xs font-semibold">
             {status === 'match' ? 'MATCH' : status === 'mismatch' ? 'MISMATCH' : 'NEUTRAL'}
           </div>
         </div>
@@ -180,12 +176,12 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
       <div className="space-y-1">
         <div className="grid grid-cols-2 gap-1 text-xs">
           <div className="text-center p-1 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
-            <div className="font-medium text-xs">{formatSymbolDisplay(symbol1)}</div>
-            <div className="font-bold text-sm transition-all duration-300">{formatRsi(rsi1)}</div>
+            <div className="font-normal text-[8px]">{formatSymbolDisplay(symbol1)}</div>
+            <div className="font-semibold text-sm transition-all duration-300">{formatRsi(rsi1)}</div>
           </div>
           <div className="text-center p-1 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
-            <div className="font-medium text-xs">{formatSymbolDisplay(symbol2)}</div>
-            <div className="font-bold text-sm transition-all duration-300">{formatRsi(rsi2)}</div>
+            <div className="font-normal text-[8px]">{formatSymbolDisplay(symbol2)}</div>
+            <div className="font-semibold text-sm transition-all duration-300">{formatRsi(rsi2)}</div>
           </div>
         </div>
       </div>
@@ -454,8 +450,8 @@ const RSICorrelationDashboard = () => {
         )}
       </div>
 
-      {/* Desktop Grid Layout */}
-      <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+      {/* Desktop Grid Layout - Dynamic columns based on available width */}
+      <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 3xl:grid-cols-10 gap-2">
         {gridPairs.map(([pairKey, pairData]) => {
           const [symbol1, symbol2] = pairKey.split('_');
           return (
@@ -471,14 +467,7 @@ const RSICorrelationDashboard = () => {
           );
         })}
         
-        {/* Fill empty slots to complete the last row (ensuring multiples of 5) */}
-        {Array.from({ length: Math.max(0, Math.ceil(gridPairs.length / 5) * 5 - gridPairs.length) }).map((_, index) => (
-          <div
-            key={`empty-${index}`}
-            className="p-2 rounded-md border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center"
-          >
-          </div>
-        ))}
+        {/* Grid automatically handles layout - no need for empty slots */}
       </div>
 
       {/* Settings Modal */}
