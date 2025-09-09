@@ -39,7 +39,10 @@ class WatchlistService {
     // user_id backend trigger se auto-set hoga
     const { data, error } = await supabase
       .from("watchlist")
-      .insert([{ symbol }])
+      .upsert(
+        [{ symbol, user_id: user.id }],
+        { onConflict: "user_id,symbol" } // match your unique constraint
+      )
       .select()
       .single();
 
