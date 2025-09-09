@@ -16,7 +16,7 @@ const TickDataView = ({ symbol }) => {
     const newLatest = getLatestTickForSymbol(symbol);
     setTicks(newTicks);
     setLatestTick(newLatest);
-  }, [symbol, tickData]);
+  }, [symbol, tickData, getTicksForSymbol, getLatestTickForSymbol]);
 
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString();

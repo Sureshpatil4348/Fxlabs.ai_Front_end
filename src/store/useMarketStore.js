@@ -509,7 +509,7 @@ const useMarketStore = create(
       });
 
       // Update correlation status
-      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair, index) => {
+      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
         const [symbol1, symbol2] = pair;
         const sym1 = symbol1 + 'm';
         const sym2 = symbol2 + 'm';
@@ -518,7 +518,9 @@ const useMarketStore = create(
         
         
         if (rsi1 !== undefined && rsi2 !== undefined) {
-          const isPositiveCorrelation = index < state.correlationPairs.positive.length;
+          const isPositiveCorrelation = state.correlationPairs.positive.some(
+            p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
+          );
           const pairKey = `${symbol1}_${symbol2}`;
           
           let status = 'neutral';

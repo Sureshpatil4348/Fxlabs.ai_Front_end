@@ -566,7 +566,7 @@ const useRSICorrelationStore = create(
       });
 
       // Update correlation status
-      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair, index) => {
+      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
         const [symbol1, symbol2] = pair;
         const sym1 = symbol1 + 'm';
         const sym2 = symbol2 + 'm';

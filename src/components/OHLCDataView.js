@@ -16,7 +16,7 @@ const OHLCDataView = ({ symbol }) => {
     const newLatest = getLatestOhlcForSymbol(symbol);
     setOhlcBars(newBars);
     setLatestBar(newLatest);
-  }, [symbol, ohlcData]);
+  }, [symbol, ohlcData, getOhlcForSymbol, getLatestOhlcForSymbol]);
 
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleString();
