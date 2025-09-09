@@ -290,7 +290,7 @@ const TradingCarousel = () => {
               className="flex transition-transform duration-700 ease-in-out"
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
-              {tradingCharts.map((chart, index) => (
+              {tradingCharts.map((chart) => (
                 <div key={chart.id} className="w-full flex-shrink-0 p-8">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     {/* Chart Display */}

@@ -328,7 +328,7 @@ Workflow file: `.github/workflows/deploy-to-netlify.yml`.
 
 ### Linting in CI
 
-The CI workflow runs `npm run lint` before building. Ensure lint passes locally:
+The CI workflow runs `npm run lint` before building and treats warnings as errors (`CI=true`). Ensure lint passes locally:
 
 ```bash
 npm ci
@@ -345,5 +345,8 @@ Notes:
 - Accessibility rules are enabled. Clickable, non-interactive elements should be keyboard accessible (role, tabIndex, and key handlers) or changed to native interactive elements where appropriate.
 - Labels should be associated to inputs with matching `htmlFor` and `id`.
 - Escape quotes in JSX text (e.g., use `&apos;` or `&quot;`).
+ - Unused variables/params should be removed or prefixed with `_` to comply with `.eslintrc.json` (`argsIgnorePattern`/`varsIgnorePattern`).
+ - `console` statements are restricted; only `console.warn` and `console.error` are allowed per `.eslintrc.json`.
+ - Build in CI sets `process.env.CI=true`; run locally with `CI=true npm run build` to replicate.
 
 ESLint is configured via `.eslintrc.json` and ignores common build directories via `.eslintignore`.

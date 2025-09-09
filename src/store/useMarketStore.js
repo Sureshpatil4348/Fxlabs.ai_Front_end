@@ -877,7 +877,7 @@ const useMarketStore = create(
       }
     },
 
-    handleConnectionFailure: (error) => {
+    handleConnectionFailure: () => {
       
       set(state => ({
         globalConnectionState: {
@@ -928,7 +928,7 @@ const useMarketStore = create(
       }
 
       // Reset global connection state
-      set(state => ({
+      set({
         globalConnectionState: {
           status: 'INITIALIZING',
           dashboardConnections: {
@@ -943,7 +943,7 @@ const useMarketStore = create(
           showLoader: false,
           timeoutId: null
         }
-      }));
+      });
 
       // Close individual dashboard WebSocket connections
       try {

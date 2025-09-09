@@ -102,7 +102,7 @@ export const calculateMACD = (closes, fastPeriod = 12, slowPeriod = 26, signalPe
   };
 };
 
-export const calculateStochastic = (highs, lows, closes, kPeriod = 14, dPeriod = 3) => {
+export const calculateStochastic = (highs, lows, closes, kPeriod = 14, _dPeriod = 3) => {
   if (highs.length < kPeriod || lows.length < kPeriod || closes.length < kPeriod) {
     return null;
   }
@@ -160,7 +160,7 @@ export const calculatePivotPoints = (high, low, close) => {
   };
 };
 
-export const calculateCurrencyStrength = (pairs, period = 20) => {
+export const calculateCurrencyStrength = (pairs, _period = 20) => {
   const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
   const strength = {};
   

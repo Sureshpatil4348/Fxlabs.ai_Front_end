@@ -423,8 +423,6 @@ const useCurrencyStrengthStore = create(
         currencyContributions.set(currency, []);
       });
       
-      console.log('Initialized currencies:', currencies);
-      console.log('Initial strength map:', Array.from(strengthMap.entries()));
       
       // Process each subscribed pair using the enhanced formula
       state.subscriptions.forEach((subscription, symbol) => {
@@ -619,7 +617,7 @@ const useCurrencyStrengthStore = create(
           strengthMap.set(baseCurrency, Math.max(0, Math.min(100, currentBaseStrength + strengthAdjustment)));
           strengthMap.set(quoteCurrency, Math.max(0, Math.min(100, currentQuoteStrength - strengthAdjustment)));
         } else {
-          console.log(`Skipping ${symbol} - could not parse currencies`);
+          get().addLog(`[Legacy] Skipping ${symbol} - could not parse currencies`, 'warning');
         }
       });
             
