@@ -218,6 +218,9 @@ npm test
 
 # Eject configuration (not recommended)
 npm run eject
+
+# Lint source code
+npm run lint
 ```
 
 ## 🔧 Customization
@@ -322,3 +325,14 @@ Required repository secrets:
 - `NETLIFY_SITE_ID_DEV` (dev)
 
 Workflow file: `.github/workflows/deploy-to-netlify.yml`.
+
+### Linting in CI
+
+The CI workflow runs `npm run lint` before building. Ensure lint passes locally:
+
+```bash
+npm ci
+npm run lint
+```
+
+ESLint is configured via `.eslintrc.json` and ignores common build directories via `.eslintignore`.
