@@ -21,6 +21,8 @@ const HeroSection = () => {
   const [priceChange, setPriceChange] = useState(0.0023)
   const [chartData, setChartData] = useState([])
   const [activeChart, setActiveChart] = useState(0)
+  // eslint-disable-next-line no-unused-vars
+  const scale = 1
 
   // Generate initial chart data
   useEffect(() => {

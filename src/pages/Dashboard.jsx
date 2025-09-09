@@ -7,7 +7,6 @@
   import Navbar from '../components/Navbar'
   import RSICorrelationDashboard from '../components/RSICorrelationDashboard'
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
-  import UserProfileDropdown from '../components/UserProfileDropdown'
   import WishlistPanel from '../components/WishlistPanel'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketStore from '../store/useMarketStore'

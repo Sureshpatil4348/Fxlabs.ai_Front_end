@@ -128,6 +128,7 @@ const useRSICorrelationStore = create(
               console.warn('Unknown message data type:', typeof event.data);
             }
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Failed to handle WebSocket message:', error);
           }
         };

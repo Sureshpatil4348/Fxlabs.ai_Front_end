@@ -16,18 +16,22 @@ const useBaseMarketStore = create(
     fetchNews: async () => {
       // Prevent multiple simultaneous calls
       if (get().newsLoading) {
+        // eslint-disable-next-line no-console
         console.log('News fetch already in progress, skipping...');
         return;
       }
       
+      // eslint-disable-next-line no-console
       console.log('Store: Starting news fetch...');
       set({ newsLoading: true });
       
       try {
         const newsService = await import('../services/newsService');
+        // eslint-disable-next-line no-console
         console.log('Store: Fetching news from API...');
         const news = await newsService.fetchForexFactoryNews();
         
+        // eslint-disable-next-line no-console
         console.log('Store: News fetched, analyzing with AI...');
         // Fetch AI analysis for each news item
         const analysisPromises = news.map(async (newsItem) => {
@@ -50,6 +54,7 @@ const useBaseMarketStore = create(
           }
         });
         
+        // eslint-disable-next-line no-console
         console.log('Store: Setting news data and analysis...');
         set({ newsData: news, aiAnalysis, newsLoading: false });
       } catch (error) {

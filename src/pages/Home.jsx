@@ -1,4 +1,3 @@
-import { TrendingUp, BarChart3, Shield, Zap, Target, Users } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -16,7 +15,7 @@ import TradingFeaturesSection from '../components/TradingFeaturesSection'
 import WhySystemWorks from '../components/WhySystemWorks'
 
 const Home = () => {
-  const { user } = useAuth()
+  const { /* user */ } = useAuth()
 
   return (
     <div className="min-h-screen">

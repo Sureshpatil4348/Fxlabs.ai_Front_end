@@ -166,6 +166,7 @@ const CurrencyStrengthMeter = () => {
   useEffect(() => {
     if (subscriptions.size > 0) {
       const interval = setInterval(() => {
+        // eslint-disable-next-line no-console
         console.log('Auto-refreshing currency strength (60s interval)');
         calculateCurrencyStrength();
       }, 60000); // Changed to 60 seconds

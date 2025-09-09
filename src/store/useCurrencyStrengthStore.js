@@ -39,6 +39,7 @@ const ENHANCED_CURRENCY_PAIRS = [
 ];
 
 // Major currency pairs for strength calculation (legacy support)
+// eslint-disable-next-line no-unused-vars
 const MAJOR_PAIRS = [
   'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm',
   'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',

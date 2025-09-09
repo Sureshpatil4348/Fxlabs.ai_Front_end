@@ -3,7 +3,6 @@ import {
   Target, 
   Zap, 
   TrendingUp,
-  Activity,
   Shield,
   Clock,
   Users,

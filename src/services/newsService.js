@@ -52,6 +52,7 @@ const transformFXLabsData = (apiResponse) => {
         }
         
         // Debug logging
+        // eslint-disable-next-line no-console
         console.log(`Impact determination for "${headline}":`, {
           effect: item.analysis.effect,
           isHighImpact,
@@ -115,7 +116,9 @@ const transformFXLabsData = (apiResponse) => {
  */
 export const fetchForexFactoryNews = async () => {
   try {
+    // eslint-disable-next-line no-console
     console.log('Fetching news from FX Labs API...');
+    // eslint-disable-next-line no-console
     console.log('API URL:', FXLABS_API_BASE_URL);
     
     const response = await fetch(FXLABS_API_BASE_URL, {
@@ -127,7 +130,9 @@ export const fetchForexFactoryNews = async () => {
       mode: 'cors',
     });
     
+    // eslint-disable-next-line no-console
     console.log('Response status:', response.status);
+    // eslint-disable-next-line no-console
     console.log('Response headers:', response.headers);
     
     if (!response.ok) {
@@ -135,15 +140,19 @@ export const fetchForexFactoryNews = async () => {
     }
     
     const data = await response.json();
+    // eslint-disable-next-line no-console
     console.log('FX Labs API response:', data);
     
     // Transform the API response to match our existing format
     const transformedData = transformFXLabsData(data);
+    // eslint-disable-next-line no-console
     console.log('Transformed news data:', transformedData);
     
     return transformedData;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching FX Labs news:', error);
+    // eslint-disable-next-line no-console
     console.error('Error details:', {
       message: error.message,
       stack: error.stack,
@@ -160,10 +169,12 @@ export const fetchForexFactoryNews = async () => {
  */
 export const pollForNews = async () => {
   try {
+    // eslint-disable-next-line no-console
     console.log('Polling for fresh news data...');
     const news = await fetchForexFactoryNews();
     return news;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error polling for news:', error);
     return [];
   }
@@ -274,6 +285,7 @@ export const getUpcomingNews = async () => {
       return newsDate > now && newsDate <= next24Hours && news.actual === 'N/A';
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching upcoming news:', error);
     return [];
   }
@@ -287,6 +299,7 @@ export const getHighImpactNews = async () => {
     const allNews = await fetchForexFactoryNews();
     return allNews.filter(news => news.impact === 'high');
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching high impact news:', error);
     return [];
   }
@@ -303,6 +316,7 @@ export const subscribeToNewsUpdates = (callback) => {
       const news = await fetchForexFactoryNews();
       callback(news);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error in news subscription:', error);
     }
   }, 5 * 60 * 1000); // Update every 5 minutes
@@ -331,6 +345,7 @@ export const getNewsMetadata = async () => {
       isUpdating: data.is_updating || false
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching news metadata:', error);
     return {
       newsCount: 0,
@@ -346,6 +361,7 @@ export const getNewsMetadata = async () => {
  */
 export const testAPIEndpoint = async () => {
   try {
+    // eslint-disable-next-line no-console
     console.log('Testing API endpoint accessibility...');
     const response = await fetch(FXLABS_API_BASE_URL, {
       method: 'GET',
@@ -354,7 +370,9 @@ export const testAPIEndpoint = async () => {
       },
     });
     
+    // eslint-disable-next-line no-console
     console.log('Test response status:', response.status);
+    // eslint-disable-next-line no-console
     console.log('Test response ok:', response.ok);
     
     if (response.ok) {

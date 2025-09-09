@@ -150,6 +150,7 @@ const useMarketStore = create(
               get().handleMessage(message);
             }
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Error handling WebSocket message:', error);
             get().addLog(`Error handling message: ${error.message}`, 'error');
           }
