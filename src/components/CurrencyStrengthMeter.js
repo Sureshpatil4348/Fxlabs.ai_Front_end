@@ -1,4 +1,4 @@
-import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings, Calculator, Zap } from 'lucide-react';
+import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 
@@ -205,6 +205,7 @@ const CurrencyStrengthMeter = () => {
     .sort((a, b) => b.strength - a.strength);
 
   // Debug logging
+  // eslint-disable-next-line no-console
   console.log('Currency Strength UI Debug:', strengthData);
 
   // Identify top 2 strongest and weakest

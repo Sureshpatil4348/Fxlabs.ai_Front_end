@@ -183,8 +183,8 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onShowDetails(news, analysis)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onShowDetails(news, analysis); } }}
+      onClick={() => onShowDetails(news)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onShowDetails(news); } }}
       className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer ${borderClass} ${backgroundClass}`}
     >
       {/* Header */}
@@ -292,6 +292,7 @@ const AINewsAnalysis = () => {
   // Initialize news data when component mounts
   useEffect(() => {
     // Fetch news data immediately when component mounts
+    // eslint-disable-next-line no-console
     console.log('AINewsAnalysis component mounted, fetching initial news data...');
     
     // Only fetch if we don't already have news data
@@ -301,6 +302,7 @@ const AINewsAnalysis = () => {
     
     // Set up polling every 10 minutes (600,000 ms)
     const interval = setInterval(() => {
+      // eslint-disable-next-line no-console
       console.log('Polling for fresh news data...');
       fetchNews();
     }, 10 * 60 * 1000);
@@ -326,7 +328,7 @@ const AINewsAnalysis = () => {
     };
   }, []);
 
-  const handleShowDetails = (news, analysis) => {
+  const handleShowDetails = (news) => {
     setSelectedNews(news);
     setIsModalOpen(true);
   };

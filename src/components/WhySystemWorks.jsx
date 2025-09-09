@@ -2,19 +2,15 @@ import {
   Brain, 
   Zap, 
   Target, 
-  Shield, 
   TrendingUp, 
   Clock, 
-  Users, 
   BarChart3,
   CheckCircle,
   ArrowRight,
   Sparkles,
   Activity,
   Eye,
-  Lock,
-  Globe,
-  Cpu
+  Lock
 } from 'lucide-react'
 import React, { useState } from 'react'
 

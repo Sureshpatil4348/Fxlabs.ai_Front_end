@@ -69,6 +69,7 @@ const RSIOverboughtOversoldTracker = () => {
 
   // React to RSI data changes to ensure UI updates
   useEffect(() => {
+    // eslint-disable-next-line no-console
     console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
   }, [rsiData, oversoldPairs.length, overboughtPairs.length]);
 

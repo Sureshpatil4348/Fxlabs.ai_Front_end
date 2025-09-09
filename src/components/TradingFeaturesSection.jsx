@@ -7,8 +7,6 @@ import {
   Shield,
   Clock,
   Users,
-  Brain,
-  Globe,
   CheckCircle,
   ArrowRight,
   Sparkles,

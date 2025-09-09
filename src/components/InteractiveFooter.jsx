@@ -17,7 +17,6 @@ import {
   Zap,
   Target,
   Globe,
-  MessageCircle,
   Send,
   Star,
   Award,

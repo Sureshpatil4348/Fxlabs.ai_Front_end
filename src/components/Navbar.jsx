@@ -1,4 +1,4 @@
-import { Home, LogIn, User, BarChart3, TrendingUp, Users, Target, Zap, HelpCircle, Gift } from 'lucide-react'
+import { Home, LogIn, BarChart3, TrendingUp, HelpCircle, Gift } from 'lucide-react'
 import React from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 

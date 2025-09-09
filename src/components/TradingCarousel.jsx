@@ -388,12 +388,12 @@ const TradingCarousel = () => {
 
           {/* Dots Indicator */}
           <div className="flex justify-center space-x-3 mt-8">
-            {tradingCharts.map((_, index) => (
+            {tradingCharts.map((_, idx) => (
               <button
-                key={index}
-                onClick={() => goToSlide(index)}
+                key={idx}
+                onClick={() => goToSlide(idx)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
+                  idx === currentIndex 
                     ? 'bg-green-400 scale-125' 
                     : 'bg-gray-600 hover:bg-gray-500'
                 }`}

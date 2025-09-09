@@ -11,7 +11,7 @@ import Login from './pages/Login';
 import Reset from './pages/Reset';
 
 function App() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (

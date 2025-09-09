@@ -44,7 +44,7 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry, dashboardConnecti
 
   const statusInfo = getStatusInfo();
 
-  const getDashboardStatus = (dashboardKey, dashboardName) => {
+  const getDashboardStatus = (dashboardKey) => {
     const dashboard = dashboardConnections[dashboardKey];
     if (!dashboard) return { icon: '⚪', status: 'Waiting', color: 'text-gray-500' };
     
