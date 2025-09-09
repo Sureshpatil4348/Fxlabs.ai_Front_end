@@ -9,16 +9,16 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
 
   return (
     <tr className={`hover:bg-gray-50 cursor-pointer ${isInWishlist ? 'bg-gray-100' : ''}`} onClick={() => onAddToWishlist(symbol)}>
-      <td className="px-1 py-2 text-xs font-medium text-gray-900">
+      <td className="px-0.5 py-0.5 text-xs font-medium text-gray-900 text-center">
         {formatSymbolDisplay(symbol)}
       </td>
-      <td className={`px-1 py-2 text-xs font-bold ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
+      <td className={`px-0.5 py-0.5 text-xs font-bold text-center ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
         {formatRsi(rsi)}
       </td>
-      <td className="px-1 py-2 text-xs text-gray-900 font-mono">
+      <td className="px-0.5 py-0.5 text-xs text-gray-900 font-mono text-center">
         {symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5)}
       </td>
-      <td className={`px-1 py-2 text-xs font-medium ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+      <td className={`px-0.5 py-0.5 text-xs font-medium text-center ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
         {formatPercentage(change)}
       </td>
     </tr>
@@ -116,9 +116,9 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="card h-[400px] flex flex-col z-9 relative">
+    <div className="card-compact h-[400px] flex flex-col z-9 relative">
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-2">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
@@ -144,22 +144,22 @@ const RSIOverboughtOversoldTracker = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-1 mb-4 p-1 bg-gray-100 rounded-lg flex-shrink-0">
+      <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg flex-shrink-0">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center py-2 px-1 rounded-md text-xs font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Icon className={`w-3 h-3 mr-2 ${activeTab === tab.id ? tab.color : ''}`} />
+              <Icon className={`w-3 h-3 mr-1 ${activeTab === tab.id ? tab.color : ''}`} />
               {tab.label}
-              <span className={`ml-1 px-1 py-0.5 rounded-full text-[10px] ${
+              <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
                 activeTab === tab.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
               }`}>
                 {tab.count}
@@ -173,19 +173,19 @@ const RSIOverboughtOversoldTracker = () => {
       <div className="flex-1 overflow-hidden">
         {currentPairs.length > 0 ? (
           <div className="h-full overflow-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Pair
                   </th>
-                  <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
                     RSI
                   </th>
-                  <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Price
                   </th>
-                  <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Daily %
                   </th>
                 </tr>

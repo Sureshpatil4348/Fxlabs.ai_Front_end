@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
+import watchlistService from '../services/watchlistService';
+
 // Shared functionality that all dashboards can use
 const useBaseMarketStore = create(
   subscribeWithSelector((set, get) => ({
@@ -11,6 +13,8 @@ const useBaseMarketStore = create(
     
     // Wishlist (shared across all dashboards)
     wishlist: new Set(), // tracked symbols
+    watchlistLoading: false,
+    watchlistError: null,
     
     // News Actions
     fetchNews: async () => {
@@ -69,17 +73,56 @@ const useBaseMarketStore = create(
       set({ aiAnalysis });
     },
 
-    // Wishlist Actions
-    addToWishlist: (symbol) => {
-      const wishlist = new Set(get().wishlist);
-      wishlist.add(symbol);
-      set({ wishlist });
+    // Watchlist Actions with Database Persistence
+    loadWatchlist: async () => {
+      set({ watchlistLoading: true, watchlistError: null });
+      
+      try {
+        const symbols = await watchlistService.getWatchlistSymbols();
+        const wishlist = new Set(symbols);
+        set({ wishlist, watchlistLoading: false });
+        return symbols;
+      } catch (error) {
+        console.error('Failed to load watchlist:', error);
+        set({ watchlistError: error.message, watchlistLoading: false });
+        throw error;
+      }
     },
 
-    removeFromWishlist: (symbol) => {
-      const wishlist = new Set(get().wishlist);
-      wishlist.delete(symbol);
-      set({ wishlist });
+    addToWishlist: async (symbol) => {
+      try {
+        // Add to database first
+        await watchlistService.addToWatchlist(symbol);
+        
+        // Then update local state
+        const wishlist = new Set(get().wishlist);
+        wishlist.add(symbol);
+        set({ wishlist, watchlistError: null });
+        
+        return true;
+      } catch (error) {
+        console.error('Failed to add to watchlist:', error);
+        set({ watchlistError: error.message });
+        throw error;
+      }
+    },
+
+    removeFromWishlist: async (symbol) => {
+      try {
+        // Remove from database first
+        await watchlistService.removeFromWatchlist(symbol);
+        
+        // Then update local state
+        const wishlist = new Set(get().wishlist);
+        wishlist.delete(symbol);
+        set({ wishlist, watchlistError: null });
+        
+        return true;
+      } catch (error) {
+        console.error('Failed to remove from watchlist:', error);
+        set({ watchlistError: error.message });
+        throw error;
+      }
     },
 
     isInWishlist: (symbol) => {
@@ -88,6 +131,28 @@ const useBaseMarketStore = create(
 
     getWishlistArray: () => {
       return Array.from(get().wishlist);
+    },
+
+    // Sync local state with database
+    syncWatchlist: async () => {
+      try {
+        const localSymbols = get().getWishlistArray();
+        const result = await watchlistService.syncWatchlist(localSymbols);
+        
+        // Reload watchlist from database to ensure consistency
+        await get().loadWatchlist();
+        
+        return result;
+      } catch (error) {
+        console.error('Failed to sync watchlist:', error);
+        set({ watchlistError: error.message });
+        throw error;
+      }
+    },
+
+    // Clear watchlist error
+    clearWatchlistError: () => {
+      set({ watchlistError: null });
     }
   }))
 );

@@ -510,9 +510,25 @@ const useRSITrackerStore = create(
       
     },
 
-    // Wishlist integration with base store
-    addToWishlist: (symbol) => {
-      useBaseMarketStore.getState().addToWishlist(symbol);
+    // Wishlist integration with base store (async database operations)
+    addToWishlist: async (symbol) => {
+      try {
+        await useBaseMarketStore.getState().addToWishlist(symbol);
+        get().addLog(`Added ${symbol} to watchlist`, 'success');
+      } catch (error) {
+        get().addLog(`Failed to add ${symbol} to watchlist: ${error.message}`, 'error');
+        throw error;
+      }
+    },
+
+    removeFromWishlist: async (symbol) => {
+      try {
+        await useBaseMarketStore.getState().removeFromWishlist(symbol);
+        get().addLog(`Removed ${symbol} from watchlist`, 'success');
+      } catch (error) {
+        get().addLog(`Failed to remove ${symbol} from watchlist: ${error.message}`, 'error');
+        throw error;
+      }
     },
 
     isInWishlist: (symbol) => {
