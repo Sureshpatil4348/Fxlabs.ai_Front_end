@@ -55,10 +55,10 @@
         <Navbar />
 
         {/* Main Content */}
-        <main className="w-full px-4 sm:px-6 lg:px-8 py-3">
+        <main className="w-full p-1">
 
           {/* Dashboard Grid - Responsive columns based on screen width */}
-          <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-2 lg:gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1">
             {/* Left Column - RSI Correlation Dashboard and Currency Strength Meter stacked */}
             <div className="lg:col-span-4 xl:col-span-5 2xl:col-span-6 space-y-1">
               <RSICorrelationDashboard />
