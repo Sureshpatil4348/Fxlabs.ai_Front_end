@@ -391,7 +391,7 @@ const TradingCarousel = () => {
             {tradingCharts.map((_, index) => (
               <button
                 key={index}
-                onClick={() => goToSlide(index)}
+                onClick={() => goToSlide(Number(index))}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentIndex 
                     ? 'bg-green-400 scale-125' 

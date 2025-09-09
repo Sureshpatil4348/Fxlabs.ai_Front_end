@@ -34,7 +34,8 @@
         "newlines-between": "always",
         "alphabetize": { "order": "asc", "caseInsensitive": true }
       }
-    ]
+    ],
+    "no-empty-pattern": "off"
   },
   "overrides": [
     { "files": ["**/*.test.js", "**/*.spec.js"], "env": { "jest": true } }

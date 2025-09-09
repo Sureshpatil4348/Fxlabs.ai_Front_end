@@ -537,10 +537,12 @@ const useCurrencyStrengthStore = create(
       });
       
       // Debug logging
+      // eslint-disable-next-line no-console
       console.log('Currency Strength Calculation Debug:');
       currencies.forEach(currency => {
         const strength = strengthMap.get(currency);
         const contributions = currencyContributions.get(currency);
+        // eslint-disable-next-line no-console
         console.log(`${currency}: strength=${strength}, contributions=${contributions ? contributions.length : 0}`);
       });
       

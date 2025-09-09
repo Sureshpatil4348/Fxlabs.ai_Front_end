@@ -166,6 +166,7 @@ const useMarketStore = create(
         };
         
         ws.onerror = (error) => {
+          // eslint-disable-next-line no-console
           console.error('WebSocket error:', error);
           set({ 
             isConnecting: false, 

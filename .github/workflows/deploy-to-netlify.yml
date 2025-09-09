@@ -29,8 +29,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linting
-        run: npm run lint
+      - name: Run linting (CI - treat warnings as errors)
+        run: CI=true npm run lint
 
       - name: Build project
         run: npm run build

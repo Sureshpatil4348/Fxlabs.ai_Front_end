@@ -21,8 +21,7 @@ const HeroSection = () => {
   const [priceChange, setPriceChange] = useState(0.0023)
   const [chartData, setChartData] = useState([])
   const [activeChart, setActiveChart] = useState(0)
-  // eslint-disable-next-line no-unused-vars
-  const scale = 1
+  const _scale = 1
 
   // Generate initial chart data
   useEffect(() => {
@@ -315,7 +314,7 @@ const HeroSection = () => {
                           const isGreen = candle.close > candle.open
                           
                           // Scale values to fit the chart
-                          const scale = 1000
+                          const _scale2 = 1000
                           const minPrice = Math.min(...chartData.slice(-20).map(c => c.low))
                           const maxPrice = Math.max(...chartData.slice(-20).map(c => c.high))
                           const priceRange = maxPrice - minPrice

@@ -1,5 +1,4 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
 import AfterPurchaseSection from '../components/AfterPurchaseSection'
@@ -15,7 +14,7 @@ import TradingFeaturesSection from '../components/TradingFeaturesSection'
 import WhySystemWorks from '../components/WhySystemWorks'
 
 const Home = () => {
-  const { /* user */ } = useAuth()
+  const { /* user: _user */ } = useAuth()
 
   return (
     <div className="min-h-screen">
