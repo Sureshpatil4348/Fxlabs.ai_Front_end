@@ -1,18 +1,19 @@
+import { TrendingUp, BarChart3, Shield, Zap, Target, Users } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
+
 import { useAuth } from '../auth/AuthProvider'
-import { TrendingUp, BarChart3, Shield, Zap, Target, Users } from 'lucide-react'
-import Navbar from '../components/Navbar'
-import HeroSection from '../components/HeroSection'
-import SuccessStories from '../components/SuccessStories'
-import TradingCarousel from '../components/TradingCarousel'
-import WhySystemWorks from '../components/WhySystemWorks'
-import SubscriptionSection from '../components/SubscriptionSection'
 import AfterPurchaseSection from '../components/AfterPurchaseSection'
-import TradingFeaturesSection from '../components/TradingFeaturesSection'
 import CTASection from '../components/CTASection'
 import FAQSection from '../components/FAQSection'
+import HeroSection from '../components/HeroSection'
 import InteractiveFooter from '../components/InteractiveFooter'
+import Navbar from '../components/Navbar'
+import SubscriptionSection from '../components/SubscriptionSection'
+import SuccessStories from '../components/SuccessStories'
+import TradingCarousel from '../components/TradingCarousel'
+import TradingFeaturesSection from '../components/TradingFeaturesSection'
+import WhySystemWorks from '../components/WhySystemWorks'
 
 const Home = () => {
   const { user } = useAuth()

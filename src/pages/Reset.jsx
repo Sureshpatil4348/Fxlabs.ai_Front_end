@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+
 import { useAuth } from '../auth/AuthProvider'
+import { supabase } from '../lib/supabaseClient'
 
 const Reset = () => {
   const [password, setPassword] = useState('')

@@ -1,8 +1,9 @@
+import { Home, LogIn, User, BarChart3, TrendingUp, Users, Target, Zap, HelpCircle, Gift } from 'lucide-react'
 import React from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../auth/AuthProvider'
-import { Home, LogIn, User, BarChart3, TrendingUp, Users, Target, Zap, HelpCircle, Gift } from 'lucide-react'
+
 import UserProfileDropdown from './UserProfileDropdown'
+import { useAuth } from '../auth/AuthProvider'
 
 const Navbar = () => {
   const { user } = useAuth()

@@ -1,6 +1,3 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../auth/AuthProvider'
 import { 
   TrendingUp, 
   BarChart3, 
@@ -13,6 +10,10 @@ import {
   CheckCircle,
   Sparkles
 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+
+import { useAuth } from '../auth/AuthProvider'
 
 const HeroSection = () => {
   const { user } = useAuth()

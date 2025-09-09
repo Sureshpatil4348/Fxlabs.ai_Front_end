@@ -1,6 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import useBaseMarketStore from '../store/useBaseMarketStore';
-import { formatNewsLocalDateTime, getImpactColor, formatCurrency } from '../utils/formatters';
 import { 
   Newspaper, 
   Clock, 
@@ -12,6 +9,10 @@ import {
   Target,
   X
 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+
+import useBaseMarketStore from '../store/useBaseMarketStore';
+import { formatNewsLocalDateTime, getImpactColor, formatCurrency } from '../utils/formatters';
 
 const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   if (!isOpen) return null;

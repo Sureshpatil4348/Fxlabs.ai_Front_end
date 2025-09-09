@@ -1,13 +1,14 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
 import { useAuth } from './auth/AuthProvider';
 import { ProtectedRoute } from './auth/ProtectedRoute';
+import ChangePassword from './pages/ChangePassword';
+import Dashboard from './pages/Dashboard';
+import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword';
 import Reset from './pages/Reset';
-import Dashboard from './pages/Dashboard';
-import ChangePassword from './pages/ChangePassword';
 
 function App() {
   const { user, loading } = useAuth();

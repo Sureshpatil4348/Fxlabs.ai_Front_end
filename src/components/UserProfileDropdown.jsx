@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
-import { useAuth } from '../auth/AuthProvider'
 import { Settings, LogOut } from 'lucide-react'
-import useMarketStore from '../store/useMarketStore'
+import React, { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
+
+import { useAuth } from '../auth/AuthProvider'
+import { supabase } from '../lib/supabaseClient'
+import useMarketStore from '../store/useMarketStore'
+
 
 const UserProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)

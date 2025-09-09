@@ -1,8 +1,9 @@
+import { Star, Trash2 } from 'lucide-react';
 import React from 'react';
+
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
-import { Star, Trash2 } from 'lucide-react';
 
 const WishlistPanel = () => {
   const { 

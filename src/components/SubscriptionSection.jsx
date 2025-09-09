@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import { 
   CheckCircle, 
   Star, 
@@ -16,6 +15,7 @@ import {
   Lock,
   Gift
 } from 'lucide-react'
+import React, { useState } from 'react'
 
 const SubscriptionSection = () => {
   const [selectedPlan, setSelectedPlan] = useState('gold') // Default to gold
@@ -178,6 +178,8 @@ const SubscriptionSection = () => {
                   ? 'bg-gray-700 text-white shadow-sm' 
                   : 'text-gray-400 hover:text-white'
               }`}
+              role="switch"
+              aria-checked={!isAnnual}
             >
               Monthly
             </button>
@@ -188,6 +190,8 @@ const SubscriptionSection = () => {
                   ? 'bg-gray-700 text-white shadow-sm' 
                   : 'text-gray-400 hover:text-white'
               }`}
+              role="switch"
+              aria-checked={isAnnual}
             >
               Annual
               <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
@@ -208,6 +212,14 @@ const SubscriptionSection = () => {
                   : 'border-gray-600/50 hover:border-gray-500/50'
               } ${plan.popular ? 'ring-2 ring-yellow-400/50' : ''}`}
               onClick={() => setSelectedPlan(plan.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedPlan(plan.id);
+                }
+              }}
             >
               {/* Popular Badge */}
               {plan.popular && (

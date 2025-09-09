@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef } from 'react'
 import { 
   TrendingUp, 
   BarChart3, 
@@ -10,6 +9,7 @@ import {
   Maximize2,
   Eye
 } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
 
 const TradingCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0)

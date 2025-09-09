@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import { 
   Brain, 
   Zap, 
@@ -17,6 +16,7 @@ import {
   Globe,
   Cpu
 } from 'lucide-react'
+import React, { useState } from 'react'
 
 const WhySystemWorks = () => {
   const [activeCard, setActiveCard] = useState(0)
@@ -144,6 +144,14 @@ const WhySystemWorks = () => {
                   : 'border-gray-700/50 hover:border-gray-600/50'
               }`}
               onClick={() => setActiveCard(index)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setActiveCard(index);
+                }
+              }}
             >
               {/* Card Header */}
               <div className="flex items-start justify-between mb-6">

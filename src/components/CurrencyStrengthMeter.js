@@ -1,8 +1,9 @@
+import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings, Calculator, Zap } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
+
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { formatCurrency, getCurrencyStrengthColor } from '../utils/formatters';
-import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings, Calculator, Zap } from 'lucide-react';
 
 const CurrencyStrengthBar = ({ currency, strength, isTop, isBottom }) => {
   const currencyInfo = formatCurrency(currency);
@@ -370,10 +371,11 @@ const CurrencyStrengthMeter = () => {
             <div className="space-y-4">
               {/* Calculation Method */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cs-calculation-method" className="block text-sm font-medium text-gray-700 mb-1">
                   Calculation Method
                 </label>
                 <select
+                  id="cs-calculation-method"
                   value={localSettings.useEnhancedCalculation ? 'enhanced' : 'legacy'}
                   onChange={(e) => setLocalSettings(prev => ({ 
                     ...prev, 
@@ -394,10 +396,11 @@ const CurrencyStrengthMeter = () => {
 
               {/* Timeframe */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cs-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
                   Timeframe
                 </label>
                 <select
+                  id="cs-timeframe"
                   value={localSettings.timeframe}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -410,10 +413,11 @@ const CurrencyStrengthMeter = () => {
 
               {/* Mode */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cs-calculation-mode" className="block text-sm font-medium text-gray-700 mb-1">
                   Calculation Mode
                 </label>
                 <select
+                  id="cs-calculation-mode"
                   value={localSettings.mode}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, mode: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

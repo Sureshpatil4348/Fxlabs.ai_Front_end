@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import useMarketStore from '../store/useMarketStore';
 import { Clock, TrendingUp, TrendingDown } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import useMarketStore from '../store/useMarketStore';
 
 const TickDataView = ({ symbol }) => {
   const { getTicksForSymbol, getLatestTickForSymbol, tickData } = useMarketStore();

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import useMarketStore from '../store/useMarketStore';
 import { ScrollText, Trash2, AlertCircle, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+
+import useMarketStore from '../store/useMarketStore';
 
 const LogsPanel = () => {
   const { logs, clearLogs } = useMarketStore();

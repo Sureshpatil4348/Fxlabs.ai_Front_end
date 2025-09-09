@@ -1,7 +1,8 @@
+import { RefreshCw, TrendingUp, TrendingDown, Settings, BarChart3, Activity } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, getStatusColor, getStatusIcon, formatRsi, sortCorrelationPairs } from '../utils/formatters';
-import { RefreshCw, TrendingUp, TrendingDown, Settings, BarChart3, Activity } from 'lucide-react';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {
   const [symbol1, symbol2] = pair;
@@ -489,10 +490,11 @@ const RSICorrelationDashboard = () => {
             <div className="space-y-4">
               {/* Calculation Mode */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-calc-mode" className="block text-sm font-medium text-gray-700 mb-1">
                   Calculation Mode
                 </label>
                 <select
+                  id="rsi-calc-mode"
                   value={localSettings.calculationMode}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, calculationMode: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -504,10 +506,11 @@ const RSICorrelationDashboard = () => {
 
               {/* Timeframe */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
                   Timeframe
                 </label>
                 <select
+                  id="rsi-timeframe"
                   value={localSettings.timeframe}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -521,10 +524,11 @@ const RSICorrelationDashboard = () => {
               {/* Correlation Window (only show for real correlation mode) */}
               {localSettings.calculationMode === 'real_correlation' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="rsi-corr-window" className="block text-sm font-medium text-gray-700 mb-1">
                     Correlation Window
                   </label>
                   <select
+                    id="rsi-corr-window"
                     value={localSettings.correlationWindow}
                     onChange={(e) => setLocalSettings(prev => ({ ...prev, correlationWindow: parseInt(e.target.value) }))}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -541,10 +545,11 @@ const RSICorrelationDashboard = () => {
                 <>
                   {/* RSI Period */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rsi-period-input" className="block text-sm font-medium text-gray-700 mb-1">
                       RSI Period
                     </label>
                     <input
+                      id="rsi-period-input"
                       type="number"
                       min="2"
                       max="50"
@@ -556,10 +561,11 @@ const RSICorrelationDashboard = () => {
 
                   {/* Overbought Level */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rsi-overbought-input" className="block text-sm font-medium text-gray-700 mb-1">
                       Overbought Level
                     </label>
                     <input
+                      id="rsi-overbought-input"
                       type="number"
                       min="50"
                       max="90"
@@ -571,10 +577,11 @@ const RSICorrelationDashboard = () => {
 
                   {/* Oversold Level */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rsi-oversold-input" className="block text-sm font-medium text-gray-700 mb-1">
                       Oversold Level
                     </label>
                     <input
+                      id="rsi-oversold-input"
                       type="number"
                       min="10"
                       max="50"

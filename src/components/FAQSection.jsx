@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import { 
   ChevronDown, 
   ChevronUp,
@@ -9,6 +8,7 @@ import {
   TrendingUp,
   Sparkles
 } from 'lucide-react'
+import React, { useState } from 'react'
 
 const FAQSection = () => {
   const [openItems, setOpenItems] = useState({})
@@ -228,7 +228,7 @@ const FAQSection = () => {
               </h3>
               
               <p className="text-gray-400 mb-6">
-                Our support team is here to help. Get in touch and we'll answer any questions you have about our trading system.
+                Our support team is here to help. Get in touch and we&apos;ll answer any questions you have about our trading system.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

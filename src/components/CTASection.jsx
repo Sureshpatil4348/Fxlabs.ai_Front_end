@@ -1,6 +1,3 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../auth/AuthProvider'
 import { 
   ArrowRight, 
   Shield, 
@@ -8,6 +5,10 @@ import {
   Sparkles,
   CheckCircle
 } from 'lucide-react'
+import React from 'react'
+import { Link } from 'react-router-dom'
+
+import { useAuth } from '../auth/AuthProvider'
 
 const CTASection = () => {
   const { user } = useAuth()

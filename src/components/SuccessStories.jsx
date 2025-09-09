@@ -1,6 +1,3 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../auth/AuthProvider'
 import { 
   TrendingUp, 
   Users, 
@@ -14,6 +11,10 @@ import {
   CheckCircle,
   Sparkles
 } from 'lucide-react'
+import React from 'react'
+import { Link } from 'react-router-dom'
+
+import { useAuth } from '../auth/AuthProvider'
 
 const SuccessStories = () => {
   const { user } = useAuth()
@@ -133,8 +134,8 @@ const SuccessStories = () => {
               </div>
             </div>
             <p className="text-gray-300 italic mb-4">
-              "FXLabs.AI transformed my trading completely. The RSI correlation insights helped me 
-              identify profitable opportunities I never saw before. My profits increased by 300% in just 4 months!"
+              &quot;FXLabs.AI transformed my trading completely. The RSI correlation insights helped me 
+              identify profitable opportunities I never saw before. My profits increased by 300% in just 4 months!&quot;
             </p>
             <div className="text-green-400 text-sm font-medium">
               +$45,000 profit in 4 months
@@ -158,8 +159,8 @@ const SuccessStories = () => {
               </div>
             </div>
             <p className="text-gray-300 italic mb-4">
-              "The AI news analysis feature is a game-changer. I can now predict market movements 
-              with incredible accuracy. The community support is amazing too!"
+              &quot;The AI news analysis feature is a game-changer. I can now predict market movements 
+              with incredible accuracy. The community support is amazing too!&quot;
             </p>
             <div className="text-blue-400 text-sm font-medium">
               +$28,000 profit in 3 months
@@ -177,7 +178,7 @@ const SuccessStories = () => {
               </h3>
               
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Don't miss out on the opportunity to transform your trading with our proven system. 
+                Don&apos;t miss out on the opportunity to transform your trading with our proven system. 
                 Join 150+ successful traders who are already generating consistent profits.
               </p>
 

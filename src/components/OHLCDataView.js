@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import useMarketStore from '../store/useMarketStore';
 import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import useMarketStore from '../store/useMarketStore';
 
 const OHLCDataView = ({ symbol }) => {
   const { getOhlcForSymbol, getLatestOhlcForSymbol, subscriptions, ohlcData } = useMarketStore();

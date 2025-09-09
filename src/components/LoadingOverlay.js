@@ -1,5 +1,5 @@
-import React from 'react';
 import { RefreshCw, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import React from 'react';
 
 const LoadingOverlay = ({ status, connectionAttempts, onRetry, dashboardConnections }) => {
   const getStatusInfo = () => {

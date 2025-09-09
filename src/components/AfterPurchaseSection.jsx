@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import { 
   Download, 
   Users, 
@@ -15,6 +14,7 @@ import {
   BookOpen,
   TrendingUp
 } from 'lucide-react'
+import React, { useState } from 'react'
 
 const AfterPurchaseSection = () => {
   const [activeStep, setActiveStep] = useState(0)
@@ -178,7 +178,15 @@ const AfterPurchaseSection = () => {
                   ? `${step.borderColor} shadow-2xl shadow-green-500/20` 
                   : 'border-gray-600/50 hover:border-gray-500/50'
               }`}
+              role="button"
+              tabIndex={0}
               onClick={() => setActiveStep(index)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setActiveStep(index)
+                }
+              }}
             >
               {/* Step Number */}
               <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center border-2 border-gray-500">

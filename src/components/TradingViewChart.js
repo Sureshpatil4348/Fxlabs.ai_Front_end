@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts';
-import useMarketStore from '../store/useMarketStore';
 import { TrendingUp, Maximize2, Minimize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+
+import useMarketStore from '../store/useMarketStore';
+
 
 const TradingViewChart = ({ symbol }) => {
   const chartContainerRef = useRef();
@@ -430,6 +432,10 @@ const TradingViewChart = ({ symbol }) => {
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 backdrop-blur-sm animate-in fade-in duration-300 cursor-pointer"
           onClick={() => setIsFullscreen(false)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsFullscreen(false); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close fullscreen"
           title="Click to close fullscreen"
         />
       )}

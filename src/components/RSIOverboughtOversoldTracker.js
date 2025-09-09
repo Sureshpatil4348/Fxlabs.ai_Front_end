@@ -1,7 +1,8 @@
+import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
-import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
 
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   const { symbol, rsi, price, change } = pair;
@@ -234,10 +235,11 @@ const RSIOverboughtOversoldTracker = () => {
             <div className="space-y-4">
               {/* Timeframe */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-tracker-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
                   Timeframe
                 </label>
                 <select
+                  id="rsi-tracker-timeframe"
                   value={localSettings.timeframe}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -250,10 +252,11 @@ const RSIOverboughtOversoldTracker = () => {
 
               {/* RSI Period */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-tracker-period" className="block text-sm font-medium text-gray-700 mb-1">
                   RSI Period
                 </label>
                 <input
+                  id="rsi-tracker-period"
                   type="number"
                   min="2"
                   max="50"
@@ -265,10 +268,11 @@ const RSIOverboughtOversoldTracker = () => {
 
               {/* Overbought Level */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-tracker-overbought" className="block text-sm font-medium text-gray-700 mb-1">
                   Overbought Level
                 </label>
                 <input
+                  id="rsi-tracker-overbought"
                   type="number"
                   min="50"
                   max="90"
@@ -280,10 +284,11 @@ const RSIOverboughtOversoldTracker = () => {
 
               {/* Oversold Level */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-tracker-oversold" className="block text-sm font-medium text-gray-700 mb-1">
                   Oversold Level
                 </label>
                 <input
+                  id="rsi-tracker-oversold"
                   type="number"
                   min="10"
                   max="50"

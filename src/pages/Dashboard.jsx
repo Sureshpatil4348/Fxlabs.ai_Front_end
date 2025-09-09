@@ -1,15 +1,16 @@
   import React from 'react'
+
   import { useAuth } from '../auth/AuthProvider'
+  import AINewsAnalysis from '../components/AINewsAnalysis'
+  import CurrencyStrengthMeter from '../components/CurrencyStrengthMeter'
+  import LoadingOverlay from '../components/LoadingOverlay'
+  import Navbar from '../components/Navbar'
   import RSICorrelationDashboard from '../components/RSICorrelationDashboard'
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
-  import CurrencyStrengthMeter from '../components/CurrencyStrengthMeter'
-  import AINewsAnalysis from '../components/AINewsAnalysis'
-  import WishlistPanel from '../components/WishlistPanel'
-  import LoadingOverlay from '../components/LoadingOverlay'
   import UserProfileDropdown from '../components/UserProfileDropdown'
-  import Navbar from '../components/Navbar'
-  import useMarketStore from '../store/useMarketStore'
+  import WishlistPanel from '../components/WishlistPanel'
   import useBaseMarketStore from '../store/useBaseMarketStore'
+  import useMarketStore from '../store/useMarketStore'
 
   const Dashboard = () => {
     const { user } = useAuth()

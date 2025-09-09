@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+
 import { useAuth } from '../auth/AuthProvider'
 import Orb from '../components/ui/Orb'
+import { supabase } from '../lib/supabaseClient'
 
 const Login = () => {
   const [email, setEmail] = useState('')

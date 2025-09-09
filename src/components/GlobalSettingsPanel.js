@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import useMarketStore from '../store/useMarketStore';
 import { Settings, Clock, BarChart3, TrendingUp } from 'lucide-react';
+import React, { useState } from 'react';
+
+import useMarketStore from '../store/useMarketStore';
 
 const GlobalSettingsPanel = () => {
   const { globalSettings, rsiSettings, strengthSettings, updateGlobalSettings, updateRsiSettings, updateStrengthSettings, timeframes } = useMarketStore();
@@ -103,6 +104,7 @@ const GlobalSettingsPanel = () => {
                   This timeframe applies to all indicators (RSI Correlation, Currency Strength)
                 </p>
                 <select
+                  id="global-timeframe"
                   value={localSettings.timeframe}
                   onChange={(e) => setLocalSettings({...localSettings, timeframe: e.target.value})}
                   className="input-field w-full"
@@ -121,10 +123,11 @@ const GlobalSettingsPanel = () => {
                 </h4>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-green-700 mb-1">
+                    <label htmlFor="rsi-period" className="block text-sm font-medium text-green-700 mb-1">
                       Period
                     </label>
                     <input
+                      id="rsi-period"
                       type="number"
                       min="5"
                       max="50"
@@ -134,10 +137,11 @@ const GlobalSettingsPanel = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-green-700 mb-1">
+                    <label htmlFor="rsi-overbought" className="block text-sm font-medium text-green-700 mb-1">
                       Overbought
                     </label>
                     <input
+                      id="rsi-overbought"
                       type="number"
                       min="60"
                       max="90"
@@ -147,10 +151,11 @@ const GlobalSettingsPanel = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-green-700 mb-1">
+                    <label htmlFor="rsi-oversold" className="block text-sm font-medium text-green-700 mb-1">
                       Oversold
                     </label>
                     <input
+                      id="rsi-oversold"
                       type="number"
                       min="10"
                       max="40"
@@ -169,10 +174,11 @@ const GlobalSettingsPanel = () => {
                   Currency Strength Settings
                 </h4>
                 <div>
-                  <label className="block text-sm font-medium text-purple-700 mb-1">
+                  <label htmlFor="strength-mode" className="block text-sm font-medium text-purple-700 mb-1">
                     Calculation Mode
                   </label>
                   <select
+                    id="strength-mode"
                     value={localSettings.strengthMode}
                     onChange={(e) => setLocalSettings({...localSettings, strengthMode: e.target.value})}
                     className="input-field w-full"

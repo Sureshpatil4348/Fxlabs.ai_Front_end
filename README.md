@@ -335,4 +335,15 @@ npm ci
 npm run lint
 ```
 
+To auto-fix formatting and some warnings locally:
+
+```bash
+npm run lint -- --fix
+```
+
+Notes:
+- Accessibility rules are enabled. Clickable, non-interactive elements should be keyboard accessible (role, tabIndex, and key handlers) or changed to native interactive elements where appropriate.
+- Labels should be associated to inputs with matching `htmlFor` and `id`.
+- Escape quotes in JSX text (e.g., use `&apos;` or `&quot;`).
+
 ESLint is configured via `.eslintrc.json` and ignores common build directories via `.eslintignore`.
