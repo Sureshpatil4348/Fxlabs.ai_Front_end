@@ -1,5 +1,5 @@
 import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, TrendingDown, Settings } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
@@ -62,14 +62,14 @@ const CurrencyHeatmap = ({ strengthData }) => {
   );
 };
 
-const StrengthChart = ({ data, type }) => {
-  const chartData = data.map(item => ({
+const StrengthChart = React.memo(({ data, type }) => {
+  const chartData = useMemo(() => data.map(item => ({
     ...item,
     color: item.strength >= 70 ? '#16a34a' : 
            item.strength >= 60 ? '#22c55e' : 
            item.strength >= 40 ? '#6b7280' : 
            item.strength >= 30 ? '#f87171' : '#dc2626'
-  }));
+  })), [data]);
 
   if (type === 'line') {
     return (
@@ -88,6 +88,8 @@ const StrengthChart = ({ data, type }) => {
             stroke="#2563eb" 
             strokeWidth={2}
             dot={{ r: 4 }}
+            animationDuration={800}
+            animationEasing="ease-in-out"
           />
         </LineChart>
       </ResponsiveContainer>
@@ -112,7 +114,9 @@ const StrengthChart = ({ data, type }) => {
       </BarChart>
     </ResponsiveContainer>
   );
-};
+});
+
+StrengthChart.displayName = 'StrengthChart';
 
 const CurrencyStrengthMeter = () => {
   const { 
@@ -148,12 +152,22 @@ const CurrencyStrengthMeter = () => {
     return () => clearTimeout(timer);
   }, [isConnected, hasAutoSubscribed, autoSubscribeToMajorPairs]);
 
-  // Calculate currency strength when subscriptions change or settings change
+  // Debounced calculation to prevent excessive updates
+  const debouncedCalculation = useCallback(() => {
+    const timeoutId = setTimeout(() => {
+      if (subscriptions.size > 0) {
+        calculateCurrencyStrength();
+      }
+    }, 500); // 500ms debounce
+    
+    return () => clearTimeout(timeoutId);
+  }, [subscriptions.size, calculateCurrencyStrength]);
+
+  // Calculate currency strength when subscriptions change or settings change (debounced)
   useEffect(() => {
-    if (subscriptions.size > 0) {
-      calculateCurrencyStrength();
-    }
-  }, [subscriptions.size, settings.timeframe, settings.mode, settings.useEnhancedCalculation, calculateCurrencyStrength]);
+    const cleanup = debouncedCalculation();
+    return cleanup;
+  }, [subscriptions.size, settings.timeframe, settings.mode, settings.useEnhancedCalculation, debouncedCalculation]);
 
   // Remove the OHLC data change effect that was causing frequent updates
   // useEffect(() => {
@@ -162,14 +176,14 @@ const CurrencyStrengthMeter = () => {
   //   }
   // }, [ohlcData, subscriptions.size]);
 
-  // Auto-refresh every 60 seconds if we have subscriptions (changed from 30 seconds)
+  // Auto-refresh every 2 minutes if we have subscriptions (reduced frequency)
   useEffect(() => {
     if (subscriptions.size > 0) {
       const interval = setInterval(() => {
         // eslint-disable-next-line no-console
-        console.log('Auto-refreshing currency strength (60s interval)');
+        console.log('Auto-refreshing currency strength (2min interval)');
         calculateCurrencyStrength();
-      }, 60000); // Changed to 60 seconds
+      }, 120000); // 2 minutes instead of 60 seconds
       return () => clearInterval(interval);
     }
   }, [subscriptions.size, calculateCurrencyStrength]);
@@ -197,21 +211,25 @@ const CurrencyStrengthMeter = () => {
     });
   };
 
-  // Convert Map to array and sort by strength
-  const strengthData = Array.from(currencyStrength.entries())
-    .map(([currency, strength]) => ({ 
-      currency, 
-      strength: strength || 50 // Fallback to 50 if strength is undefined/null/0
-    }))
-    .sort((a, b) => b.strength - a.strength);
+  // Memoize strength data conversion to prevent recalculation on every render
+  const strengthData = useMemo(() => {
+    return Array.from(currencyStrength.entries())
+      .map(([currency, strength]) => ({ 
+        currency, 
+        strength: strength || 50 // Fallback to 50 if strength is undefined/null/0
+      }))
+      .sort((a, b) => b.strength - a.strength);
+  }, [currencyStrength]);
 
-  // Debug logging
-  // eslint-disable-next-line no-console
-  console.log('Currency Strength UI Debug:', strengthData);
+  
 
-  // Identify top 2 strongest and weakest
-  const topCurrencies = strengthData.slice(0, 2).map(d => d.currency);
-  const bottomCurrencies = strengthData.slice(-2).map(d => d.currency);
+  // Memoize top and bottom currencies to prevent recalculation
+  const topCurrencies = useMemo(() => 
+    strengthData.slice(0, 2).map(d => d.currency), [strengthData]
+  );
+  const bottomCurrencies = useMemo(() => 
+    strengthData.slice(-2).map(d => d.currency), [strengthData]
+  );
 
   const viewModes = [
     { id: 'bars', label: 'Bar Chart', icon: BarChart3 },

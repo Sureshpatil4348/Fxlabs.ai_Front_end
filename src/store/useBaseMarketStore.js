@@ -81,6 +81,19 @@ const useBaseMarketStore = create(
         const symbols = await watchlistService.getWatchlistSymbols();
         const wishlist = new Set(symbols);
         set({ wishlist, watchlistLoading: false });
+        
+        // Auto-subscribe to market data for existing watchlist items
+        try {
+          const useRSITrackerStore = await import('./useRSITrackerStore');
+          const rsiStore = useRSITrackerStore.default.getState();
+          symbols.forEach(symbol => {
+            rsiStore.subscribeWatchlistSymbol(symbol);
+          });
+        } catch (subscribeError) {
+          console.error('Failed to auto-subscribe to watchlist symbols:', subscribeError);
+          // Don't throw error as watchlist loading was successful
+        }
+        
         return symbols;
       } catch (error) {
         console.error('Failed to load watchlist:', error);
@@ -91,36 +104,92 @@ const useBaseMarketStore = create(
 
     addToWishlist: async (symbol) => {
       try {
-        // Add to database first
-        await watchlistService.addToWatchlist(symbol);
+        // Normalize + validate (store base symbols without 'M' suffix)
+        let normalized = (symbol ?? '').trim().toUpperCase();
+        if (!normalized) {
+          const err = new Error('Symbol is required');
+          set({ watchlistError: err.message });
+          throw err;
+        }
         
-        // Then update local state
-        const wishlist = new Set(get().wishlist);
-        wishlist.add(symbol);
-        set({ wishlist, watchlistError: null });
+        // Remove any slashes and spaces for consistent format
+        normalized = normalized.replace(/[/\s]/g, '');
+        
+        // Remove 'M' suffix for consistent storage
+        if (normalized.endsWith('M')) {
+          normalized = normalized.slice(0, -1);
+        }
+        // Add to database first
+       await watchlistService.addToWatchlist(normalized);
+       // Then update local state (functional update to avoid races)
+       set((state) => {
+          const wishlist = new Set(state.wishlist);
+         wishlist.add(normalized);
+          return { wishlist, watchlistError: null };
+        });
+        
+        // Auto-subscribe to market data in RSI Tracker
+        try {
+          const useRSITrackerStore = await import('./useRSITrackerStore');
+          useRSITrackerStore.default.getState().subscribeWatchlistSymbol(normalized);
+        } catch (subscribeError) {
+          console.error('Failed to auto-subscribe to market data:', subscribeError);
+          // Don't throw error as watchlist addition was successful
+        }
         
         return true;
       } catch (error) {
         console.error('Failed to add to watchlist:', error);
-        set({ watchlistError: error.message });
+        const message = error?.userMessage || error?.message || 'Failed to add to watchlist';
+        set({ watchlistError: message });
         throw error;
       }
     },
 
     removeFromWishlist: async (symbol) => {
       try {
-        // Remove from database first
-        await watchlistService.removeFromWatchlist(symbol);
+        let normalized = (symbol ?? '').trim().toUpperCase();
+        if (!normalized) {
+          const err = new Error('Symbol is required');
+          set({ watchlistError: err.message });
+          throw err;
+        }
         
-        // Then update local state
-        const wishlist = new Set(get().wishlist);
-        wishlist.delete(symbol);
-        set({ wishlist, watchlistError: null });
+        // Remove any slashes and spaces for consistent format
+        normalized = normalized.replace(/[/\s]/g, '');
+        
+        // Remove 'M' suffix for consistent storage
+        if (normalized.endsWith('M')) {
+          normalized = normalized.slice(0, -1);
+        }
+        // Remove from database first
+        await watchlistService.removeFromWatchlist(normalized);
+        // Also stop market data (handles both active and pending)
+        try {
+          const useRSITrackerStore = await import('./useRSITrackerStore');
+          const rsiStore = useRSITrackerStore.default.getState();
+          if (typeof rsiStore.unsubscribeWatchlistSymbol === 'function') {
+            rsiStore.unsubscribeWatchlistSymbol(normalized);
+          } else if (rsiStore.isConnected) {
+            // Fallback for older RSI store versions
+            rsiStore.unsubscribe(normalized + 'm');
+          }
+        } catch (unsubscribeError) {
+          console.error('Failed to unsubscribe market data for removed symbol:', unsubscribeError);
+          // Do not fail the removal on unsubscribe issues
+        }
+        // Then update local state (functional update to avoid races)
+        set((state) => {
+          const wishlist = new Set(state.wishlist);
+          wishlist.delete(normalized);
+          return { wishlist, watchlistError: null };
+       });
         
         return true;
       } catch (error) {
         console.error('Failed to remove from watchlist:', error);
-        set({ watchlistError: error.message });
+        const message = error?.userMessage || error?.message || 'Failed to remove from watchlist';
+        set({ watchlistError: message });
         throw error;
       }
     },
@@ -153,6 +222,23 @@ const useBaseMarketStore = create(
     // Clear watchlist error
     clearWatchlistError: () => {
       set({ watchlistError: null });
+    },
+
+    // Force refresh watchlist subscriptions
+    refreshWatchlistSubscriptions: async () => {
+      try {
+        const symbols = get().getWishlistArray();
+        const useRSITrackerStore = await import('./useRSITrackerStore');
+        const rsiStore = useRSITrackerStore.default.getState();
+        
+        if (rsiStore.isConnected) {
+          symbols.forEach(symbol => {
+            rsiStore.subscribeWatchlistSymbol(symbol);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to refresh watchlist subscriptions:', error);
+      }
     }
   }))
 );

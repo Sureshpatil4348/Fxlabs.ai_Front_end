@@ -147,11 +147,20 @@ const WishlistPanel = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200 text-xs text-left">
                 {wishlistSymbols.map((symbol) => {
-                  const latestTick = getLatestTickForSymbol(symbol);
-                  const latestBar = getLatestOhlcForSymbol(symbol);
+                  // Convert watchlist symbol (base format) to RSI Tracker format (with 'm' suffix)
+                  const rsiSymbol = symbol + 'm';
+                  
+                  const latestTick = getLatestTickForSymbol(rsiSymbol);
+                  const latestBar = getLatestOhlcForSymbol(rsiSymbol);
+                  const rsiValue = rsiData.get(rsiSymbol)?.value ?? null;
+                  
+                  // Simple debug: log once if no data found
+                  if (!latestTick && !latestBar && rsiValue === null && symbol === 'CADJPY') {
+                    // Debug logging removed to fix linting warning
+                  }
+                  
                   const price = latestTick?.bid || latestBar?.close || null;
                   const change = latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : null;
-                  const rsiValue = rsiData.get(symbol)?.value ?? null;
                   const priceText = price != null
                     ? (symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5))
                     : '--';
