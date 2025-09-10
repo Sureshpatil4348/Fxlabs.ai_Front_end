@@ -1,6 +1,7 @@
 import { RefreshCw, TrendingUp, TrendingDown, Settings, BarChart3, Activity } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
+import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, getStatusColor, getStatusIcon, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
@@ -251,6 +252,43 @@ const RSICorrelationDashboard = () => {
     setHasAutoSubscribed(false);
   }, [settings.timeframe]);
 
+  // Load settings from database on component mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await userStateService.getUserDashboardSettings();
+        if (savedSettings.rsiCorrelation) {
+          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
+          
+          // Update local settings state
+          setLocalSettings({
+            timeframe: timeframe || settings.timeframe,
+            rsiPeriod: rsiPeriod || settings.rsiPeriod,
+            rsiOverbought: rsiOverbought || settings.rsiOverbought,
+            rsiOversold: rsiOversold || settings.rsiOversold,
+            correlationWindow: correlationWindow || settings.correlationWindow,
+            calculationMode: calculationMode || settings.calculationMode
+          });
+
+          // Update store settings
+          updateSettings({
+            timeframe: timeframe || settings.timeframe,
+            rsiPeriod: rsiPeriod || settings.rsiPeriod,
+            rsiOverbought: rsiOverbought || settings.rsiOverbought,
+            rsiOversold: rsiOversold || settings.rsiOversold,
+            correlationWindow: correlationWindow || settings.correlationWindow,
+            calculationMode: calculationMode || settings.calculationMode
+          });
+
+        }
+      } catch (error) {
+        console.error('❌ Failed to load RSI Correlation settings:', error);
+      }
+    };
+
+    loadSettings();
+  }, [settings.calculationMode, settings.correlationWindow, settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     if (localSettings.calculationMode === 'real_correlation') {
@@ -261,16 +299,34 @@ const RSICorrelationDashboard = () => {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
-  const handleSaveSettings = () => {
-    updateSettings({
-      timeframe: localSettings.timeframe,
-      rsiPeriod: localSettings.rsiPeriod,
-      rsiOverbought: localSettings.rsiOverbought,
-      rsiOversold: localSettings.rsiOversold,
-      correlationWindow: localSettings.correlationWindow,
-      calculationMode: localSettings.calculationMode
-    });
-    setShowSettings(false);
+  const handleSaveSettings = async () => {
+    try {
+      // Update local store first
+      updateSettings({
+        timeframe: localSettings.timeframe,
+        rsiPeriod: localSettings.rsiPeriod,
+        rsiOverbought: localSettings.rsiOverbought,
+        rsiOversold: localSettings.rsiOversold,
+        correlationWindow: localSettings.correlationWindow,
+        calculationMode: localSettings.calculationMode
+      });
+
+      // Persist to database
+      await userStateService.updateUserDashboardSettings({
+        rsiCorrelation: {
+          timeframe: localSettings.timeframe,
+          rsiPeriod: localSettings.rsiPeriod,
+          rsiOverbought: localSettings.rsiOverbought,
+          rsiOversold: localSettings.rsiOversold,
+          correlationWindow: localSettings.correlationWindow,
+          calculationMode: localSettings.calculationMode
+        }
+      });
+
+      setShowSettings(false);
+    } catch (error) {
+      console.error('❌ Failed to save RSI Correlation settings:', error);
+    }
   };
 
   const handleResetSettings = () => {

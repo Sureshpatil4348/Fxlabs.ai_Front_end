@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
+import userStateService from '../services/userStateService';
 import watchlistService from '../services/watchlistService';
 
 // Shared functionality that all dashboards can use
@@ -15,6 +16,16 @@ const useBaseMarketStore = create(
     wishlist: new Set(), // tracked symbols
     watchlistLoading: false,
     watchlistError: null,
+    
+    // Tab State Management
+    tabState: {
+      rsiThreshold: { overbought: 70, oversold: 30 },
+      rsiTracker: { activeTab: 'oversold' },
+      currencyStrength: { viewMode: 'bars' },
+      news: { filter: 'upcoming' }
+    },
+    tabStateLoading: false,
+    tabStateError: null,
     
     // News Actions
     fetchNews: async () => {
@@ -71,6 +82,74 @@ const useBaseMarketStore = create(
       const aiAnalysis = new Map(get().aiAnalysis);
       aiAnalysis.set(newsId, analysis);
       set({ aiAnalysis });
+    },
+
+    // Tab State Actions
+    loadTabState: async () => {
+      set({ tabStateLoading: true, tabStateError: null });
+      
+      try {
+        const tabState = await userStateService.getUserTabState();
+        set({ tabState, tabStateLoading: false });
+        return tabState;
+      } catch (error) {
+        console.error('Failed to load tab state:', error);
+        set({ tabStateError: error.message, tabStateLoading: false });
+        throw error;
+      }
+    },
+
+    updateTabState: async (tabType, tabValue) => {
+      try {
+        // Update local state immediately for responsive UI
+        set((state) => ({
+          tabState: {
+            ...state.tabState,
+            [tabType]: tabValue
+          },
+          tabStateError: null
+        }));
+
+        // Update database in background
+        await userStateService.updateTabState(tabType, tabValue);
+      } catch (error) {
+        console.error('Failed to update tab state:', error);
+        set({ tabStateError: error.message });
+        throw error;
+      }
+    },
+
+    updateRSIThreshold: async (overbought, oversold) => {
+      return await get().updateTabState('rsiThreshold', { overbought, oversold });
+    },
+
+    updateRSITrackerTab: async (activeTab) => {
+      return await get().updateTabState('rsiTracker', { activeTab });
+    },
+
+    updateCurrencyStrengthView: async (viewMode) => {
+      return await get().updateTabState('currencyStrength', { viewMode });
+    },
+
+    updateNewsFilter: async (filter) => {
+      return await get().updateTabState('news', { filter });
+    },
+
+    resetTabState: async () => {
+      try {
+        await userStateService.resetUserTabState();
+        const defaultState = {
+          rsiThreshold: { overbought: 70, oversold: 30 },
+          rsiTracker: { activeTab: 'oversold' },
+          currencyStrength: { viewMode: 'bars' },
+          news: { filter: 'upcoming' }
+        };
+        set({ tabState: defaultState, tabStateError: null });
+      } catch (error) {
+        console.error('Failed to reset tab state:', error);
+        set({ tabStateError: error.message });
+        throw error;
+      }
     },
 
     // Watchlist Actions with Database Persistence

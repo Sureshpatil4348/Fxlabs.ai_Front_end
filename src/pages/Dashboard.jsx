@@ -22,6 +22,7 @@
     const connectionAttempts = useMarketStore(state => state.globalConnectionState.connectionAttempts)
     const dashboardConnections = useMarketStore(state => state.globalConnectionState.dashboardConnections)
 
+    const { loadTabState } = useBaseMarketStore();
 
     React.useEffect(() => {
       // Only reset if we're dealing with a different user
@@ -38,6 +39,13 @@
       }, 5 * 60 * 1000)
       return () => clearInterval(newsInterval)
     }, [])
+
+    // Load user tab states on dashboard mount
+    React.useEffect(() => {
+      loadTabState().catch(error => {
+        console.error('Failed to load tab states:', error);
+      });
+    }, [loadTabState]);
 
     return (
       <div className="relative min-h-screen bg-gray-100">
