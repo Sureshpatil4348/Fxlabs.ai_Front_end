@@ -164,6 +164,20 @@ const useBaseMarketStore = create(
         }
         // Remove from database first
         await watchlistService.removeFromWatchlist(normalized);
+        // Also stop market data (handles both active and pending)
+        try {
+          const useRSITrackerStore = await import('./useRSITrackerStore');
+          const rsiStore = useRSITrackerStore.default.getState();
+          if (typeof rsiStore.unsubscribeWatchlistSymbol === 'function') {
+            rsiStore.unsubscribeWatchlistSymbol(normalized);
+          } else if (rsiStore.isConnected) {
+            // Fallback for older RSI store versions
+            rsiStore.unsubscribe(normalized + 'm');
+          }
+        } catch (unsubscribeError) {
+          console.error('Failed to unsubscribe market data for removed symbol:', unsubscribeError);
+          // Do not fail the removal on unsubscribe issues
+        }
         // Then update local state (functional update to avoid races)
         set((state) => {
           const wishlist = new Set(state.wishlist);
