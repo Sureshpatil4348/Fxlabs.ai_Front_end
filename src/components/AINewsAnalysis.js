@@ -281,10 +281,25 @@ const AINewsAnalysis = () => {
     fetchNews 
   } = useBaseMarketStore();
   
-  const [filter, setFilter] = useState('upcoming');
+  // Get tab state from base market store
+  const { tabState, updateNewsFilter, loadTabState } = useBaseMarketStore();
+  
+  const [newsFilter, setNewsFilter] = useState(tabState.news?.filter || 'upcoming');
   const [selectedNews, setSelectedNews] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apiAvailable, setApiAvailable] = useState(true);
+
+  // Load tab state on component mount
+  useEffect(() => {
+    loadTabState();
+  }, [loadTabState]);
+
+  // Update newsFilter when tabState changes
+  useEffect(() => {
+    if (tabState.news?.filter) {
+      setNewsFilter(tabState.news.filter);
+    }
+  }, [tabState.news?.filter]);
 
   // Restrict to high-impact news globally
   const highImpactNews = newsData.filter((n) => n.impact === 'high');
@@ -340,7 +355,7 @@ const AINewsAnalysis = () => {
 
   // Filter news based on selected tab (applied on high-impact set)
   const filteredNews = highImpactNews.filter(news => {
-    switch (filter) {
+    switch (newsFilter) {
       case 'upcoming':
         return news.actual === 'N/A' || news.actual === null;
       case 'released':
@@ -370,6 +385,18 @@ const AINewsAnalysis = () => {
     { id: 'all', label: 'All', count: highImpactNews.length }
   ];
 
+  // Handle news filter change with persistence
+  const handleFilterChange = async (filter) => {
+    setNewsFilter(filter);
+    try {
+      await updateNewsFilter(filter);
+    } catch (error) {
+      console.error('Failed to update news filter:', error);
+      // Revert on error
+      setNewsFilter(newsFilter);
+    }
+  };
+
   return (
     <div className="card z-9 relative">
       {/* Header */}
@@ -393,16 +420,16 @@ const AINewsAnalysis = () => {
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
-            onClick={() => setFilter(filterOption.id)}
+            onClick={() => handleFilterChange(filterOption.id)}
             className={`flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-              filter === filterOption.id
+              newsFilter === filterOption.id
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             {filterOption.label}
             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              filter === filterOption.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
+              newsFilter === filterOption.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
             }`}>
               {filterOption.count}
             </span>
@@ -436,9 +463,9 @@ const AINewsAnalysis = () => {
               No news available
             </h3>
             <p className="text-gray-500 text-sm">
-              {filter === 'all' 
+              {newsFilter === 'all' 
                 ? 'No news data available at the moment.'
-                : `No ${filter} news found.`}
+                : `No ${newsFilter} news found.`}
             </p>
           </div>
         )}

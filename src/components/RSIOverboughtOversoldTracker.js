@@ -1,6 +1,8 @@
 import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
+import userStateService from '../services/userStateService';
+import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
@@ -41,7 +43,10 @@ const RSIOverboughtOversoldTracker = () => {
     timeframes
   } = useRSITrackerStore();
   
-  const [activeTab, setActiveTab] = useState('oversold');
+  // Get tab state from base market store
+  const { tabState, updateRSITrackerTab, loadTabState } = useBaseMarketStore();
+  
+  const [activeTab, setActiveTab] = useState(tabState.rsiTracker?.activeTab || 'oversold');
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [localSettings, setLocalSettings] = useState({
@@ -51,6 +56,18 @@ const RSIOverboughtOversoldTracker = () => {
     rsiOversold: settings.rsiOversold
   });
 
+  // Load tab state on component mount
+  useEffect(() => {
+    loadTabState();
+  }, [loadTabState]);
+
+  // Update activeTab when tabState changes
+  useEffect(() => {
+    if (tabState.rsiTracker?.activeTab) {
+      setActiveTab(tabState.rsiTracker.activeTab);
+    }
+  }, [tabState.rsiTracker?.activeTab]);
+  
   // Auto-subscribe to major pairs when connection is established
   useEffect(() => {
     if (!isConnected || hasAutoSubscribed) return;
@@ -73,18 +90,67 @@ const RSIOverboughtOversoldTracker = () => {
     console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
   }, [rsiData, oversoldPairs.length, overboughtPairs.length]);
 
+  // Load settings from database on component mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await userStateService.getUserDashboardSettings();
+        if (savedSettings.rsiTracker) {
+          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold } = savedSettings.rsiTracker;
+          
+          // Update local settings state
+          setLocalSettings({
+            timeframe: timeframe || settings.timeframe,
+            rsiPeriod: rsiPeriod || settings.rsiPeriod,
+            rsiOverbought: rsiOverbought || settings.rsiOverbought,
+            rsiOversold: rsiOversold || settings.rsiOversold
+          });
+
+          // Update store settings
+          updateSettings({
+            timeframe: timeframe || settings.timeframe,
+            rsiPeriod: rsiPeriod || settings.rsiPeriod,
+            rsiOverbought: rsiOverbought || settings.rsiOverbought,
+            rsiOversold: rsiOversold || settings.rsiOversold
+          });
+
+        }
+      } catch (error) {
+        console.error('❌ Failed to load RSI Tracker settings:', error);
+      }
+    };
+
+    loadSettings();
+  }, [settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings]);
+
   const handleAddToWishlist = (symbol) => {
     addToWishlist(symbol);
   };
 
-  const handleSaveSettings = () => {
-    updateSettings({
-      timeframe: localSettings.timeframe,
-      rsiPeriod: localSettings.rsiPeriod,
-      rsiOverbought: localSettings.rsiOverbought,
-      rsiOversold: localSettings.rsiOversold
-    });
-    setShowSettings(false);
+  const handleSaveSettings = async () => {
+    try {
+      // Update local store first
+      updateSettings({
+        timeframe: localSettings.timeframe,
+        rsiPeriod: localSettings.rsiPeriod,
+        rsiOverbought: localSettings.rsiOverbought,
+        rsiOversold: localSettings.rsiOversold
+      });
+
+      // Persist to database
+      await userStateService.updateUserDashboardSettings({
+        rsiTracker: {
+          timeframe: localSettings.timeframe,
+          rsiPeriod: localSettings.rsiPeriod,
+          rsiOverbought: localSettings.rsiOverbought,
+          rsiOversold: localSettings.rsiOversold
+        }
+      });
+
+      setShowSettings(false);
+    } catch (error) {
+      console.error('❌ Failed to save RSI Tracker settings:', error);
+    }
   };
 
   const handleResetSettings = () => {
@@ -94,6 +160,18 @@ const RSIOverboughtOversoldTracker = () => {
       rsiOverbought: settings.rsiOverbought,
       rsiOversold: settings.rsiOversold
     });
+  };
+
+  // Handle tab change with persistence
+  const handleTabChange = async (tabId) => {
+    setActiveTab(tabId);
+    try {
+      await updateRSITrackerTab(tabId);
+    } catch (error) {
+      console.error('Failed to update RSI tracker tab state:', error);
+      // Revert on error
+      setActiveTab(activeTab);
+    }
   };
 
   const tabs = [
@@ -150,7 +228,7 @@ const RSIOverboughtOversoldTracker = () => {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-white text-gray-900 shadow-sm'

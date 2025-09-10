@@ -1,10 +1,13 @@
 import { Settings, Clock, BarChart3, TrendingUp } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
+import userStateService from '../services/userStateService';
+import useBaseMarketStore from '../store/useBaseMarketStore';
 import useMarketStore from '../store/useMarketStore';
 
 const GlobalSettingsPanel = () => {
   const { globalSettings, rsiSettings, strengthSettings, updateGlobalSettings, updateRsiSettings, updateStrengthSettings, timeframes } = useMarketStore();
+  const { updateRSIThreshold, loadTabState } = useBaseMarketStore();
   const [showSettings, setShowSettings] = useState(false);
   const [localSettings, setLocalSettings] = useState({
     timeframe: globalSettings.timeframe,
@@ -13,26 +16,92 @@ const GlobalSettingsPanel = () => {
     rsiOversold: rsiSettings.oversold,
     strengthMode: strengthSettings.mode
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
-    // Update global settings (timeframe)
-    updateGlobalSettings({
-      timeframe: localSettings.timeframe
-    });
+  const loadDashboardSettings = useCallback(async () => {
+    try {
+      const settings = await userStateService.getUserDashboardSettings();
+      
+      // Update local settings state
+      const newLocalSettings = {
+        timeframe: settings.global.timeframe,
+        rsiPeriod: settings.rsiCorrelation.rsiPeriod,
+        rsiOverbought: settings.rsiCorrelation.rsiOverbought,
+        rsiOversold: settings.rsiCorrelation.rsiOversold,
+        strengthMode: settings.currencyStrength.mode
+      };
+      
+      setLocalSettings(newLocalSettings);
+
+      // Update store settings
+      updateGlobalSettings({ timeframe: settings.global.timeframe });
+      updateRsiSettings({
+        period: settings.rsiCorrelation.rsiPeriod,
+        overbought: settings.rsiCorrelation.rsiOverbought,
+        oversold: settings.rsiCorrelation.rsiOversold
+      });
+      updateStrengthSettings({ mode: settings.currencyStrength.mode });
+      
+    } catch (error) {
+      console.error('❌ Failed to load dashboard settings:', error);
+    }
+  }, [updateGlobalSettings, updateRsiSettings, updateStrengthSettings]);
+
+  // Load settings from database on component mount
+  useEffect(() => {
+    loadTabState();
+    loadDashboardSettings();
+  }, [loadTabState, loadDashboardSettings]);
+
+  const handleSave = async () => {
+    setIsLoading(true);
     
-    // Update RSI settings (period, thresholds)
-    updateRsiSettings({
-      period: localSettings.rsiPeriod,
-      overbought: localSettings.rsiOverbought,
-      oversold: localSettings.rsiOversold
-    });
-    
-    // Update Currency Strength settings (mode)
-    updateStrengthSettings({
-      mode: localSettings.strengthMode
-    });
-    
-    setShowSettings(false);
+    try {
+      
+      // Update stores (for immediate UI response)
+      updateGlobalSettings({ timeframe: localSettings.timeframe });
+      updateRsiSettings({
+        period: localSettings.rsiPeriod,
+        overbought: localSettings.rsiOverbought,
+        oversold: localSettings.rsiOversold
+      });
+      updateStrengthSettings({ mode: localSettings.strengthMode });
+
+
+      // Persist to database
+      const settingsToSave = {
+        global: { timeframe: localSettings.timeframe },
+        rsiCorrelation: {
+          timeframe: localSettings.timeframe,
+          rsiPeriod: localSettings.rsiPeriod,
+          rsiOverbought: localSettings.rsiOverbought,
+          rsiOversold: localSettings.rsiOversold
+        },
+        rsiTracker: {
+          timeframe: localSettings.timeframe,
+          rsiPeriod: localSettings.rsiPeriod,
+          rsiOverbought: localSettings.rsiOverbought,
+          rsiOversold: localSettings.rsiOversold
+        },
+        currencyStrength: {
+          timeframe: localSettings.timeframe,
+          mode: localSettings.strengthMode
+        }
+      };
+      
+      await userStateService.updateUserDashboardSettings(settingsToSave);
+
+      // Update RSI threshold in user state (legacy support)
+      await updateRSIThreshold(localSettings.rsiOverbought, localSettings.rsiOversold);
+      
+      setShowSettings(false);
+      
+    } catch (error) {
+      console.error('❌ Failed to save dashboard settings:', error);
+      alert(`Failed to save settings: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -70,7 +139,9 @@ const GlobalSettingsPanel = () => {
           </div>
           
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => {
+              setShowSettings(true);
+            }}
             className="btn-primary flex items-center space-x-2"
           >
             <Settings className="w-4 h-4" />
@@ -209,10 +280,13 @@ const GlobalSettingsPanel = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={handleSave}
+                  onClick={() => {
+                    handleSave();
+                  }}
+                  disabled={isLoading}
                   className="btn-primary"
                 >
-                  Save Settings
+                  {isLoading ? 'Saving...' : 'Save Settings'}
                 </button>
               </div>
             </div>

@@ -2,6 +2,8 @@ import { BarChart3, LineChart as LineChartIcon, Grid, RefreshCw, TrendingUp, Tre
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 
+import userStateService from '../services/userStateService';
+import useBaseMarketStore from '../store/useBaseMarketStore';
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { formatCurrency, getCurrencyStrengthColor } from '../utils/formatters';
 
@@ -130,7 +132,10 @@ const CurrencyStrengthMeter = () => {
     timeframes
   } = useCurrencyStrengthStore();
   
-  const [viewMode, setViewMode] = useState('bars');
+  // Get tab state from base market store
+  const { tabState, updateCurrencyStrengthView, loadTabState } = useBaseMarketStore();
+  
+  const [viewMode, setViewMode] = useState(tabState.currencyStrength?.viewMode || 'bars');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
@@ -139,6 +144,18 @@ const CurrencyStrengthMeter = () => {
     mode: settings.mode,
     useEnhancedCalculation: settings.useEnhancedCalculation
   });
+
+  // Load tab state on component mount
+  useEffect(() => {
+    loadTabState();
+  }, [loadTabState]);
+
+  // Update viewMode when tabState changes
+  useEffect(() => {
+    if (tabState.currencyStrength?.viewMode) {
+      setViewMode(tabState.currencyStrength.viewMode);
+    }
+  }, [tabState.currencyStrength?.viewMode]);
 
   // Auto-subscribe to major pairs when connection is established
   useEffect(() => {
@@ -169,6 +186,37 @@ const CurrencyStrengthMeter = () => {
     return cleanup;
   }, [subscriptions.size, settings.timeframe, settings.mode, settings.useEnhancedCalculation, debouncedCalculation]);
 
+  // Load settings from database on component mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await userStateService.getUserDashboardSettings();
+        if (savedSettings.currencyStrength) {
+          const { timeframe, mode, useEnhancedCalculation } = savedSettings.currencyStrength;
+          
+          // Update local settings state
+          setLocalSettings({
+            timeframe: timeframe || settings.timeframe,
+            mode: mode || settings.mode,
+            useEnhancedCalculation: useEnhancedCalculation !== undefined ? useEnhancedCalculation : settings.useEnhancedCalculation
+          });
+
+          // Update store settings
+          updateSettings({
+            timeframe: timeframe || settings.timeframe,
+            mode: mode || settings.mode,
+            useEnhancedCalculation: useEnhancedCalculation !== undefined ? useEnhancedCalculation : settings.useEnhancedCalculation
+          });
+
+        }
+      } catch (error) {
+        console.error('❌ Failed to load Currency Strength settings:', error);
+      }
+    };
+
+    loadSettings();
+  }, [settings.mode, settings.timeframe, settings.useEnhancedCalculation, updateSettings]);
+
   // Remove the OHLC data change effect that was causing frequent updates
   // useEffect(() => {
   //   if (subscriptions.size > 0 && ohlcData.size > 0) {
@@ -194,13 +242,28 @@ const CurrencyStrengthMeter = () => {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
-  const handleSaveSettings = () => {
-    updateSettings({
-      timeframe: localSettings.timeframe,
-      mode: localSettings.mode,
-      useEnhancedCalculation: localSettings.useEnhancedCalculation
-    });
-    setShowSettings(false);
+  const handleSaveSettings = async () => {
+    try {
+      // Update local store first
+      updateSettings({
+        timeframe: localSettings.timeframe,
+        mode: localSettings.mode,
+        useEnhancedCalculation: localSettings.useEnhancedCalculation
+      });
+
+      // Persist to database
+      await userStateService.updateUserDashboardSettings({
+        currencyStrength: {
+          timeframe: localSettings.timeframe,
+          mode: localSettings.mode,
+          useEnhancedCalculation: localSettings.useEnhancedCalculation
+        }
+      });
+
+      setShowSettings(false);
+    } catch (error) {
+      console.error('❌ Failed to save Currency Strength settings:', error);
+    }
   };
 
   const handleResetSettings = () => {
@@ -209,6 +272,18 @@ const CurrencyStrengthMeter = () => {
       mode: settings.mode,
       useEnhancedCalculation: settings.useEnhancedCalculation
     });
+  };
+
+  // Handle view mode change with persistence
+  const handleViewModeChange = async (mode) => {
+    setViewMode(mode);
+    try {
+      await updateCurrencyStrengthView(mode);
+    } catch (error) {
+      console.error('Failed to update currency strength view mode:', error);
+      // Revert on error
+      setViewMode(viewMode);
+    }
   };
 
   // Memoize strength data conversion to prevent recalculation on every render
@@ -286,7 +361,7 @@ const CurrencyStrengthMeter = () => {
           return (
             <button
               key={mode.id}
-              onClick={() => setViewMode(mode.id)}
+              onClick={() => handleViewModeChange(mode.id)}
               className={`flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                 viewMode === mode.id
                   ? 'bg-white text-gray-900 shadow-sm'
