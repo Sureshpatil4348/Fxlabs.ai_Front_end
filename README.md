@@ -398,6 +398,42 @@ ESLint is configured via `.eslintrc.json` and ignores common build directories v
 - Handles connection timing issues by queuing subscriptions until connection is established
 - Resolves symbol format mismatch between watchlist storage (CHFJPY) and RSI data keys (CHFJPYm)
 
+### Code Quality Improvements (September 2025)
+
+**Refactoring Completed:**
+- **DRY Principle Applied**: Extracted duplicated symbol normalization logic from `addToWatchlist`, `removeFromWatchlist`, and `isInWatchlist` methods into a single private `_normalizeSymbol` method
+- **Consistent Error Handling**: All three methods now use the same normalization logic and handle null returns appropriately
+- **Improved Maintainability**: Changes to symbol normalization logic now only need to be made in one place
+- **Clean Code**: Reduced code duplication by ~15 lines while maintaining the same functionality
+
+**Files Modified:**
+- `src/services/watchlistService.js`: Refactored to use centralized `_normalizeSymbol` method
+
+### SyncWatchlist Method Enhancement (September 2025)
+
+**Improvements Made:**
+- **Concurrent Operations**: Replaced sequential add/remove operations with `Promise.allSettled` for concurrent execution
+- **Resilient Error Handling**: Individual operation failures no longer abort the entire sync process
+- **Detailed Result Tracking**: Enhanced return object includes succeeded and failed operations with specific error details
+- **Partial Sync Support**: Callers can now reconcile partial syncs and handle individual failures gracefully
+- **Performance Optimization**: Concurrent execution significantly improves sync performance for large watchlists
+
+**Enhanced Return Object:**
+```javascript
+{
+  added: ['EURUSD', 'GBPUSD'],           // Successfully added symbols
+  removed: ['USDJPY'],                   // Successfully removed symbols
+  addFailures: [{ symbol: 'INVALID', error: 'Symbol is required' }], // Failed additions
+  removeFailures: [],                    // Failed removals
+  synced: false,                         // True only if all operations succeeded
+  totalOperations: 3,                    // Total operations attempted
+  successfulOperations: 2                // Operations that succeeded
+}
+```
+
+**Files Modified:**
+- `src/services/watchlistService.js`: Enhanced `syncWatchlist` method with concurrent operations and comprehensive error handling
+
 ### Currency Strength Meter Performance Optimization (September 2025)
 
 **Issues Fixed:**

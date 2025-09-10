@@ -221,9 +221,7 @@ const CurrencyStrengthMeter = () => {
       .sort((a, b) => b.strength - a.strength);
   }, [currencyStrength]);
 
-  // Debug logging
-  // eslint-disable-next-line no-console
-  console.log('Currency Strength UI Debug:', strengthData);
+  
 
   // Memoize top and bottom currencies to prevent recalculation
   const topCurrencies = useMemo(() => 
