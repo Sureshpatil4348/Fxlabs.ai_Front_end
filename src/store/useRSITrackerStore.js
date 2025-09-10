@@ -23,6 +23,7 @@ const useRSITrackerStore = create(
     isConnecting: false,
     connectionError: null,
     websocket: null,
+    pendingWatchlistSubscriptions: new Set(), // symbols waiting to be subscribed
     
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
@@ -66,6 +67,31 @@ const useRSITrackerStore = create(
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
           get().addLog('Connected to MT5 server (RSI Tracker)', 'success');
+          
+          // Subscribe to any pending watchlist symbols
+          const { pendingWatchlistSubscriptions, settings } = get();
+          if (pendingWatchlistSubscriptions.size > 0) {
+            pendingWatchlistSubscriptions.forEach(symbol => {
+              get().subscribe(symbol, settings.timeframe, ['ticks', 'ohlc']);
+            });
+            set({ pendingWatchlistSubscriptions: new Set() });
+          }
+          
+          // Also subscribe to any existing watchlist symbols
+          setTimeout(async () => {
+            try {
+              const useBaseMarketStore = await import('./useBaseMarketStore');
+              const watchlistSymbols = useBaseMarketStore.default.getState().getWishlistArray();
+              watchlistSymbols.forEach(symbol => {
+                const symbolWithM = symbol + 'm';
+                if (!get().subscriptions.has(symbolWithM)) {
+                  get().subscribe(symbolWithM, settings.timeframe, ['ticks', 'ohlc']);
+                }
+              });
+            } catch (error) {
+              console.error('Failed to subscribe to existing watchlist symbols:', error);
+            }
+          }, 500);
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -533,6 +559,32 @@ const useRSITrackerStore = create(
 
     isInWishlist: (symbol) => {
       return useBaseMarketStore.getState().isInWishlist(symbol);
+    },
+
+    // Handle watchlist symbol subscription
+    subscribeWatchlistSymbol: (symbol) => {
+      const state = get();
+      let normalized = (symbol || "").trim().toUpperCase();
+      
+      // Add 'm' suffix for RSI Tracker compatibility if not already present
+      if (!normalized.endsWith('M') && !normalized.endsWith('m')) {
+        normalized = normalized + 'm';
+      }
+      
+      if (state.isConnected && !state.subscriptions.has(normalized)) {
+        // Subscribe immediately if connected
+        get().subscribe(normalized, state.settings.timeframe, ['ticks', 'ohlc']);
+      } else if (!state.isConnected) {
+        // Add to pending subscriptions if not connected
+        const pending = new Set(state.pendingWatchlistSubscriptions);
+        pending.add(normalized);
+        set({ pendingWatchlistSubscriptions: pending });
+        
+        // Try to connect if not already connecting
+        if (!state.isConnecting) {
+          get().connect();
+        }
+      }
     }
   }))
 );

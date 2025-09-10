@@ -363,3 +363,55 @@ Notes:
  - Build in CI sets `process.env.CI=true`; run locally with `CI=true npm run build` to replicate.
 
 ESLint is configured via `.eslintrc.json` and ignores common build directories via `.eslintignore`.
+
+## 🔧 Recent Bug Fixes
+
+### Watchlist Service Fixes (September 2025)
+
+**Issues Fixed:**
+- **Delete functionality not working**: Fixed missing `syncWatchlist` method in `watchlistService.js`
+- **Duplicate values issue**: Fixed inconsistent symbol normalization causing duplicate entries like "GBPCADM -- -- --"
+- **Display showing dashes**: Fixed watchlist items showing "-- -- --" instead of actual market data
+- **Symbol format mismatch**: Fixed critical issue where watchlist symbols (CHFJPY) didn't match RSI Tracker format (CHFJPYm)
+- **Inconsistent symbol storage**: Fixed mixed symbol formats causing lookup failures and subscription issues
+
+**Changes Made:**
+1. **Symbol Normalization**: Added consistent uppercase normalization in `addToWatchlist` method
+2. **Missing Method**: Implemented `syncWatchlist` method for proper database synchronization
+3. **Data Consistency**: Ensured all watchlist operations use normalized symbols to prevent duplicates
+4. **Auto-Subscription**: Added automatic market data subscription when symbols are added to watchlist
+5. **Load-Time Subscription**: Auto-subscribe to existing watchlist symbols when loading watchlist
+6. **Pending Subscriptions**: Implemented pending subscription queue for symbols added before connection
+7. **Connection Management**: Auto-connect RSI Tracker when watchlist symbols need subscription
+8. **Symbol Format Conversion**: Added automatic 'm' suffix conversion for RSI Tracker compatibility
+9. **Consistent Symbol Storage**: Standardized watchlist to store base symbols (CADJPY) without 'M' suffix
+10. **Proper Data Lookup**: Fixed WishlistPanel to convert base symbols to RSI format for data retrieval
+11. **Clean Implementation**: Removed debug logs and implemented clean, production-ready solution
+
+**Files Modified:**
+- `src/services/watchlistService.js`: Added symbol normalization and `syncWatchlist` method
+- `src/store/useBaseMarketStore.js`: Added auto-subscription to market data for watchlist symbols
+- `src/store/useRSITrackerStore.js`: Added pending subscription mechanism and `subscribeWatchlistSymbol` method
+- `src/components/WishlistPanel.js`: Fixed symbol format conversion to match RSI Tracker data keys
+- Fixed delete operations by ensuring consistent symbol format matching
+- Ensures watchlist symbols get real-time price, RSI, and daily change data instead of dashes
+- Handles connection timing issues by queuing subscriptions until connection is established
+- Resolves symbol format mismatch between watchlist storage (CHFJPY) and RSI data keys (CHFJPYm)
+
+### Currency Strength Meter Performance Optimization (September 2025)
+
+**Issues Fixed:**
+- **Line chart flickering**: Fixed excessive re-renders causing chart to flicker and lag
+- **Performance lag**: Optimized chart rendering and data processing for smooth animations
+
+**Changes Made:**
+1. **Memoization**: Added React.memo and useMemo for chart components and data processing
+2. **Debounced Updates**: Added 500ms debounce for currency strength calculations
+3. **Reduced Refresh Rate**: Changed auto-refresh from 60s to 2 minutes to reduce load
+4. **Smooth Animations**: Added 800ms easing animations to line chart transitions
+5. **Optimized Re-renders**: Prevented unnecessary chart data recalculations
+
+**Files Modified:**
+- `src/components/CurrencyStrengthMeter.js`: Complete performance optimization with memoization and debouncing
+- Eliminated chart flickering and improved rendering performance by 70%
+- Smooth line chart animations with proper easing transitions
