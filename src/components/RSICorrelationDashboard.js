@@ -389,9 +389,9 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="card z-10 relative">
+    <div className="card z-10 relative h-full overflow-y-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-3 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
@@ -455,7 +455,7 @@ const RSICorrelationDashboard = () => {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <div className="text-2xl font-bold text-gray-900">{totalPairs}</div>
           <div className="text-xs text-gray-600">Total Pairs</div>
@@ -480,50 +480,48 @@ const RSICorrelationDashboard = () => {
         </div>
       </div>
 
-      {/* Mobile List Layout */}
-      <div className="block sm:hidden">
-        <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      {/* Content Area */}
+      <div>
+        {/* Mobile List Layout */}
+        <div className="block sm:hidden">
+          <div className="space-y-2 pr-2">
+            {gridPairs.map(([pairKey, pairData]) => {
+              const [symbol1, symbol2] = pairKey.split('_');
+              return (
+                <div key={pairKey} className="w-full">
+                  <CorrelationPairCard
+                    pairKey={pairKey}
+                    pairData={pairData}
+                    pair={[symbol1, symbol2]}
+                    calculationMode={localSettings.calculationMode}
+                    realCorrelationData={realCorrelationData}
+                    isMobile={true}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Desktop Grid Layout - Dynamic columns based on available width */}
+        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2">
           {gridPairs.map(([pairKey, pairData]) => {
             const [symbol1, symbol2] = pairKey.split('_');
             return (
-              <div key={pairKey} className="w-full">
-                <CorrelationPairCard
-                  pairKey={pairKey}
-                  pairData={pairData}
-                  pair={[symbol1, symbol2]}
-                  calculationMode={localSettings.calculationMode}
-                  realCorrelationData={realCorrelationData}
-                  isMobile={true}
-                />
-              </div>
+              <CorrelationPairCard
+                key={pairKey}
+                pairKey={pairKey}
+                pairData={pairData}
+                pair={[symbol1, symbol2]}
+                calculationMode={localSettings.calculationMode}
+                realCorrelationData={realCorrelationData}
+                isMobile={false}
+              />
             );
           })}
+          
+          {/* Grid automatically handles layout - no need for empty slots */}
         </div>
-        {gridPairs.length > 4 && (
-          <div className="text-center mt-2 text-xs text-gray-500">
-            Showing {Math.min(4, gridPairs.length)} of {gridPairs.length} pairs • Scroll to see more
-          </div>
-        )}
-      </div>
-
-      {/* Desktop Grid Layout - Dynamic columns based on available width */}
-      <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 3xl:grid-cols-10 gap-2">
-        {gridPairs.map(([pairKey, pairData]) => {
-          const [symbol1, symbol2] = pairKey.split('_');
-          return (
-            <CorrelationPairCard
-              key={pairKey}
-              pairKey={pairKey}
-              pairData={pairData}
-              pair={[symbol1, symbol2]}
-              calculationMode={localSettings.calculationMode}
-              realCorrelationData={realCorrelationData}
-              isMobile={false}
-            />
-          );
-        })}
-        
-        {/* Grid automatically handles layout - no need for empty slots */}
       </div>
 
       {/* Settings Modal */}

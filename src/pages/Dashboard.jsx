@@ -48,7 +48,7 @@
     }, [loadTabState]);
 
     return (
-      <div className="relative min-h-screen bg-gray-100">
+      <div className="relative h-screen bg-gray-100 overflow-hidden flex flex-col">
         {/* Loading Overlay - Render at root level to avoid layout constraints */}
         {showLoader && (
           <LoadingOverlay
@@ -62,26 +62,39 @@
         {/* Navbar */}
         <Navbar />
 
-        {/* Main Content */}
-        <main className="w-full p-1">
-
-          {/* Dashboard Grid - Responsive columns based on screen width */}
-          <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-1">
-            {/* Left Column - RSI Correlation Dashboard and Currency Strength Meter stacked */}
-            <div className="lg:col-span-4 xl:col-span-5 2xl:col-span-6 space-y-1">
-              <RSICorrelationDashboard />
+        {/* Main Content - Takes remaining screen height */}
+        <main className="flex-1 min-h-0 p-1">
+          {/* Dashboard Grid - Perfect screen fit layout based on your diagram */}
+          <div className="h-full grid grid-cols-12 grid-rows-12 gap-1">
+            
+            {/* Section 1 - Currency Strength Meter (largest area - top left) */}
+            <div className="col-span-7 row-span-7">
               <CurrencyStrengthMeter />
             </div>
 
-            {/* Right Column - RSI Tracker, Wishlist, and AI News stacked (even slimmer) */}
-            <div className="lg:col-span-2 xl:col-span-2 2xl:col-span-2 flex flex-col space-y-1 h-full">
+            {/* Section 3rd - RSI Tracker (top right) */}
+            <div className="col-span-5 row-span-4">
               <RSIOverboughtOversoldTracker />
+            </div>
+
+            {/* Section 4th - Wishlist Panel (middle right) - Minimized height */}
+            <div className="col-span-5 row-span-1 ">
               <WishlistPanel />
+            </div>
+
+            
+
+            {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
+            <div className="col-span-7 row-span-5">
+              <RSICorrelationDashboard />
+            </div>
+
+            {/* Section 5th - AI News Analysis (bottom right) - Increased height */}
+            <div className="col-span-5 row-span-6">
               <AINewsAnalysis />
             </div>
-          </div>
 
-          
+          </div>
         </main>
       </div>
     )

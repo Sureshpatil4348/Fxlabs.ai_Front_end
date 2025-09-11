@@ -313,9 +313,9 @@ const CurrencyStrengthMeter = () => {
   ];
 
   return (
-    <div className="card z-9 relative">
+    <div className="card z-9 relative h-full overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
           <p className="text-sm text-gray-500">
@@ -355,7 +355,7 @@ const CurrencyStrengthMeter = () => {
       </div>
 
       {/* View Mode Toggle */}
-      <div className="flex space-x-1 mb-6 p-1 bg-gray-100 rounded-lg">
+      <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
         {viewModes.map((mode) => {
           const Icon = mode.icon;
           return (
@@ -376,86 +376,136 @@ const CurrencyStrengthMeter = () => {
       </div>
 
       {/* Content based on view mode */}
-      {strengthData.length > 0 ? (
-        <>
-          {viewMode === 'bars' && (
-            <div className="space-y-2">
-              {strengthData.map((item) => (
-                <CurrencyStrengthBar
-                  key={item.currency}
-                  currency={item.currency}
-                  strength={item.strength}
-                  isTop={topCurrencies.includes(item.currency)}
-                  isBottom={bottomCurrencies.includes(item.currency)}
-                />
-              ))}
-            </div>
-          )}
-
-          {viewMode === 'lines' && (
-            <StrengthChart data={strengthData} type="line" />
-          )}
-
-          {viewMode === 'heatmap' && (
-            <CurrencyHeatmap strengthData={strengthData} />
-          )}
-
-          {/* Summary */}
-          <div className="mt-10 grid grid-cols-2 gap-4">
-            <div className="p-4 bg-success-50 rounded-lg">
-              <h4 className="text-sm font-medium text-success-700 mb-2">Strongest Currencies</h4>
-              <div className="space-y-1">
-                {strengthData.slice(0, 2).map((item) => {
-                  const currencyInfo = formatCurrency(item.currency);
-                  return (
-                    <div key={item.currency} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span>{currencyInfo.flag}</span>
-                        <span className="text-sm font-medium">{item.currency}</span>
-                      </div>
-                      <span className="text-sm font-bold text-success-600">
-                        {item.strength.toFixed(1)}
-                      </span>
-                    </div>
-                  );
-                })}
+      <div>
+        {strengthData.length > 0 ? (
+          <>
+            {viewMode === 'bars' && (
+              <div className="space-y-2">
+                {strengthData.map((item) => (
+                  <CurrencyStrengthBar
+                    key={item.currency}
+                    currency={item.currency}
+                    strength={item.strength}
+                    isTop={topCurrencies.includes(item.currency)}
+                    isBottom={bottomCurrencies.includes(item.currency)}
+                  />
+                ))}
               </div>
-            </div>
+            )}
 
-            <div className="p-4 bg-danger-50 rounded-lg">
-              <h4 className="text-sm font-medium text-danger-700 mb-2">Weakest Currencies</h4>
-              <div className="space-y-1">
-                {strengthData.slice(-2).reverse().map((item) => {
-                  const currencyInfo = formatCurrency(item.currency);
-                  return (
-                    <div key={item.currency} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span>{currencyInfo.flag}</span>
-                        <span className="text-sm font-medium">{item.currency}</span>
-                      </div>
-                      <span className="text-sm font-bold text-danger-600">
-                        {item.strength.toFixed(1)}
-                      </span>
+            {viewMode === 'lines' && (
+              <>
+                <div className="h-48">
+                  <StrengthChart data={strengthData} type="line" />
+                </div>
+                {/* Summary below line chart */}
+                <div className="mt-28 grid grid-cols-2 gap-12 ">
+                  <div className="p-3 bg-success-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-success-700 mb-2">Strongest Currencies</h4>
+                    <div className="space-y-1">
+                      {strengthData.slice(0, 2).map((item) => {
+                        const currencyInfo = formatCurrency(item.currency);
+                        return (
+                          <div key={item.currency} className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <span>{currencyInfo.flag}</span>
+                              <span className="text-sm font-medium">{item.currency}</span>
+                            </div>
+                            <span className="text-sm font-bold text-success-600">
+                              {item.strength.toFixed(1)}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  </div>
+
+                  <div className="p-3 bg-danger-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-danger-700 mb-2">Weakest Currencies</h4>
+                    <div className="space-y-1">
+                      {strengthData.slice(-2).reverse().map((item) => {
+                        const currencyInfo = formatCurrency(item.currency);
+                        return (
+                          <div key={item.currency} className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <span>{currencyInfo.flag}</span>
+                              <span className="text-sm font-medium">{item.currency}</span>
+                            </div>
+                            <span className="text-sm font-bold text-danger-600">
+                              {item.strength.toFixed(1)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {viewMode === 'heatmap' && (
+              <CurrencyHeatmap strengthData={strengthData} />
+            )}
+
+            {/* Summary for bars and heatmap modes */}
+            {(viewMode === 'bars' || viewMode === 'heatmap') && (
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="p-3 bg-success-50 rounded-lg">
+                  <h4 className="text-sm font-medium text-success-700 mb-2">Strongest Currencies</h4>
+                  <div className="space-y-1">
+                    {strengthData.slice(0, 2).map((item) => {
+                      const currencyInfo = formatCurrency(item.currency);
+                      return (
+                        <div key={item.currency} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span>{currencyInfo.flag}</span>
+                            <span className="text-sm font-medium">{item.currency}</span>
+                          </div>
+                          <span className="text-sm font-bold text-success-600">
+                            {item.strength.toFixed(1)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-danger-50 rounded-lg">
+                  <h4 className="text-sm font-medium text-danger-700 mb-2">Weakest Currencies</h4>
+                  <div className="space-y-1">
+                    {strengthData.slice(-2).reverse().map((item) => {
+                      const currencyInfo = formatCurrency(item.currency);
+                      return (
+                        <div key={item.currency} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span>{currencyInfo.flag}</span>
+                            <span className="text-sm font-medium">{item.currency}</span>
+                          </div>
+                          <span className="text-sm font-bold text-danger-600">
+                            {item.strength.toFixed(1)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-gray-400" />
             </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No strength data available
+            </h3>
+            <p className="text-gray-500 text-sm">
+              Currency strength will be calculated based on subscribed pairs.
+            </p>
           </div>
-        </>
-      ) : (
-        <div className="text-center py-12">
-          <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <BarChart3 className="w-6 h-6 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No strength data available
-          </h3>
-          <p className="text-gray-500 text-sm">
-            Currency strength will be calculated based on subscribed pairs.
-          </p>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Settings Modal */}
       {showSettings && (
