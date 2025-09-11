@@ -14,11 +14,13 @@ const formatSymbol = (input) => {
   return trimmed;
 };
 
-// Enhanced currency pairs for strength calculation - All 28 major/minor combinations
-const ENHANCED_CURRENCY_PAIRS = [
-  // Major pairs (7)
-  'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm',
-  
+// Core currency pairs - Major pairs only (7 pairs)
+const CORE_PAIRS = [
+  'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm'
+];
+
+// Extended currency pairs - Cross pairs (21 pairs)
+const EXTENDED_PAIRS = [
   // EUR crosses (6)
   'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',
   
@@ -38,15 +40,28 @@ const ENHANCED_CURRENCY_PAIRS = [
   'CHFJPYm'
 ];
 
+// Precious Metals pairs
+const PRECIOUS_METALS_PAIRS = [
+  'XAUUSDm', // Gold
+  'XAGUSDm'  // Silver
+];
+
+// Cryptocurrency pairs
+const CRYPTO_PAIRS = [
+  'BTCUSDm', // Bitcoin
+  'ETHUSDm'  // Ethereum
+];
+
+// All currency pairs - Combined core, extended, precious metals, and crypto (32 pairs total)
+const ALL_PAIRS = [...CORE_PAIRS, ...EXTENDED_PAIRS, ...PRECIOUS_METALS_PAIRS, ...CRYPTO_PAIRS];
+
+// Enhanced currency pairs for strength calculation - All 28 major/minor combinations (legacy support)
+// eslint-disable-next-line no-unused-vars
+const ENHANCED_CURRENCY_PAIRS = ALL_PAIRS;
+
 // Major currency pairs for strength calculation (legacy support)
 // eslint-disable-next-line no-unused-vars
-const MAJOR_PAIRS = [
-  'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm',
-  'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',
-  'GBPJPYm', 'GBPCHFm', 'GBPAUDm', 'GBPCADm', 'GBPNZDm',
-  'AUDJPYm', 'AUDCHFm', 'AUDCADm', 'AUDNZDm',
-  'CADJPYm', 'CADCHFm', 'CHFJPYm', 'NZDJPYm', 'NZDCHFm', 'NZDCADm'
-];
+const MAJOR_PAIRS = ALL_PAIRS;
 
 const useCurrencyStrengthStore = create(
   subscribeWithSelector((set, get) => ({
@@ -69,8 +84,9 @@ const useCurrencyStrengthStore = create(
     settings: {
       timeframe: '1H',
       mode: 'closed', // 'closed' | 'live'
-      autoSubscribeSymbols: ENHANCED_CURRENCY_PAIRS, // Use enhanced pairs
-      useEnhancedCalculation: true // Toggle between old and new calculation methods
+      autoSubscribeSymbols: ALL_PAIRS, // Use all pairs (core + extended)
+      useEnhancedCalculation: true, // Toggle between old and new calculation methods
+      pairSet: 'all' // 'core', 'extended', 'all' - for filtering
     },
     
     // UI state
@@ -670,6 +686,41 @@ const useCurrencyStrengthStore = create(
     getTicksForSymbol: (symbol) => {
       const tickData = get().tickData.get(symbol);
       return tickData ? tickData.ticks : [];
+    },
+
+    // Helper functions for pair management
+    getFilteredPairs: (pairSet = 'all') => {
+      switch (pairSet) {
+        case 'core':
+          return CORE_PAIRS;
+        case 'extended':
+          return EXTENDED_PAIRS;
+        case 'precious_metals':
+          return PRECIOUS_METALS_PAIRS;
+        case 'crypto':
+          return CRYPTO_PAIRS;
+        case 'all':
+        default:
+          return ALL_PAIRS;
+      }
+    },
+
+    updatePairSet: (pairSet) => {
+      const state = get();
+      const filteredPairs = get().getFilteredPairs(pairSet);
+      
+      set({
+        settings: {
+          ...state.settings,
+          pairSet,
+          autoSubscribeSymbols: filteredPairs
+        }
+      });
+      
+      // Re-subscribe to new pair set if connected
+      if (state.isConnected) {
+        get().autoSubscribeToMajorPairs();
+      }
     },
 
     // Auto-subscription for enhanced currency pairs

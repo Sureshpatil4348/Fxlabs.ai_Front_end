@@ -32,7 +32,18 @@ class UserStateService {
     if (!data) {
       return {
         rsiThreshold: { overbought: 70, oversold: 30 },
-        rsiTracker: { activeTab: 'oversold' },
+        rsiTracker: { 
+          activeTab: 'oversold',
+          viewMode: 'table',
+          filters: {
+            rsiRange: { min: 0, max: 100 },
+            rfiRange: { min: -1, max: 1 },
+            pairType: 'all',
+            signal: 'all',
+            volume: 'all'
+          },
+          sortOptions: { by: 'rsi', order: 'desc' }
+        },
         currencyStrength: { viewMode: 'bars' },
         news: { filter: 'upcoming' }
       };
@@ -94,7 +105,18 @@ class UserStateService {
   async resetUserTabState() {
     const defaultState = {
       rsiThreshold: { overbought: 70, oversold: 30 },
-      rsiTracker: { activeTab: 'oversold' },
+      rsiTracker: { 
+        activeTab: 'oversold',
+        viewMode: 'table',
+        filters: {
+          rsiRange: { min: 0, max: 100 },
+          rfiRange: { min: -1, max: 1 },
+          pairType: 'all',
+          signal: 'all',
+          volume: 'all'
+        },
+        sortOptions: { by: 'rsi', order: 'desc' }
+      },
       currencyStrength: { viewMode: 'bars' },
       news: { filter: 'upcoming' }
     };
