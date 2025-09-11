@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
+import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 
 // WebSocket URL configuration
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
@@ -34,6 +35,18 @@ const useRSITrackerStore = create(
     // RSI Data
     rsiData: new Map(), // symbol -> RSI values
     
+    // RFI Data
+    rfiData: new Map(), // symbol -> RFI analysis
+    
+    // RSI Historical Data
+    rsiHistory: new Map(), // symbol -> array of historical RSI values with timestamps
+    
+    // RSI Event Tracking
+    rsiEvents: new Map(), // symbol -> array of crossdown/crossup events
+    
+    // Price History for Sparklines
+    priceHistory: new Map(), // symbol -> array of price data for sparklines
+    
     // Dashboard-specific settings
     settings: {
       timeframe: '1H',
@@ -45,8 +58,13 @@ const useRSITrackerStore = create(
         'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',
         'GBPJPYm', 'GBPCHFm', 'GBPAUDm', 'GBPCADm', 'GBPNZDm',
         'AUDJPYm', 'AUDCHFm', 'AUDCADm', 'AUDNZDm',
-        'CADJPYm', 'CADCHFm', 'CHFJPYm', 'NZDJPYm', 'NZDCHFm', 'NZDCADm'
-      ]
+        'CADJPYm', 'CADCHFm', 'CHFJPYm', 'NZDJPYm', 'NZDCHFm', 'NZDCADm',
+        // Precious Metals
+        'XAUUSDm', 'XAGUSDm',
+        // Cryptocurrencies
+        'BTCUSDm', 'ETHUSDm'
+      ],
+      pairSet: 'all' // 'core', 'extended', 'all' - for filtering
     },
     
     // UI state
@@ -425,20 +443,196 @@ const useRSITrackerStore = create(
     recalculateAllRsi: () => {
       const state = get();
       const newRsiData = new Map();
+      const newRsiHistory = new Map(state.rsiHistory);
+      const newRsiEvents = new Map(state.rsiEvents);
+      const newPriceHistory = new Map(state.priceHistory);
 
       // Calculate RSI for all subscribed symbols
       state.subscriptions.forEach((sub, symbol) => {
         const rsi = get().calculateRsi(symbol, state.settings.rsiPeriod);
         if (rsi !== null) {
-          newRsiData.set(symbol, {
+          const currentTime = new Date();
+          const rsiInfo = {
             value: rsi,
-            timestamp: new Date(),
+            timestamp: currentTime,
             period: state.settings.rsiPeriod
+          };
+          
+          newRsiData.set(symbol, rsiInfo);
+          
+          // Store historical RSI data
+          if (!newRsiHistory.has(symbol)) {
+            newRsiHistory.set(symbol, []);
+          }
+          const history = newRsiHistory.get(symbol);
+          history.push({
+            value: rsi,
+            timestamp: currentTime
+          });
+          
+          // Keep only last 100 historical values
+          if (history.length > 100) {
+            history.shift();
+          }
+          
+          // Track RSI events (crossdown/crossup)
+          get().trackRsiEvents(symbol, rsi, newRsiEvents);
+          
+          // Store price history for sparklines
+          const latestTick = get().getLatestTickForSymbol(symbol);
+          const latestBar = get().getLatestOhlcForSymbol(symbol);
+          const currentPrice = latestTick?.bid || latestBar?.close || 0;
+          
+          if (!newPriceHistory.has(symbol)) {
+            newPriceHistory.set(symbol, []);
+          }
+          const priceHistory = newPriceHistory.get(symbol);
+          priceHistory.push({
+            price: currentPrice,
+            timestamp: currentTime
+          });
+          
+          // Keep only last 50 price points for sparklines
+          if (priceHistory.length > 50) {
+            priceHistory.shift();
+          }
+        }
+      });
+
+      set({ 
+        rsiData: newRsiData,
+        rsiHistory: newRsiHistory,
+        rsiEvents: newRsiEvents,
+        priceHistory: newPriceHistory
+      });
+      
+      // Also calculate RFI after RSI calculation
+      get().recalculateAllRfi();
+    },
+
+    // RSI Event Tracking
+    trackRsiEvents: (symbol, currentRsi, eventsMap) => {
+      const state = get();
+      const { rsiOverbought, rsiOversold } = state.settings;
+      
+      if (!eventsMap.has(symbol)) {
+        eventsMap.set(symbol, []);
+      }
+      
+      const events = eventsMap.get(symbol);
+      const history = state.rsiHistory.get(symbol) || [];
+      
+      // Need at least 2 data points to detect events
+      if (history.length < 2) return;
+      
+      const previousRsi = history[history.length - 2].value;
+      const currentTime = new Date();
+      
+      // Detect crossdown events (RSI crossing below oversold threshold)
+      if (previousRsi > rsiOversold && currentRsi <= rsiOversold) {
+        events.push({
+          type: 'crossdown',
+          rsi: currentRsi,
+          threshold: rsiOversold,
+          timestamp: currentTime,
+          description: `RSI crossed below oversold (${rsiOversold})`
+        });
+      }
+      
+      // Detect crossup events (RSI crossing above overbought threshold)
+      if (previousRsi < rsiOverbought && currentRsi >= rsiOverbought) {
+        events.push({
+          type: 'crossup',
+          rsi: currentRsi,
+          threshold: rsiOverbought,
+          timestamp: currentTime,
+          description: `RSI crossed above overbought (${rsiOverbought})`
+        });
+      }
+      
+      // Detect exit from oversold (RSI crossing above oversold threshold)
+      if (previousRsi <= rsiOversold && currentRsi > rsiOversold) {
+        events.push({
+          type: 'exit_oversold',
+          rsi: currentRsi,
+          threshold: rsiOversold,
+          timestamp: currentTime,
+          description: `RSI exited oversold zone (${rsiOversold})`
+        });
+      }
+      
+      // Detect exit from overbought (RSI crossing below overbought threshold)
+      if (previousRsi >= rsiOverbought && currentRsi < rsiOverbought) {
+        events.push({
+          type: 'exit_overbought',
+          rsi: currentRsi,
+          threshold: rsiOverbought,
+          timestamp: currentTime,
+          description: `RSI exited overbought zone (${rsiOverbought})`
+        });
+      }
+      
+      // Keep only last 20 events per symbol
+      if (events.length > 20) {
+        events.shift();
+      }
+    },
+
+    // Get recent RSI events for a symbol
+    getRsiEvents: (symbol, limit = 5) => {
+      const events = get().rsiEvents.get(symbol) || [];
+      return events.slice(-limit).reverse(); // Most recent first
+    },
+
+    // Get RSI history for a symbol
+    getRsiHistory: (symbol, limit = 20) => {
+      const history = get().rsiHistory.get(symbol) || [];
+      return history.slice(-limit);
+    },
+
+    // Get price history for sparklines
+    getPriceHistory: (symbol, limit = 20) => {
+      const history = get().priceHistory.get(symbol) || [];
+      return history.slice(-limit);
+    },
+
+    // RFI Calculation Actions
+    recalculateAllRfi: () => {
+      const state = get();
+      const symbolData = new Map();
+
+      // Prepare data for RFI calculation
+      state.subscriptions.forEach((sub, symbol) => {
+        const rsiInfo = state.rsiData.get(symbol);
+        const ohlcInfo = state.ohlcData.get(symbol);
+        const _tickInfo = state.tickData.get(symbol); // Unused variable, prefixed with underscore
+
+        if (rsiInfo && ohlcInfo) {
+          // Get recent RSI values (simulate historical RSI for flow calculation)
+          const rsiValues = [rsiInfo.value, rsiInfo.value * 0.95, rsiInfo.value * 1.05]; // Simplified
+          
+          // Get recent price data
+          const bars = ohlcInfo.bars.slice(-10); // Last 10 bars
+          const priceData = bars.map(bar => bar.close);
+          
+          // Get volume data (simulate from price movement)
+          const volumeData = bars.map((bar, index) => {
+            if (index === 0) return 1000000; // Base volume
+            const priceChange = Math.abs(bar.close - bars[index - 1].close) / bars[index - 1].close;
+            return 1000000 * (1 + priceChange * 5); // Volume based on price volatility
+          });
+
+          symbolData.set(symbol, {
+            rsiValues,
+            priceData,
+            volumeData
           });
         }
       });
 
-      set({ rsiData: newRsiData });
+      // Calculate RFI for all symbols
+      const rfiResults = calculateRFIForSymbols(symbolData);
+      set({ rfiData: rfiResults });
     },
     
     // Utility Actions
@@ -487,12 +681,15 @@ const useRSITrackerStore = create(
         if (rsiInfo.value <= state.settings.rsiOversold) {
           const latestTick = get().getLatestTickForSymbol(symbol);
           const latestBar = get().getLatestOhlcForSymbol(symbol);
+          const rfiData = state.rfiData.get(symbol);
           
           oversold.push({
             symbol,
             rsi: rsiInfo.value,
+            rfiData,
             price: latestTick?.bid || latestBar?.close || 0,
-            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0
+            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+            volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0 // Simulated volume
           });
         }
       });
@@ -508,17 +705,43 @@ const useRSITrackerStore = create(
         if (rsiInfo.value >= state.settings.rsiOverbought) {
           const latestTick = get().getLatestTickForSymbol(symbol);
           const latestBar = get().getLatestOhlcForSymbol(symbol);
+          const rfiData = state.rfiData.get(symbol);
           
           overbought.push({
             symbol,
             rsi: rsiInfo.value,
+            rfiData,
             price: latestTick?.bid || latestBar?.close || 0,
-            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0
+            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+            volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0 // Simulated volume
           });
         }
       });
       
       return overbought.sort((a, b) => b.rsi - a.rsi);
+    },
+
+    // Enhanced analysis functions with RFI
+    getAllPairsWithRFI: () => {
+      const state = get();
+      const allPairs = [];
+      
+      state.rsiData.forEach((rsiInfo, symbol) => {
+        const latestTick = get().getLatestTickForSymbol(symbol);
+        const latestBar = get().getLatestOhlcForSymbol(symbol);
+        const rfiData = state.rfiData.get(symbol);
+        
+        allPairs.push({
+          symbol,
+          rsi: rsiInfo.value,
+          rfiData,
+          price: latestTick?.bid || latestBar?.close || 0,
+          change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+          volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0
+        });
+      });
+      
+      return allPairs;
     },
 
     // Auto-subscription for major pairs

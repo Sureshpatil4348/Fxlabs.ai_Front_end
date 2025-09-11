@@ -1,9 +1,13 @@
-import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings, Filter } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
+import ExpandablePairRow from './ExpandablePairRow';
+import FilterPanel from './FilterPanel';
+import RFIScoreCard from './RFIScoreCard';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
+import { filterAndSortPairs, getDefaultFilters, getDefaultSortOptions } from '../utils/filterUtils';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
@@ -11,16 +15,16 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
 
   return (
     <tr className={`hover:bg-gray-50 cursor-pointer ${isInWishlist ? 'bg-gray-100' : ''}`} onClick={() => onAddToWishlist(symbol)}>
-      <td className="px-0.5 py-0.5 text-xs font-medium text-gray-900 text-center">
+      <td className="px-3 py-2 text-xs font-medium text-gray-900 text-center">
         {formatSymbolDisplay(symbol)}
       </td>
-      <td className={`px-0.5 py-0.5 text-xs font-bold text-center ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
+      <td className={`px-3 py-2 text-xs font-bold text-center ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
         {formatRsi(rsi)}
       </td>
-      <td className="px-0.5 py-0.5 text-xs text-gray-900 font-mono text-center">
+      <td className="px-3 py-2 text-xs text-gray-900 font-mono text-center">
         {symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5)}
       </td>
-      <td className={`px-0.5 py-0.5 text-xs font-medium text-center ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+      <td className={`px-3 py-2 text-xs font-medium text-center ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
         {formatPercentage(change)}
       </td>
     </tr>
@@ -32,9 +36,13 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
 const RSIOverboughtOversoldTracker = () => {
   const { 
     getOversoldPairs, 
-    getOverboughtPairs, 
+    getOverboughtPairs,
+    getAllPairsWithRFI,
     addToWishlist, 
     isInWishlist,
+    getRsiEvents,
+    getRsiHistory,
+    getPriceHistory,
     settings,
     rsiData,
     isConnected,
@@ -48,7 +56,11 @@ const RSIOverboughtOversoldTracker = () => {
   
   const [activeTab, setActiveTab] = useState(tabState.rsiTracker?.activeTab || 'oversold');
   const [showSettings, setShowSettings] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
+  const [viewMode, setViewMode] = useState('table'); // 'table', 'cards', or 'expandable'
+  const [filters, setFilters] = useState(getDefaultFilters());
+  const [sortOptions, setSortOptions] = useState(getDefaultSortOptions());
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
     rsiPeriod: settings.rsiPeriod,
@@ -81,8 +93,14 @@ const RSIOverboughtOversoldTracker = () => {
   }, [isConnected, hasAutoSubscribed, autoSubscribeToMajorPairs]);
 
   // Get fresh data every time RSI data updates
-  const oversoldPairs = getOversoldPairs();
-  const overboughtPairs = getOverboughtPairs();
+  const rawOversoldPairs = getOversoldPairs();
+  const rawOverboughtPairs = getOverboughtPairs();
+  const _allPairs = getAllPairsWithRFI(); // Unused variable, prefixed with underscore
+
+  // Apply filtering and sorting
+  const oversoldPairs = filterAndSortPairs(rawOversoldPairs, filters, sortOptions);
+  const overboughtPairs = filterAndSortPairs(rawOverboughtPairs, filters, sortOptions);
+  // const filteredAllPairs = filterAndSortPairs(allPairs, filters, sortOptions); // Reserved for future use
 
   // React to RSI data changes to ensure UI updates
   useEffect(() => {
@@ -211,15 +229,51 @@ const RSIOverboughtOversoldTracker = () => {
               Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought}<br/> Period: {settings.rsiPeriod} | {settings.timeframe}
             </p>
           </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-            title="Dashboard Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-1 rounded-md transition-colors ${
+                showFilters ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+              }`}
+              title="Filters"
+            >
+              <Filter className="w-4 h-4" />
+            </button>
+                   <button
+                     onClick={() => {
+                       const modes = ['table', 'cards', 'expandable'];
+                       const currentIndex = modes.indexOf(viewMode);
+                       const nextIndex = (currentIndex + 1) % modes.length;
+                       setViewMode(modes[nextIndex]);
+                     }}
+                     className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+                     title={`Switch View Mode (Current: ${viewMode})`}
+                   >
+                     {viewMode === 'table' ? '📋' : viewMode === 'cards' ? '📊' : '📈'}
+                   </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              title="Dashboard Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      {showFilters && (
+        <div className="mb-2">
+          <FilterPanel
+            onFilterChange={setFilters}
+            onSortChange={setSortOptions}
+            initialFilters={filters}
+            initialSort={sortOptions}
+            className="text-xs"
+          />
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg flex-shrink-0">
@@ -247,39 +301,86 @@ const RSIOverboughtOversoldTracker = () => {
         })}
       </div>
 
-      {/* Table */}
+      {/* Content Area */}
       <div className="flex-1 overflow-hidden">
         {currentPairs.length > 0 ? (
           <div className="h-full overflow-auto">
-            <table className="w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    Pair
-                  </th>
-                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    RSI
-                  </th>
-                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    Price
-                  </th>
-                  <th className="px-0.5 py-0.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    Daily %
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200 text-xs text-left">
+            {viewMode === 'table' ? (
+              <table className="w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Pair
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      RSI
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Price
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Daily %
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200 text-xs text-left">
+                  {currentPairs.map((pair) => (
+                    <PairRow
+                      key={pair.symbol}
+                      pair={pair}
+                      onAddToWishlist={handleAddToWishlist}
+                      isInWishlist={isInWishlist(pair.symbol)}
+                      settings={settings}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            ) : viewMode === 'cards' ? (
+              <div className="grid grid-cols-1 gap-2 p-2">
                 {currentPairs.map((pair) => (
-                  <PairRow
+                  <RFIScoreCard
+                    key={pair.symbol}
+                    symbol={pair.symbol}
+                    rfiData={pair.rfiData}
+                    price={pair.price}
+                    change={pair.change}
+                    volume={pair.volume}
+                    onAddToWishlist={handleAddToWishlist}
+                    isInWishlist={isInWishlist(pair.symbol)}
+                    className="text-xs"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white">
+                {/* Expandable View Header */}
+                <div className="bg-gray-50 border-b border-gray-200 px-3 py-3">
+                  <div className="flex items-center text-xs font-medium text-gray-500">
+                    <div className="w-24 text-center px-2">Pair</div>
+                    <div className="w-20 text-center px-2">RSI</div>
+                    <div className="w-24 text-center px-2">Price</div>
+                    <div className="w-20 text-center px-2">Change</div>
+                    <div className="w-20 text-center px-2">Chart</div>
+                    <div className="w-16 text-center px-2">Events</div>
+                    <div className="w-12 text-center px-2"></div>
+                  </div>
+                </div>
+                
+                {/* Expandable Rows */}
+                {currentPairs.map((pair) => (
+                  <ExpandablePairRow
                     key={pair.symbol}
                     pair={pair}
                     onAddToWishlist={handleAddToWishlist}
                     isInWishlist={isInWishlist(pair.symbol)}
                     settings={settings}
+                    rsiHistory={getRsiHistory(pair.symbol)}
+                    priceHistory={getPriceHistory(pair.symbol)}
+                    rsiEvents={getRsiEvents(pair.symbol)}
                   />
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">

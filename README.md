@@ -18,6 +18,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - RSI Tracker active tab (Oversold/Overbought)
   - Currency Strength Meter view mode (Bar Chart, Line Chart, or Heatmap)
   - AI News Analysis filter (Upcoming or Latest news)
+- **Enhanced UI Spacing**: Improved table and component spacing for better readability
+  - Proper padding and margins in RSI Tracker tables
+  - Consistent spacing across all view modes (table, cards, expandable)
+  - Better visual separation between columns and rows
 - **Responsive Design**: Optimized for desktop and mobile trading
 - **Real-time Updates**: Live data streaming with automatic reconnection
 - **User Authentication**: Secure login with Supabase authentication
