@@ -12,7 +12,7 @@ import {
 import React, { useState, useEffect } from 'react';
 
 import useBaseMarketStore from '../store/useBaseMarketStore';
-import { formatNewsLocalDateTime, getImpactColor, formatCurrency } from '../utils/formatters';
+import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming } from '../utils/formatters';
 
 const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -158,6 +158,12 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   const { time, date } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
   const currencyInfo = formatCurrency(news.currency);
   
+  // Get event timing information
+  const eventTiming = getEventTiming(news);
+  
+  // Determine if this is an upcoming event (no actual data yet)
+  const isUpcomingEvent = eventTiming.isUpcoming;
+
   // Determine if actual vs forecast shows positive/negative surprise
   let surprise = null;
   if (news.actual !== 'N/A' && news.forecast !== 'N/A' && news.actual !== null && news.forecast !== null) {
@@ -168,16 +174,16 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
     }
   }
 
-  // Check if this is an upcoming event (no actual data yet)
-  const isUpcomingEvent = news.actual === 'N/A' || news.actual === null;
-
-  // Border and background classes based on analysis effect
+  // Border and background classes based on analysis effect and timing
   const effect = analysis?.effect;
   const borderClass =
     effect === 'Bullish' ? 'border-success-600' :
     effect === 'Bearish' ? 'border-danger-600' :
+    eventTiming.isStartingSoon ? 'border-orange-300' :
     (isUpcomingEvent ? 'border-yellow-300' : 'border-gray-200');
-  const backgroundClass = isUpcomingEvent ? 'bg-yellow-50' : 'bg-white';
+  const backgroundClass = 
+    eventTiming.isStartingSoon ? 'bg-orange-50' :
+    (isUpcomingEvent ? 'bg-yellow-50' : 'bg-white');
 
   return (
     <div
@@ -195,9 +201,16 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
               {news.impact?.toUpperCase() || 'MEDIUM'}
             </span>
-            {isUpcomingEvent && (
-              <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
-                UPCOMING
+            {eventTiming.isUpcoming && (
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                eventTiming.isStartingSoon ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {eventTiming.isStartingSoon ? 'STARTING SOON' : 'UPCOMING'}
+              </span>
+            )}
+            {eventTiming.isPast && (
+              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800 font-medium">
+                RELEASED
               </span>
             )}
           </div>
@@ -211,9 +224,16 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               <Clock className="w-3 h-3" />
               <span>{date} {time}</span>
             </div>
-            {isUpcomingEvent && (
-              <div className="text-yellow-600 font-medium">
-                Starting soon
+            {eventTiming.isUpcoming && (
+              <div className={`font-medium ${
+                eventTiming.isStartingSoon ? 'text-orange-600' : 'text-yellow-600'
+              }`}>
+                {eventTiming.timingText}
+              </div>
+            )}
+            {eventTiming.isPast && (
+              <div className="text-gray-600 font-medium">
+                {eventTiming.timingText}
               </div>
             )}
           </div>
@@ -355,24 +375,29 @@ const AINewsAnalysis = () => {
 
   // Filter news based on selected tab (applied on high-impact set)
   const filteredNews = highImpactNews.filter(news => {
+    const eventTiming = getEventTiming(news);
     switch (newsFilter) {
       case 'upcoming':
-        return news.actual === 'N/A' || news.actual === null;
+        return eventTiming.isUpcoming;
       case 'released':
-        return news.actual !== 'N/A' && news.actual !== null;
+        return eventTiming.isPast || (news.actual !== 'N/A' && news.actual !== null);
       default:
         return true;
     }
   });
 
-  // Sort news: upcoming first, then by impact
+  // Sort news: starting soon first, then upcoming, then by impact
   const sortedNews = filteredNews.sort((a, b) => {
-    // Upcoming news first
-    const aIsUpcoming = a.actual === 'N/A' || a.actual === null;
-    const bIsUpcoming = b.actual === 'N/A' || b.actual === null;
+    const timingA = getEventTiming(a);
+    const timingB = getEventTiming(b);
     
-    if (aIsUpcoming && !bIsUpcoming) return -1;
-    if (bIsUpcoming && !aIsUpcoming) return 1;
+    // Starting soon events first
+    if (timingA.isStartingSoon && !timingB.isStartingSoon) return -1;
+    if (timingB.isStartingSoon && !timingA.isStartingSoon) return 1;
+    
+    // Then upcoming events
+    if (timingA.isUpcoming && !timingB.isUpcoming) return -1;
+    if (timingB.isUpcoming && !timingA.isUpcoming) return 1;
     
     // Then by impact
     const impactOrder = { 'high': 3, 'medium': 2, 'low': 1 };
@@ -380,8 +405,8 @@ const AINewsAnalysis = () => {
   });
 
   const filters = [
-    { id: 'upcoming', label: 'Upcoming', count: highImpactNews.filter(n => n.actual === 'N/A' || n.actual === null).length },
-    { id: 'released', label: 'Released', count: highImpactNews.filter(n => n.actual !== 'N/A' && n.actual !== null).length },
+    { id: 'upcoming', label: 'Upcoming', count: highImpactNews.filter(n => getEventTiming(n).isUpcoming).length },
+    { id: 'released', label: 'Released', count: highImpactNews.filter(n => getEventTiming(n).isPast || (n.actual !== 'N/A' && n.actual !== null)).length },
     { id: 'all', label: 'All', count: highImpactNews.length }
   ];
 
@@ -398,9 +423,9 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="card z-9 relative">
+    <div className="card z-9 relative h-full overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-5 h-5 text-primary-600" />
           <div>
@@ -416,7 +441,7 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex space-x-1 mb-6 p-1 bg-gray-100 rounded-lg">
+      <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
@@ -438,7 +463,7 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* News Feed */}
-      <div className="space-y-4 overflow-y-auto max-h-[565px]">
+      <div className="space-y-3">
         
         {sortedNews.length > 0 ? (
           sortedNews.map((news) => (

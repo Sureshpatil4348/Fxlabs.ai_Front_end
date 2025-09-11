@@ -79,7 +79,7 @@ export const formatNewsLocalDateTime = ({ dateIso, originalTime }) => {
       if (!datePart || !timePart) return null;
       const [y, m, d] = datePart.split('.').map((v) => parseInt(v, 10));
       const [hh, mm, ss] = timePart.split(':').map((v) => parseInt(v, 10));
-      const dt = new Date(y, (m || 1) - 1, d || 1, hh || 0, mm || 0, ss || 0);
+      const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1, hh || 0, mm || 0, ss || 0));
       return isNaN(dt.getTime()) ? null : dt;
     } catch {
       return null;
@@ -194,4 +194,59 @@ export const sortCorrelationPairs = (correlationStatus) => {
     
     return extremeB - extremeA;
   });
+};
+
+// Get event status and timing information
+export const getEventTiming = (newsItem) => {
+  const { dateObj } = formatNewsLocalDateTime({ 
+    dateIso: newsItem.date, 
+    originalTime: newsItem.originalTime 
+  });
+  
+  const now = new Date();
+  const eventTime = dateObj;
+  const timeDiff = eventTime.getTime() - now.getTime();
+  
+  // Determine status
+  let status = 'upcoming';
+  let timingText = 'Starting soon';
+  
+  if (timeDiff < 0) {
+    // Event has passed
+    status = 'past';
+    const hoursAgo = Math.abs(Math.floor(timeDiff / (1000 * 60 * 60)));
+    const minutesAgo = Math.abs(Math.floor(timeDiff / (1000 * 60)));
+    
+    if (hoursAgo > 0) {
+      timingText = `Started ${hoursAgo}h ago`;
+    } else if (minutesAgo > 0) {
+      timingText = `Started ${minutesAgo}m ago`;
+    } else {
+      timingText = 'Just started';
+    }
+  } else if (timeDiff < 30 * 60 * 1000) {
+    // Event is starting within 30 minutes
+    status = 'starting-soon';
+    const minutesLeft = Math.floor(timeDiff / (1000 * 60));
+    timingText = `In ${minutesLeft}m`;
+  } else if (timeDiff < 2 * 60 * 60 * 1000) {
+    // Event is starting within 2 hours
+    status = 'upcoming';
+    const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+    const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    timingText = `In ${hoursLeft}h ${minutesLeft}m`;
+  } else {
+    // Event is more than 2 hours away
+    status = 'upcoming';
+    const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+    timingText = `In ${hoursLeft}h`;
+  }
+  
+  return {
+    status,
+    timingText,
+    isUpcoming: status === 'upcoming' || status === 'starting-soon',
+    isPast: status === 'past',
+    isStartingSoon: status === 'starting-soon'
+  };
 };
