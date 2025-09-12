@@ -45,6 +45,7 @@ const Login = () => {
 
   return (
     <div className="relative min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Orb background - pointer-events-none is handled by the Orb component itself */}
       <div className="absolute inset-0 z-0">
         <Orb
           hoverIntensity={0.5}
@@ -53,11 +54,15 @@ const Login = () => {
           forceHoverState={false}
         />
       </div>
-      <div className="flex flex-col items-center justify-center">
+      
+      {/* Content with proper z-index to be above Orb */}
+      <div className="relative z-10 flex flex-col items-center justify-center">
         <div className="text-2xl font-bold"><span className="text-green-600">FX</span><span className="text-gray-500 font-light">LABS</span></div>
         <div className="text-sm text-gray-500">Decode the Market</div>
       </div>
-      <div className="max-w-md w-full space-y-8">
+      
+      {/* Form content with proper z-index */}
+      <div className="relative z-10 max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
@@ -117,16 +122,17 @@ const Login = () => {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
-
-          <div className="text-center">
-            <Link
-              to="/forgot"
-              className="font-medium text-green-600 hover:text-green-500 text-sm"
-            >
-              Forgot password?
-            </Link>
-          </div>
         </form>
+
+        {/* Forgot password link outside form with proper z-index */}
+        <div className="text-center">
+          <Link
+            to="/forgot"
+            className="font-medium text-green-600 hover:text-green-500 text-sm transition-colors cursor-pointer relative z-10 inline-block px-4 py-2"
+          >
+            Forgot password?
+          </Link>
+        </div>
       </div>
     </div>
   )
