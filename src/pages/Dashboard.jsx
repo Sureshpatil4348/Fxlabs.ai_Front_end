@@ -4,6 +4,7 @@
   import AINewsAnalysis from '../components/AINewsAnalysis'
   import CurrencyStrengthMeter from '../components/CurrencyStrengthMeter'
   import LoadingOverlay from '../components/LoadingOverlay'
+  import MultiIndicatorHeatmap from '../components/MultiIndicatorHeatmap'
   import Navbar from '../components/Navbar'
   import RSICorrelationDashboard from '../components/RSICorrelationDashboard'
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
@@ -63,9 +64,9 @@
         <Navbar />
 
         {/* Main Content - Takes remaining screen height */}
-        <main className="flex-1 min-h-0 p-1">
-          {/* Dashboard Grid - Perfect screen fit layout based on your diagram */}
-          <div className="h-full grid grid-cols-12 grid-rows-12 gap-1">
+        <main className="flex-1 min-h-0 p-1 overflow-y-auto">
+          {/* Dashboard Grid - Original layout restored */}
+          <div className="h-full grid grid-cols-12 grid-rows-12 gap-1 mb-4">
             
             {/* Section 1 - Currency Strength Meter (largest area - top left) */}
             <div className="col-span-7 row-span-7">
@@ -78,11 +79,9 @@
             </div>
 
             {/* Section 4th - Wishlist Panel (middle right) - Minimized height */}
-            <div className="col-span-5 row-span-1 ">
+            <div className="col-span-5 row-span-1">
               <WishlistPanel />
             </div>
-
-            
 
             {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
             <div className="col-span-7 row-span-5">
@@ -94,6 +93,11 @@
               <AINewsAnalysis />
             </div>
 
+          </div>
+
+          {/* Multi-Indicator Heatmap - Added at the bottom with full width */}
+          <div className="w-full">
+            <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
           </div>
         </main>
       </div>

@@ -313,9 +313,11 @@ const CurrencyStrengthMeter = () => {
   ];
 
   return (
-    <div className="card z-9 relative h-full overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+    <div className="card z-9 relative h-full flex flex-col">
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
           <p className="text-sm text-gray-500">
@@ -352,10 +354,10 @@ const CurrencyStrengthMeter = () => {
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
-      </div>
+        </div>
 
-      {/* View Mode Toggle */}
-      <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
+        {/* View Mode Toggle */}
+        <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
         {viewModes.map((mode) => {
           const Icon = mode.icon;
           return (
@@ -373,10 +375,11 @@ const CurrencyStrengthMeter = () => {
             </button>
           );
         })}
+        </div>
       </div>
 
-      {/* Content based on view mode */}
-      <div>
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto min-h-0">
         {strengthData.length > 0 ? (
           <>
             {viewMode === 'bars' && (
