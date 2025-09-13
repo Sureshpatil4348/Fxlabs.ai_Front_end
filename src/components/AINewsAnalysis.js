@@ -14,6 +14,83 @@ import React, { useState, useEffect } from 'react';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming } from '../utils/formatters';
 
+// Countdown Timer Component
+const CountdownTimer = ({ newsItem, className = "" }) => {
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    const updateTimer = () => {
+      const { dateObj } = formatNewsLocalDateTime({ 
+        dateIso: newsItem.date, 
+        originalTime: newsItem.originalTime 
+      });
+      
+      const now = new Date();
+      const eventTime = dateObj;
+      const timeDiff = eventTime.getTime() - now.getTime();
+      
+      if (timeDiff <= 0) {
+        setIsExpired(true);
+        setTimeLeft(null);
+        return;
+      }
+      
+      setIsExpired(false);
+      
+      // Calculate time components
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+      
+      // Format based on time remaining
+      let formattedTime;
+      if (days > 0) {
+        formattedTime = `${days}d ${hours}h ${minutes}m`;
+      } else if (hours > 0) {
+        formattedTime = `${hours}h ${minutes}m ${seconds}s`;
+      } else if (minutes > 0) {
+        formattedTime = `${minutes}m ${seconds}s`;
+      } else {
+        formattedTime = `${seconds}s`;
+      }
+      
+      setTimeLeft(formattedTime);
+    };
+
+    // Update immediately
+    updateTimer();
+    
+    // Update every second
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, [newsItem.date, newsItem.originalTime]);
+
+  if (isExpired) {
+    return (
+      <span className={`text-xs font-medium text-gray-600 ${className}`}>
+        Started
+      </span>
+    );
+  }
+
+  if (!timeLeft) {
+    return (
+      <span className={`text-xs font-medium text-gray-600 ${className}`}>
+        Calculating...
+      </span>
+    );
+  }
+
+  return (
+    <span className={`text-xs font-medium text-orange-600 ${className}`}>
+      {timeLeft}
+    </span>
+  );
+};
+
 const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   if (!isOpen) return null;
 
@@ -44,6 +121,12 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(news.impact)}`}>
             {news.impact?.toUpperCase() || 'MEDIUM'}
           </span>
+          {getEventTiming(news).isUpcoming && (
+            <div className="flex items-center space-x-1">
+              <Clock className="w-3 h-3 text-orange-500" />
+              <CountdownTimer newsItem={news} />
+            </div>
+          )}
         </div>
 
         {/* Modal Content */}
@@ -225,10 +308,9 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               <span>{date} {time}</span>
             </div>
             {eventTiming.isUpcoming && (
-              <div className={`font-medium ${
-                eventTiming.isStartingSoon ? 'text-orange-600' : 'text-yellow-600'
-              }`}>
-                {eventTiming.timingText}
+              <div className="flex items-center space-x-1">
+                <Clock className="w-3 h-3 text-orange-500" />
+                <CountdownTimer newsItem={news} />
               </div>
             )}
             {eventTiming.isPast && (
@@ -423,9 +505,11 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="card z-9 relative h-full overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+    <div className="card z-9 relative h-full flex flex-col">
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-5 h-5 text-primary-600" />
           <div>
@@ -438,10 +522,10 @@ const AINewsAnalysis = () => {
             API unavailable. Showing cached or no data.
           </div>
         )}
-      </div>
+        </div>
 
-      {/* Filter Tabs */}
-      <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
+        {/* Filter Tabs */}
+        <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
@@ -460,10 +544,13 @@ const AINewsAnalysis = () => {
             </span>
           </button>
         ))}
+        </div>
       </div>
 
-      {/* News Feed */}
-      <div className="space-y-3">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {/* News Feed */}
+        <div className="space-y-3">
         
         {sortedNews.length > 0 ? (
           sortedNews.map((news) => (
@@ -494,17 +581,18 @@ const AINewsAnalysis = () => {
             </p>
           </div>
         )}
-      </div>
+        </div>
 
-      {/* News Modal */}
-      {selectedNews && (
-        <NewsModal
-          news={selectedNews}
-          analysis={aiAnalysis.get(selectedNews.id)}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
-      )}
+        {/* News Modal */}
+        {selectedNews && (
+          <NewsModal
+            news={selectedNews}
+            analysis={aiAnalysis.get(selectedNews.id)}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+          />
+        )}
+      </div>
     </div>
   );
 };

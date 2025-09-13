@@ -212,9 +212,11 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="card-compact h-full overflow-y-auto z-9 relative">
-      {/* Header */}
-      <div className="mb-2">
+    <div className="card-compact h-full flex flex-col z-9 relative">
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        {/* Header */}
+        <div className="mb-2">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
@@ -260,23 +262,23 @@ const RSIOverboughtOversoldTracker = () => {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="mb-2">
-          <FilterPanel
-            onFilterChange={setFilters}
-            onSortChange={setSortOptions}
-            initialFilters={filters}
-            initialSort={sortOptions}
-            className="text-xs"
-          />
         </div>
-      )}
 
-      {/* Tab Navigation */}
-      <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg flex-shrink-0">
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="mb-2">
+            <FilterPanel
+              onFilterChange={setFilters}
+              onSortChange={setSortOptions}
+              initialFilters={filters}
+              initialSort={sortOptions}
+              className="text-xs"
+            />
+          </div>
+        )}
+
+        {/* Tab Navigation */}
+        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -299,12 +301,13 @@ const RSIOverboughtOversoldTracker = () => {
             </button>
           );
         })}
+        </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-hidden">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto min-h-0">
         {currentPairs.length > 0 ? (
-          <div className="h-full overflow-auto">
+          <div>
             {viewMode === 'table' ? (
               <table className="w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">

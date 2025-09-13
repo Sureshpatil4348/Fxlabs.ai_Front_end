@@ -389,9 +389,11 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="card z-10 relative h-full overflow-y-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
+    <div className="card z-10 relative h-full flex flex-col">
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
@@ -452,10 +454,10 @@ const RSICorrelationDashboard = () => {
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
-      </div>
+        </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+        {/* Statistics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <div className="text-2xl font-bold text-gray-900">{totalPairs}</div>
           <div className="text-xs text-gray-600">Total Pairs</div>
@@ -478,10 +480,11 @@ const RSICorrelationDashboard = () => {
             {localSettings.calculationMode === 'real_correlation' ? 'Moderate' : 'Neutral'}
           </div>
         </div>
+        </div>
       </div>
 
-      {/* Content Area */}
-      <div>
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto min-h-0">
         {/* Mobile List Layout */}
         <div className="block sm:hidden">
           <div className="space-y-2 pr-2">

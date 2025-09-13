@@ -9,6 +9,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **RSI Analysis**: Overbought/oversold tracking with customizable thresholds
 - **Currency Strength Meter**: Multi-view currency strength analysis (Bar Chart, Line Chart, Heatmap)
 - **RSI Correlation Dashboard**: Advanced correlation analysis between currency pairs
+- **Multi-Indicator Heatmap**: Comprehensive technical analysis dashboard with multiple indicators across timeframes
+  - **Enhanced Data Validation**: Robust error handling with insufficient data detection
+  - **Fallback Calculations**: Graceful degradation when some indicators can't calculate
+  - **Real-time Status Indicators**: Visual feedback for data quality and calculation status
+  - **Progressive Data Loading**: Shows data progress as market information becomes available
 - **AI News Analysis**: AI-powered forex news insights and analysis
 - **Watchlist Management**: Personalized symbol tracking with database persistence
 
@@ -52,6 +57,7 @@ The application now includes comprehensive dashboard settings persistence:
 - **RSI Correlation Settings**: Timeframe, RSI period, overbought/oversold thresholds, correlation window, calculation mode
 - **RSI Tracker Settings**: Timeframe, RSI period, overbought/oversold thresholds, auto-subscribe symbols
 - **Currency Strength Settings**: Timeframe, calculation mode (closed/live), enhanced calculation toggle, auto-subscribe symbols
+- **Multi-Indicator Heatmap Settings**: Symbol selection, trading style, indicator weights, new signal display toggle
 
 ### Database Tables
 - `user_state`: Basic tab states and UI preferences
@@ -115,7 +121,213 @@ Run the SQL scripts provided:
 - **Dashboard**: Main trading interface with responsive grid layout
 - **RSI Components**: Overbought/oversold tracking and correlation analysis
 - **Currency Strength Meter**: Multi-view currency strength visualization
+- **Multi-Indicator Heatmap**: Advanced technical analysis dashboard
 - **AI News Analysis**: Intelligent news filtering and analysis
+
+## Multi-Indicator Heatmap
+
+### Data Reliability Improvements (Latest Update)
+
+The Multi-Indicator Heatmap has been significantly enhanced for proper market working:
+
+#### **Data Validation & Error Handling**
+- **Progressive Data Loading**: Shows data collection progress (e.g., "47/50 bars")
+- **Insufficient Data Detection**: Clearly indicates when more market data is needed
+- **Real-time Status Indicators**: Visual feedback for each indicator's calculation status
+- **Graceful Error Handling**: Comprehensive error catching with meaningful messages
+
+#### **Fallback Calculations**
+- **Smart Fallbacks**: When primary calculations fail, uses simplified fallback methods
+- **Partial Data Support**: Works with limited data while waiting for full dataset
+- **Status Indicators**: Visual cues showing which indicators are using fallbacks (⚡ icon)
+- **Error Explanations**: Specific error messages (e.g., "Need 200+ bars" for EMA200)
+
+#### **Enhanced Debug Logging**
+- **Grouped Console Logs**: Organized debug information for better troubleshooting
+- **Signal Success Tracking**: Shows which indicators calculated successfully
+- **Data Quality Assessment**: Real-time evaluation of data quality (POOR/FAIR/GOOD/EXCELLENT)
+- **Calculation Performance**: Tracks calculation errors and warnings
+
+#### **Visual Improvements**
+- **Data Progress Bar**: Shows loading progress for insufficient data scenarios
+- **Status Icons**: Different icons for working (signals), fallback (F), and failed (...) indicators
+- **Color-coded Cells**: Clear distinction between calculated, fallback, and missing data
+- **Error Tooltips**: Detailed hover information explaining calculation status
+
+#### **Market Data Requirements**
+- **EMA21**: Requires 21+ bars for accurate calculation
+- **EMA50**: Requires 50+ bars for accurate calculation  
+- **EMA200**: Requires 200+ bars for accurate calculation
+- **MACD**: Requires 26+ bars for accurate calculation
+- **RSI**: Requires 15+ bars for accurate calculation
+- **UTBOT**: Requires 20+ bars for accurate calculation
+- **Ichimoku**: Requires 52+ bars for accurate calculation
+
+The system now provides reliable trading signals even with partial data and clearly communicates data quality to users.
+
+### Core Features
+
+The Multi-Indicator Heatmap provides a comprehensive view of technical analysis signals across multiple timeframes and indicators using standardized indicator logic.
+
+### Features
+- **Timeframes**: 5M, 15M, 30M, 1H, 4H, 1D
+- **Indicators**: EMA21, EMA50, EMA200, MACD, RSI, UT Bot, Ichimoku Clone
+- **Scoring System**: Weighted scoring based on timeframe importance
+- **Final Score**: Aggregated score from -100 to +100
+- **Buy/Sell Probability**: Percentage-based probability calculations
+- **New Signal Detection**: Highlights fresh signals with orange dots (K=3 lookback)
+- **Enhanced Dropdowns**: Professional dropdown interface with:
+  - **Symbol Selection**: Major currency pairs with flag emojis (EUR/USD, GBP/USD, USD/JPY, etc.)
+  - **Trading Style**: Scalper, Day Trader, Swing Trader with visual icons
+  - **Weight Configuration**: Equal or Trend-Tilted indicator weights
+  - **New Signal Toggle**: ON/OFF switch for new signal highlighting
+- **Settings Persistence**: All user preferences are automatically saved and restored:
+  - **Symbol Selection**: Remembers your preferred currency pair
+  - **Trading Style**: Saves your trading approach (Scalper/Day Trader/Swing Trader)
+  - **Indicator Weights**: Remembers your weight preference (Equal/Trend-Tilted)
+  - **New Signal Display**: Saves your preference for showing new signal indicators
+
+### Indicator Logic (Simple & Consistent)
+
+#### EMA (21, 50, 200) Indicators
+- **Buy Signal**: `close > EMA AND EMA slope ≥ 0`
+- **Sell Signal**: `close < EMA AND EMA slope ≤ 0`
+- **Neutral**: Otherwise
+- **New Signal**: Price crossed EMA within last K bars (default K=3)
+
+#### MACD Indicator
+- **MACD Line**: `EMA(12) - EMA(26)`
+- **Signal Line**: `EMA(MACD, 9)`
+- **Buy Signal**: `MACD > Signal AND MACD > 0`
+- **Sell Signal**: `MACD < Signal AND MACD < 0`
+- **Neutral**: Otherwise
+- **New Signal**: MACD/Signal cross within last K bars (default K=3)
+
+### How It Works
+1. **Data Collection**: Uses existing WebSocket data from RSI Tracker store
+2. **Indicator Calculation**: Calculates all indicators for each timeframe using candle close prices
+3. **Signal Detection**: Determines buy/sell/neutral signals based on standardized logic
+4. **New Signal Detection**: Identifies fresh signals within last K bars (default K=3)
+5. **Per-Cell Scoring**: Each indicator gets a score (-1.25 to +1.25) with new-signal boost
+6. **Trading Style Selection**: Choose from Scalper, Day Trader, or Swing Trader styles via enhanced dropdown
+7. **Timeframe Weighting**: Weights vary by trading style (sum to 1.0 for each style)
+8. **Final Aggregation**: Weighted average creates final score and probabilities
+
+### Enhanced User Interface
+- **Professional Dropdowns**: All controls use consistent styling with hover effects and focus states
+- **Visual Indicators**: Icons and emojis for better user experience (⚡ for Scalper, 📈 for Day Trader, etc.)
+- **Responsive Design**: Dropdowns adapt to different screen sizes with proper spacing
+- **State Management**: All dropdown selections are properly managed and persist during session
+- **Accessibility**: Proper ARIA labels and keyboard navigation support
+- **Automatic Persistence**: All user settings are automatically saved to the database and restored on login
+
+### Per-Cell Scoring System
+
+Each cell in the heatmap is converted to a numeric score using the following logic:
+
+#### Base Scoring
+- **Buy Signal**: +1
+- **Sell Signal**: -1  
+- **Neutral Signal**: 0
+
+#### New-Signal Boost
+- **New Buy Signal**: +1 + 0.25 = +1.25
+- **New Sell Signal**: -1 - 0.25 = -1.25
+- **New Neutral Signal**: 0 (no boost applied)
+
+#### Score Clamping
+All scores are clamped to the range **[-1.25, +1.25]**
+
+#### Visual Representation
+- **Strong Buy (1.0-1.25)**: Dark green background
+- **Buy+ (0.5-1.0)**: Medium green background  
+- **Buy (0-0.5)**: Light green background
+- **Neutral (0)**: Gray background
+- **Sell (0 to -0.5)**: Light red background
+- **Sell+ (-0.5 to -1.0)**: Medium red background
+- **Strong Sell (-1.0 to -1.25)**: Dark red background
+- **New Signal**: Orange dot indicator (+0.25 boost)
+
+### Trading Style Weights
+
+Weights per style sum to 1.0 and determine which timeframes are most important for each trading approach:
+
+| Timeframe | Scalper | Day Trader | Swing Trader |
+|-----------|---------|------------|--------------|
+| 5M        | 0.30    | 0.10       | 0.00         |
+| 15M       | 0.30    | 0.25       | 0.00         |
+| 30M       | 0.20    | 0.25       | 0.10         |
+| 1H        | 0.15    | 0.25       | 0.25         |
+| 4H        | 0.05    | 0.10       | 0.35         |
+| 1D        | 0.00    | 0.05       | 0.30         |
+
+#### Trading Style Focus Areas:
+- **Scalper**: Focus on 5M-30M timeframes (80% weight on short-term)
+- **Day Trader**: Balanced across 15M-1H timeframes (75% weight on medium-term)
+- **Swing Trader**: Focus on 1H-1D timeframes (90% weight on long-term)
+
+### Indicator Weights
+
+Two simple options for weighting indicators (both sum to 1.0):
+
+| Indicator | Equal (Default) | Trend-Tilted |
+|-----------|----------------|--------------|
+| EMA21     | 0.1429         | 0.10         |
+| EMA50     | 0.1429         | 0.10         |
+| EMA200    | 0.1429         | 0.15         |
+| MACD      | 0.1429         | 0.15         |
+| RSI       | 0.1429         | 0.10         |
+| UTBOT     | 0.1429         | 0.15         |
+| IchimokuClone | 0.1429     | 0.25         |
+
+#### Weight Options:
+- **Equal**: All indicators have equal weight (0.1429 each)
+- **Trend-Tilted**: Higher weight on trend-following indicators (EMA200, MACD, UTBOT, IchimokuClone)
+
+### Indicator Logic (Simple & Consistent)
+
+#### EMA (21, 50, 200) Indicators
+- **Buy Signal**: `close > EMA AND EMA slope ≥ 0`
+- **Sell Signal**: `close < EMA AND EMA slope ≤ 0`
+- **Neutral**: Otherwise
+- **New Signal**: Price crossed EMA within last K bars (default K=3)
+
+#### MACD Indicator
+- **MACD Line**: `EMA(12) - EMA(26)`
+- **Signal Line**: `EMA(MACD, 9)`
+- **Buy Signal**: `MACD > Signal AND MACD > 0`
+- **Sell Signal**: `MACD < Signal AND MACD < 0`
+- **Neutral**: Otherwise
+- **New Signal**: MACD/Signal cross within last K bars (default K=3)
+
+#### RSI (14) Indicator
+- **Buy Signal**: `RSI ≤ 30` (oversold)
+- **Sell Signal**: `RSI ≥ 70` (overbought)
+- **Neutral**: Otherwise
+- **New Signal**: RSI crosses 30 or 70 within last K bars (default K=3)
+
+#### UTBOT (ATR-based flip)
+- **Baseline**: `EMA(close, 50)`
+- **ATR**: `ATR(10)`
+- **Long Stop**: `Baseline - 3.0 × ATR`
+- **Short Stop**: `Baseline + 3.0 × ATR`
+- **Buy Signal**: Flip to Long or close breaks above short stop
+- **Sell Signal**: Flip to Short or close breaks below long stop
+- **Neutral**: Otherwise
+- **New Signal**: Any flip within last K bars (default K=3)
+
+#### IchimokuClone
+- **Tenkan**: Midpoint of high/low over 9 periods
+- **Kijun**: Midpoint over 26 periods
+- **Span A**: `(Tenkan + Kijun) / 2` shifted +26
+- **Span B**: Midpoint over 52 periods shifted +26
+- **Chikou**: Close shifted -26
+- **Decision Priority** (first hit wins):
+  1. **Price vs Cloud**: above = Buy, below = Sell, inside = Neutral
+  2. **Tenkan/Kijun Cross**: Tenkan > Kijun = Buy; < = Sell
+  3. **Cloud Color**: SpanA > SpanB = Buy; < = Sell
+  4. **Chikou vs Price**: above = Buy; below = Sell; else Neutral
+- **New Signal**: Tenkan/Kijun cross or price cloud breakout within last K bars (default K=3)
 
 ## Security
 

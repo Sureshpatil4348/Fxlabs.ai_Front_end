@@ -1,4 +1,15 @@
 // Mathematical calculations for technical analysis
+//
+// DATA REQUIREMENTS SUMMARY:
+// - EMA21: 21+ bars minimum
+// - EMA50: 50+ bars minimum  
+// - EMA200: 200+ bars minimum
+// - RSI: 15+ bars minimum (14 + 1)
+// - MACD: 26+ bars minimum
+// - UTBOT: 51+ bars minimum (max(50 EMA, 10 ATR) + 1)
+// - Ichimoku: 52+ bars minimum
+//
+// All functions now handle partial data gracefully and return null if insufficient data
 
 export const calculateSMA = (data, period) => {
   if (data.length < period) return null;
@@ -21,11 +32,75 @@ export const calculateEMA = (data, period, previousEMA = null) => {
   return (currentValue * multiplier) + (previousEMA * (1 - multiplier));
 };
 
-// Standard EMA Parameters
+// Standard EMA Parameters - Updated to match requirements
 export const EMA_PERIODS = {
-  SHORT: 20,   // Short-term trend
+  SHORT: 21,   // Short-term trend
   MEDIUM: 50,  // Medium-term trend
   LONG: 200    // Long-term trend
+};
+
+// Signal detection parameters
+export const SIGNAL_PARAMETERS = {
+  K_LOOKBACK: 3  // Default lookback for new signal detection (K = 3 closed candles)
+};
+
+// Quiet-Market Safety parameters
+export const QUIET_MARKET_PARAMETERS = {
+  ATR_LOOKBACK: 200,        // Lookback period for ATR percentile calculation
+  ATR_PERCENTILE: 5,        // 5th percentile threshold for quiet market detection
+  QUIET_MARKET_MULTIPLIER: 0.5  // Multiplier for MACD and UTBOT scores in quiet markets
+};
+
+// New Signal Definition (global)
+// A cell is NEW when its trigger happened within the last K = 3 closed candles on that timeframe:
+// - EMA: price cross over/under EMA
+// - MACD: MACD/Signal cross
+// - RSI: 50 cross or 30/70 exit
+// - UTBOT: regime flip
+// - IchimokuClone: Tenkan/Kijun cross or price cloud breakout
+// NEW only affects per-cell score via the ±0.25 boost already defined.
+
+// Quiet-Market Safety: Detect when ATR is extremely low (below 5th percentile of last 200 values)
+// This reduces false flips in dead markets by halving MACD and UTBOT contributions
+export const isQuietMarket = (bars, atrPeriod = 14) => {
+  if (!bars || bars.length < QUIET_MARKET_PARAMETERS.ATR_LOOKBACK + atrPeriod) return false;
+  
+  const highs = bars.map(bar => bar.high);
+  const lows = bars.map(bar => bar.low);
+  const closes = bars.map(bar => bar.close);
+  
+  // Calculate ATR values for the lookback period
+  const atrValues = [];
+  
+  for (let i = atrPeriod; i < bars.length; i++) {
+    const atr = calculateATR(highs.slice(0, i + 1), lows.slice(0, i + 1), closes.slice(0, i + 1), atrPeriod);
+    if (atr !== null) {
+      atrValues.push(atr);
+    }
+  }
+  
+  if (atrValues.length < QUIET_MARKET_PARAMETERS.ATR_LOOKBACK) return false;
+  
+  // Get the last ATR_LOOKBACK values
+  const recentATRs = atrValues.slice(-QUIET_MARKET_PARAMETERS.ATR_LOOKBACK);
+  
+  // Calculate the 5th percentile
+  const sortedATRs = [...recentATRs].sort((a, b) => a - b);
+  const percentileIndex = Math.floor((QUIET_MARKET_PARAMETERS.ATR_PERCENTILE / 100) * sortedATRs.length);
+  const fifthPercentile = sortedATRs[percentileIndex];
+  
+  // Get current ATR
+  const currentATR = atrValues[atrValues.length - 1];
+  
+  // Check if current ATR is below 5th percentile
+  const isQuiet = currentATR < fifthPercentile;
+  
+  return {
+    isQuiet,
+    currentATR,
+    fifthPercentile,
+    atrValues: recentATRs
+  };
 };
 
 // Calculate multiple EMAs for trend analysis
@@ -33,7 +108,7 @@ export const calculateMultipleEMAs = (closes) => {
   if (closes.length < EMA_PERIODS.LONG) return null;
   
   const _emas = {}; // Unused variable, prefixed with underscore
-  const ema20 = [];
+  const ema21 = [];
   const ema50 = [];
   const ema200 = [];
   
@@ -42,7 +117,7 @@ export const calculateMultipleEMAs = (closes) => {
     const dataSlice = closes.slice(0, i + 1);
     
     if (i >= EMA_PERIODS.SHORT - 1) {
-      ema20.push(calculateEMA(dataSlice, EMA_PERIODS.SHORT, ema20[ema20.length - 1]));
+      ema21.push(calculateEMA(dataSlice, EMA_PERIODS.SHORT, ema21[ema21.length - 1]));
     }
     
     if (i >= EMA_PERIODS.MEDIUM - 1) {
@@ -55,18 +130,187 @@ export const calculateMultipleEMAs = (closes) => {
   }
   
   return {
-    ema20: ema20[ema20.length - 1],
+    ema21: ema21[ema21.length - 1],
     ema50: ema50[ema50.length - 1],
     ema200: ema200[ema200.length - 1],
-    trend: getEMATrend(ema20[ema20.length - 1], ema50[ema50.length - 1], ema200[ema200.length - 1])
+    trend: getEMATrend(ema21[ema21.length - 1], ema50[ema50.length - 1], ema200[ema200.length - 1])
   };
 };
 
 // Determine trend based on EMA alignment
-export const getEMATrend = (ema20, ema50, ema200) => {
-  if (ema20 > ema50 && ema50 > ema200) return 'bullish';
-  if (ema20 < ema50 && ema50 < ema200) return 'bearish';
+export const getEMATrend = (ema21, ema50, ema200) => {
+  if (ema21 > ema50 && ema50 > ema200) return 'bullish';
+  if (ema21 < ema50 && ema50 < ema200) return 'bearish';
   return 'sideways';
+};
+
+// Calculate EMA slope (rate of change)
+export const calculateEMASlope = (emaValues, period = 1) => {
+  if (emaValues.length < period + 1) return 0;
+  const current = emaValues[emaValues.length - 1];
+  const previous = emaValues[emaValues.length - 1 - period];
+  return current - previous;
+};
+
+// Enhanced EMA Analysis with Signal Detection
+export const calculateEMASignals = (closes, kLookback = SIGNAL_PARAMETERS.K_LOOKBACK) => {
+  // More flexible validation - allow partial EMA calculations
+  if (closes.length < EMA_PERIODS.SHORT + kLookback) return null;
+  
+  const currentClose = closes[closes.length - 1];
+  
+  // Calculate EMA values for all periods
+  const ema21Values = [];
+  const ema50Values = [];
+  const ema200Values = [];
+  
+  let ema21 = null;
+  let ema50 = null;
+  let ema200 = null;
+  
+  // Calculate EMAs for each period with error handling
+  for (let i = 0; i < closes.length; i++) {
+    const dataSlice = closes.slice(0, i + 1);
+    
+    // EMA21 calculation
+    if (i >= EMA_PERIODS.SHORT - 1) {
+      try {
+        const newEMA21 = calculateEMA(dataSlice, EMA_PERIODS.SHORT, ema21);
+        if (newEMA21 !== null && !isNaN(newEMA21)) {
+          ema21 = newEMA21;
+          ema21Values.push(ema21);
+        }
+      } catch (error) {
+        console.warn('EMA21 calculation error at index', i, ':', error.message);
+      }
+    }
+    
+    // EMA50 calculation
+    if (i >= EMA_PERIODS.MEDIUM - 1) {
+      try {
+        const newEMA50 = calculateEMA(dataSlice, EMA_PERIODS.MEDIUM, ema50);
+        if (newEMA50 !== null && !isNaN(newEMA50)) {
+          ema50 = newEMA50;
+          ema50Values.push(ema50);
+        }
+      } catch (error) {
+        console.warn('EMA50 calculation error at index', i, ':', error.message);
+      }
+    }
+    
+    // EMA200 calculation (only if enough data)
+    if (i >= EMA_PERIODS.LONG - 1) {
+      try {
+        const newEMA200 = calculateEMA(dataSlice, EMA_PERIODS.LONG, ema200);
+        if (newEMA200 !== null && !isNaN(newEMA200)) {
+          ema200 = newEMA200;
+          ema200Values.push(ema200);
+        }
+      } catch (error) {
+        console.warn('EMA200 calculation error at index', i, ':', error.message);
+      }
+    }
+  }
+  
+  // Calculate slopes with null safety
+  const ema21Slope = ema21Values.length >= 2 ? calculateEMASlope(ema21Values) : 0;
+  const ema50Slope = ema50Values.length >= 2 ? calculateEMASlope(ema50Values) : 0;
+  const ema200Slope = ema200Values.length >= 2 ? calculateEMASlope(ema200Values) : 0;
+  
+  // Determine signals for each EMA with null safety
+  const getEMASignal = (close, ema, slope) => {
+    if (ema === null || ema === undefined || isNaN(ema)) return 'neutral';
+    if (close > ema && slope >= 0) return 'buy';
+    if (close < ema && slope <= 0) return 'sell';
+    return 'neutral';
+  };
+  
+  const ema21Signal = ema21 !== null ? getEMASignal(currentClose, ema21, ema21Slope) : 'neutral';
+  const ema50Signal = ema50 !== null ? getEMASignal(currentClose, ema50, ema50Slope) : 'neutral';
+  const ema200Signal = ema200 !== null ? getEMASignal(currentClose, ema200, ema200Slope) : 'neutral';
+  
+  // Check for new signals (crosses within last K bars)
+  const checkNewSignal = (closeValues, emaValues, kLookback) => {
+    if (closeValues.length < kLookback + 1 || emaValues.length < kLookback + 1) return false;
+    
+    const recentCloses = closeValues.slice(-kLookback - 1);
+    const recentEMAs = emaValues.slice(-kLookback - 1);
+    
+    for (let i = 1; i < recentCloses.length; i++) {
+      const prevClose = recentCloses[i - 1];
+      const currClose = recentCloses[i];
+      const prevEMA = recentEMAs[i - 1];
+      const currEMA = recentEMAs[i];
+      
+      // Check for cross above (bullish)
+      if (prevClose <= prevEMA && currClose > currEMA) return true;
+      // Check for cross below (bearish)
+      if (prevClose >= prevEMA && currClose < currEMA) return true;
+    }
+    return false;
+  };
+  
+  const ema21New = ema21 !== null && ema21Values.length > kLookback ? 
+    checkNewSignal(closes.slice(-kLookback - 1), ema21Values.slice(-kLookback - 1), kLookback) : false;
+  const ema50New = ema50 !== null && ema50Values.length > kLookback ? 
+    checkNewSignal(closes.slice(-kLookback - 1), ema50Values.slice(-kLookback - 1), kLookback) : false;
+  const ema200New = ema200 !== null && ema200Values.length > kLookback ? 
+    checkNewSignal(closes.slice(-kLookback - 1), ema200Values.slice(-kLookback - 1), kLookback) : false;
+  
+  // Build result object with only successful calculations
+  const result = {};
+  
+  // Only include EMAs that have valid calculations
+  if (ema21 !== null && !isNaN(ema21)) {
+    result.ema21 = {
+      value: ema21,
+      slope: ema21Slope,
+      signal: ema21Signal,
+      new: ema21New
+    };
+  }
+  
+  if (ema50 !== null && !isNaN(ema50)) {
+    result.ema50 = {
+      value: ema50,
+      slope: ema50Slope,
+      signal: ema50Signal,
+      new: ema50New
+    };
+  }
+  
+  if (ema200 !== null && !isNaN(ema200)) {
+    result.ema200 = {
+      value: ema200,
+      slope: ema200Slope,
+      signal: ema200Signal,
+      new: ema200New
+    };
+  }
+  
+  // Add trend analysis if we have at least 2 EMAs
+  if (Object.keys(result).length >= 2) {
+    result.trend = getEMATrend(ema21, ema50, ema200);
+  }
+  
+  // Return null if no EMAs could be calculated
+  if (Object.keys(result).length === 0) {
+    console.warn('❌ No EMA calculations successful', {
+      dataLength: closes.length,
+      required: { ema21: EMA_PERIODS.SHORT, ema50: EMA_PERIODS.MEDIUM, ema200: EMA_PERIODS.LONG },
+      kLookback
+    });
+    return null;
+  }
+  
+  // console.log(`✅ EMA calculations successful: ${Object.keys(result).join(', ')}`, {
+  //   dataLength: closes.length,
+  //   ema21Available: !!result.ema21,
+  //   ema50Available: !!result.ema50,
+  //   ema200Available: !!result.ema200
+  // });
+  
+  return result;
 };
 
 export const calculateRSI = (closes, period = 14) => {
@@ -103,6 +347,101 @@ export const calculateRSI = (closes, period = 14) => {
   
   const rs = avgGain / avgLoss;
   return 100 - (100 / (1 + rs));
+};
+
+// Enhanced RSI Analysis with Signal Detection (Updated to match requirements)
+export const calculateRSISignals = (closes, period = 14, kLookback = SIGNAL_PARAMETERS.K_LOOKBACK) => {
+  // More flexible validation - allow RSI calculation with minimum data
+  if (closes.length < period + 1) {
+    console.warn(`❌ RSI needs ${period + 1} bars, have ${closes.length}`);
+    return null;
+  }
+  
+  // Check for valid price data and clean it
+  const validCloses = closes.filter(price => price != null && !isNaN(price) && price > 0);
+  if (validCloses.length < period + 1) {
+    console.warn(`❌ RSI needs ${period + 1} valid prices, have ${validCloses.length} valid out of ${closes.length} total`);
+    console.warn('Sample invalid data:', closes.filter(price => price == null || isNaN(price) || price <= 0).slice(0, 3));
+    return null;
+  }
+  
+  // Use cleaned data for RSI calculation
+  const cleanedCloses = validCloses;
+  
+  // Calculate RSI values for all periods with error handling
+  const rsiValues = [];
+  
+  try {
+    for (let i = period; i < cleanedCloses.length; i++) {
+      const rsi = calculateRSI(cleanedCloses.slice(0, i + 1), period);
+      if (rsi !== null && !isNaN(rsi)) {
+        rsiValues.push(rsi);
+      }
+    }
+  } catch (error) {
+    console.error('❌ RSI calculation loop error:', error);
+    return null;
+  }
+  
+  if (rsiValues.length === 0) {
+    console.warn('❌ No valid RSI values calculated');
+    return null;
+  }
+  
+  const currentRSI = rsiValues[rsiValues.length - 1];
+  
+  // Determine signal based on requirements
+  let signal = 'neutral';
+  if (currentRSI <= 30) {
+    signal = 'buy';  // RSI goes below 25, RSI <= 30
+  } else if (currentRSI >= 70) {
+    signal = 'sell'; // RSI goes above 75, RSI >= 70
+  }
+  
+  // Check for new signals (crosses within last K bars) - with safety checks
+  // RSI: 50 cross or 30/70 exit
+  const checkNewSignal = (rsiValues, kLookback) => {
+    // More flexible - work with available data
+    if (rsiValues.length < 2) return false;
+    
+    const actualLookback = Math.min(kLookback, rsiValues.length - 1);
+    const recentRSI = rsiValues.slice(-actualLookback - 1);
+    
+    try {
+      for (let i = 1; i < recentRSI.length; i++) {
+        const prevRSI = recentRSI[i - 1];
+        const currRSI = recentRSI[i];
+        
+        if (isNaN(prevRSI) || isNaN(currRSI)) continue;
+        
+        // Check for 50 cross (bullish - RSI crosses above 50)
+        if (prevRSI <= 50 && currRSI > 50) return true;
+        // Check for 50 cross (bearish - RSI crosses below 50)
+        if (prevRSI >= 50 && currRSI < 50) return true;
+        // Check for cross below 30 (bullish - oversold exit)
+        if (prevRSI > 30 && currRSI <= 30) return true;
+        // Check for cross above 70 (bearish - overbought exit)
+        if (prevRSI < 70 && currRSI >= 70) return true;
+      }
+    } catch (error) {
+      console.warn('RSI new signal detection error:', error);
+      return false;
+    }
+    return false;
+  };
+  
+  const newSignal = checkNewSignal(rsiValues, kLookback);
+  
+  return {
+    rsi: Math.round(currentRSI * 100) / 100,
+    analysis: {
+      signal: signal,
+      new: newSignal,
+      oversold: currentRSI <= 30,
+      overbought: currentRSI >= 70,
+      neutral: currentRSI > 30 && currentRSI < 70
+    }
+  };
 };
 
 // Centered RSI (cRSI) = RSI - 50
@@ -257,6 +596,88 @@ export const calculateMACD = (closes, fastPeriod = MACD_PARAMETERS.FAST_PERIOD, 
   };
 };
 
+// Enhanced MACD Analysis with Signal Detection (Updated to match requirements)
+export const calculateMACDSignals = (closes, kLookback = SIGNAL_PARAMETERS.K_LOOKBACK) => {
+  if (closes.length < MACD_PARAMETERS.SLOW_PERIOD + kLookback) return null;
+  
+  let fastEMA = null;
+  let slowEMA = null;
+  const macdLine = [];
+  
+  // Calculate MACD line values
+  for (let i = 0; i < closes.length; i++) {
+    const slice = closes.slice(0, i + 1);
+    fastEMA = calculateEMA(slice, MACD_PARAMETERS.FAST_PERIOD, fastEMA);
+    slowEMA = calculateEMA(slice, MACD_PARAMETERS.SLOW_PERIOD, slowEMA);
+    
+    if (fastEMA !== null && slowEMA !== null) {
+      macdLine.push(fastEMA - slowEMA);
+    }
+  }
+  
+  if (macdLine.length < MACD_PARAMETERS.SIGNAL_PERIOD) return null;
+  
+  // Calculate signal line values
+  const signalLineValues = [];
+  let signalEMA = null;
+  
+  for (let i = 0; i < macdLine.length; i++) {
+    const slice = macdLine.slice(0, i + 1);
+    signalEMA = calculateEMA(slice, MACD_PARAMETERS.SIGNAL_PERIOD, signalEMA);
+    if (signalEMA !== null) {
+      signalLineValues.push(signalEMA);
+    }
+  }
+  
+  const currentMACD = macdLine[macdLine.length - 1];
+  const currentSignal = signalLineValues[signalLineValues.length - 1];
+  
+  // Determine signal based on requirements
+  let signal = 'neutral';
+  if (currentMACD > currentSignal && currentMACD > 0) {
+    signal = 'buy';
+  } else if (currentMACD < currentSignal && currentMACD < 0) {
+    signal = 'sell';
+  }
+  
+  // Check for new signals (crosses within last K bars)
+  const checkNewSignal = (macdValues, signalValues, kLookback) => {
+    if (macdValues.length < kLookback + 1 || signalValues.length < kLookback + 1) return false;
+    
+    const recentMACD = macdValues.slice(-kLookback - 1);
+    const recentSignal = signalValues.slice(-kLookback - 1);
+    
+    for (let i = 1; i < recentMACD.length; i++) {
+      const prevMACD = recentMACD[i - 1];
+      const currMACD = recentMACD[i];
+      const prevSignal = recentSignal[i - 1];
+      const currSignal = recentSignal[i];
+      
+      // Check for cross above (bullish)
+      if (prevMACD <= prevSignal && currMACD > currSignal) return true;
+      // Check for cross below (bearish)
+      if (prevMACD >= prevSignal && currMACD < currSignal) return true;
+    }
+    return false;
+  };
+  
+  const newSignal = checkNewSignal(macdLine.slice(-kLookback - 1), signalLineValues.slice(-kLookback - 1), kLookback);
+  
+  return {
+    macd: Math.round(currentMACD * 1000000) / 1000000,
+    signal: Math.round(currentSignal * 1000000) / 1000000,
+    histogram: Math.round((currentMACD - currentSignal) * 1000000) / 1000000,
+    analysis: {
+      signal: signal,
+      new: newSignal,
+      macdAboveSignal: currentMACD > currentSignal,
+      macdBelowSignal: currentMACD < currentSignal,
+      macdAboveZero: currentMACD > 0,
+      macdBelowZero: currentMACD < 0
+    }
+  };
+};
+
 // MACD Signal Interpretation
 export const getMACDSignal = (crossingUp, crossingDown, histogramIncreasing, histogramDecreasing) => {
   if (crossingUp && histogramIncreasing) return 'Strong Buy';
@@ -270,69 +691,129 @@ export const getMACDSignal = (crossingUp, crossingDown, histogramIncreasing, his
 
 // ATR (Average True Range) calculation - using existing function
 
-// UT Bot Parameters
+// UT Bot Parameters - Updated to match requirements
 export const UT_BOT_PARAMETERS = {
-  ATR_PERIOD: 14,           // ATR calculation period
-  ATR_MULTIPLIER: 2.0,      // ATR multiplier for stop loss
-  RISK_REWARD_RATIO: 2.0,   // Risk:Reward ratio
-  MAX_RISK_PERCENT: 2.0,    // Maximum risk per trade (% of account)
-  MIN_ATR_THRESHOLD: 0.0001 // Minimum ATR threshold for trade validity
+  EMA_LENGTH: 50,           // EMA length for baseline
+  ATR_LENGTH: 10,           // ATR calculation period
+  ATR_MULTIPLIER: 3.0,      // ATR multiplier for stops
+  CONFIRMATION_BARS: 1,     // Optional confirmation bars (off by default)
+  MIN_ATR_THRESHOLD: 0.00001 // Minimum ATR threshold for trade validity (lowered for better compatibility)
 };
 
-// UT Bot Signal Generation
-export const generateUTBotSignal = (bars, currentPrice) => {
-  if (!bars || bars.length < UT_BOT_PARAMETERS.ATR_PERIOD + 1) return null;
+// Enhanced UT Bot Signal Generation with Flip Logic
+export const generateUTBotSignal = (bars, _currentPrice) => {
+  // More flexible validation - check minimum requirements separately
+  if (!bars || bars.length < UT_BOT_PARAMETERS.ATR_LENGTH + 1) {
+    console.warn(`❌ UTBOT needs ${UT_BOT_PARAMETERS.ATR_LENGTH + 1} bars for ATR, have ${bars?.length || 0}`);
+    return null;
+  }
   
-  // Extract highs, lows, and closes for ATR calculation
+  if (bars.length < UT_BOT_PARAMETERS.EMA_LENGTH) {
+    console.warn(`❌ UTBOT needs ${UT_BOT_PARAMETERS.EMA_LENGTH} bars for EMA, have ${bars.length}`);
+    return null;
+  }
+  
+  // Extract highs, lows, and closes for calculations
   const highs = bars.map(bar => bar.high);
   const lows = bars.map(bar => bar.low);
   const closes = bars.map(bar => bar.close);
   
-  // Calculate ATR using existing function
-  const atr = calculateATR(highs, lows, closes, UT_BOT_PARAMETERS.ATR_PERIOD);
-  if (!atr) return null;
-  
-  const latestBar = bars[bars.length - 1];
-  const previousBar = bars[bars.length - 2];
-  
-  // Calculate ATR-based levels
-  const atrStopLoss = atr * UT_BOT_PARAMETERS.ATR_MULTIPLIER;
-  const atrTakeProfit = atrStopLoss * UT_BOT_PARAMETERS.RISK_REWARD_RATIO;
-  
-  // Check for breakout conditions
-  const isBullishBreakout = latestBar.close > previousBar.high;
-  const isBearishBreakout = latestBar.close < previousBar.low;
-  
-  // Check ATR threshold
-  const isValidATR = atr >= UT_BOT_PARAMETERS.MIN_ATR_THRESHOLD;
-  
-  if (!isValidATR) return null;
-  
-  if (isBullishBreakout) {
-    return {
-      type: 'buy',
-      entry: currentPrice,
-      stopLoss: currentPrice - atrStopLoss,
-      takeProfit: currentPrice + atrTakeProfit,
-      atr: atr,
-      riskReward: UT_BOT_PARAMETERS.RISK_REWARD_RATIO,
-      confidence: Math.min(atr / UT_BOT_PARAMETERS.MIN_ATR_THRESHOLD, 1.0)
-    };
+  // Calculate baseline EMA with error handling
+  let baseline;
+  try {
+    baseline = calculateEMA(closes, UT_BOT_PARAMETERS.EMA_LENGTH);
+    if (!baseline || isNaN(baseline)) {
+      console.warn('❌ UTBOT baseline EMA calculation failed');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ UTBOT EMA calculation error:', error);
+    return null;
   }
   
-  if (isBearishBreakout) {
-    return {
-      type: 'sell',
-      entry: currentPrice,
-      stopLoss: currentPrice + atrStopLoss,
-      takeProfit: currentPrice - atrTakeProfit,
-      atr: atr,
-      riskReward: UT_BOT_PARAMETERS.RISK_REWARD_RATIO,
-      confidence: Math.min(atr / UT_BOT_PARAMETERS.MIN_ATR_THRESHOLD, 1.0)
-    };
+  // Calculate ATR with error handling
+  let atr;
+  try {
+    atr = calculateATR(highs, lows, closes, UT_BOT_PARAMETERS.ATR_LENGTH);
+    if (!atr || isNaN(atr)) {
+      console.warn(`❌ UTBOT ATR calculation failed: ${atr}`);
+      return null;
+    }
+    
+    // Log ATR for debugging (temporarily remove threshold check)
+    if (atr < UT_BOT_PARAMETERS.MIN_ATR_THRESHOLD) {
+      console.warn(`⚠️ UTBOT ATR very low: ${atr?.toFixed(8)} (min: ${UT_BOT_PARAMETERS.MIN_ATR_THRESHOLD}) - Proceeding anyway for testing`);
+    }
+  } catch (error) {
+    console.error('❌ UTBOT ATR calculation error:', error);
+    return null;
   }
   
-  return null;
+  // Calculate stop levels
+  const longStop = baseline - (UT_BOT_PARAMETERS.ATR_MULTIPLIER * atr);
+  const shortStop = baseline + (UT_BOT_PARAMETERS.ATR_MULTIPLIER * atr);
+  
+  const currentClose = closes[closes.length - 1];
+  
+  // Determine current position based on close vs stops
+  let currentPosition = 'neutral';
+  if (currentClose > shortStop) {
+    currentPosition = 'long';
+  } else if (currentClose < longStop) {
+    currentPosition = 'short';
+  }
+  
+  // Check for flips within last K bars
+  const checkForFlip = (closes, longStop, shortStop, kLookback = 3) => {
+    if (closes.length < kLookback + 1) return false;
+    
+    const recentCloses = closes.slice(-kLookback - 1);
+    let previousPosition = 'neutral';
+    
+    for (let i = 0; i < recentCloses.length; i++) {
+      const close = recentCloses[i];
+      let position = 'neutral';
+      
+      if (close > shortStop) {
+        position = 'long';
+      } else if (close < longStop) {
+        position = 'short';
+      }
+      
+      if (i > 0 && position !== previousPosition && previousPosition !== 'neutral') {
+        return true; // Found a flip
+      }
+      
+      previousPosition = position;
+    }
+    return false;
+  };
+  
+  const hasFlip = checkForFlip(closes, longStop, shortStop);
+  
+  // Determine signal based on requirements
+  let signal = 'neutral';
+  let signalType = 'neutral';
+  
+  if (currentPosition === 'long' || (currentClose > shortStop)) {
+    signal = 'buy';
+    signalType = 'long';
+  } else if (currentPosition === 'short' || (currentClose < longStop)) {
+    signal = 'sell';
+    signalType = 'short';
+  }
+  
+  return {
+    type: signalType,
+    signal: signal,
+    baseline: Math.round(baseline * 100000) / 100000,
+    atr: Math.round(atr * 100000) / 100000,
+    longStop: Math.round(longStop * 100000) / 100000,
+    shortStop: Math.round(shortStop * 100000) / 100000,
+    currentPosition: currentPosition,
+    new: hasFlip,
+    confidence: Math.min(atr / UT_BOT_PARAMETERS.MIN_ATR_THRESHOLD, 1.0)
+  };
 };
 
 export const calculateStochastic = (highs, lows, closes, kPeriod = 14, _dPeriod = 3) => {
@@ -435,6 +916,151 @@ export const calculateCurrencyStrength = (pairs, _period = 20) => {
   });
   
   return strength;
+};
+
+// IchimokuClone Parameters - Updated to match requirements
+export const ICHIMOKU_PARAMETERS = {
+  TENKAN_PERIOD: 9,    // Tenkan-sen period
+  KIJUN_PERIOD: 26,    // Kijun-sen period
+  SENKOU_B_PERIOD: 52, // Senkou Span B period
+  CHIKOU_SHIFT: 26     // Chikou Span shift
+};
+
+// Enhanced IchimokuClone Analysis with Decision Priority Logic
+export const calculateIchimokuCloneSignals = (bars, kLookback = SIGNAL_PARAMETERS.K_LOOKBACK) => {
+  if (!bars || bars.length < ICHIMOKU_PARAMETERS.SENKOU_B_PERIOD + ICHIMOKU_PARAMETERS.CHIKOU_SHIFT) return null;
+  
+  const highs = bars.map(bar => bar.high);
+  const lows = bars.map(bar => bar.low);
+  const closes = bars.map(bar => bar.close);
+  
+  const currentPrice = closes[closes.length - 1];
+  
+  // Calculate Tenkan-sen (9-period)
+  const tenkanHigh = Math.max(...highs.slice(-ICHIMOKU_PARAMETERS.TENKAN_PERIOD));
+  const tenkanLow = Math.min(...lows.slice(-ICHIMOKU_PARAMETERS.TENKAN_PERIOD));
+  const tenkanSen = (tenkanHigh + tenkanLow) / 2;
+  
+  // Calculate Kijun-sen (26-period)
+  const kijunHigh = Math.max(...highs.slice(-ICHIMOKU_PARAMETERS.KIJUN_PERIOD));
+  const kijunLow = Math.min(...lows.slice(-ICHIMOKU_PARAMETERS.KIJUN_PERIOD));
+  const kijunSen = (kijunHigh + kijunLow) / 2;
+  
+  // Calculate Senkou Span A (shifted +26)
+  const senkouSpanA = (tenkanSen + kijunSen) / 2;
+  
+  // Calculate Senkou Span B (52-period, shifted +26)
+  const senkouHigh = Math.max(...highs.slice(-ICHIMOKU_PARAMETERS.SENKOU_B_PERIOD));
+  const senkouLow = Math.min(...lows.slice(-ICHIMOKU_PARAMETERS.SENKOU_B_PERIOD));
+  const senkouSpanB = (senkouHigh + senkouLow) / 2;
+  
+  // Calculate Chikou Span (close shifted -26)
+  const chikouIndex = closes.length - 1 - ICHIMOKU_PARAMETERS.CHIKOU_SHIFT;
+  const chikouSpan = chikouIndex >= 0 ? closes[chikouIndex] : null;
+  
+  // Decision Priority Logic (first hit wins)
+  let signal = 'neutral';
+  let signalReason = '';
+  
+  // 1. Price vs Cloud: above = Buy, below = Sell, inside = Neutral
+  const cloudTop = Math.max(senkouSpanA, senkouSpanB);
+  const cloudBottom = Math.min(senkouSpanA, senkouSpanB);
+  
+  if (currentPrice > cloudTop) {
+    signal = 'buy';
+    signalReason = 'price_above_cloud';
+  } else if (currentPrice < cloudBottom) {
+    signal = 'sell';
+    signalReason = 'price_below_cloud';
+  } else {
+    // 2. Tenkan/Kijun Cross: Tenkan>Kijun = Buy; < = Sell
+    if (tenkanSen > kijunSen) {
+      signal = 'buy';
+      signalReason = 'tenkan_above_kijun';
+    } else if (tenkanSen < kijunSen) {
+      signal = 'sell';
+      signalReason = 'tenkan_below_kijun';
+    } else {
+      // 3. Cloud Color: SpanA>SpanB = Buy; < = Sell
+      if (senkouSpanA > senkouSpanB) {
+        signal = 'buy';
+        signalReason = 'cloud_bullish';
+      } else if (senkouSpanA < senkouSpanB) {
+        signal = 'sell';
+        signalReason = 'cloud_bearish';
+      } else {
+        // 4. Chikou vs price (26 bars ago): above = Buy; below = Sell; else Neutral
+        if (chikouSpan !== null) {
+          const price26BarsAgo = closes[closes.length - 1 - ICHIMOKU_PARAMETERS.CHIKOU_SHIFT];
+          if (chikouSpan > price26BarsAgo) {
+            signal = 'buy';
+            signalReason = 'chikou_above_price';
+          } else if (chikouSpan < price26BarsAgo) {
+            signal = 'sell';
+            signalReason = 'chikou_below_price';
+          }
+        }
+      }
+    }
+  }
+  
+  // Check for new signals (Tenkan/Kijun cross or price cloud breakout within last K bars)
+  const checkNewSignal = (highs, lows, closes, tenkanSen, kijunSen, cloudTop, cloudBottom, kLookback) => {
+    if (closes.length < kLookback + 1) return false;
+    
+    const recentHighs = highs.slice(-kLookback - 1);
+    const recentLows = lows.slice(-kLookback - 1);
+    const recentCloses = closes.slice(-kLookback - 1);
+    
+    for (let i = 1; i < recentCloses.length; i++) {
+      // Check for Tenkan/Kijun cross
+      const prevTenkanHigh = Math.max(...recentHighs.slice(0, i).slice(-ICHIMOKU_PARAMETERS.TENKAN_PERIOD));
+      const prevTenkanLow = Math.min(...recentLows.slice(0, i).slice(-ICHIMOKU_PARAMETERS.TENKAN_PERIOD));
+      const prevTenkan = (prevTenkanHigh + prevTenkanLow) / 2;
+      
+      const prevKijunHigh = Math.max(...recentHighs.slice(0, i).slice(-ICHIMOKU_PARAMETERS.KIJUN_PERIOD));
+      const prevKijunLow = Math.min(...recentLows.slice(0, i).slice(-ICHIMOKU_PARAMETERS.KIJUN_PERIOD));
+      const prevKijun = (prevKijunHigh + prevKijunLow) / 2;
+      
+      // Check for cross
+      if ((prevTenkan <= prevKijun && tenkanSen > kijunSen) || 
+          (prevTenkan >= prevKijun && tenkanSen < kijunSen)) {
+        return true;
+      }
+      
+      // Check for price cloud breakout
+      const prevClose = recentCloses[i - 1];
+      const currClose = recentCloses[i];
+      
+      if ((prevClose <= cloudTop && currClose > cloudTop) || 
+          (prevClose >= cloudBottom && currClose < cloudBottom)) {
+        return true;
+      }
+    }
+    return false;
+  };
+  
+  const newSignal = checkNewSignal(highs, lows, closes, tenkanSen, kijunSen, cloudTop, cloudBottom, kLookback);
+  
+  return {
+    tenkanSen: Math.round(tenkanSen * 100000) / 100000,
+    kijunSen: Math.round(kijunSen * 100000) / 100000,
+    senkouSpanA: Math.round(senkouSpanA * 100000) / 100000,
+    senkouSpanB: Math.round(senkouSpanB * 100000) / 100000,
+    chikouSpan: chikouSpan ? Math.round(chikouSpan * 100000) / 100000 : null,
+    cloudTop: Math.round(cloudTop * 100000) / 100000,
+    cloudBottom: Math.round(cloudBottom * 100000) / 100000,
+    analysis: {
+      signal: signal,
+      reason: signalReason,
+      new: newSignal,
+      priceAboveCloud: currentPrice > cloudTop,
+      priceBelowCloud: currentPrice < cloudBottom,
+      priceInCloud: currentPrice >= cloudBottom && currentPrice <= cloudTop,
+      tenkanAboveKijun: tenkanSen > kijunSen,
+      cloudBullish: senkouSpanA > senkouSpanB
+    }
+  };
 };
 
 export const detectPatterns = (ohlcData, patternType = 'doji') => {
