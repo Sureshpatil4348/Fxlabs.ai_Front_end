@@ -904,16 +904,16 @@ useEffect(() => {
   return (
     <div className="bg-white rounded-lg shadow-lg" style={{height: '100%', position: 'relative'}}>
       {/* Fixed Header Section */}
-      <div style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '1rem', borderBottom: '1px solid #e5e7eb'}}>
-        <div className="flex items-center justify-between mb-3">
+      <div style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '0.5rem', borderBottom: '1px solid #e5e7eb'}}>
+        <div className="flex items-center justify-between mb-1">
           {/* Title */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <BarChart3 className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-bold text-gray-900">All in One Currency Indicator</h2>
           </div>
           
           {/* Controls Row */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1">
           {/* Symbol Dropdown */}
           <div className="flex items-center space-x-1">
             <span className="text-xs font-medium text-gray-700">Symbol:</span>
@@ -1003,12 +1003,12 @@ useEffect(() => {
 
       {/* Scrollable Content Area */}
       <div style={{
-        height: 'calc(100% - 100px)',
+        height: 'calc(100% - 80px)',
         overflowY: 'auto',
-        padding: '1rem'
+        padding: '0.5rem'
       }}>
         {/* Final Score Summary with Actionable Bands */}
-      <div className="flex justify-between gap-6 mb-4">
+      <div className="flex justify-between gap-1 mb-2">
         {/* Buy Now % Card - Dynamic styling based on zone */}
         {(() => {
           const zone = getActionableZone(finalResults.finalScore, tradingStyle);
@@ -1016,7 +1016,7 @@ useEffect(() => {
           
           return (
             <div className={`${styling.bgClass} border-2 ${styling.borderClass} rounded-lg p-3 flex-1`}>
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="flex items-center space-x-1 mb-2">
                 <TrendingUp className={`w-5 h-5 ${styling.iconClass}`} />
                 <span className={`text-sm font-medium ${styling.textClass}`}>Buy Now %</span>
               </div>
@@ -1031,7 +1031,7 @@ useEffect(() => {
         
         {/* Sell Now % Card - Always Red Shade */}
         <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-lg p-3 flex-1">
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-1 mb-2">
             <TrendingDown className="w-5 h-5 text-red-600" />
             <span className="text-sm font-medium text-red-800">Sell Now %</span>
           </div>
@@ -1049,7 +1049,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* New Signal Boost Badge */}
+      {/* New Signal Boost Badge
       {finalResults.newSignalBoost && (
         <div className="mb-3 p-2 bg-orange-100 border border-orange-300 rounded-lg">
           <div className="flex items-center">
@@ -1060,7 +1060,7 @@ useEffect(() => {
             </span>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Quiet Market Safety Badge */}
       {(() => {
@@ -1092,7 +1092,7 @@ useEffect(() => {
         );
       })()}
 
-      {/* Current Actionable Zone Indicator */}
+      {/* Current Actionable Zone Indicator - Only show for high probability zones */}
       {(() => {
         const zone = getActionableZone(finalResults.finalScore, tradingStyle);
         const styling = getZoneStyling(zone);
@@ -1101,52 +1101,48 @@ useEffect(() => {
           'day-trader': 20,
           'swing-trader': 15
         };
-        const threshold = thresholds[tradingStyle] || 20;
+        const _threshold = thresholds[tradingStyle] || 20;
+        
+        // Only show if it's a high probability zone (Buy or Sell), not Wait/Neutral
+        if (zone === 'wait') {
+          return null;
+        }
         
         return (
-          <div className={`mb-3 p-2 ${styling.bgClass} border-2 ${styling.borderClass} rounded-lg`}>
+          <div className={`mb-2 p-2 ${styling.bgClass} border-2 ${styling.borderClass} rounded-lg`}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={`w-3 h-3 rounded-full ${styling.iconClass.replace('text-', 'bg-')} mr-3`}></div>
-                <span className={`font-semibold ${styling.textClass}`}>
-                  Current Zone: {styling.label}
-                </span>
+              <div className="flex items-center space-x-1">
+                {zone === 'buy' ? (
+                  <span className={`font-semibold ${styling.textClass}`}>
+                    📈 Buy Now: {finalResults.buyNowPercent}%
+                  </span>
+                ) : (
+                  <span className="text-red-600 font-semibold">
+                    📉 Sell Now: {finalResults.sellNowPercent}%
+                  </span>
+                )}
               </div>
               <div className={`text-sm ${styling.textClass}`}>
-                Threshold: ±{threshold} (Final Score: {finalResults.finalScore})
+                Current Zone: {styling.label} (Score: {finalResults.finalScore})
               </div>
-            </div>
-            <div className="mt-2 text-xs text-gray-600">
-              {zone === 'buy' && 'Strong bullish signals detected - Consider buying opportunities'}
-              {zone === 'sell' && 'Strong bearish signals detected - Consider selling opportunities'}
-              {zone === 'wait' && 'Mixed signals - Wait for clearer direction or use smaller position sizes'}
             </div>
           </div>
         );
       })()}
 
       {/* Zone Thresholds Info */}
-      <div className="mb-3 p-2 bg-gray-50 border border-gray-200 rounded-lg">
+      <div className="mb-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-700">Zone Thresholds:</span>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span className="text-xs text-gray-600">Buy Zone: ≥{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-                <span className="text-xs text-gray-600">Wait: ±{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-red-500 rounded"></div>
-                <span className="text-xs text-gray-600">Sell Zone: ≤-{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'}</span>
-              </div>
-            </div>
+          <div className="flex items-center space-x-1">
+            <span className="text-sm font-medium text-gray-700">Thresholds:</span>
+            <span className="text-xs text-gray-600">
+              🟢 Buy: ≥{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'} | 
+              🟡 Wait: ±{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'} | 
+              🔴 Sell: ≤-{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'}
+            </span>
           </div>
           <div className="text-xs text-gray-500">
-            Style: {tradingStyle.charAt(0).toUpperCase() + tradingStyle.slice(1).replace('-', ' ')}
+            {tradingStyle.charAt(0).toUpperCase() + tradingStyle.slice(1).replace('-', ' ')}
           </div>
         </div>
       </div>
@@ -1228,7 +1224,7 @@ useEffect(() => {
             {timeframes.map(timeframe => (
               <tr key={timeframe} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="py-2 px-3 font-medium text-gray-900">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
                     <span>{timeframe}</span>
                     {/* Show status indicator for failed calculations in this timeframe */}
                     {indicators.some(indicator => !indicatorData[timeframe]?.[indicator]?.hasData) && (
@@ -1276,37 +1272,37 @@ useEffect(() => {
       )}
       
       {/* Legend */}
-      {/* <div className="mt-4 flex items-center justify-center space-x-3 text-sm flex-wrap">
-        <div className="flex items-center space-x-2">
+      {/* <div className="mt-4 flex items-center justify-center space-x-1 text-sm flex-wrap">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Strong Buy (1.0-1.25)</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-green-400 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Buy+ (0.5-1.0)</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-green-200 rounded flex items-center justify-center text-green-800 text-xs font-bold"></div>
           <span>Buy (0-0.5)</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-gray-200 rounded flex items-center justify-center text-gray-600 text-xs font-bold"></div>
           <span>Neutral (0)</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-red-200 rounded flex items-center justify-center text-red-800 text-xs font-bold"></div>
           <span>Sell (0 to -0.5)</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-red-400 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Sell+ (-0.5 to -1.0)</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <div className="w-4 h-4 bg-red-500 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Strong Sell (-1.0 to -1.25)</span>
         </div>
         {showNewSignals && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
             <span>New Signal (+0.25 boost)</span>
           </div>

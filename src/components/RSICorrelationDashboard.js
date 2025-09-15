@@ -389,11 +389,11 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="card z-10 relative h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 z-10 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 space-y-2 sm:space-y-0">
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
