@@ -14,6 +14,27 @@ import React, { useState, useEffect } from 'react';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming } from '../utils/formatters';
 
+// Secure HTML sanitization function to prevent XSS attacks
+const sanitizeHtml = (text) => {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+  
+  // First escape all HTML entities to prevent XSS
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+  
+  // Then safely apply only our whitelisted transformations
+  return escaped
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br />');
+};
+
 // Countdown Timer Component
 const CountdownTimer = ({ newsItem, className = "" }) => {
   const [timeLeft, setTimeLeft] = useState(null);
@@ -131,28 +152,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 
         {/* Modal Content */}
         <div className="p-6 space-y-6">
-          {/* Economic Data */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Economic Data</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-2 bg-gray-50 rounded-lg">
-                <div className="text-gray-600 mb-2">Previous</div>
-                <div className="text-lg font-bold text-gray-900">{news.previous || '--'}</div>
-              </div>
-              <div className="text-center p-2 bg-blue-50 rounded-lg">
-                <div className="text-gray-600 mb-2">Forecast</div>
-                <div className="text-lg font-bold text-blue-900">{news.forecast || '--'}</div>
-              </div>
-              <div className="text-center p-2 bg-green-50 rounded-lg">
-                <div className="text-gray-600 mb-2">Actual</div>
-                <div className="text-lg font-bold text-green-900">
-                  {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Analysis */}
+          {/* AI Analysis - Moved to top */}
           {analysis && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
@@ -182,7 +182,27 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Impacted Currencies */}
+                {/* Suggested Pairs - Moved to second position in AI Analysis */}
+                {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-gray-700 font-medium mb-3 flex items-center space-x-2">
+                      <Target className="w-4 h-4 text-primary-600" />
+                      <span>Suggested Pairs to Watch:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.suggestedPairs.map(pair => (
+                        <span 
+                          key={pair}
+                          className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
+                        >
+                          {pair}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Impacted Currencies - Moved to third position */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="text-gray-700 font-medium mb-3">Impacted Currencies:</div>
                   <div className="flex flex-wrap gap-2">
@@ -197,38 +217,42 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                     })}
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
 
-                {/* Suggested Pairs */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-gray-700 font-medium mb-3 flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-primary-600" />
-                    <span>Suggested Pairs to Watch</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {analysis.suggestedPairs.map(pair => (
-                      <span 
-                        key={pair}
-                        className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
-                      >
-                        {pair}
-                      </span>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Full Analysis */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-gray-700 font-medium mb-3">Detailed Analysis</div>
-                  <div 
-                    className="text-gray-700 leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: analysis.explanation
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\n/g, '<br />')
-                    }}
-                  />
+          {/* Economic Data - Moved to third position */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">Economic Data</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-2 bg-gray-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Previous</div>
+                <div className="text-lg font-bold text-gray-900">{news.previous || '--'}</div>
+              </div>
+              <div className="text-center p-2 bg-blue-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Forecast</div>
+                <div className="text-lg font-bold text-blue-900">{news.forecast || '--'}</div>
+              </div>
+              <div className="text-center p-2 bg-green-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Actual</div>
+                <div className="text-lg font-bold text-green-900">
+                  {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Detailed Analysis - Moved to bottom */}
+          {analysis && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Detailed Analysis</h3>
+              <div 
+                className="text-gray-700 leading-relaxed p-4 bg-gray-50 rounded-lg"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(analysis.explanation)
+                }}
+              />
             </div>
           )}
         </div>
@@ -248,23 +272,25 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   const isUpcomingEvent = eventTiming.isUpcoming;
 
   // Determine if actual vs forecast shows positive/negative surprise
-  let surprise = null;
+  let _surprise = null;
   if (news.actual !== 'N/A' && news.forecast !== 'N/A' && news.actual !== null && news.forecast !== null) {
     const actualNum = parseFloat(news.actual);
     const forecastNum = parseFloat(news.forecast);
     if (!isNaN(actualNum) && !isNaN(forecastNum)) {
-      surprise = actualNum > forecastNum ? 'positive' : actualNum < forecastNum ? 'negative' : 'neutral';
+      _surprise = actualNum > forecastNum ? 'positive' : actualNum < forecastNum ? 'negative' : 'neutral';
     }
   }
 
   // Border and background classes based on analysis effect and timing
   const effect = analysis?.effect;
   const borderClass =
-    effect === 'Bullish' ? 'border-success-600' :
-    effect === 'Bearish' ? 'border-danger-600' :
+    effect === 'Bullish' ? 'border-success-600 border-2' :
+    effect === 'Bearish' ? 'border-danger-600 border-2' :
     eventTiming.isStartingSoon ? 'border-orange-300' :
     (isUpcomingEvent ? 'border-yellow-300' : 'border-gray-200');
   const backgroundClass = 
+    effect === 'Bullish' ? 'bg-success-50' :
+    effect === 'Bearish' ? 'bg-danger-50' :
     eventTiming.isStartingSoon ? 'bg-orange-50' :
     (isUpcomingEvent ? 'bg-yellow-50' : 'bg-white');
 
@@ -322,31 +348,29 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
         </div>
       </div>
 
-      {/* Data Values */}
-      <div className="grid grid-cols-3 gap-3 mb-3 text-xs">
-        <div className="text-center p-2 bg-gray-50 rounded">
-          <div className="text-gray-600 mb-1">Previous</div>
-          <div className="font-bold">{news.previous || '--'}</div>
-        </div>
-        <div className="text-center p-2 bg-blue-50 rounded">
-          <div className="text-gray-600 mb-1">Forecast</div>
-          <div className="font-bold">{news.forecast || '--'}</div>
-        </div>
-        <div className={`text-center p-2 rounded ${
-          surprise === 'positive' ? 'bg-success-50 text-success-700' :
-          surprise === 'negative' ? 'bg-danger-50 text-danger-700' :
-          'bg-gray-50'
-        }`}>
-          <div className="text-gray-600 mb-1">Actual</div>
-          <div className="font-bold">
-            {news.actual !== 'N/A' && news.actual !== null ? news.actual : isUpcomingEvent ? 'TBA' : '--'}
+      {/* Suggested Pairs to Watch */}
+      {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+        <div className="mb-3">
+          <div className="flex items-center space-x-2 mb-2">
+            <Target className="w-4 h-4 text-primary-600" />
+            <span className="text-xs font-semibold text-gray-900">Suggested Pairs to Watch</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {analysis.suggestedPairs.map(pair => (
+              <span 
+                key={pair}
+                className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
+              >
+                {pair}
+              </span>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Quick Analysis Preview */}
       {analysis && (
-        <div className="border-t pt-3">
+        <div className="border-t pt-3 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />
@@ -369,6 +393,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               </span>
             </div>
           </div>
+          
         </div>
       )}
     </div>
@@ -405,6 +430,8 @@ const AINewsAnalysis = () => {
 
   // Restrict to high-impact news globally
   const highImpactNews = newsData.filter((n) => n.impact === 'high');
+  // const highImpactNews = newsData; Test for all news
+
 
   // Initialize news data when component mounts
   useEffect(() => {
@@ -505,11 +532,11 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="card z-9 relative h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-2 z-9 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-5 h-5 text-primary-600" />
           <div>
@@ -548,7 +575,7 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {/* News Feed */}
         <div className="space-y-3">
         

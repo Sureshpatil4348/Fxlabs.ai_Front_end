@@ -212,7 +212,7 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="card-compact h-full flex flex-col z-9 relative">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-9 relative">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -220,7 +220,7 @@ const RSIOverboughtOversoldTracker = () => {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="text-sm font-semibold text-gray-900">RSI Tracker</h2>
+              <h2 className="text-lg font-semibold text-gray-900">RSI Tracker</h2>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium ${
                 isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
@@ -228,7 +228,7 @@ const RSIOverboughtOversoldTracker = () => {
               </span>
             </div>
             <p className="text-[10px] text-gray-500 pt-1">
-              Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought}<br/> Period: {settings.rsiPeriod} | {settings.timeframe}
+              Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought} | Period: {settings.rsiPeriod} | {settings.timeframe}
             </p>
           </div>
           <div className="flex items-center space-x-1">
@@ -305,7 +305,7 @@ const RSIOverboughtOversoldTracker = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1">
         {currentPairs.length > 0 ? (
           <div>
             {viewMode === 'table' ? (

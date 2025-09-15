@@ -1,9 +1,9 @@
-import { RefreshCw, TrendingUp, TrendingDown, Settings, BarChart3, Activity } from 'lucide-react';
+import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
-import { formatSymbolDisplay, getStatusColor, getStatusIcon, formatRsi, sortCorrelationPairs } from '../utils/formatters';
+import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {
   const [symbol1, symbol2] = pair;
@@ -21,32 +21,30 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     const { correlation, strength, type } = correlationData;
     const correlationValue = (correlation * 100).toFixed(1);
     
-    // Determine color based on correlation strength and type
-    // Only highlight mismatches (weak correlations), keep others neutral
-    let cardColor = 'border-gray-300 bg-gray-50';
-    let strengthColor = 'text-gray-600';
+    // Determine color based on correlation type (positive/negative)
+    let cardColor, strengthColor;
     
-    // Only highlight weak correlations as mismatches
-    if (strength === 'weak') {
-      cardColor = 'border-red-500 bg-red-50';
+    if (type === 'positive') {
+      cardColor = 'border-green-300 bg-green-50';
+      strengthColor = 'text-green-700';
+    } else {
+      cardColor = 'border-red-300 bg-red-50';
       strengthColor = 'text-red-700';
     }
     
     if (isMobile) {
       return (
-        <div className={`p-3 pr-4 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${cardColor}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm font-normal uppercase tracking-wide ${strengthColor}`}>
+        <div className={`p-1 pr-2 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+          <div className="flex items-center justify-between mb-0">
+            <div className="flex items-center space-x-1">
+              <span className={`text-lg font-black ${strengthColor}`}>
                 {type === 'positive' ? (
                   <span className="flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    Pos
+                    <Plus className="w-6 h-6 mr-2 font-black stroke-2" />
                   </span>
                 ) : (
                   <span className="flex items-center">
-                    <TrendingDown className="w-3 h-3 mr-1" />
-                    Neg
+                    <Minus className="w-6 h-6 mr-2 font-black stroke-2" />
                   </span>
                 )}
               </span>
@@ -68,19 +66,17 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     }
 
     return (
-      <div className={`p-2 pr-3 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${cardColor}`}>
-        <div className="mb-2 text-center">
-          <div className="flex items-center justify-center mb-1">
-            <span className={`text-xs font-normal uppercase tracking-wide ${strengthColor}`}>
+      <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+        <div className="mb-0 text-center">
+          <div className="flex items-center justify-center">
+            <span className={`text-sm font-black ${strengthColor}`}>
               {type === 'positive' ? (
                 <span className="flex items-center">
-                  <TrendingUp className="w-2 h-2 mr-1" />
-                  Pos
+                  <Plus className="w-5 h-5 mr-1 font-black stroke-2" />
                 </span>
               ) : (
                 <span className="flex items-center">
-                  <TrendingDown className="w-2 h-2 mr-1" />
-                  Neg
+                  <Minus className="w-5 h-5 mr-1 font-black stroke-2" />
                 </span>
               )}
             </span>
@@ -93,15 +89,15 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
         </div>
         
         <div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="text-center p-1 bg-opacity-50 rounded transition-all duration-300">
+          <div className="grid grid-cols-2 gap-0 text-xs">
+            <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
               <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol1)}</div>
             </div>
-            <div className="text-center p-1 bg-opacity-50 rounded transition-all duration-300">
+            <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
               <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol2)}</div>
             </div>
           </div>
-          <div className={`text-center p-1 rounded text-xs font-semibold ${strengthColor}`}>
+          <div className={`text-center p-0 rounded text-xs font-semibold ${strengthColor}`}>
             {correlationValue}%
           </div>
         </div>
@@ -110,24 +106,29 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
   
   // Original RSI threshold mode
-  const { status, rsi1, rsi2, type } = pairData;
+  const { status: _status, rsi1, rsi2, type } = pairData;
   
+  // Determine card color based on correlation type for RSI threshold mode
+  let cardColor;
+  if (type === 'positive') {
+    cardColor = 'border-green-300 bg-green-50';
+  } else {
+    cardColor = 'border-red-300 bg-red-50';
+  }
+
   if (isMobile) {
     return (
-      <div className={`p-3 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${getStatusColor(status)}`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-lg">{getStatusIcon(status)}</span>
-            <span className="text-sm font-medium uppercase tracking-wide">
+      <div className={`p-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+        <div className="flex items-center justify-between mb-0">
+          <div className="flex items-center space-x-1">
+            <span className="text-lg font-black">
               {type === 'positive' ? (
-                <span className="flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  Pos
+                <span className="flex items-center text-green-600">
+                  <Plus className="w-6 h-6 mr-2 font-black stroke-2" />
                 </span>
               ) : (
-                <span className="flex items-center">
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                  Neg
+                <span className="flex items-center text-red-600">
+                  <Minus className="w-6 h-6 mr-2 font-black stroke-2" />
                 </span>
               )}
             </span>
@@ -136,9 +137,6 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
             </span>
           </div>
           <div className="text-right">
-            <div className="text-sm font-bold">
-              {status === 'match' ? 'MATCH' : status === 'mismatch' ? 'MISMATCH' : 'NEUTRAL'}
-            </div>
             <div className="text-xs text-gray-600">
               RSI: {formatRsi(rsi1)} / {formatRsi(rsi2)}
             </div>
@@ -149,38 +147,30 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
 
   return (
-    <div className={`p-2 pr-3 rounded-md border-2 transition-all duration-500 hover:shadow-sm ${getStatusColor(status)}`}>
-      <div className="mb-2 text-center">
-        <div className="flex items-center justify-center mb-1">
-          <span className="text-sm mr-1">{getStatusIcon(status)}</span>
-          <span className="text-xs font-normal uppercase tracking-wide">
+    <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+      <div className="mb-0 text-center">
+        <div className="flex items-center justify-center">
+          <span className="text-sm font-black">
             {type === 'positive' ? (
-              <span className="flex items-center">
-                <TrendingUp className="w-2 h-2 mr-1" />
-                Pos
+              <span className="flex items-center text-green-600">
+                <Plus className="w-5 h-5 mr-1 font-black stroke-2" />
               </span>
             ) : (
-              <span className="flex items-center">
-                <TrendingDown className="w-2 h-2 mr-1" />
-                Neg
+              <span className="flex items-center text-red-600">
+                <Minus className="w-5 h-5 mr-1 font-black stroke-2" />
               </span>
             )}
           </span>
         </div>
-        <div className="text-center">
-          <div className="text-xs font-semibold">
-            {status === 'match' ? 'MATCH' : status === 'mismatch' ? 'MISMATCH' : 'NEUTRAL'}
-          </div>
-        </div>
       </div>
       
-      <div className="space-y-1">
-        <div className="grid grid-cols-2 gap-1 text-xs">
-          <div className="text-center p-1 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
+      <div className="space-y-0">
+        <div className="grid grid-cols-2 gap-0 text-xs">
+          <div className="text-center p-0 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
             <div className="font-normal text-[8px]">{formatSymbolDisplay(symbol1)}</div>
             <div className="font-semibold text-sm transition-all duration-300">{formatRsi(rsi1)}</div>
           </div>
-          <div className="text-center p-1 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
+          <div className="text-center p-0 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
             <div className="font-normal text-[8px]">{formatSymbolDisplay(symbol2)}</div>
             <div className="font-semibold text-sm transition-all duration-300">{formatRsi(rsi2)}</div>
           </div>
@@ -370,7 +360,7 @@ const RSICorrelationDashboard = () => {
   const gridPairs = sortedPairs;
   
   // Calculate statistics based on calculation mode
-  let totalPairs, matches, mismatches, neutral;
+  let totalPairs, _matches, _mismatches, _neutral;
   
   if (localSettings.calculationMode === 'real_correlation') {
     totalPairs = sortedPairs.length;
@@ -378,30 +368,35 @@ const RSICorrelationDashboard = () => {
     const moderateCorrelations = sortedPairs.filter(([, data]) => data.strength === 'moderate').length;
     const weakCorrelations = sortedPairs.filter(([, data]) => data.strength === 'weak').length;
     
-    matches = strongCorrelations;
-    mismatches = weakCorrelations;
-    neutral = moderateCorrelations;
+    _matches = strongCorrelations;
+    _mismatches = weakCorrelations;
+    _neutral = moderateCorrelations;
   } else {
     totalPairs = sortedPairs.length;
-    matches = sortedPairs.filter(([, data]) => data.status === 'match').length;
-    mismatches = sortedPairs.filter(([, data]) => data.status === 'mismatch').length;
-    neutral = sortedPairs.filter(([, data]) => data.status === 'neutral').length;
+    _matches = sortedPairs.filter(([, data]) => data.status === 'match').length;
+    _mismatches = sortedPairs.filter(([, data]) => data.status === 'mismatch').length;
+    _neutral = sortedPairs.filter(([, data]) => data.status === 'neutral').length;
   }
 
   return (
-    <div className="card z-10 relative h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
         <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium w-fit ${
               isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}>
               {isConnected ? '● Connected' : '● Disconnected'}
             </span>
+            {/* Total Pairs Pill */}
+            <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+              <span className="font-bold mr-1">{totalPairs}</span>
+              <span>Total Pairs</span>
+            </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
             {localSettings.calculationMode === 'real_correlation' ? (
@@ -456,38 +451,13 @@ const RSICorrelationDashboard = () => {
         </div>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900">{totalPairs}</div>
-          <div className="text-xs text-gray-600">Total Pairs</div>
-        </div>
-        <div className="text-center p-3 bg-success-50 rounded-lg">
-          <div className="text-2xl font-bold text-success-600">{matches}</div>
-          <div className="text-xs text-success-700">
-            {localSettings.calculationMode === 'real_correlation' ? 'Strong' : 'Matches'}
-          </div>
-        </div>
-        <div className="text-center p-3 bg-danger-50 rounded-lg">
-          <div className="text-2xl font-bold text-danger-600">{mismatches}</div>
-          <div className="text-xs text-danger-700">
-            {localSettings.calculationMode === 'real_correlation' ? 'Weak' : 'Mismatches'}
-          </div>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-gray-600">{neutral}</div>
-          <div className="text-xs text-gray-600">
-            {localSettings.calculationMode === 'real_correlation' ? 'Moderate' : 'Neutral'}
-          </div>
-        </div>
-        </div>
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {/* Mobile List Layout */}
         <div className="block sm:hidden">
-          <div className="space-y-2 pr-2">
+          <div className="space-y-2 pr-1">
             {gridPairs.map(([pairKey, pairData]) => {
               const [symbol1, symbol2] = pairKey.split('_');
               return (
@@ -507,7 +477,7 @@ const RSICorrelationDashboard = () => {
         </div>
 
         {/* Desktop Grid Layout - Dynamic columns based on available width */}
-        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2">
+        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-1">
           {gridPairs.map(([pairKey, pairData]) => {
             const [symbol1, symbol2] = pairKey.split('_');
             return (
