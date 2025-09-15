@@ -58,6 +58,14 @@ const Reset = () => {
               return
             }
             
+            // Clean tokens from URL after successful authentication
+            const cleanUrl = new URL(window.location.href)
+            cleanUrl.searchParams.delete('access_token')
+            cleanUrl.searchParams.delete('refresh_token')
+            cleanUrl.searchParams.delete('type')
+            cleanUrl.hash = ''
+            window.history.replaceState({}, '', cleanUrl.toString())
+            
             setIsAuthenticated(true)
             setSuccess('Reset link verified. You can now set your new password.')
           } else {
@@ -81,8 +89,16 @@ const Reset = () => {
   }, [])
 
   // If user is already logged in and not from reset flow, redirect
-  if (user && !isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+  // Guard against race conditions: only redirect when not processing and not in recovery flow
+  if (user && !isAuthenticated && !isProcessing) {
+    // Check if this is a recovery link to prevent premature redirect
+    const searchParams = new URLSearchParams(window.location.search)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    const type = searchParams.get('type') || hashParams.get('type')
+    
+    if (type !== 'recovery') {
+      return <Navigate to="/dashboard" replace />
+    }
   }
 
   const handleSubmit = async (e) => {
