@@ -336,6 +336,14 @@ Two simple options for weighting indicators (both sum to 1.0):
 - **Row Level Security (RLS)**: All user data is protected with Supabase RLS policies
 - **Authentication**: Secure user authentication with Supabase Auth
 - **Data Isolation**: Each user can only access their own data
+- **XSS Protection**: HTML sanitization implemented to prevent cross-site scripting attacks
+  - Custom sanitization function for AI news analysis content
+  - Escapes all HTML entities before applying safe transformations
+  - Whitelists only `<strong>` and `<br />` tags for formatting
+- **Enhanced Authentication**: Robust token parsing for password reset flows
+  - Handles both URL search parameters and hash fragments
+  - Hash parameters take precedence over search parameters
+  - Ensures Supabase authentication tokens are correctly parsed regardless of URL format
 
 ## Contributing
 

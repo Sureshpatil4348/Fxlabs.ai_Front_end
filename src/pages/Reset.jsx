@@ -20,30 +20,55 @@ const Reset = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const urlParams = new URLSearchParams(window.location.search)
+        // Parse both search parameters and hash fragment
+        const searchParams = new URLSearchParams(window.location.search)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1)) // Remove leading '#'
+        
+        // Merge parameters with hash taking precedence over search
+        const urlParams = new URLSearchParams()
+        
+        // Add search parameters first
+        for (const [key, value] of searchParams.entries()) {
+          urlParams.set(key, value)
+        }
+        
+        // Override with hash parameters (hash takes precedence)
+        for (const [key, value] of hashParams.entries()) {
+          urlParams.set(key, value)
+        }
+        
         const accessToken = urlParams.get('access_token')
         const refreshToken = urlParams.get('refresh_token')
         const type = urlParams.get('type')
 
-        // Check if this is a password recovery callback
-        if (type === 'recovery' && accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          })
-          
-          if (error) {
-            setError('Invalid or expired reset link. Please request a new one.')
+        // Handle password recovery callback
+        if (type === 'recovery') {
+          // Attempt to obtain tokens (already parsed from both search and hash)
+          if (accessToken && refreshToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            })
+            
+            if (error) {
+              // Surface provider error details if available
+              const errorMessage = error.error_description || error.message || 'Invalid or expired reset link. Please request a new one.'
+              setError(errorMessage)
+              setIsProcessing(false)
+              return
+            }
+            
+            setIsAuthenticated(true)
+            setSuccess('Reset link verified. You can now set your new password.')
+          } else {
+            setError('Invalid reset link. Please request a new password reset.')
             setIsProcessing(false)
             return
           }
-          
-          setIsAuthenticated(true)
-          setSuccess('Reset link verified. You can now set your new password.')
-        } else if (type === 'recovery' && !accessToken) {
-          setError('Invalid reset link. Please request a new password reset.')
         } else if (!type) {
           setError('Invalid link. Please use the password reset link from your email.')
+          setIsProcessing(false)
+          return
         }
       } catch (err) {
         setError('Failed to process reset link. Please try again.')

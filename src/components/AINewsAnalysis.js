@@ -14,6 +14,27 @@ import React, { useState, useEffect } from 'react';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming } from '../utils/formatters';
 
+// Secure HTML sanitization function to prevent XSS attacks
+const sanitizeHtml = (text) => {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+  
+  // First escape all HTML entities to prevent XSS
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+  
+  // Then safely apply only our whitelisted transformations
+  return escaped
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br />');
+};
+
 // Countdown Timer Component
 const CountdownTimer = ({ newsItem, className = "" }) => {
   const [timeLeft, setTimeLeft] = useState(null);
@@ -229,9 +250,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
               <div 
                 className="text-gray-700 leading-relaxed p-4 bg-gray-50 rounded-lg"
                 dangerouslySetInnerHTML={{
-                  __html: analysis.explanation
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n/g, '<br />')
+                  __html: sanitizeHtml(analysis.explanation)
                 }}
               />
             </div>
