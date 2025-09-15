@@ -15,6 +15,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - **Real-time Status Indicators**: Visual feedback for data quality and calculation status
   - **Progressive Data Loading**: Shows data progress as market information becomes available
 - **AI News Analysis**: AI-powered forex news insights and analysis
+  - **Enhanced News Cards**: Suggested pairs to watch displayed directly in news cards
+  - **Reorganized Modal Layout**: AI analysis at top, suggested pairs, economic data, and detailed analysis
 - **Watchlist Management**: Personalized symbol tracking with database persistence
 
 ### User Experience Features

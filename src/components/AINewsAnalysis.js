@@ -161,7 +161,27 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Impacted Currencies */}
+                {/* Suggested Pairs - Moved to second position in AI Analysis */}
+                {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="text-gray-700 font-medium mb-3 flex items-center space-x-2">
+                      <Target className="w-4 h-4 text-primary-600" />
+                      <span>Suggested Pairs to Watch:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.suggestedPairs.map(pair => (
+                        <span 
+                          key={pair}
+                          className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
+                        >
+                          {pair}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Impacted Currencies - Moved to third position */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="text-gray-700 font-medium mb-3">Impacted Currencies:</div>
                   <div className="flex flex-wrap gap-2">
@@ -180,25 +200,6 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Suggested Pairs - Moved to second position */}
-          {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
-                <Target className="w-4 h-4 text-primary-600" />
-                <span>Suggested Pairs to Watch</span>
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {analysis.suggestedPairs.map(pair => (
-                  <span 
-                    key={pair}
-                    className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
-                  >
-                    {pair}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Economic Data - Moved to third position */}
           <div>
@@ -252,12 +253,12 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   const isUpcomingEvent = eventTiming.isUpcoming;
 
   // Determine if actual vs forecast shows positive/negative surprise
-  let surprise = null;
+  let _surprise = null;
   if (news.actual !== 'N/A' && news.forecast !== 'N/A' && news.actual !== null && news.forecast !== null) {
     const actualNum = parseFloat(news.actual);
     const forecastNum = parseFloat(news.forecast);
     if (!isNaN(actualNum) && !isNaN(forecastNum)) {
-      surprise = actualNum > forecastNum ? 'positive' : actualNum < forecastNum ? 'negative' : 'neutral';
+      _surprise = actualNum > forecastNum ? 'positive' : actualNum < forecastNum ? 'negative' : 'neutral';
     }
   }
 
@@ -328,27 +329,25 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
         </div>
       </div>
 
-      {/* Data Values */}
-      <div className="grid grid-cols-3 gap-3 mb-3 text-xs">
-        <div className="text-center p-2 bg-gray-50 rounded">
-          <div className="text-gray-600 mb-1">Previous</div>
-          <div className="font-bold">{news.previous || '--'}</div>
-        </div>
-        <div className="text-center p-2 bg-blue-50 rounded">
-          <div className="text-gray-600 mb-1">Forecast</div>
-          <div className="font-bold">{news.forecast || '--'}</div>
-        </div>
-        <div className={`text-center p-2 rounded ${
-          surprise === 'positive' ? 'bg-success-50 text-success-700' :
-          surprise === 'negative' ? 'bg-danger-50 text-danger-700' :
-          'bg-gray-50'
-        }`}>
-          <div className="text-gray-600 mb-1">Actual</div>
-          <div className="font-bold">
-            {news.actual !== 'N/A' && news.actual !== null ? news.actual : isUpcomingEvent ? 'TBA' : '--'}
+      {/* Suggested Pairs to Watch */}
+      {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+        <div className="mb-3">
+          <div className="flex items-center space-x-2 mb-2">
+            <Target className="w-4 h-4 text-primary-600" />
+            <span className="text-xs font-semibold text-gray-900">Suggested Pairs to Watch</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {analysis.suggestedPairs.map(pair => (
+              <span 
+                key={pair}
+                className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
+              >
+                {pair}
+              </span>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Quick Analysis Preview */}
       {analysis && (
@@ -376,28 +375,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
             </div>
           </div>
           
-          {/* Suggested Pairs Preview */}
-          {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <Target className="w-3 h-3 text-primary-600" />
-              <span className="text-xs text-gray-600">Pairs:</span>
-              <div className="flex flex-wrap gap-1">
-                {analysis.suggestedPairs.slice(0, 3).map(pair => (
-                  <span 
-                    key={pair}
-                    className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-medium"
-                  >
-                    {pair}
-                  </span>
-                ))}
-                {analysis.suggestedPairs.length > 3 && (
-                  <span className="text-xs text-gray-500">
-                    +{analysis.suggestedPairs.length - 3} more
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -434,6 +411,8 @@ const AINewsAnalysis = () => {
 
   // Restrict to high-impact news globally
   const highImpactNews = newsData.filter((n) => n.impact === 'high');
+  // const highImpactNews = newsData; Test for all news
+
 
   // Initialize news data when component mounts
   useEffect(() => {
