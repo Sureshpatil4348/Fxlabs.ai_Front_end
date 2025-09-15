@@ -370,7 +370,7 @@ const RSICorrelationDashboard = () => {
   const gridPairs = sortedPairs;
   
   // Calculate statistics based on calculation mode
-  let totalPairs, matches, mismatches, neutral;
+  let totalPairs, _matches, _mismatches, _neutral;
   
   if (localSettings.calculationMode === 'real_correlation') {
     totalPairs = sortedPairs.length;
@@ -378,14 +378,14 @@ const RSICorrelationDashboard = () => {
     const moderateCorrelations = sortedPairs.filter(([, data]) => data.strength === 'moderate').length;
     const weakCorrelations = sortedPairs.filter(([, data]) => data.strength === 'weak').length;
     
-    matches = strongCorrelations;
-    mismatches = weakCorrelations;
-    neutral = moderateCorrelations;
+    _matches = strongCorrelations;
+    _mismatches = weakCorrelations;
+    _neutral = moderateCorrelations;
   } else {
     totalPairs = sortedPairs.length;
-    matches = sortedPairs.filter(([, data]) => data.status === 'match').length;
-    mismatches = sortedPairs.filter(([, data]) => data.status === 'mismatch').length;
-    neutral = sortedPairs.filter(([, data]) => data.status === 'neutral').length;
+    _matches = sortedPairs.filter(([, data]) => data.status === 'match').length;
+    _mismatches = sortedPairs.filter(([, data]) => data.status === 'mismatch').length;
+    _neutral = sortedPairs.filter(([, data]) => data.status === 'neutral').length;
   }
 
   return (
@@ -395,13 +395,18 @@ const RSICorrelationDashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
         <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium w-fit ${
               isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}>
               {isConnected ? '● Connected' : '● Disconnected'}
             </span>
+            {/* Total Pairs Pill */}
+            <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+              <span className="font-bold mr-1">{totalPairs}</span>
+              <span>Total Pairs</span>
+            </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
             {localSettings.calculationMode === 'real_correlation' ? (
@@ -456,31 +461,6 @@ const RSICorrelationDashboard = () => {
         </div>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900">{totalPairs}</div>
-          <div className="text-xs text-gray-600">Total Pairs</div>
-        </div>
-        <div className="text-center p-3 bg-success-50 rounded-lg">
-          <div className="text-2xl font-bold text-success-600">{matches}</div>
-          <div className="text-xs text-success-700">
-            {localSettings.calculationMode === 'real_correlation' ? 'Strong' : 'Matches'}
-          </div>
-        </div>
-        <div className="text-center p-3 bg-danger-50 rounded-lg">
-          <div className="text-2xl font-bold text-danger-600">{mismatches}</div>
-          <div className="text-xs text-danger-700">
-            {localSettings.calculationMode === 'real_correlation' ? 'Weak' : 'Mismatches'}
-          </div>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-gray-600">{neutral}</div>
-          <div className="text-xs text-gray-600">
-            {localSettings.calculationMode === 'real_correlation' ? 'Moderate' : 'Neutral'}
-          </div>
-        </div>
-        </div>
       </div>
 
       {/* Scrollable Content Area */}
@@ -507,7 +487,7 @@ const RSICorrelationDashboard = () => {
         </div>
 
         {/* Desktop Grid Layout - Dynamic columns based on available width */}
-        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2">
+        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-1">
           {gridPairs.map(([pairKey, pairData]) => {
             const [symbol1, symbol2] = pairKey.split('_');
             return (

@@ -1,10 +1,8 @@
 import { 
   TrendingUp, 
   TrendingDown, 
-  Minus, 
   Activity,
   BarChart3,
-  Target,
   Zap
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
@@ -347,13 +345,13 @@ const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   };
 
   // Handle indicator weight change with persistence
-  const handleIndicatorWeightChange = async (weight) => {
+  const _handleIndicatorWeightChange = async (weight) => {
     setIndicatorWeight(weight);
     await saveSettings({ indicatorWeight: weight });
   };
 
   // Handle show new signals change with persistence
-  const handleShowNewSignalsChange = async (show) => {
+  const _handleShowNewSignalsChange = async (show) => {
     setShowNewSignals(show);
     await saveSettings({ showNewSignals: show });
   };
@@ -835,11 +833,11 @@ useEffect(() => {
     return 'bg-gray-200 text-gray-600';                        // Neutral (0)
   };
   
-  // Get signal icon (updated for new scoring range [-1.25, +1.25])
-  const getSignalIcon = (score) => {
-    if (score > 0) return <TrendingUp className="w-4 h-4" />;
-    if (score < 0) return <TrendingDown className="w-4 h-4" />;
-    return <Minus className="w-4 h-4" />;
+  // Get signal text (updated for new scoring range [-1.25, +1.25])
+  const getSignalText = (score) => {
+    if (score > 0) return 'BUY';
+    if (score < 0) return 'SELL';
+    return '0%';
   };
 
   // Get actionable zone based on final score
@@ -904,22 +902,26 @@ useEffect(() => {
   const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'IchimokuClone'];
   
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <BarChart3 className="w-6 h-6 text-blue-600" />
-          <h2 className="text-xl font-bold text-gray-900">Multi-Indicator Heatmap</h2>
-        </div>
-        
-        <div className="flex items-center space-x-6">
-          {/* Symbol Dropdown */}
+    <div className="bg-white rounded-lg shadow-lg" style={{height: '100%', position: 'relative'}}>
+      {/* Fixed Header Section */}
+      <div style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '1rem', borderBottom: '1px solid #e5e7eb'}}>
+        <div className="flex items-center justify-between mb-3">
+          {/* Title */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Symbol:</span>
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-bold text-gray-900">All in One Currency Indicator</h2>
+          </div>
+          
+          {/* Controls Row */}
+          <div className="flex items-center space-x-3">
+          {/* Symbol Dropdown */}
+          <div className="flex items-center space-x-1">
+            <span className="text-xs font-medium text-gray-700">Symbol:</span>
             <div className="relative">
               <select
                 value={currentSymbol}
                 onChange={(e) => handleSymbolChange(e.target.value)}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-blue-50 text-blue-900 rounded-lg text-sm font-medium border border-blue-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 min-w-[140px] cursor-pointer hover:bg-blue-100 shadow-sm"
+                className="appearance-none pl-2 pr-6 py-1 bg-blue-50 text-blue-900 rounded text-xs font-medium border border-blue-200 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 min-w-[80px] cursor-pointer hover:bg-blue-100"
               >
                 {MAJOR_CURRENCY_PAIRS.map(pair => (
                   <option key={pair.value} value={pair.value}>
@@ -927,112 +929,93 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 text-blue-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                <svg className="w-3 h-3 text-blue-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
           </div>
           
           {/* Style Dropdown */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Style:</span>
+          <div className="flex items-center space-x-1">
+            <span className="text-xs font-medium text-gray-700">Style:</span>
             <div className="relative">
               <select
                 value={tradingStyle}
                 onChange={(e) => handleTradingStyleChange(e.target.value)}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-purple-50 text-purple-900 rounded-lg text-sm font-medium border border-purple-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 min-w-[140px] cursor-pointer hover:bg-purple-100 shadow-sm"
+                className="appearance-none pl-2 pr-6 py-1 bg-purple-50 text-purple-900 rounded text-xs font-medium border border-purple-200 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 min-w-[80px] cursor-pointer hover:bg-purple-100"
               >
                 <option value="scalper">⚡ Scalper</option>
                 <option value="dayTrader">📈 Day Trader</option>
                 <option value="swingTrader">📊 Swing Trader</option>
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                <svg className="w-3 h-3 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
           </div>
           
-          {/* Weights Dropdown */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Weights:</span>
+          {/* Weights Dropdown
+          <div className="flex items-center space-x-1">
+            <span className="text-xs font-medium text-gray-700">Weights:</span>
             <div className="relative">
               <select
                 value={indicatorWeight}
                 onChange={(e) => handleIndicatorWeightChange(e.target.value)}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-orange-50 text-orange-900 rounded-lg text-sm font-medium border border-orange-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 min-w-[140px] cursor-pointer hover:bg-orange-100 shadow-sm"
+                className="appearance-none pl-2 pr-6 py-1 bg-orange-50 text-orange-900 rounded text-xs font-medium border border-orange-200 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 min-w-[70px] cursor-pointer hover:bg-orange-100"
               >
                 <option value="equal">⚖️ Equal</option>
                 <option value="trendTilted">📈 Trend-Tilted</option>
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 text-orange-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                <svg className="w-3 h-3 text-orange-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
-          </div>
+          </div> */}
           
           {/* Show New Toggle */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Show New:</span>
+          {/* <div className="flex items-center space-x-1">
+            <span className="text-xs font-medium text-gray-700">New:</span>
             <div className="relative">
               <select
                 value={showNewSignals ? 'on' : 'off'}
                 onChange={(e) => handleShowNewSignalsChange(e.target.value === 'on')}
-                className="appearance-none pl-4 pr-10 py-2.5 bg-green-50 text-green-900 rounded-lg text-sm font-medium border border-green-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 min-w-[100px] cursor-pointer hover:bg-green-100 shadow-sm"
+                className="appearance-none pl-2 pr-6 py-1 bg-green-50 text-green-900 rounded text-xs font-medium border border-green-200 focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200 min-w-[60px] cursor-pointer hover:bg-green-100"
               >
                 <option value="on">🟢 ON</option>
                 <option value="off">🔴 OFF</option>
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 text-green-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                <svg className="w-3 h-3 text-green-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
+          </div> */}
           </div>
         </div>
       </div>
-      
-      {/* Final Score Summary with Actionable Bands */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {/* Final Score Card - Always Light Yellow */}
-        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <Target className="w-5 h-5 text-yellow-600" />
-            <span className="text-sm font-medium text-yellow-800">Final Score</span>
-          </div>
-          <div className={`text-2xl font-bold ${
-            finalResults.finalScore > 0 ? 'text-green-600' : 
-            finalResults.finalScore < 0 ? 'text-red-600' : 'text-gray-600'
-          }`}>
-            {finalResults.finalScore > 0 ? '+' : ''}{finalResults.finalScore}
-          </div>
-          <div className="text-xs text-yellow-800 font-medium">
-            {(() => {
-              const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-              const styling = getZoneStyling(zone);
-              return styling.label;
-            })()}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">Range: -100 to +100</div>
-          <div className="text-xs text-gray-400 mt-1">
-            {tradingStyle === 'scalper' && 'Focus: 5M-30M'}
-            {tradingStyle === 'day-trader' && 'Focus: 15M-1H'}
-            {tradingStyle === 'swing-trader' && 'Focus: 1H-1D'}
-          </div>
-        </div>
-        
+
+      {/* Scrollable Content Area */}
+      <div style={{
+        height: 'calc(100% - 100px)',
+        overflowY: 'auto',
+        padding: '1rem'
+      }}>
+        {/* Final Score Summary with Actionable Bands */}
+      <div className="flex justify-between gap-6 mb-4">
+        {/* Buy Now % Card - Dynamic styling based on zone */}
         {(() => {
           const zone = getActionableZone(finalResults.finalScore, tradingStyle);
           const styling = getZoneStyling(zone);
           
           return (
-            <div className={`${styling.bgClass} border-2 ${styling.borderClass} rounded-lg p-4`}>
+            <div className={`${styling.bgClass} border-2 ${styling.borderClass} rounded-lg p-3 flex-1`}>
               <div className="flex items-center space-x-2 mb-2">
                 <TrendingUp className={`w-5 h-5 ${styling.iconClass}`} />
                 <span className={`text-sm font-medium ${styling.textClass}`}>Buy Now %</span>
@@ -1047,7 +1030,7 @@ useEffect(() => {
         })()}
         
         {/* Sell Now % Card - Always Red Shade */}
-        <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-lg p-3 flex-1">
           <div className="flex items-center space-x-2 mb-2">
             <TrendingDown className="w-5 h-5 text-red-600" />
             <span className="text-sm font-medium text-red-800">Sell Now %</span>
@@ -1068,7 +1051,7 @@ useEffect(() => {
 
       {/* New Signal Boost Badge */}
       {finalResults.newSignalBoost && (
-        <div className="mb-4 p-3 bg-orange-100 border border-orange-300 rounded-lg">
+        <div className="mb-3 p-2 bg-orange-100 border border-orange-300 rounded-lg">
           <div className="flex items-center">
             <Zap className="w-5 h-5 text-orange-600 mr-2" />
             <span className="text-orange-800 font-medium">New Signal Boost Active!</span>
@@ -1094,7 +1077,7 @@ useEffect(() => {
         // const utbotData = firstTimeframe?.UTBOT; // Unused for now
         
         return (
-          <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+          <div className="mb-3 p-2 bg-blue-100 border border-blue-300 rounded-lg">
             <div className="flex items-center">
               <Activity className="w-5 h-5 text-blue-600 mr-2" />
               <span className="text-blue-800 font-medium">Quiet Market Safety Active!</span>
@@ -1121,7 +1104,7 @@ useEffect(() => {
         const threshold = thresholds[tradingStyle] || 20;
         
         return (
-          <div className={`mb-4 p-3 ${styling.bgClass} border-2 ${styling.borderClass} rounded-lg`}>
+          <div className={`mb-3 p-2 ${styling.bgClass} border-2 ${styling.borderClass} rounded-lg`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className={`w-3 h-3 rounded-full ${styling.iconClass.replace('text-', 'bg-')} mr-3`}></div>
@@ -1143,7 +1126,7 @@ useEffect(() => {
       })()}
 
       {/* Zone Thresholds Info */}
-      <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+      <div className="mb-3 p-2 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span className="text-sm font-medium text-gray-700">Zone Thresholds:</span>
@@ -1206,7 +1189,7 @@ useEffect(() => {
         <>
           {/* Data Quality Indicator */}
           {dataStatus.workingPercentage < 100 && (
-            <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
+            <div className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Activity className="w-5 h-5 text-yellow-600 mr-2" />
@@ -1224,59 +1207,61 @@ useEffect(() => {
             </div>
           )}
       
-      {/* Heatmap Table */}
+      {/* Heatmap Table - Swapped rows/columns */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b-2 border-gray-200">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Indicator</th>
-              {timeframes.map(timeframe => (
-                <th key={timeframe} className="text-center py-3 px-2 font-semibold text-gray-700 min-w-[80px]">
-                  {timeframe}
+              <th className="text-left py-2 px-3 font-semibold text-gray-700">Timeframe</th>
+              {indicators.map(indicator => (
+                <th key={indicator} className="text-center py-2 px-1 font-semibold text-gray-700 min-w-[80px]">
+                  <div className="flex flex-col items-center space-y-1">
+                    <span className="text-xs">{indicator}</span>
+                    {indicator === 'UTBOT' && <Zap className="w-3 h-3 text-yellow-500" />}
+                    {indicator === 'IchimokuClone' && <Activity className="w-3 h-3 text-purple-500" />}
+                  </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {indicators.map(indicator => (
-              <tr key={indicator} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-3 px-4 font-medium text-gray-900">
+            {timeframes.map(timeframe => (
+              <tr key={timeframe} className="border-b border-gray-100 hover:bg-gray-50">
+                <td className="py-2 px-3 font-medium text-gray-900">
                   <div className="flex items-center space-x-2">
-                    <span>{indicator}</span>
-                    {indicator === 'UTBOT' && <Zap className="w-4 h-4 text-yellow-500" />}
-                    {indicator === 'IchimokuClone' && <Activity className="w-4 h-4 text-purple-500" />}
-                        {/* Show status indicator for failed calculations */}
-                        {timeframes.some(tf => !indicatorData[tf]?.[indicator]?.hasData) && (
-                          <span 
-                            className="text-xs ml-1 text-red-500" 
-                            title="Calculation failed - insufficient data"
-                          >
-                            ⚠️
-                          </span>
-                        )}
+                    <span>{timeframe}</span>
+                    {/* Show status indicator for failed calculations in this timeframe */}
+                    {indicators.some(indicator => !indicatorData[timeframe]?.[indicator]?.hasData) && (
+                      <span 
+                        className="text-xs ml-1 text-red-500" 
+                        title="Some calculations failed - insufficient data"
+                      >
+                        ⚠️
+                      </span>
+                    )}
                   </div>
                 </td>
-                {timeframes.map(timeframe => {
+                {indicators.map(indicator => {
                   const score = scores[timeframe]?.[indicator] || 0;
                   const data = indicatorData[timeframe]?.[indicator];
                   const isNew = data?.new || false;
-                      const hasData = data?.hasData || false;
+                  const hasData = data?.hasData || false;
                   
                   return (
-                    <td key={timeframe} className="text-center py-3 px-2">
+                    <td key={indicator} className="text-center py-1 px-1">
                       <div className="relative">
-                            <div 
-                              className={`inline-flex items-center justify-center w-12 h-12 rounded-lg font-semibold text-sm ${
-                                hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
-                              }`}
-                              title={
-                                hasData ? `Signal: ${data.signal}, Score: ${score.toFixed(2)}` : data?.error || 'No data'
-                              }
-                            >
-                              {hasData ? getSignalIcon(score) : <span className="text-xs">⋯</span>}
+                        <div 
+                          className={`inline-flex items-center justify-center w-14 h-10 rounded-md font-bold text-xs ${
+                            hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
+                          }`}
+                          title={
+                            hasData ? `Signal: ${data.signal}, Score: ${score.toFixed(2)}` : data?.error || 'No data'
+                          }
+                        >
+                          {hasData ? getSignalText(score) : <span className="text-xs">⋯</span>}
                         </div>
-                            {isNew && showNewSignals && hasData && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white"></div>
+                        {isNew && showNewSignals && hasData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full border border-white"></div>
                         )}
                       </div>
                     </td>
@@ -1291,33 +1276,33 @@ useEffect(() => {
       )}
       
       {/* Legend */}
-      <div className="mt-6 flex items-center justify-center space-x-4 text-sm flex-wrap">
+      {/* <div className="mt-4 flex items-center justify-center space-x-3 text-sm flex-wrap">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Strong Buy (1.0-1.25)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-green-400 rounded"></div>
+          <div className="w-4 h-4 bg-green-400 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Buy+ (0.5-1.0)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-green-200 rounded"></div>
+          <div className="w-4 h-4 bg-green-200 rounded flex items-center justify-center text-green-800 text-xs font-bold"></div>
           <span>Buy (0-0.5)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-gray-200 rounded"></div>
+          <div className="w-4 h-4 bg-gray-200 rounded flex items-center justify-center text-gray-600 text-xs font-bold"></div>
           <span>Neutral (0)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-200 rounded"></div>
+          <div className="w-4 h-4 bg-red-200 rounded flex items-center justify-center text-red-800 text-xs font-bold"></div>
           <span>Sell (0 to -0.5)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-400 rounded"></div>
+          <div className="w-4 h-4 bg-red-400 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Sell+ (-0.5 to -1.0)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-500 rounded"></div>
+          <div className="w-4 h-4 bg-red-500 rounded flex items-center justify-center text-white text-xs font-bold"></div>
           <span>Strong Sell (-1.0 to -1.25)</span>
         </div>
         {showNewSignals && (
@@ -1326,6 +1311,7 @@ useEffect(() => {
             <span>New Signal (+0.25 boost)</span>
           </div>
         )}
+      </div> */}
       </div>
     </div>
   );

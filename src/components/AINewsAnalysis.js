@@ -131,28 +131,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 
         {/* Modal Content */}
         <div className="p-6 space-y-6">
-          {/* Economic Data */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Economic Data</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-2 bg-gray-50 rounded-lg">
-                <div className="text-gray-600 mb-2">Previous</div>
-                <div className="text-lg font-bold text-gray-900">{news.previous || '--'}</div>
-              </div>
-              <div className="text-center p-2 bg-blue-50 rounded-lg">
-                <div className="text-gray-600 mb-2">Forecast</div>
-                <div className="text-lg font-bold text-blue-900">{news.forecast || '--'}</div>
-              </div>
-              <div className="text-center p-2 bg-green-50 rounded-lg">
-                <div className="text-gray-600 mb-2">Actual</div>
-                <div className="text-lg font-bold text-green-900">
-                  {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Analysis */}
+          {/* AI Analysis - Moved to top */}
           {analysis && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
@@ -197,38 +176,63 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                     })}
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
 
-                {/* Suggested Pairs */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-gray-700 font-medium mb-3 flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-primary-600" />
-                    <span>Suggested Pairs to Watch</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {analysis.suggestedPairs.map(pair => (
-                      <span 
-                        key={pair}
-                        className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
-                      >
-                        {pair}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+          {/* Suggested Pairs - Moved to second position */}
+          {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                <Target className="w-4 h-4 text-primary-600" />
+                <span>Suggested Pairs to Watch</span>
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {analysis.suggestedPairs.map(pair => (
+                  <span 
+                    key={pair}
+                    className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
+                  >
+                    {pair}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
-                {/* Full Analysis */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-gray-700 font-medium mb-3">Detailed Analysis</div>
-                  <div 
-                    className="text-gray-700 leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: analysis.explanation
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\n/g, '<br />')
-                    }}
-                  />
+          {/* Economic Data - Moved to third position */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">Economic Data</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-2 bg-gray-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Previous</div>
+                <div className="text-lg font-bold text-gray-900">{news.previous || '--'}</div>
+              </div>
+              <div className="text-center p-2 bg-blue-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Forecast</div>
+                <div className="text-lg font-bold text-blue-900">{news.forecast || '--'}</div>
+              </div>
+              <div className="text-center p-2 bg-green-50 rounded-lg">
+                <div className="text-gray-600 mb-2">Actual</div>
+                <div className="text-lg font-bold text-green-900">
+                  {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Detailed Analysis - Moved to bottom */}
+          {analysis && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Detailed Analysis</h3>
+              <div 
+                className="text-gray-700 leading-relaxed p-4 bg-gray-50 rounded-lg"
+                dangerouslySetInnerHTML={{
+                  __html: analysis.explanation
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br />')
+                }}
+              />
             </div>
           )}
         </div>
@@ -260,11 +264,13 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   // Border and background classes based on analysis effect and timing
   const effect = analysis?.effect;
   const borderClass =
-    effect === 'Bullish' ? 'border-success-600' :
-    effect === 'Bearish' ? 'border-danger-600' :
+    effect === 'Bullish' ? 'border-success-600 border-2' :
+    effect === 'Bearish' ? 'border-danger-600 border-2' :
     eventTiming.isStartingSoon ? 'border-orange-300' :
     (isUpcomingEvent ? 'border-yellow-300' : 'border-gray-200');
   const backgroundClass = 
+    effect === 'Bullish' ? 'bg-success-50' :
+    effect === 'Bearish' ? 'bg-danger-50' :
     eventTiming.isStartingSoon ? 'bg-orange-50' :
     (isUpcomingEvent ? 'bg-yellow-50' : 'bg-white');
 
@@ -346,7 +352,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
 
       {/* Quick Analysis Preview */}
       {analysis && (
-        <div className="border-t pt-3">
+        <div className="border-t pt-3 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />
@@ -369,6 +375,29 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               </span>
             </div>
           </div>
+          
+          {/* Suggested Pairs Preview */}
+          {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <Target className="w-3 h-3 text-primary-600" />
+              <span className="text-xs text-gray-600">Pairs:</span>
+              <div className="flex flex-wrap gap-1">
+                {analysis.suggestedPairs.slice(0, 3).map(pair => (
+                  <span 
+                    key={pair}
+                    className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-medium"
+                  >
+                    {pair}
+                  </span>
+                ))}
+                {analysis.suggestedPairs.length > 3 && (
+                  <span className="text-xs text-gray-500">
+                    +{analysis.suggestedPairs.length - 3} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
