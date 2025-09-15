@@ -163,7 +163,7 @@ const WishlistPanel = () => {
 
   if (authLoading) {
     return (
-      <div className="card-compact h-[185px] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-[185px] flex flex-col overflow-hidden">
         <div className="flex items-center justify-center h-full">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
@@ -173,7 +173,7 @@ const WishlistPanel = () => {
 
   if (!user) {
     return (
-      <div className="card-compact h-[185px] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-[185px] flex flex-col overflow-hidden">
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -185,7 +185,7 @@ const WishlistPanel = () => {
   }
 
   return (
-    <div className="card-compact h-[185px] flex flex-col overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-[180px] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
@@ -225,7 +225,7 @@ const WishlistPanel = () => {
       )}
 
       {/* Main Scroll Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1">
         {watchlistLoading && wishlistSymbols.length === 0 ? (
           <div className="flex items-center justify-center">
             <div className="text-center">

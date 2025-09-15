@@ -1,6 +1,4 @@
 import { 
-  TrendingUp, 
-  TrendingDown, 
   Activity,
   BarChart3,
   Zap
@@ -902,10 +900,10 @@ useEffect(() => {
   const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'IchimokuClone'];
   
   return (
-    <div className="bg-white rounded-lg shadow-lg" style={{height: '100%', position: 'relative'}}>
+    <div className="bg-white rounded-lg shadow-md" style={{height: '100%', position: 'relative'}}>
       {/* Fixed Header Section */}
-      <div style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '0.5rem', borderBottom: '1px solid #e5e7eb'}}>
-        <div className="flex items-center justify-between mb-1">
+      <div className=" rounded-lg " style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '1rem', borderBottom: '1px solid #e5e7eb' ,}}>
+        <div className="flex items-center justify-between mb-2 ">
           {/* Title */}
           <div className="flex items-center space-x-1">
             <BarChart3 className="w-5 h-5 text-blue-600" />
@@ -1003,49 +1001,39 @@ useEffect(() => {
 
       {/* Scrollable Content Area */}
       <div style={{
-        height: 'calc(100% - 80px)',
+        height: 'calc(100% - 100px)',
         overflowY: 'auto',
-        padding: '0.5rem'
+        padding: '1rem'
       }}>
-        {/* Final Score Summary with Actionable Bands */}
-      <div className="flex justify-between gap-1 mb-2">
-        {/* Buy Now % Card - Dynamic styling based on zone */}
+        {/* Final Score Summary - Compact Single Line */}
+      <div className="flex justify-between gap-2 mb-1">
+        {/* Buy Now % Card - Compact */}
         {(() => {
           const zone = getActionableZone(finalResults.finalScore, tradingStyle);
           const styling = getZoneStyling(zone);
           
           return (
-            <div className={`${styling.bgClass} border-2 ${styling.borderClass} rounded-lg p-3 flex-1`}>
-              <div className="flex items-center space-x-1 mb-2">
-                <TrendingUp className={`w-5 h-5 ${styling.iconClass}`} />
-                <span className={`text-sm font-medium ${styling.textClass}`}>Buy Now %</span>
+            <div className={`${styling.bgClass} border ${styling.borderClass} rounded px-3 py-1 flex-1`}>
+              <div className="flex items-center justify-between">
+                <span className={`text-sm font-medium ${styling.textClass}`}>📈 Buy: {finalResults.buyNowPercent}%</span>
+                <span className={`text-xs ${styling.textClass}`}>{styling.label}</span>
               </div>
-              <div className={`text-2xl font-bold ${styling.valueClass}`}>
-                {finalResults.buyNowPercent}%
-              </div>
-              <div className={`text-xs ${styling.textClass} font-medium`}>{styling.label}</div>
-              <div className="text-xs text-gray-500 mt-1">Probability</div>
             </div>
           );
         })()}
         
-        {/* Sell Now % Card - Always Red Shade */}
-        <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-lg p-3 flex-1">
-          <div className="flex items-center space-x-1 mb-2">
-            <TrendingDown className="w-5 h-5 text-red-600" />
-            <span className="text-sm font-medium text-red-800">Sell Now %</span>
+        {/* Sell Now % Card - Compact */}
+        <div className="bg-red-50 border border-red-200 rounded px-3 py-1 flex-1">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-red-800">📉 Sell: {finalResults.sellNowPercent}%</span>
+            <span className="text-xs text-red-800">
+              {(() => {
+                const zone = getActionableZone(finalResults.finalScore, tradingStyle);
+                const styling = getZoneStyling(zone);
+                return styling.label;
+              })()}
+            </span>
           </div>
-          <div className="text-2xl font-bold text-red-600">
-            {finalResults.sellNowPercent}%
-          </div>
-          <div className="text-xs text-red-800 font-medium">
-            {(() => {
-              const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-              const styling = getZoneStyling(zone);
-              return styling.label;
-            })()}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">Probability</div>
         </div>
       </div>
 
@@ -1095,7 +1083,7 @@ useEffect(() => {
       {/* Current Actionable Zone Indicator - Only show for high probability zones */}
       {(() => {
         const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-        const styling = getZoneStyling(zone);
+        const _styling = getZoneStyling(zone);
         const thresholds = {
           'scalper': 25,
           'day-trader': 20,
@@ -1108,44 +1096,9 @@ useEffect(() => {
           return null;
         }
         
-        return (
-          <div className={`mb-2 p-2 ${styling.bgClass} border-2 ${styling.borderClass} rounded-lg`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-1">
-                {zone === 'buy' ? (
-                  <span className={`font-semibold ${styling.textClass}`}>
-                    📈 Buy Now: {finalResults.buyNowPercent}%
-                  </span>
-                ) : (
-                  <span className="text-red-600 font-semibold">
-                    📉 Sell Now: {finalResults.sellNowPercent}%
-                  </span>
-                )}
-              </div>
-              <div className={`text-sm ${styling.textClass}`}>
-                Current Zone: {styling.label} (Score: {finalResults.finalScore})
-              </div>
-            </div>
-          </div>
-        );
+        
       })()}
 
-      {/* Zone Thresholds Info */}
-      <div className="mb-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            <span className="text-sm font-medium text-gray-700">Thresholds:</span>
-            <span className="text-xs text-gray-600">
-              🟢 Buy: ≥{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'} | 
-              🟡 Wait: ±{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'} | 
-              🔴 Sell: ≤-{tradingStyle === 'scalper' ? '25' : tradingStyle === 'day-trader' ? '20' : '15'}
-            </span>
-          </div>
-          <div className="text-xs text-gray-500">
-            {tradingStyle.charAt(0).toUpperCase() + tradingStyle.slice(1).replace('-', ' ')}
-          </div>
-        </div>
-      </div>
       
       {/* Data Status and Error Handling */}
       {dataStatus.hasError ? (

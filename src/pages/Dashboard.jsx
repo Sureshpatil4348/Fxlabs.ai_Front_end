@@ -63,9 +63,9 @@
         <Navbar />
 
         {/* Main Content - Takes remaining screen height */}
-        <main className="flex-1 min-h-0 p-1 overflow-y-auto">
+        <main className="flex-1 min-h-0 overflow-y-auto p-3">
           {/* Dashboard Grid - Original layout restored */}
-          <div className="h-full grid grid-cols-12 grid-rows-12 gap-1 ">
+          <div className="h-full grid grid-cols-12 grid-rows-12 gap-2">
             
             {/* Section 1 - Multi Indicator Heatmap (largest area - top left) */}
             <div className="col-span-7 row-span-7 min-h-0">
@@ -83,12 +83,12 @@
             </div>
 
             {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
-            <div className="col-span-7 row-span-5">
+            <div className="col-span-7 row-span-5 row-start-8">
               <RSICorrelationDashboard />
             </div>
 
             {/* Section 5th - AI News Analysis (bottom right) - Increased height */}
-            <div className="col-span-5 row-span-6">
+            <div className="col-span-5 row-span-5 row-start-8">
               <AINewsAnalysis />
             </div>
 

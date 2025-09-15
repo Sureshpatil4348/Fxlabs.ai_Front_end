@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabaseClient'
@@ -10,12 +10,54 @@ const Reset = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(true)
   
   const { user } = useAuth()
+  const navigate = useNavigate()
 
-  // If user is already logged in, redirect to home
-  if (user) {
-    return <Navigate to="/" replace />
+  // Handle URL parameters and authenticate user
+  useEffect(() => {
+    const handleAuthCallback = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search)
+        const accessToken = urlParams.get('access_token')
+        const refreshToken = urlParams.get('refresh_token')
+        const type = urlParams.get('type')
+
+        // Check if this is a password recovery callback
+        if (type === 'recovery' && accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+          
+          if (error) {
+            setError('Invalid or expired reset link. Please request a new one.')
+            setIsProcessing(false)
+            return
+          }
+          
+          setIsAuthenticated(true)
+          setSuccess('Reset link verified. You can now set your new password.')
+        } else if (type === 'recovery' && !accessToken) {
+          setError('Invalid reset link. Please request a new password reset.')
+        } else if (!type) {
+          setError('Invalid link. Please use the password reset link from your email.')
+        }
+      } catch (err) {
+        setError('Failed to process reset link. Please try again.')
+      } finally {
+        setIsProcessing(false)
+      }
+    }
+
+    handleAuthCallback()
+  }, [])
+
+  // If user is already logged in and not from reset flow, redirect
+  if (user && !isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
   }
 
   const handleSubmit = async (e) => {
@@ -41,13 +83,59 @@ const Reset = () => {
       if (error) {
         setError(error.message)
       } else {
-        setSuccess('Password updated successfully! You can now sign in with your new password.')
+        setSuccess('Password updated successfully! Signing you out...')
+        
+        // Sign out the user explicitly to clear the reset session
+        await supabase.auth.signOut()
+        
+        // Redirect to login after a brief delay
+        setTimeout(() => {
+          navigate('/login')
+        }, 1500)
       }
     } catch (err) {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading while processing URL parameters
+  if (isProcessing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verifying reset link...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error if not authenticated and no valid reset token
+  if (!isAuthenticated && error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Invalid Reset Link
+            </h2>
+            <p className="mt-2 text-center text-sm text-red-600">
+              {error}
+            </p>
+            <div className="mt-6">
+              <Link
+                to="/forgot"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Request New Reset Link
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -105,14 +193,6 @@ const Reset = () => {
           {success && (
             <div className="text-green-600 text-sm text-center">
               {success}
-              <div className="mt-2">
-                <Link
-                  to="/dashboard"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Go to Dashboard
-                </Link>
-              </div>
             </div>
           )}
 

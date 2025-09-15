@@ -389,11 +389,11 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 z-10 relative h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
@@ -464,7 +464,7 @@ const RSICorrelationDashboard = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {/* Mobile List Layout */}
         <div className="block sm:hidden">
           <div className="space-y-2 pr-2">

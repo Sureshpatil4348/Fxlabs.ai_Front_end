@@ -212,7 +212,7 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="card-compact h-full flex flex-col z-9 relative">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-9 relative">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -305,7 +305,7 @@ const RSIOverboughtOversoldTracker = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1">
         {currentPairs.length > 0 ? (
           <div>
             {viewMode === 'table' ? (

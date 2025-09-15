@@ -534,11 +534,11 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 z-9 relative h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-2 z-9 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-5 h-5 text-primary-600" />
           <div>
@@ -577,7 +577,7 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {/* News Feed */}
         <div className="space-y-3">
         
