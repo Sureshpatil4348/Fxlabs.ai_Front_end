@@ -8,6 +8,9 @@ import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
+// Utility function to clamp values within min/max bounds
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   const { symbol, rsi, price, change } = pair;
 
@@ -207,7 +210,7 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-9 relative">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-10 relative">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -405,7 +408,10 @@ const RSIOverboughtOversoldTracker = () => {
                   min="2"
                   max="50"
                   value={localSettings.rsiPeriod}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiPeriod: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const n = Number.parseInt(e.target.value, 10);
+                    setLocalSettings(prev => ({ ...prev, rsiPeriod: Number.isFinite(n) ? clamp(n, 2, 50) : prev.rsiPeriod }));
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -421,7 +427,10 @@ const RSIOverboughtOversoldTracker = () => {
                   min="50"
                   max="90"
                   value={localSettings.rsiOverbought}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOverbought: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const n = Number.parseInt(e.target.value, 10);
+                    setLocalSettings(prev => ({ ...prev, rsiOverbought: Number.isFinite(n) ? clamp(n, 50, 90) : prev.rsiOverbought }));
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -437,7 +446,10 @@ const RSIOverboughtOversoldTracker = () => {
                   min="10"
                   max="50"
                   value={localSettings.rsiOversold}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOversold: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const n = Number.parseInt(e.target.value, 10);
+                    setLocalSettings(prev => ({ ...prev, rsiOversold: Number.isFinite(n) ? clamp(n, 10, 50) : prev.rsiOversold }));
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
