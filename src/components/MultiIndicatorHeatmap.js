@@ -902,7 +902,7 @@ useEffect(() => {
   return (
     <div className="bg-white rounded-lg shadow-md" style={{height: '100%', position: 'relative'}}>
       {/* Fixed Header Section */}
-      <div className=" rounded-lg " style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '1rem', borderBottom: '1px solid #e5e7eb' ,}}>
+      <div className=" rounded-lg " style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '1rem'}}>
         <div className="flex items-center justify-between mb-2 ">
           {/* Title */}
           <div className="flex items-center space-x-1">

@@ -18,7 +18,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
       );
     }
     
-    const { correlation, strength, type } = correlationData;
+    const { correlation, strength: _strength, type } = correlationData;
     const correlationValue = (correlation * 100).toFixed(1);
     
     // Determine color based on correlation type (positive/negative)
@@ -53,9 +53,6 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
               </span>
             </div>
             <div className="text-right">
-              <div className={`text-sm font-bold ${strengthColor}`}>
-                {strength.toUpperCase()}
-              </div>
               <div className={`text-xs ${strengthColor}`}>
                 {correlationValue}%
               </div>
@@ -82,9 +79,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
             </span>
           </div>
           <div className="text-center">
-            <div className={`text-xs font-semibold ${strengthColor}`}>
-              {strength.toUpperCase()}
-            </div>
+            {/* Strength keyword removed */}
           </div>
         </div>
         
@@ -108,12 +103,14 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   // Original RSI threshold mode
   const { status: _status, rsi1, rsi2, type } = pairData;
   
-  // Determine card color based on correlation type for RSI threshold mode
-  let cardColor;
+  // Determine card color and text color based on correlation type for RSI threshold mode
+  let cardColor, strengthColor;
   if (type === 'positive') {
     cardColor = 'border-green-300 bg-green-50';
+    strengthColor = 'text-green-700';
   } else {
     cardColor = 'border-red-300 bg-red-50';
+    strengthColor = 'text-red-700';
   }
 
   if (isMobile) {
@@ -132,12 +129,12 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
                 </span>
               )}
             </span>
-            <span className="text-sm font-medium text-gray-600">
+            <span className={`text-sm font-medium ${strengthColor}`}>
               {formatSymbolDisplay(symbol1)} / {formatSymbolDisplay(symbol2)}
             </span>
           </div>
           <div className="text-right">
-            <div className="text-xs text-gray-600">
+            <div className={`text-xs ${strengthColor}`}>
               RSI: {formatRsi(rsi1)} / {formatRsi(rsi2)}
             </div>
           </div>
@@ -166,13 +163,13 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
       
       <div className="space-y-0">
         <div className="grid grid-cols-2 gap-0 text-xs">
-          <div className="text-center p-0 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
-            <div className="font-normal text-[8px]">{formatSymbolDisplay(symbol1)}</div>
-            <div className="font-semibold text-sm transition-all duration-300">{formatRsi(rsi1)}</div>
+          <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
+            <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol1)}</div>
+            <div className={`font-semibold text-sm transition-all duration-300 ${strengthColor}`}>{formatRsi(rsi1)}</div>
           </div>
-          <div className="text-center p-0 bg-gray-50 bg-opacity-50 rounded transition-all duration-300">
-            <div className="font-normal text-[8px]">{formatSymbolDisplay(symbol2)}</div>
-            <div className="font-semibold text-sm transition-all duration-300">{formatRsi(rsi2)}</div>
+          <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
+            <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol2)}</div>
+            <div className={`font-semibold text-sm transition-all duration-300 ${strengthColor}`}>{formatRsi(rsi2)}</div>
           </div>
         </div>
       </div>
