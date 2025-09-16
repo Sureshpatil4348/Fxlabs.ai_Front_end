@@ -1032,7 +1032,7 @@ useEffect(() => {
         <table className="w-full border-collapse h-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left py-0.5 px-1 font-semibold text-gray-700 text-xs w-16">TF</th>
+              <th className="text-left py-0.5 px-1 font-semibold text-gray-700 text-xs w-16"><div className="ml-2">TF</div></th>
               {indicators.map(indicator => (
                 <th key={indicator} className="text-center py-0.5 px-0.5 font-semibold text-gray-700">
                   <div className="flex flex-col items-center">
@@ -1053,7 +1053,7 @@ useEffect(() => {
             {[...new Set(timeframes)].map((timeframe) => (
               <tr key={timeframe} className="border-b border-slate-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30" style={{ height: 'calc(100% / ' + [...new Set(timeframes)].length + ')' }}>
                 <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 ml-2">
                     <span className="text-sm font-bold">{timeframe}</span>
                     {/* Show status indicator for failed calculations in this timeframe */}
                     {indicators.some(indicator => !indicatorData[timeframe]?.[indicator]?.hasData) && (
