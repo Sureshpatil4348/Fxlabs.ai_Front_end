@@ -158,6 +158,8 @@ The Multi-Indicator Heatmap has been significantly enhanced for proper market wo
 - **Status Icons**: Different icons for working (signals), fallback (F), and failed (...) indicators
 - **Color-coded Cells**: Clear distinction between calculated, fallback, and missing data
 - **Error Tooltips**: Detailed hover information explaining calculation status
+ - **Neutral Labeling**: Cells that previously showed `0%` now display `Neutral`
+ - **Buy/Sell Styling**: Buy/Sell visuals use border-only (green/red) with no icons for a cleaner look
 
 #### **Market Data Requirements**
 - **EMA21**: Requires 21+ bars for accurate calculation

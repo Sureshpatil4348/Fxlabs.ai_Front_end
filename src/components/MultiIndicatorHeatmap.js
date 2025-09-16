@@ -1,9 +1,7 @@
 import { 
   Activity,
   LayoutGrid,
-  Zap,
-  TrendingUp,
-  TrendingDown
+  Zap
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -666,30 +664,16 @@ useEffect(() => {
   
   // Get cell color based on score (updated for new scoring range [-1.25, +1.25])
   const getCellColor = (score) => {
-    if (score >= 1.0) return 'bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-800 border border-emerald-300';        // Strong Buy (1.0 to 1.25)
-    if (score > 0.5) return 'bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 border border-emerald-200';         // Buy with boost (0.5 to 1.0)
-    if (score > 0) return 'bg-gradient-to-br from-green-50 to-green-100 text-green-700 border border-green-200';       // Buy (0 to 0.5)
-    if (score <= -1.0) return 'bg-gradient-to-br from-rose-100 to-rose-200 text-rose-800 border border-rose-300';         // Strong Sell (-1.0 to -1.25)
-    if (score < -0.5) return 'bg-gradient-to-br from-rose-50 to-rose-100 text-rose-700 border border-rose-200';          // Sell with boost (-0.5 to -1.0)
-    if (score < 0) return 'bg-gradient-to-br from-red-50 to-red-100 text-red-700 border border-red-200';           // Sell (0 to -0.5)
-    return 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-600 border border-gray-200';                        // Neutral (0)
+    if (score > 0) return 'bg-white text-slate-700 border border-emerald-500';
+    if (score < 0) return 'bg-white text-slate-700 border border-rose-500';
+    return 'bg-white text-slate-600 border border-gray-300';
   };
   
   // Get signal text (updated for new scoring range [-1.25, +1.25])
   const getSignalText = (score) => {
-    if (score > 0) return (
-      <div className="flex items-center justify-center space-x-1.5">
-        <TrendingUp className="w-3.5 h-3.5" />
-        <span className="font-bold">BUY</span>
-      </div>
-    );
-    if (score < 0) return (
-      <div className="flex items-center justify-center space-x-1.5">
-        <TrendingDown className="w-3.5 h-3.5" />
-        <span className="font-bold">SELL</span>
-      </div>
-    );
-    return '0%';
+    if (score > 0) return <span className="font-bold">BUY</span>;
+    if (score < 0) return <span className="font-bold">SELL</span>;
+    return 'Neutral';
   };
 
   // Get actionable zone based on final score
@@ -778,19 +762,13 @@ useEffect(() => {
               
               return (
                 <div key={`buy-pill-${tradingStyle}-${finalResults.buyNowPercent}`} 
-                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 ${
+                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 bg-white ${
                        isActive 
-                         ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/50' 
-                         : 'bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200/50'
+                         ? 'border border-emerald-500' 
+                         : 'border border-emerald-300'
                      }`}>
-                  {/* Glassy effect overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r from-white/30 to-transparent ${
-                    isActive ? 'animate-pulse' : ''
-                  }`}></div>
-                  
                   <div className="relative flex items-center space-x-1.5">
-                    <span className={`text-xs ${isActive ? 'text-white' : 'text-emerald-600'}`}>📈</span>
-                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-white' : 'text-emerald-800'}`}>
+                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-emerald-700' : 'text-emerald-600'}`}>
                       {finalResults.buyNowPercent}%
                     </span>
                   </div>
@@ -805,19 +783,13 @@ useEffect(() => {
               
               return (
                 <div key={`sell-pill-${tradingStyle}-${finalResults.sellNowPercent}`} 
-                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 ${
+                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 bg-white ${
                        isActive 
-                         ? 'bg-gradient-to-r from-rose-400 to-rose-600 shadow-lg shadow-rose-500/50' 
-                         : 'bg-gradient-to-r from-rose-50 to-rose-100 border border-rose-200/50'
+                         ? 'border border-rose-500' 
+                         : 'border border-rose-300'
                      }`}>
-                  {/* Glassy effect overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r from-white/30 to-transparent ${
-                    isActive ? 'animate-pulse' : ''
-                  }`}></div>
-                  
                   <div className="relative flex items-center space-x-1.5">
-                    <span className={`text-xs ${isActive ? 'text-white' : 'text-rose-600'}`}>📉</span>
-                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-white' : 'text-rose-800'}`}>
+                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-rose-700' : 'text-rose-600'}`}>
                       {finalResults.sellNowPercent}%
                     </span>
                   </div>
