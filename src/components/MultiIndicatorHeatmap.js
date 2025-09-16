@@ -9,6 +9,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 
 import userStateService from '../services/userStateService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
+import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
 import { 
   calculateEMASignals,
   calculateMACDSignals,
@@ -125,19 +126,7 @@ const INDICATOR_WEIGHTS = {
 // Default indicator weight option
 const DEFAULT_INDICATOR_WEIGHT = 'equal';
 
-// Major Currency Pairs
-const MAJOR_CURRENCY_PAIRS = [
-  { value: 'EURUSDm', label: 'EUR/USD', flag: '🇪🇺🇺🇸' },
-  { value: 'GBPUSDm', label: 'GBP/USD', flag: '🇬🇧🇺🇸' },
-  { value: 'USDJPYm', label: 'USD/JPY', flag: '🇺🇸🇯🇵' },
-  { value: 'USDCHFm', label: 'USD/CHF', flag: '🇺🇸🇨🇭' },
-  { value: 'AUDUSDm', label: 'AUD/USD', flag: '🇦🇺🇺🇸' },
-  { value: 'USDCADm', label: 'USD/CAD', flag: '🇺🇸🇨🇦' },
-  { value: 'NZDUSDm', label: 'NZD/USD', flag: '🇳🇿🇺🇸' },
-  { value: 'EURGBPm', label: 'EUR/GBP', flag: '🇪🇺🇬🇧' },
-  { value: 'EURJPYm', label: 'EUR/JPY', flag: '🇪🇺🇯🇵' },
-  { value: 'GBPJPYm', label: 'GBP/JPY', flag: '🇬🇧🇯🇵' }
-];
+// Dropdown options will be derived from RSI store settings
 
 // Per-Cell Scoring Function with New-Signal Boost, Quiet-Market Safety, and Clamping
 const getIndicatorScore = (indicator, value, signal, isNew = false, isQuietMarket = false) => {
@@ -278,12 +267,37 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const { 
     ohlcData, 
     // rsiData, // Unused for now
-    // settings, // Unused for now
     timeframes,
     isConnected,
     autoSubscribeToMajorPairs,
-    connect
+    connect,
+    settings
   } = useRSITrackerStore();
+
+  // Available symbols from store (e.g., 32 pairs). Keep 'm' suffix for RSI tracker
+  const availableSymbols = useMemo(() => settings?.autoSubscribeSymbols || [], [settings?.autoSubscribeSymbols]);
+
+  // Build dropdown options with flags and pretty labels
+  const dropdownOptions = useMemo(() => {
+    return availableSymbols.map((sym) => {
+      const label = formatSymbolDisplay(sym);
+      const clean = sym.replace(/m$/, '').toUpperCase();
+      let flag = '';
+      if (clean.length === 6) {
+        const base = clean.slice(0, 3);
+        const quote = clean.slice(3);
+        flag = `${formatCurrency(base).flag}${formatCurrency(quote).flag}`;
+      }
+      return { value: sym, label, flag };
+    });
+  }, [availableSymbols]);
+
+  // Ensure current symbol is part of available list; fallback gracefully
+  useEffect(() => {
+    if (availableSymbols.length > 0 && !availableSymbols.includes(currentSymbol)) {
+      setCurrentSymbol(availableSymbols[0]);
+    }
+  }, [availableSymbols, currentSymbol]);
   
   // Add this state
 const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
@@ -1008,9 +1022,9 @@ useEffect(() => {
                 onChange={(e) => handleSymbolChange(e.target.value)}
                 className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-blue-200/50 focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
               >
-                {MAJOR_CURRENCY_PAIRS.map(pair => (
-                  <option key={pair.value} value={pair.value}>
-                    {pair.flag} {pair.label}
+                {dropdownOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.flag ? `${option.flag} ` : ''}{option.label}
                   </option>
                 ))}
               </select>

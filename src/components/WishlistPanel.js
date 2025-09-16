@@ -1,5 +1,5 @@
 import { Star, Trash2, AlertCircle, Loader2, Plus, Search, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
 import useBaseMarketStore from "../store/useBaseMarketStore";
@@ -12,22 +12,7 @@ import {
   getRsiColor,
 } from "../utils/formatters";
 
-// Available currency pairs for manual addition
-const AVAILABLE_PAIRS = [
-  // Core pairs (7)
-  'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD',
-  // Extended pairs (21)
-  'EURGBP', 'EURJPY', 'EURCHF', 'EURAUD', 'EURCAD', 'EURNZD',
-  'GBPJPY', 'GBPCHF', 'GBPAUD', 'GBPCAD', 'GBPNZD',
-  'AUDJPY', 'AUDCHF', 'AUDCAD', 'AUDNZD',
-  'NZDJPY', 'NZDCHF', 'NZDCAD',
-  'CADJPY', 'CADCHF',
-  'CHFJPY',
-  // Precious metals (2)
-  'XAUUSD', 'XAGUSD',
-  // Cryptocurrencies (2)
-  'BTCUSD', 'ETHUSD'
-];
+// Available currency pairs for manual addition are derived from RSI Tracker store settings
 
 const WishlistPanel = () => {
   const { user, loading: authLoading } = useAuth();
@@ -63,8 +48,16 @@ const WishlistPanel = () => {
   const [addingSymbol, setAddingSymbol] = useState(null);
   const wishlistSymbols = getWishlistArray();
 
+  // Derive available pairs from RSI Tracker store's autoSubscribeSymbols (convert 'EURUSDm' -> 'EURUSD')
+  const availablePairs = useMemo(() => {
+    const symbols = settings?.autoSubscribeSymbols || [];
+    return symbols
+      .map((s) => (s?.toUpperCase().endsWith('M') ? s.toUpperCase().slice(0, -1) : s.toUpperCase()))
+      .filter(Boolean);
+  }, [settings?.autoSubscribeSymbols]);
+
   // Filter available pairs based on search term and existing wishlist
-  const filteredPairs = AVAILABLE_PAIRS.filter(pair => {
+  const filteredPairs = availablePairs.filter(pair => {
     const isNotInWishlist = !wishlistSymbols.includes(pair);
     const matchesSearch = pair.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          formatSymbolDisplay(pair).toLowerCase().includes(searchTerm.toLowerCase());
@@ -340,7 +333,7 @@ const WishlistPanel = () => {
             {/* Modal Footer */}
             <div className="p-4 border-t border-gray-200">
               <div className="text-xs text-gray-500 text-center">
-                {filteredPairs.length} of {AVAILABLE_PAIRS.length} pairs available
+                {filteredPairs.length} of {availablePairs.length} pairs available
               </div>
             </div>
           </div>

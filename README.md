@@ -10,6 +10,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Currency Strength Meter**: Multi-view currency strength analysis (Bar Chart, Line Chart, Heatmap)
 - **RSI Correlation Dashboard**: Advanced correlation analysis between currency pairs
 - **Multi-Indicator Heatmap**: Comprehensive technical analysis dashboard with multiple indicators across timeframes
+  - Symbol dropdown now derives from `useRSITrackerStore.settings.autoSubscribeSymbols` (same source as watchlist)
   - **Enhanced Data Validation**: Robust error handling with insufficient data detection
   - **Fallback Calculations**: Graceful degradation when some indicators can't calculate
   - **Real-time Status Indicators**: Visual feedback for data quality and calculation status
@@ -18,6 +19,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - **Enhanced News Cards**: Suggested pairs to watch displayed directly in news cards
   - **Reorganized Modal Layout**: AI analysis at top, suggested pairs, economic data, and detailed analysis
 - **Watchlist Management**: Personalized symbol tracking with database persistence
+  - Watchlist "Add Currency Pair" derives available pairs from `useRSITrackerStore.settings.autoSubscribeSymbols`
+  - To add/remove options, update `autoSubscribeSymbols` in `src/store/useRSITrackerStore.js` (use 'm' suffix)
 
 ### User Experience Features
 - **Tab State Persistence**: All user interface states are automatically saved and restored
