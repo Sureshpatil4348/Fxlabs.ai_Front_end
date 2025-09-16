@@ -532,7 +532,7 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-2 z-9 relative h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-2 z-10 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}

@@ -1,7 +1,9 @@
 import { 
   Activity,
   BarChart3,
-  Zap
+  Zap,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -72,7 +74,8 @@ const TRADING_STYLE_WEIGHTS = {
     '30M': 0.20,
     '1H': 0.15,
     '4H': 0.05,
-    '1D': 0.00
+    '1D': 0.00,
+    '1W': 0.00
   },
   dayTrader: {
     '5M': 0.10,
@@ -80,7 +83,8 @@ const TRADING_STYLE_WEIGHTS = {
     '30M': 0.25,
     '1H': 0.25,
     '4H': 0.10,
-    '1D': 0.05
+    '1D': 0.05,
+    '1W': 0.00
   },
   swingTrader: {
     '5M': 0.00,
@@ -88,7 +92,8 @@ const TRADING_STYLE_WEIGHTS = {
     '30M': 0.10,
     '1H': 0.25,
     '4H': 0.35,
-    '1D': 0.30
+    '1D': 0.30,
+    '1W': 0.00
   }
 };
 
@@ -177,6 +182,8 @@ const calculateFinalScore = (scores, tradingStyle = DEFAULT_TRADING_STYLE, indic
   const timeframeWeights = TRADING_STYLE_WEIGHTS[tradingStyle] || TRADING_STYLE_WEIGHTS[DEFAULT_TRADING_STYLE];
   const indicatorWeights = INDICATOR_WEIGHTS[indicatorWeight] || INDICATOR_WEIGHTS[DEFAULT_INDICATOR_WEIGHT];
   
+  // Calculation debug info available if needed
+  
   let rawAggregate = 0;
   let totalCells = 0;
   let newSignalCount = 0;
@@ -189,8 +196,8 @@ const calculateFinalScore = (scores, tradingStyle = DEFAULT_TRADING_STYLE, indic
     Object.entries(timeframeScores).forEach(([indicator, score]) => {
       const indicatorWeight = indicatorWeights[indicator] || 0;
       
-      // S(tf, ind) × W_tf(tf) × W_ind(ind)
-      rawAggregate += score * timeframeWeight * indicatorWeight;
+      const contribution = score * timeframeWeight * indicatorWeight;
+      rawAggregate += contribution;
       totalCells++;
       
       // Track new signals for boost badge
@@ -211,8 +218,10 @@ const calculateFinalScore = (scores, tradingStyle = DEFAULT_TRADING_STYLE, indic
   const buyNowPercent = (finalScore + 100) / 2;
   const sellNowPercent = 100 - buyNowPercent;
   
-  // Check for new signal boost (≥25% of all positive cells are "NEW")
+  // Check for new signal boost (≥25% of all positive cells are 'NEW')
   const newSignalBoost = totalCells > 0 && (positiveNewSignals / totalCells) >= 0.25;
+  
+  // Final calculation results
   
     // Enhanced debug logging with detailed breakdown (disabled to avoid lint warnings)
     // console.group('🎯 Final Score Calculation');
@@ -240,9 +249,9 @@ const calculateFinalScore = (scores, tradingStyle = DEFAULT_TRADING_STYLE, indic
     // console.groupEnd();
   
   return {
-    finalScore: Math.round(finalScore),
-    buyNowPercent: Math.round(buyNowPercent),
-    sellNowPercent: Math.round(sellNowPercent),
+    finalScore: Math.round(finalScore * 100) / 100, // Round to 2 decimal places
+    buyNowPercent: Math.round(buyNowPercent * 100) / 100, // Round to 2 decimal places
+    sellNowPercent: Math.round(sellNowPercent * 100) / 100, // Round to 2 decimal places
     newSignalBoost,
     rawAggregate,
     totalCells,
@@ -254,14 +263,14 @@ const calculateFinalScore = (scores, tradingStyle = DEFAULT_TRADING_STYLE, indic
 const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   // const [selectedTimeframe, setSelectedTimeframe] = useState('1H'); // Unused for now
   const [showNewSignals, setShowNewSignals] = useState(true);
-  const [tradingStyle, setTradingStyle] = useState('scalper');
+  const [tradingStyle, setTradingStyle] = useState(DEFAULT_TRADING_STYLE);
   const [indicatorWeight, setIndicatorWeight] = useState('equal');
   const [currentSymbol, setCurrentSymbol] = useState(selectedSymbol);
   
   // Local settings state for persistence
   const [localSettings, setLocalSettings] = useState({
     symbol: selectedSymbol,
-    tradingStyle: 'scalper',
+    tradingStyle: DEFAULT_TRADING_STYLE,
     indicatorWeight: 'equal',
     showNewSignals: true
   });
@@ -290,14 +299,14 @@ const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
           // Update local settings state
           setLocalSettings({
             symbol: symbol || selectedSymbol,
-            tradingStyle: tradingStyle || 'scalper',
+            tradingStyle: tradingStyle || DEFAULT_TRADING_STYLE,
             indicatorWeight: indicatorWeight || 'equal',
             showNewSignals: showNewSignals !== undefined ? showNewSignals : true
           });
 
           // Update component state
           setCurrentSymbol(symbol || selectedSymbol);
-          setTradingStyle(tradingStyle || 'scalper');
+          setTradingStyle(tradingStyle || DEFAULT_TRADING_STYLE);
           setIndicatorWeight(indicatorWeight || 'equal');
           setShowNewSignals(showNewSignals !== undefined ? showNewSignals : true);
         }
@@ -654,7 +663,11 @@ useEffect(() => {
     };
     
     // Use the same calculated data for all timeframes (since we only have one timeframe of data)
-    timeframes.forEach(timeframe => {
+    
+    // Deduplicate timeframes to avoid processing the same timeframe multiple times
+    const uniqueTimeframes = [...new Set(timeframes)];
+    
+    uniqueTimeframes.forEach(timeframe => {
       data[timeframe] = {
         EMA21: { 
           value: emaSignals?.ema21?.value || null, 
@@ -804,6 +817,8 @@ useEffect(() => {
     
     const finalResults = calculateFinalScore(scores, tradingStyle, indicatorWeight);
     
+    // Final results calculation completed
+    
     return {
       scores,
       finalResults,
@@ -822,29 +837,39 @@ useEffect(() => {
   
   // Get cell color based on score (updated for new scoring range [-1.25, +1.25])
   const getCellColor = (score) => {
-    if (score >= 1.0) return 'bg-green-500 text-white';        // Strong Buy (1.0 to 1.25)
-    if (score > 0.5) return 'bg-green-400 text-white';         // Buy with boost (0.5 to 1.0)
-    if (score > 0) return 'bg-green-200 text-green-800';       // Buy (0 to 0.5)
-    if (score <= -1.0) return 'bg-red-500 text-white';         // Strong Sell (-1.0 to -1.25)
-    if (score < -0.5) return 'bg-red-400 text-white';          // Sell with boost (-0.5 to -1.0)
-    if (score < 0) return 'bg-red-200 text-red-800';           // Sell (0 to -0.5)
-    return 'bg-gray-200 text-gray-600';                        // Neutral (0)
+    if (score >= 1.0) return 'bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-800 border border-emerald-300';        // Strong Buy (1.0 to 1.25)
+    if (score > 0.5) return 'bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 border border-emerald-200';         // Buy with boost (0.5 to 1.0)
+    if (score > 0) return 'bg-gradient-to-br from-green-50 to-green-100 text-green-700 border border-green-200';       // Buy (0 to 0.5)
+    if (score <= -1.0) return 'bg-gradient-to-br from-rose-100 to-rose-200 text-rose-800 border border-rose-300';         // Strong Sell (-1.0 to -1.25)
+    if (score < -0.5) return 'bg-gradient-to-br from-rose-50 to-rose-100 text-rose-700 border border-rose-200';          // Sell with boost (-0.5 to -1.0)
+    if (score < 0) return 'bg-gradient-to-br from-red-50 to-red-100 text-red-700 border border-red-200';           // Sell (0 to -0.5)
+    return 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-600 border border-gray-200';                        // Neutral (0)
   };
   
   // Get signal text (updated for new scoring range [-1.25, +1.25])
   const getSignalText = (score) => {
-    if (score > 0) return 'BUY';
-    if (score < 0) return 'SELL';
+    if (score > 0) return (
+      <div className="flex items-center justify-center space-x-1.5">
+        <TrendingUp className="w-3.5 h-3.5" />
+        <span className="font-bold">BUY</span>
+      </div>
+    );
+    if (score < 0) return (
+      <div className="flex items-center justify-center space-x-1.5">
+        <TrendingDown className="w-3.5 h-3.5" />
+        <span className="font-bold">SELL</span>
+      </div>
+    );
     return '0%';
   };
 
   // Get actionable zone based on final score
-  const getActionableZone = (finalScore, tradingStyle = 'day-trader') => {
+  const getActionableZone = (finalScore, tradingStyle = 'dayTrader') => {
     // Style-specific sensitivity thresholds
     const thresholds = {
       'scalper': 25,
-      'day-trader': 20,
-      'swing-trader': 15
+      'dayTrader': 20,
+      'swingTrader': 15
     };
     
     const threshold = thresholds[tradingStyle] || 20;
@@ -859,22 +884,22 @@ useEffect(() => {
     return zone;
   };
 
-  // Get zone colors and styling
+  // Get zone colors and styling - Premium Light Colors
   const getZoneStyling = (zone) => {
     switch (zone) {
       case 'buy':
         return {
-          bgClass: 'bg-gradient-to-r from-green-50 to-green-100',
-          borderClass: 'border-green-200',
-          textClass: 'text-green-800',
-          iconClass: 'text-green-600',
-          valueClass: 'text-green-600',
+          bgClass: 'bg-gradient-to-r from-emerald-50 to-green-100',
+          borderClass: 'border-emerald-200/50',
+          textClass: 'text-emerald-800',
+          iconClass: 'text-emerald-600',
+          valueClass: 'text-emerald-600',
           label: 'Buy Zone'
         };
       case 'sell':
         return {
-          bgClass: 'bg-gradient-to-r from-red-50 to-red-100',
-          borderClass: 'border-red-200',
+          bgClass: 'bg-gradient-to-r from-red-50 to-rose-100',
+          borderClass: 'border-red-200/50',
           textClass: 'text-red-800',
           iconClass: 'text-red-600',
           valueClass: 'text-red-600',
@@ -883,11 +908,11 @@ useEffect(() => {
       case 'wait':
       default:
         return {
-          bgClass: 'bg-gradient-to-r from-yellow-50 to-yellow-100',
-          borderClass: 'border-yellow-200',
-          textClass: 'text-yellow-800',
-          iconClass: 'text-yellow-600',
-          valueClass: 'text-yellow-600',
+          bgClass: 'bg-gradient-to-r from-amber-50 to-yellow-100',
+          borderClass: 'border-amber-200/50',
+          textClass: 'text-amber-800',
+          iconClass: 'text-amber-600',
+          valueClass: 'text-amber-600',
           label: 'Wait / Mixed'
         };
     }
@@ -899,15 +924,77 @@ useEffect(() => {
   
   const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'IchimokuClone'];
   
+  // Component rendering with trading style
+  
   return (
-    <div className="bg-white rounded-lg shadow-md" style={{height: '100%', position: 'relative'}}>
-      {/* Fixed Header Section */}
-      <div className=" rounded-lg " style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', padding: '1rem'}}>
-        <div className="flex items-center justify-between mb-2 ">
+    <div className="bg-gradient-to-br from-slate-50 to-white rounded-lg shadow-lg border border-slate-200/50" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
+      {/* Fixed Header Section - Frosted Glass */}
+      <div className="rounded-lg border border-white/20" style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '0.5rem', backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'}}>
+        {/* Top Row - Title, Trading Signals, and Controls */}
+        <div className="flex items-center justify-between mb-1">
           {/* Title */}
-          <div className="flex items-center space-x-1">
-            <BarChart3 className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-gray-900">All in One Currency Indicator</h2>
+          <div className="flex items-center space-x-2">
+            <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+              <BarChart3 className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent tracking-wide">All in One Currency Indicator</h2>
+          </div>
+          
+          {/* Trading Signal Pills - Between Title and Dropdowns */}
+          <div className="flex items-center gap-1.5">
+            {/* Buy Signal Pill */}
+            {(() => {
+              const zone = getActionableZone(finalResults.finalScore, tradingStyle);
+              const isActive = zone === 'buy';
+              
+              return (
+                <div key={`buy-pill-${tradingStyle}-${finalResults.buyNowPercent}`} 
+                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 ${
+                       isActive 
+                         ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/50' 
+                         : 'bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200/50'
+                     }`}>
+                  {/* Glassy effect overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-r from-white/30 to-transparent ${
+                    isActive ? 'animate-pulse' : ''
+                  }`}></div>
+                  
+                  <div className="relative flex items-center space-x-1.5">
+                    <span className={`text-xs ${isActive ? 'text-white' : 'text-emerald-600'}`}>📈</span>
+                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-white' : 'text-emerald-800'}`}>
+                      {finalResults.buyNowPercent}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+            
+            {/* Sell Signal Pill */}
+            {(() => {
+              const zone = getActionableZone(finalResults.finalScore, tradingStyle);
+              const isActive = zone === 'sell';
+              
+              return (
+                <div key={`sell-pill-${tradingStyle}-${finalResults.sellNowPercent}`} 
+                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 ${
+                       isActive 
+                         ? 'bg-gradient-to-r from-rose-400 to-rose-600 shadow-lg shadow-rose-500/50' 
+                         : 'bg-gradient-to-r from-rose-50 to-rose-100 border border-rose-200/50'
+                     }`}>
+                  {/* Glassy effect overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-r from-white/30 to-transparent ${
+                    isActive ? 'animate-pulse' : ''
+                  }`}></div>
+                  
+                  <div className="relative flex items-center space-x-1.5">
+                    <span className={`text-xs ${isActive ? 'text-white' : 'text-rose-600'}`}>📉</span>
+                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-white' : 'text-rose-800'}`}>
+                      {finalResults.sellNowPercent}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           
           {/* Controls Row */}
@@ -919,7 +1006,7 @@ useEffect(() => {
               <select
                 value={currentSymbol}
                 onChange={(e) => handleSymbolChange(e.target.value)}
-                className="appearance-none pl-2 pr-6 py-1 bg-blue-50 text-blue-900 rounded text-xs font-medium border border-blue-200 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 min-w-[80px] cursor-pointer hover:bg-blue-100"
+                className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-blue-200/50 focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
               >
                 {MAJOR_CURRENCY_PAIRS.map(pair => (
                   <option key={pair.value} value={pair.value}>
@@ -928,7 +1015,7 @@ useEffect(() => {
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                <svg className="w-3 h-3 text-blue-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-2 h-2 text-blue-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -942,14 +1029,14 @@ useEffect(() => {
               <select
                 value={tradingStyle}
                 onChange={(e) => handleTradingStyleChange(e.target.value)}
-                className="appearance-none pl-2 pr-6 py-1 bg-purple-50 text-purple-900 rounded text-xs font-medium border border-purple-200 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 min-w-[80px] cursor-pointer hover:bg-purple-100"
+                className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-purple-200/50 focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
               >
                 <option value="scalper">⚡ Scalper</option>
                 <option value="dayTrader">📈 Day Trader</option>
                 <option value="swingTrader">📊 Swing Trader</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                <svg className="w-3 h-3 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-2 h-2 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -999,35 +1086,14 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Scrollable Content Area */}
+      {/* Content Area - More Space for Table */}
       <div style={{
-        height: 'calc(100% - 100px)',
-        overflowY: 'auto',
-        padding: '1rem'
+        height: 'calc(100% - 50px)',
+        overflowY: 'hidden',
+        padding: '0.25rem',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        {/* Final Score Summary - Compact Single Line */}
-      <div className="flex justify-between gap-2 mb-1">
-        {/* Buy Now % Card - Compact */}
-        {(() => {
-          const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-          const styling = getZoneStyling(zone);
-          
-          return (
-            <div className={`${styling.bgClass} border ${styling.borderClass} rounded px-3 py-1 flex-1`}>
-              <div className="flex items-center justify-between">
-                <span className={`text-sm font-medium ${styling.textClass}`}>📈 Buy: {finalResults.buyNowPercent}%</span>
-              </div>
-            </div>
-          );
-        })()}
-        
-        {/* Sell Now % Card - Compact */}
-        <div className="bg-red-50 border border-red-200 rounded px-3 py-1 flex-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-red-800">📉 Sell: {finalResults.sellNowPercent}%</span>
-          </div>
-        </div>
-      </div>
 
       {/* New Signal Boost Badge
       {finalResults.newSignalBoost && (
@@ -1042,7 +1108,7 @@ useEffect(() => {
         </div>
       )} */}
 
-      {/* Quiet Market Safety Badge */}
+      {/* Quiet Market Safety Badge - Compact */}
       {(() => {
         // Check if any timeframe has quiet market conditions
         const hasQuietMarket = Object.values(indicatorData).some(timeframeData => 
@@ -1051,22 +1117,11 @@ useEffect(() => {
         
         if (!hasQuietMarket) return null;
         
-        // Get quiet market info from first available timeframe
-        // const firstTimeframe = Object.values(indicatorData)[0];
-        // const macdData = firstTimeframe?.MACD; // Unused for now
-        // const utbotData = firstTimeframe?.UTBOT; // Unused for now
-        
         return (
-          <div className="mb-3 p-2 bg-blue-100 border border-blue-300 rounded-lg">
+          <div className="mb-0.5 p-0.5 bg-blue-100 border border-blue-300 rounded text-xs">
             <div className="flex items-center">
-              <Activity className="w-5 h-5 text-blue-600 mr-2" />
-              <span className="text-blue-800 font-medium">Quiet Market Safety Active!</span>
-              <span className="text-blue-700 ml-2">
-                ATR below 5th percentile - MACD and UTBOT scores reduced by 50%
-              </span>
-            </div>
-            <div className="mt-2 text-xs text-blue-600">
-              This reduces false signals in low-volatility markets
+              <Activity className="w-2 h-2 text-blue-600 mr-1" />
+              <span className="text-blue-800 font-medium">Quiet Market Safety Active</span>
             </div>
           </div>
         );
@@ -1128,49 +1183,49 @@ useEffect(() => {
         </div>
       ) : (
         <>
-          {/* Data Quality Indicator */}
+          {/* Data Quality Indicator - Compact */}
           {dataStatus.workingPercentage < 100 && (
-            <div className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-lg">
+            <div className="mb-0.5 p-0.5 bg-yellow-100 border border-yellow-300 rounded text-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Activity className="w-5 h-5 text-yellow-600 mr-2" />
-                  <span className="text-yellow-800 font-medium">Partial Data Available</span>
+                  <Activity className="w-2 h-2 text-yellow-600 mr-1" />
+                  <span className="text-yellow-800 font-medium">Partial Data</span>
                 </div>
-                <span className="text-yellow-700 text-sm">
-                  {dataStatus.workingIndicators}/{dataStatus.totalIndicators} indicators active ({dataStatus.workingPercentage}%)
+                <span className="text-yellow-700 text-xs">
+                  {dataStatus.workingIndicators}/{dataStatus.totalIndicators} ({dataStatus.workingPercentage}%)
                 </span>
               </div>
-              {dataStatus.calculationErrors.length > 0 && (
-                <div className="mt-2 text-xs text-yellow-600">
-                  Issues: {dataStatus.calculationErrors.join(', ')}
-                </div>
-              )}
             </div>
           )}
       
-      {/* Heatmap Table - Swapped rows/columns */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      {/* Heatmap Table - Full Height */}
+      <div className="overflow-x-auto flex-1">
+        <table className="w-full border-collapse h-full">
           <thead>
-            <tr className="border-b-2 border-gray-200">
-              <th className="text-left py-2 px-3 font-semibold text-gray-700">Timeframe</th>
+            <tr className="border-b border-gray-200">
+              <th className="text-left py-0.5 px-1 font-semibold text-gray-700 text-xs w-16">TF</th>
               {indicators.map(indicator => (
-                <th key={indicator} className="text-center py-2 px-1 font-semibold text-gray-700 min-w-[80px]">
-                  <div className="flex flex-col items-center space-y-1">
+                <th key={indicator} className="text-center py-0.5 px-0.5 font-semibold text-gray-700">
+                  <div className="flex flex-col items-center">
                     <span className="text-xs">{indicator}</span>
-                    {indicator === 'UTBOT' && <Zap className="w-3 h-3 text-yellow-500" />}
-                    {indicator === 'IchimokuClone' && <Activity className="w-3 h-3 text-purple-500" />}
+                    {indicator === 'EMA21' && <span className="text-xs">📈</span>}
+                    {indicator === 'EMA50' && <span className="text-xs">📊</span>}
+                    {indicator === 'EMA200' && <span className="text-xs">📈</span>}
+                    {indicator === 'MACD' && <span className="text-xs">📊</span>}
+                    {indicator === 'RSI' && <span className="text-xs">⚡</span>}
+                    {indicator === 'UTBOT' && <Zap className="w-2 h-2 text-yellow-500" />}
+                    {indicator === 'IchimokuClone' && <Activity className="w-2 h-2 text-purple-500" />}
                   </div>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
-            {timeframes.map(timeframe => (
-              <tr key={timeframe} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-2 px-3 font-medium text-gray-900">
+          <tbody className="h-full">
+            {[...new Set(timeframes)].map((timeframe) => (
+              <tr key={timeframe} className="border-b border-slate-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30" style={{ height: 'calc(100% / ' + [...new Set(timeframes)].length + ')' }}>
+                <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
                   <div className="flex items-center space-x-1">
-                    <span>{timeframe}</span>
+                    <span className="text-sm font-bold">{timeframe}</span>
                     {/* Show status indicator for failed calculations in this timeframe */}
                     {indicators.some(indicator => !indicatorData[timeframe]?.[indicator]?.hasData) && (
                       <span 
@@ -1185,15 +1240,14 @@ useEffect(() => {
                 {indicators.map(indicator => {
                   const score = scores[timeframe]?.[indicator] || 0;
                   const data = indicatorData[timeframe]?.[indicator];
-                  const isNew = data?.new || false;
                   const hasData = data?.hasData || false;
                   
                   return (
                     <td key={indicator} className="text-center py-1 px-1">
-                      <div className="relative">
+                      <div className="relative h-full flex items-center justify-center">
                         <div 
-                          className={`inline-flex items-center justify-center w-14 h-10 rounded-md font-bold text-xs ${
-                            hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
+                          className={`inline-flex items-center justify-center w-16 h-8 rounded-lg font-semibold text-xs shadow-sm transition-all duration-200 hover:shadow-md ${
+                            hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border border-dashed border-gray-300'
                           }`}
                           title={
                             hasData ? `Signal: ${data.signal}, Score: ${score.toFixed(2)}` : data?.error || 'No data'
@@ -1201,9 +1255,6 @@ useEffect(() => {
                         >
                           {hasData ? getSignalText(score) : <span className="text-xs">⋯</span>}
                         </div>
-                        {isNew && showNewSignals && hasData && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full border border-white"></div>
-                        )}
                       </div>
                     </td>
                   );
@@ -1216,43 +1267,7 @@ useEffect(() => {
         </>
       )}
       
-      {/* Legend */}
-      {/* <div className="mt-4 flex items-center justify-center space-x-1 text-sm flex-wrap">
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center text-white text-xs font-bold"></div>
-          <span>Strong Buy (1.0-1.25)</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-green-400 rounded flex items-center justify-center text-white text-xs font-bold"></div>
-          <span>Buy+ (0.5-1.0)</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-green-200 rounded flex items-center justify-center text-green-800 text-xs font-bold"></div>
-          <span>Buy (0-0.5)</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-gray-200 rounded flex items-center justify-center text-gray-600 text-xs font-bold"></div>
-          <span>Neutral (0)</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-red-200 rounded flex items-center justify-center text-red-800 text-xs font-bold"></div>
-          <span>Sell (0 to -0.5)</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-red-400 rounded flex items-center justify-center text-white text-xs font-bold"></div>
-          <span>Sell+ (-0.5 to -1.0)</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <div className="w-4 h-4 bg-red-500 rounded flex items-center justify-center text-white text-xs font-bold"></div>
-          <span>Strong Sell (-1.0 to -1.25)</span>
-        </div>
-        {showNewSignals && (
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-            <span>New Signal (+0.25 boost)</span>
-          </div>
-        )}
-      </div> */}
+      
       </div>
     </div>
   );

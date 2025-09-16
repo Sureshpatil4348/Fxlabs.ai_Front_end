@@ -21,20 +21,44 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     const { correlation, strength: _strength, type } = correlationData;
     const correlationValue = (correlation * 100).toFixed(1);
     
-    // Determine color based on correlation type (positive/negative)
-    let cardColor, strengthColor;
+    // Determine color based on correlation type (positive/negative) and strength for highlighting
+    let cardColor, strengthColor, highlightClass;
     
-    if (type === 'positive') {
-      cardColor = 'border-green-300 bg-green-50';
-      strengthColor = 'text-green-700';
+    // Check if pair matches (strong correlation) or doesn't match (weak correlation)
+    const isMatch = correlationData.strength === 'strong';
+    const isMismatch = correlationData.strength === 'weak';
+    
+    if (isMatch) {
+      // Unique highlighting for matching pairs
+      if (type === 'positive') {
+        cardColor = 'border-emerald-400 bg-gradient-to-br from-emerald-100 to-green-200 shadow-lg ring-2 ring-emerald-200';
+        strengthColor = 'text-emerald-800';
+        highlightClass = '';
+      } else {
+        cardColor = 'border-red-400 bg-gradient-to-br from-red-100 to-rose-200 shadow-lg ring-2 ring-red-200';
+        strengthColor = 'text-red-800';
+        highlightClass = '';
+      }
+    } else if (isMismatch) {
+      // Grey highlighting for non-matching pairs
+      cardColor = 'border-gray-400 bg-gradient-to-br from-gray-100 to-slate-200 shadow-sm';
+      strengthColor = 'text-gray-600';
+      highlightClass = '';
     } else {
-      cardColor = 'border-red-300 bg-red-50';
-      strengthColor = 'text-red-700';
+      // Moderate correlation - neutral styling
+      if (type === 'positive') {
+        cardColor = 'border-green-300 bg-green-50';
+        strengthColor = 'text-green-700';
+      } else {
+        cardColor = 'border-red-300 bg-red-50';
+        strengthColor = 'text-red-700';
+      }
+      highlightClass = '';
     }
     
     if (isMobile) {
       return (
-        <div className={`p-1 pr-2 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+        <div className={`p-1 pr-2 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
           <div className="flex items-center justify-between mb-0">
             <div className="flex items-center space-x-1">
               <span className={`text-lg font-black ${strengthColor}`}>
@@ -63,7 +87,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     }
 
     return (
-      <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+      <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
         <div className="mb-0 text-center">
           <div className="flex items-center justify-center">
             <span className={`text-sm font-black ${strengthColor}`}>
@@ -101,21 +125,46 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
   
   // Original RSI threshold mode
-  const { status: _status, rsi1, rsi2, type } = pairData;
+  const { status, rsi1, rsi2, type } = pairData;
   
-  // Determine card color and text color based on correlation type for RSI threshold mode
-  let cardColor, strengthColor;
-  if (type === 'positive') {
-    cardColor = 'border-green-300 bg-green-50';
-    strengthColor = 'text-green-700';
+  // Determine card color and text color based on correlation type and status for RSI threshold mode
+  let cardColor, strengthColor, highlightClass;
+  
+  // Check if pair matches or doesn't match based on status
+  const isMatch = status === 'match';
+  const isMismatch = status === 'mismatch';
+  
+  if (isMatch) {
+    // Unique highlighting for matching pairs
+    if (type === 'positive') {
+      cardColor = 'border-emerald-400 bg-gradient-to-br from-emerald-100 to-green-200 shadow-lg ring-2 ring-emerald-200';
+      strengthColor = 'text-emerald-800';
+      highlightClass = '';
+    } else {
+      cardColor = 'border-red-400 bg-gradient-to-br from-red-100 to-rose-200 shadow-lg ring-2 ring-red-200';
+      strengthColor = 'text-red-800';
+      highlightClass = '';
+    }
+  } else if (isMismatch) {
+    // Grey highlighting for non-matching pairs
+    cardColor = 'border-gray-400 bg-gradient-to-br from-gray-100 to-slate-200 shadow-sm';
+    strengthColor = 'text-gray-600';
+    highlightClass = '';
   } else {
-    cardColor = 'border-red-300 bg-red-50';
-    strengthColor = 'text-red-700';
+    // Neutral status - standard styling
+    if (type === 'positive') {
+      cardColor = 'border-green-300 bg-green-50';
+      strengthColor = 'text-green-700';
+    } else {
+      cardColor = 'border-red-300 bg-red-50';
+      strengthColor = 'text-red-700';
+    }
+    highlightClass = '';
   }
 
   if (isMobile) {
     return (
-      <div className={`p-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+      <div className={`p-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
         <div className="flex items-center justify-between mb-0">
           <div className="flex items-center space-x-1">
             <span className="text-lg font-black">
@@ -144,7 +193,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
 
   return (
-    <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor}`}>
+    <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
       <div className="mb-0 text-center">
         <div className="flex items-center justify-center">
           <span className="text-sm font-black">
@@ -376,26 +425,33 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
+    <div className="bg-gradient-to-br from-slate-50/50 via-white to-blue-50/30 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-            <h2 className="text-lg font-semibold text-gray-900">RSI Correlation Dashboard</h2>
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium w-fit ${
-              isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <BarChart3 className="w-4 h-4 text-white" />
+              </div>
+              <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
+            </div>
+            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium w-fit shadow-md transition-all duration-300 ${
+              isConnected ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border border-emerald-200/50' : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200/50'
             }`}>
-              {isConnected ? '● Connected' : '● Disconnected'}
+              <div className={`w-2 h-2 rounded-full mr-2 ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+              {isConnected ? 'Connected' : 'Disconnected'}
             </span>
             {/* Total Pairs Pill */}
-            <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+            <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-xs font-medium shadow-md border border-blue-200/50">
+              <Activity className="w-3 h-3 mr-1" />
               <span className="font-bold mr-1">{totalPairs}</span>
               <span>Total Pairs</span>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-600 mt-1 font-medium">
             {localSettings.calculationMode === 'real_correlation' ? (
               `Correlation Window: ${localSettings.correlationWindow} | ${localSettings.timeframe}`
             ) : (
@@ -408,10 +464,10 @@ const RSICorrelationDashboard = () => {
           {/* Calculation Mode Toggle */}
           <button
             onClick={handleCalculationModeToggle}
-            className={`px-2 sm:px-3 py-2 text-xs font-medium rounded-md transition-all duration-300 flex items-center space-x-1 sm:space-x-2 ${
+            className={`px-3 py-2 text-xs font-medium rounded-xl transition-all duration-300 flex items-center space-x-2 shadow-md hover:shadow-lg hover:scale-105 ${
               localSettings.calculationMode === 'real_correlation'
-                ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                : 'bg-gray-100 text-gray-700 border border-gray-300'
+                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border border-blue-200/50'
+                : 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 border border-slate-200/50'
             }`}
             title={`Switch to ${localSettings.calculationMode === 'rsi_threshold' ? 'Real Correlation' : 'RSI Threshold'} mode`}
           >
@@ -432,7 +488,7 @@ const RSICorrelationDashboard = () => {
           
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2.5 text-slate-600 hover:text-slate-800 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
             title="Dashboard Settings"
           >
             <Settings className="w-4 h-4" />
@@ -440,7 +496,7 @@ const RSICorrelationDashboard = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2.5 text-slate-600 hover:text-slate-800 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -448,10 +504,34 @@ const RSICorrelationDashboard = () => {
         </div>
         </div>
 
+        {/* Color Legend Section */}
+        <div className="mt-3 mb-2">
+          <div className="bg-gradient-to-r from-slate-50/80 to-blue-50/50 rounded-xl p-2 border border-slate-200/50 backdrop-blur-sm">
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-emerald-100 to-green-200 border border-emerald-400 ring-1 ring-emerald-200"></div>
+                <span className="text-slate-700 font-medium">Strong Match</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-red-100 to-rose-200 border border-red-400 ring-1 ring-red-200"></div>
+                <span className="text-slate-700 font-medium">Strong Mismatch</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-gray-100 to-slate-200 border border-gray-400"></div>
+                <span className="text-slate-700 font-medium">Weak Correlation</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-50 to-emerald-50 border border-green-300"></div>
+                <span className="text-slate-700 font-medium">Moderate</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-2">
+      <div className="flex-1 overflow-y-auto min-h-0 p-3 bg-gradient-to-br from-slate-50/30 to-white rounded-xl">
         {/* Mobile List Layout */}
         <div className="block sm:hidden">
           <div className="space-y-2 pr-1">

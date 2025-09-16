@@ -313,7 +313,7 @@ const CurrencyStrengthMeter = () => {
   ];
 
   return (
-    <div className="card z-9 relative h-full flex flex-col">
+    <div className="card z-10 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}

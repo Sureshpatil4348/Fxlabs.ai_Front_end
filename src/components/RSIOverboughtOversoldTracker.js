@@ -1,14 +1,15 @@
-import { TrendingDown, TrendingUp, Settings, Filter } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
-import FilterPanel from './FilterPanel';
 import RFIScoreCard from './RFIScoreCard';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
-import { filterAndSortPairs, getDefaultFilters, getDefaultSortOptions } from '../utils/filterUtils';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
+
+// Utility function to clamp values within min/max bounds
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   const { symbol, rsi, price, change } = pair;
@@ -56,11 +57,8 @@ const RSIOverboughtOversoldTracker = () => {
   
   const [activeTab, setActiveTab] = useState(tabState.rsiTracker?.activeTab || 'oversold');
   const [showSettings, setShowSettings] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
-  const [viewMode, setViewMode] = useState('table'); // 'table', 'cards', or 'expandable'
-  const [filters, setFilters] = useState(getDefaultFilters());
-  const [sortOptions, setSortOptions] = useState(getDefaultSortOptions());
+  const [viewMode] = useState('table'); // 'table', 'cards', or 'expandable'
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
     rsiPeriod: settings.rsiPeriod,
@@ -97,9 +95,9 @@ const RSIOverboughtOversoldTracker = () => {
   const rawOverboughtPairs = getOverboughtPairs();
   const _allPairs = getAllPairsWithRFI(); // Unused variable, prefixed with underscore
 
-  // Apply filtering and sorting
-  const oversoldPairs = filterAndSortPairs(rawOversoldPairs, filters, sortOptions);
-  const overboughtPairs = filterAndSortPairs(rawOverboughtPairs, filters, sortOptions);
+  // Use raw pairs directly (no filtering/sorting needed)
+  const oversoldPairs = rawOversoldPairs;
+  const overboughtPairs = rawOverboughtPairs;
   // const filteredAllPairs = filterAndSortPairs(allPairs, filters, sortOptions); // Reserved for future use
 
   // React to RSI data changes to ensure UI updates
@@ -147,12 +145,22 @@ const RSIOverboughtOversoldTracker = () => {
 
   const handleSaveSettings = async () => {
     try {
+      // Validate and enforce oversold < overbought constraint
+      let validatedOverbought = clamp(localSettings.rsiOverbought, 50, 90);
+      let validatedOversold = clamp(localSettings.rsiOversold, 10, 50);
+      
+      // Ensure oversold < overbought
+      if (validatedOversold >= validatedOverbought) {
+        validatedOversold = Math.max(10, validatedOverbought - 1);
+        validatedOverbought = Math.min(90, validatedOversold + 1);
+      }
+
       // Update local store first
       updateSettings({
         timeframe: localSettings.timeframe,
         rsiPeriod: localSettings.rsiPeriod,
-        rsiOverbought: localSettings.rsiOverbought,
-        rsiOversold: localSettings.rsiOversold
+        rsiOverbought: validatedOverbought,
+        rsiOversold: validatedOversold
       });
 
       // Persist to database
@@ -160,8 +168,8 @@ const RSIOverboughtOversoldTracker = () => {
         rsiTracker: {
           timeframe: localSettings.timeframe,
           rsiPeriod: localSettings.rsiPeriod,
-          rsiOverbought: localSettings.rsiOverbought,
-          rsiOversold: localSettings.rsiOversold
+          rsiOverbought: validatedOverbought,
+          rsiOversold: validatedOversold
         }
       });
 
@@ -212,7 +220,7 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-9 relative">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-10 relative">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -233,27 +241,6 @@ const RSIOverboughtOversoldTracker = () => {
           </div>
           <div className="flex items-center space-x-1">
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`p-1 rounded-md transition-colors ${
-                showFilters ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`}
-              title="Filters"
-            >
-              <Filter className="w-4 h-4" />
-            </button>
-                   <button
-                     onClick={() => {
-                       const modes = ['table', 'cards', 'expandable'];
-                       const currentIndex = modes.indexOf(viewMode);
-                       const nextIndex = (currentIndex + 1) % modes.length;
-                       setViewMode(modes[nextIndex]);
-                     }}
-                     className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-                     title={`Switch View Mode (Current: ${viewMode})`}
-                   >
-                     {viewMode === 'table' ? '📋' : viewMode === 'cards' ? '📊' : '📈'}
-                   </button>
-            <button
               onClick={() => setShowSettings(true)}
               className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
               title="Dashboard Settings"
@@ -264,18 +251,6 @@ const RSIOverboughtOversoldTracker = () => {
         </div>
         </div>
 
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="mb-2">
-            <FilterPanel
-              onFilterChange={setFilters}
-              onSortChange={setSortOptions}
-              initialFilters={filters}
-              initialSort={sortOptions}
-              className="text-xs"
-            />
-          </div>
-        )}
 
         {/* Tab Navigation */}
         <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
@@ -363,7 +338,6 @@ const RSIOverboughtOversoldTracker = () => {
                     <div className="w-20 text-center px-2">RSI</div>
                     <div className="w-24 text-center px-2">Price</div>
                     <div className="w-20 text-center px-2">Change</div>
-                    <div className="w-20 text-center px-2">Chart</div>
                     <div className="w-16 text-center px-2">Events</div>
                     <div className="w-12 text-center px-2"></div>
                   </div>
@@ -444,7 +418,10 @@ const RSIOverboughtOversoldTracker = () => {
                   min="2"
                   max="50"
                   value={localSettings.rsiPeriod}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiPeriod: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const n = Number.parseInt(e.target.value, 10);
+                    setLocalSettings(prev => ({ ...prev, rsiPeriod: Number.isFinite(n) ? clamp(n, 2, 50) : prev.rsiPeriod }));
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -460,7 +437,24 @@ const RSIOverboughtOversoldTracker = () => {
                   min="50"
                   max="90"
                   value={localSettings.rsiOverbought}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOverbought: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const n = Number.parseInt(e.target.value, 10);
+                    if (!Number.isFinite(n)) return;
+                    
+                    const newOverbought = clamp(n, 50, 90);
+                    setLocalSettings(prev => {
+                      // If new overbought <= current oversold, adjust oversold
+                      if (newOverbought <= prev.rsiOversold) {
+                        const newOversold = Math.max(10, newOverbought - 1);
+                        return { 
+                          ...prev, 
+                          rsiOverbought: newOverbought,
+                          rsiOversold: newOversold
+                        };
+                      }
+                      return { ...prev, rsiOverbought: newOverbought };
+                    });
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -476,7 +470,24 @@ const RSIOverboughtOversoldTracker = () => {
                   min="10"
                   max="50"
                   value={localSettings.rsiOversold}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOversold: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const n = Number.parseInt(e.target.value, 10);
+                    if (!Number.isFinite(n)) return;
+                    
+                    const newOversold = clamp(n, 10, 50);
+                    setLocalSettings(prev => {
+                      // If new oversold >= current overbought, adjust overbought
+                      if (newOversold >= prev.rsiOverbought) {
+                        const newOverbought = Math.min(90, newOversold + 1);
+                        return { 
+                          ...prev, 
+                          rsiOversold: newOversold,
+                          rsiOverbought: newOverbought
+                        };
+                      }
+                      return { ...prev, rsiOversold: newOversold };
+                    });
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
