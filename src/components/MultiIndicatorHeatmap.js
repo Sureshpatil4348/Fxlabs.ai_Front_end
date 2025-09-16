@@ -7,9 +7,6 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
-import userStateService from '../services/userStateService';
-import useRSITrackerStore from '../store/useRSITrackerStore';
-import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
 import { 
   calculateEMASignals,
   calculateMACDSignals,
@@ -19,6 +16,9 @@ import {
   isQuietMarket,
   QUIET_MARKET_PARAMETERS
 } from '../utils/calculations';
+import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
+import userStateService from '../services/userStateService';
+import useRSITrackerStore from '../store/useRSITrackerStore';
 
 // Ichimoku Clone calculation (simplified version) - keeping for potential future use
 // const calculateIchimokuClone = (bars) => {
@@ -503,7 +503,7 @@ useEffect(() => {
       const tfCloses = tfBars.map(b => b.close);
       maxDataCount = Math.max(maxDataCount, tfCloses.length);
 
-      const minDataRequired = { basic: 50 };
+      // const minDataRequired = { basic: 50 };
 
       if (tfCloses.length < 1) {
         // No data yet for this timeframe
