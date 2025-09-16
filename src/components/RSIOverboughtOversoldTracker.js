@@ -145,12 +145,22 @@ const RSIOverboughtOversoldTracker = () => {
 
   const handleSaveSettings = async () => {
     try {
+      // Validate and enforce oversold < overbought constraint
+      let validatedOverbought = clamp(localSettings.rsiOverbought, 50, 90);
+      let validatedOversold = clamp(localSettings.rsiOversold, 10, 50);
+      
+      // Ensure oversold < overbought
+      if (validatedOversold >= validatedOverbought) {
+        validatedOversold = Math.max(10, validatedOverbought - 1);
+        validatedOverbought = Math.min(90, validatedOversold + 1);
+      }
+
       // Update local store first
       updateSettings({
         timeframe: localSettings.timeframe,
         rsiPeriod: localSettings.rsiPeriod,
-        rsiOverbought: localSettings.rsiOverbought,
-        rsiOversold: localSettings.rsiOversold
+        rsiOverbought: validatedOverbought,
+        rsiOversold: validatedOversold
       });
 
       // Persist to database
@@ -158,8 +168,8 @@ const RSIOverboughtOversoldTracker = () => {
         rsiTracker: {
           timeframe: localSettings.timeframe,
           rsiPeriod: localSettings.rsiPeriod,
-          rsiOverbought: localSettings.rsiOverbought,
-          rsiOversold: localSettings.rsiOversold
+          rsiOverbought: validatedOverbought,
+          rsiOversold: validatedOversold
         }
       });
 
@@ -429,7 +439,21 @@ const RSIOverboughtOversoldTracker = () => {
                   value={localSettings.rsiOverbought}
                   onChange={(e) => {
                     const n = Number.parseInt(e.target.value, 10);
-                    setLocalSettings(prev => ({ ...prev, rsiOverbought: Number.isFinite(n) ? clamp(n, 50, 90) : prev.rsiOverbought }));
+                    if (!Number.isFinite(n)) return;
+                    
+                    const newOverbought = clamp(n, 50, 90);
+                    setLocalSettings(prev => {
+                      // If new overbought <= current oversold, adjust oversold
+                      if (newOverbought <= prev.rsiOversold) {
+                        const newOversold = Math.max(10, newOverbought - 1);
+                        return { 
+                          ...prev, 
+                          rsiOverbought: newOverbought,
+                          rsiOversold: newOversold
+                        };
+                      }
+                      return { ...prev, rsiOverbought: newOverbought };
+                    });
                   }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -448,7 +472,21 @@ const RSIOverboughtOversoldTracker = () => {
                   value={localSettings.rsiOversold}
                   onChange={(e) => {
                     const n = Number.parseInt(e.target.value, 10);
-                    setLocalSettings(prev => ({ ...prev, rsiOversold: Number.isFinite(n) ? clamp(n, 10, 50) : prev.rsiOversold }));
+                    if (!Number.isFinite(n)) return;
+                    
+                    const newOversold = clamp(n, 10, 50);
+                    setLocalSettings(prev => {
+                      // If new oversold >= current overbought, adjust overbought
+                      if (newOversold >= prev.rsiOverbought) {
+                        const newOverbought = Math.min(90, newOversold + 1);
+                        return { 
+                          ...prev, 
+                          rsiOversold: newOversold,
+                          rsiOverbought: newOverbought
+                        };
+                      }
+                      return { ...prev, rsiOversold: newOversold };
+                    });
                   }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
