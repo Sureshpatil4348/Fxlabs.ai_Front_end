@@ -758,7 +758,7 @@ useEffect(() => {
   return (
     <div className="bg-gradient-to-br from-slate-50 to-white rounded-lg shadow-lg border border-slate-200/50" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
-      <div className="mb-1">
+      <div className="mb-1 px-4 pt-2">
         {/* Top Row - Title, Trading Signals, and Controls */}
         <div className="flex items-center justify-between mb-2">
           {/* Title */}
@@ -830,7 +830,6 @@ useEffect(() => {
           <div className="flex items-center space-x-1">
           {/* Symbol Dropdown */}
           <div className="flex items-center space-x-1">
-            <span className="text-xs font-medium text-gray-700">Symbol:</span>
             <div className="relative">
               <select
                 value={currentSymbol}
@@ -853,7 +852,6 @@ useEffect(() => {
           
           {/* Style Dropdown */}
           <div className="flex items-center space-x-1">
-            <span className="text-xs font-medium text-gray-700">Style:</span>
             <div className="relative">
               <select
                 value={tradingStyle}
