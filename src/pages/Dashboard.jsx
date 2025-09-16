@@ -88,7 +88,7 @@
             </div>
 
             {/* Section 5th - AI News Analysis (bottom right) - Increased height */}
-            <div className="col-span-5 row-span-5 row-start-8">
+            <div className="col-span-5 row-span-5 row-start-6">
               <AINewsAnalysis />
             </div>
 
