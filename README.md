@@ -160,6 +160,7 @@ The Multi-Indicator Heatmap has been significantly enhanced for proper market wo
 - **Error Tooltips**: Detailed hover information explaining calculation status
  - **Neutral Labeling**: Cells that previously showed `0%` now display `Neutral`
  - **Buy/Sell Styling**: Buy/Sell visuals use border-only (green/red) with no icons for a cleaner look
+ - **Recommendation Cards**: In the All in One Currency Indicator header, we now display "Recommendation: Buy (xx%)" as a larger primary card and the opposite side "Sell (yy%)" as a smaller, lower-opacity card. The larger card dynamically reflects whichever side (Buy/Sell) has the higher percentage.
 
 #### **Market Data Requirements**
 - **EMA21**: Requires 21+ bars for accurate calculation

@@ -750,53 +750,41 @@ useEffect(() => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
               <LayoutGrid className="w-4 h-4 text-white" />
             </div>
-            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">All in One Currency Indicator</h2>
+            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">All in One Currency</h2>
           </div>
           
-          {/* Trading Signal Pills - Between Title and Dropdowns */}
-          <div className="flex items-center gap-1.5">
-            {/* Buy Signal Pill */}
-            {(() => {
-              const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-              const isActive = zone === 'buy';
-              
-              return (
-                <div key={`buy-pill-${tradingStyle}-${finalResults.buyNowPercent}`} 
-                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 bg-white ${
-                       isActive 
-                         ? 'border border-emerald-500' 
-                         : 'border border-emerald-300'
-                     }`}>
-                  <div className="relative flex items-center space-x-1.5">
-                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-emerald-700' : 'text-emerald-600'}`}>
-                      {finalResults.buyNowPercent}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })()}
+          {/* Recommendation cards - replaces Buy/Sell pills */}
+          {(() => {
+            const buyPct = finalResults.buyNowPercent;
+            const sellPct = finalResults.sellNowPercent;
+            const recommend = buyPct >= sellPct ? 'buy' : 'sell';
+            const primaryPct = recommend === 'buy' ? buyPct : sellPct;
+            const secondaryPct = recommend === 'buy' ? sellPct : buyPct;
+            const primaryClasses = recommend === 'buy'
+              ? 'border-emerald-500 text-emerald-700'
+              : 'border-rose-500 text-rose-700';
+            const secondaryClasses = recommend === 'buy'
+              ? 'border-rose-300 text-rose-600'
+              : 'border-emerald-300 text-emerald-600';
             
-            {/* Sell Signal Pill */}
-            {(() => {
-              const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-              const isActive = zone === 'sell';
-              
-              return (
-                <div key={`sell-pill-${tradingStyle}-${finalResults.sellNowPercent}`} 
-                     className={`relative overflow-hidden rounded-full px-3 py-1 transition-all duration-300 hover:scale-105 bg-white ${
-                       isActive 
-                         ? 'border border-rose-500' 
-                         : 'border border-rose-300'
-                     }`}>
-                  <div className="relative flex items-center space-x-1.5">
-                    <span className={`text-xs font-medium tracking-wide ${isActive ? 'text-rose-700' : 'text-rose-600'}`}>
-                      {finalResults.sellNowPercent}%
-                    </span>
+            return (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-600 mr-0.5">Recommendation:</span>
+                <div className={`bg-white rounded-xl px-3 py-1.5 border ${primaryClasses}`}>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm font-bold">{recommend === 'buy' ? 'Buy' : 'Sell'}</span>
+                    <span className="text-sm font-semibold">{primaryPct}%</span>
                   </div>
                 </div>
-              );
-            })()}
-          </div>
+                <div className={`bg-white rounded-lg px-2 py-1 border ${secondaryClasses} opacity-60`}>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xs font-medium">{recommend === 'buy' ? 'Sell' : 'Buy'}</span>
+                    <span className="text-xs font-medium">{secondaryPct}%</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           
           {/* Controls Row */}
           <div className="flex items-center space-x-1">
