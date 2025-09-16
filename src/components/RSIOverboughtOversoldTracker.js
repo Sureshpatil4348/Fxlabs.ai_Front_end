@@ -1,13 +1,11 @@
-import { TrendingDown, TrendingUp, Settings, Filter } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
-import FilterPanel from './FilterPanel';
 import RFIScoreCard from './RFIScoreCard';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
-import { filterAndSortPairs, getDefaultFilters, getDefaultSortOptions } from '../utils/filterUtils';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
@@ -56,11 +54,8 @@ const RSIOverboughtOversoldTracker = () => {
   
   const [activeTab, setActiveTab] = useState(tabState.rsiTracker?.activeTab || 'oversold');
   const [showSettings, setShowSettings] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
-  const [viewMode, setViewMode] = useState('table'); // 'table', 'cards', or 'expandable'
-  const [filters, setFilters] = useState(getDefaultFilters());
-  const [sortOptions, setSortOptions] = useState(getDefaultSortOptions());
+  const [viewMode] = useState('table'); // 'table', 'cards', or 'expandable'
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
     rsiPeriod: settings.rsiPeriod,
@@ -97,9 +92,9 @@ const RSIOverboughtOversoldTracker = () => {
   const rawOverboughtPairs = getOverboughtPairs();
   const _allPairs = getAllPairsWithRFI(); // Unused variable, prefixed with underscore
 
-  // Apply filtering and sorting
-  const oversoldPairs = filterAndSortPairs(rawOversoldPairs, filters, sortOptions);
-  const overboughtPairs = filterAndSortPairs(rawOverboughtPairs, filters, sortOptions);
+  // Use raw pairs directly (no filtering/sorting needed)
+  const oversoldPairs = rawOversoldPairs;
+  const overboughtPairs = rawOverboughtPairs;
   // const filteredAllPairs = filterAndSortPairs(allPairs, filters, sortOptions); // Reserved for future use
 
   // React to RSI data changes to ensure UI updates
@@ -233,27 +228,6 @@ const RSIOverboughtOversoldTracker = () => {
           </div>
           <div className="flex items-center space-x-1">
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`p-1 rounded-md transition-colors ${
-                showFilters ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`}
-              title="Filters"
-            >
-              <Filter className="w-4 h-4" />
-            </button>
-                   <button
-                     onClick={() => {
-                       const modes = ['table', 'cards', 'expandable'];
-                       const currentIndex = modes.indexOf(viewMode);
-                       const nextIndex = (currentIndex + 1) % modes.length;
-                       setViewMode(modes[nextIndex]);
-                     }}
-                     className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-                     title={`Switch View Mode (Current: ${viewMode})`}
-                   >
-                     {viewMode === 'table' ? '📋' : viewMode === 'cards' ? '📊' : '📈'}
-                   </button>
-            <button
               onClick={() => setShowSettings(true)}
               className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
               title="Dashboard Settings"
@@ -264,18 +238,6 @@ const RSIOverboughtOversoldTracker = () => {
         </div>
         </div>
 
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="mb-2">
-            <FilterPanel
-              onFilterChange={setFilters}
-              onSortChange={setSortOptions}
-              initialFilters={filters}
-              initialSort={sortOptions}
-              className="text-xs"
-            />
-          </div>
-        )}
 
         {/* Tab Navigation */}
         <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
@@ -363,7 +325,6 @@ const RSIOverboughtOversoldTracker = () => {
                     <div className="w-20 text-center px-2">RSI</div>
                     <div className="w-24 text-center px-2">Price</div>
                     <div className="w-20 text-center px-2">Change</div>
-                    <div className="w-20 text-center px-2">Chart</div>
                     <div className="w-16 text-center px-2">Events</div>
                     <div className="w-12 text-center px-2"></div>
                   </div>
