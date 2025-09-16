@@ -1016,7 +1016,6 @@ useEffect(() => {
             <div className={`${styling.bgClass} border ${styling.borderClass} rounded px-3 py-1 flex-1`}>
               <div className="flex items-center justify-between">
                 <span className={`text-sm font-medium ${styling.textClass}`}>📈 Buy: {finalResults.buyNowPercent}%</span>
-                <span className={`text-xs ${styling.textClass}`}>{styling.label}</span>
               </div>
             </div>
           );
@@ -1026,13 +1025,6 @@ useEffect(() => {
         <div className="bg-red-50 border border-red-200 rounded px-3 py-1 flex-1">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-red-800">📉 Sell: {finalResults.sellNowPercent}%</span>
-            <span className="text-xs text-red-800">
-              {(() => {
-                const zone = getActionableZone(finalResults.finalScore, tradingStyle);
-                const styling = getZoneStyling(zone);
-                return styling.label;
-              })()}
-            </span>
           </div>
         </div>
       </div>
