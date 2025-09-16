@@ -1,6 +1,6 @@
 import { 
   Activity,
-  BarChart3,
+  LayoutGrid,
   Zap,
   TrendingUp,
   TrendingDown
@@ -757,16 +757,16 @@ useEffect(() => {
   
   return (
     <div className="bg-gradient-to-br from-slate-50 to-white rounded-lg shadow-lg border border-slate-200/50" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
-      {/* Fixed Header Section - Frosted Glass */}
-      <div className="rounded-lg border border-white/20" style={{position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '0.5rem', backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'}}>
+      {/* Header */}
+      <div className="mb-1">
         {/* Top Row - Title, Trading Signals, and Controls */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-2">
           {/* Title */}
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-              <BarChart3 className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <LayoutGrid className="w-4 h-4 text-white" />
             </div>
-            <h2 className="text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent tracking-wide">All in One Currency Indicator</h2>
+            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">All in One Currency Indicator</h2>
           </div>
           
           {/* Trading Signal Pills - Between Title and Dropdowns */}
