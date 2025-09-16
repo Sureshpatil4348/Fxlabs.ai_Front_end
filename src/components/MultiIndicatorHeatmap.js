@@ -266,11 +266,13 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   
   const { 
     ohlcData, 
+    ohlcByTimeframe,
     // rsiData, // Unused for now
     timeframes,
     isConnected,
     autoSubscribeToMajorPairs,
     connect,
+    subscribe,
     settings
   } = useRSITrackerStore();
 
@@ -419,6 +421,21 @@ useEffect(() => {
   }, 1500); // Increased delay for better data collection
 }, [isConnected, hasAutoSubscribed, autoSubscribeToMajorPairs, connect, currentSymbol]);
 
+  // Subscribe the current symbol to required multiple timeframes for heatmap
+  useEffect(() => {
+    if (!isConnected || !currentSymbol) return;
+    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'];
+    const supported = Array.isArray(timeframes) && timeframes.length > 0 ? timeframes : desiredTimeframes;
+    const toSubscribe = desiredTimeframes.filter(tf => supported.includes(tf));
+    toSubscribe.forEach(tf => {
+      try {
+        subscribe(currentSymbol, tf, ['ticks', 'ohlc']);
+      } catch (_e) {
+        // swallow subscription errors
+      }
+    });
+  }, [isConnected, currentSymbol, subscribe, timeframes]);
+
   // Enhanced Debug: Monitor connection and data status
   useEffect(() => {
     // const subscriptions = Array.from(useRSITrackerStore.getState().subscriptions.keys());
@@ -460,329 +477,127 @@ useEffect(() => {
     
     // console.groupEnd();
   }, [isConnected, currentSymbol, ohlcData, timeframes, hasAutoSubscribed, showNewSignals, tradingStyle, indicatorWeight]);
-  // Calculate indicators using current timeframe data for all columns
+  // Calculate indicators using per-timeframe data for all columns
   const indicatorData = useMemo(() => {
     const data = {};
     
-    // Check if we have data for the current symbol
-    if (!ohlcData.has(currentSymbol)) {
-      // console.log('❌ No data for symbol:', currentSymbol);
+    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'];
+    const supported = Array.isArray(timeframes) && timeframes.length > 0 ? timeframes : desiredTimeframes;
+    const tfs = desiredTimeframes.filter(tf => supported.includes(tf));
+
+    // Ensure we have per-timeframe map for symbol
+    const perSymbolMap = ohlcByTimeframe.get(currentSymbol);
+    if (!perSymbolMap) {
       return { error: 'NO_DATA', message: `No market data available for ${currentSymbol}` };
     }
     
-    const symbolData = ohlcData.get(currentSymbol);
-    if (!symbolData || !symbolData.bars) {
-      // console.log('❌ No bars data for symbol:', currentSymbol);
-      return { error: 'NO_BARS', message: `No OHLC bars available for ${currentSymbol}` };
-    }
-    
-    const bars = symbolData.bars;
-    const closes = bars.map(bar => bar.close);
-    // const highs = bars.map(bar => bar.high); // Unused in current implementation
-    // const lows = bars.map(bar => bar.low); // Unused in current implementation
-    
-    // console.log('📊 Data Status:', {
-    //   symbol: currentSymbol,
-    //   barsCount: bars.length,
-    //   timeframe: symbolData.timeframe,
-    //   closesLength: closes.length,
-    //   firstClose: closes[0],
-    //   lastClose: closes[closes.length - 1],
-    //   dataQuality: bars.length >= 200 ? 'EXCELLENT' : bars.length >= 100 ? 'GOOD' : bars.length >= 50 ? 'FAIR' : 'POOR'
-    // });
-    
-    // Enhanced data validation with different thresholds
-    const minDataRequired = {
-      basic: 50,    // Minimum for basic calculations
-      optimal: 100, // Optimal for reliable signals
-      excellent: 200 // Excellent for all indicators
-    };
-    
-    if (closes.length < minDataRequired.basic) {
-      // console.log('❌ Insufficient data, need at least 50 bars, have:', closes.length);
-      return { 
-        error: 'INSUFFICIENT_DATA', 
-        message: `Insufficient data: ${closes.length}/50 bars available`,
-        dataCount: closes.length,
-        required: minDataRequired.basic
-      };
-    }
-    
-    // Calculate indicators with comprehensive error handling and fallbacks
-    let emaSignals, macdSignals, rsiSignals, utBot, ichimokuSignals, quietMarketInfo;
+    // Aggregate metadata
     const calculationErrors = [];
     const calculationWarnings = [];
-    
-    // Helper function to safely calculate indicators
+    let maxDataCount = 0;
+    let anyQuiet = false;
+
+    tfs.forEach(timeframe => {
+      const tfDataObj = perSymbolMap.get(timeframe);
+      const tfBars = tfDataObj?.bars || [];
+      const tfCloses = tfBars.map(b => b.close);
+      maxDataCount = Math.max(maxDataCount, tfCloses.length);
+
+      const minDataRequired = { basic: 50 };
+
+      if (tfCloses.length < 1) {
+        // No data yet for this timeframe
+        data[timeframe] = {
+          EMA21: { hasData: false, error: 'No data' },
+          EMA50: { hasData: false, error: 'No data' },
+          EMA200: { hasData: false, error: 'No data' },
+          MACD: { hasData: false, error: 'No data' },
+          RSI: { hasData: false, error: 'No data' },
+          UTBOT: { hasData: false, error: 'No data' },
+          IchimokuClone: { hasData: false, error: 'No data' }
+        };
+        return;
+      }
+
+      // Helpers
     const safeCalculate = (name, calculationFn, fallbackFn = null) => {
       try {
         const result = calculationFn();
         if (!result) {
-          calculationWarnings.push(`${name}: Insufficient data`);
+            calculationWarnings.push(`${name}: Insufficient data (${timeframe})`);
           return fallbackFn ? fallbackFn() : null;
         }
         return result;
       } catch (error) {
-        // console.error(`❌ ${name} calculation error:`, error);
-        calculationErrors.push(`${name}: ${error.message}`);
+          calculationErrors.push(`${name}: ${error.message} (${timeframe})`);
         return fallbackFn ? fallbackFn() : null;
       }
     };
     
-    // Create fallback functions for each indicator
     const createEMAFallback = () => ({
-      ema21: { value: closes[closes.length - 1], signal: 'neutral', new: false },
-      ema50: { value: closes[closes.length - 1], signal: 'neutral', new: false },
-      ema200: { value: closes[closes.length - 1], signal: 'neutral', new: false }
-    });
-    
-    const createMACDFallback = () => ({
-      macd: 0,
-      signal: 0,
-      histogram: 0,
-      analysis: { signal: 'neutral', new: false }
-    });
-    
-    const createRSIFallback = () => ({
-      rsi: 50,
-      analysis: { signal: 'neutral', new: false }
-    });
-    
-    const createUTBotFallback = () => ({
-      signal: 'neutral',
-      confidence: 0.5,
-      new: false
-    });
-    
-    const createIchimokuFallback = () => ({
-      analysis: { signal: 'neutral', new: false },
-      cloudTop: closes[closes.length - 1],
-      cloudBottom: closes[closes.length - 1]
-    });
-    
-    // Calculate each indicator with fallbacks
-    emaSignals = safeCalculate(
-      'EMA',
-      () => calculateEMASignals(closes),
-      closes.length >= 21 ? createEMAFallback : null
-    );
-    
-    macdSignals = safeCalculate(
-      'MACD',
-      () => calculateMACDSignals(closes),
-      closes.length >= 26 ? createMACDFallback : null
-    );
-    
-    rsiSignals = safeCalculate(
-      'RSI',
-      () => calculateRSISignals(closes, 14),
-      closes.length >= 15 ? createRSIFallback : null
-    );
-    
-    utBot = safeCalculate(
-      'UTBOT',
-      () => generateUTBotSignal(bars, closes[closes.length - 1]),
-      bars.length >= 20 ? createUTBotFallback : null
-    );
-    
-    ichimokuSignals = safeCalculate(
-      'Ichimoku',
-      () => calculateIchimokuCloneSignals(bars),
-      bars.length >= 26 ? createIchimokuFallback : null
-    );
-    
-    // Quiet market detection (non-critical)
-    quietMarketInfo = safeCalculate(
-      'QuietMarket',
-      () => isQuietMarket(bars, 14),
-      () => ({ isQuiet: false, currentATR: null, fifthPercentile: null })
-    );
-    
-    // Log calculation results
-    if (calculationErrors.length > 0) {
-      // console.warn('⚠️ Calculation errors:', calculationErrors);
-    }
-    if (calculationWarnings.length > 0) {
-      // console.info('ℹ️ Calculation warnings:', calculationWarnings);
-    }
-    
-    // Enhanced signal logging with success/failure tracking (disabled to avoid lint warnings)
-    // console.group(`📊 ${currentSymbol} Signal Calculations`);
-    
-    const signalSummary = {
-      successful: [],
-      failed: [],
-      signals: {},
-      newSignals: {}
-    };
-    
-    // Track each indicator's success/failure
-    const indicators = [
-      { name: 'EMA21', data: emaSignals?.ema21, source: emaSignals },
-      { name: 'EMA50', data: emaSignals?.ema50, source: emaSignals },
-      { name: 'EMA200', data: emaSignals?.ema200, source: emaSignals },
-      { name: 'MACD', data: macdSignals?.analysis, source: macdSignals },
-      { name: 'RSI', data: rsiSignals?.analysis, source: rsiSignals },
-      { name: 'UTBOT', data: utBot, source: utBot },
-      { name: 'Ichimoku', data: ichimokuSignals?.analysis, source: ichimokuSignals }
-    ];
-    
-    indicators.forEach(({ name, data, source }) => {
-      if (source && data) {
-        signalSummary.successful.push(name);
-        signalSummary.signals[name] = data.signal || source.signal;
-        signalSummary.newSignals[name] = data.new || source.new || false;
-      } else {
-        signalSummary.failed.push(name);
-        signalSummary.signals[name] = 'FAILED';
-        signalSummary.newSignals[name] = false;
-      }
-    });
-    
-    // console.log('✅ Successful calculations:', signalSummary.successful.join(', ') || 'None');
-    // if (signalSummary.failed.length > 0) {
-    //   console.warn('❌ Failed calculations:', signalSummary.failed.join(', '));
-    // }
-    
-    // console.log('📊 Current Signals:', signalSummary.signals);
-    
-    // const newSignalCount = Object.values(signalSummary.newSignals).filter(Boolean).length;
-    // if (newSignalCount > 0) {
-    //   console.log('🆕 New Signals (K=3 lookback):', 
-    //     Object.entries(signalSummary.newSignals)
-    //       .filter(([, isNew]) => isNew)
-    //       .map(([name]) => name)
-    //       .join(', ')
-    //   );
-    // }
-    
-    // if (quietMarketInfo) {
-    //   console.log('🔇 Market Conditions:', {
-    //     isQuiet: quietMarketInfo.isQuiet,
-    //     currentATR: quietMarketInfo.currentATR?.toFixed(6),
-    //     fifthPercentile: quietMarketInfo.fifthPercentile?.toFixed(6),
-    //     affectedIndicators: quietMarketInfo.isQuiet ? ['MACD', 'UTBOT'] : [],
-    //     multiplier: quietMarketInfo.isQuiet ? QUIET_MARKET_PARAMETERS.QUIET_MARKET_MULTIPLIER : 1.0
-    //   });
-    // }
-    
-    // console.groupEnd();
-    
-    // Add data quality indicator
-    const dataQuality = {
-      excellent: closes.length >= 200,
-      good: closes.length >= 100,
-      fair: closes.length >= 50,
-      poor: closes.length < 50
-    };
-    
-    // Use the same calculated data for all timeframes (since we only have one timeframe of data)
-    
-    // Deduplicate timeframes to avoid processing the same timeframe multiple times
-    const uniqueTimeframes = [...new Set(timeframes)];
-    
-    uniqueTimeframes.forEach(timeframe => {
-      data[timeframe] = {
-        EMA21: { 
-          value: emaSignals?.ema21?.value || null, 
-          signal: emaSignals?.ema21?.signal || 'neutral',
-          new: emaSignals?.ema21?.new || false,
-          quietMarket: false, // EMA not affected by quiet market
-          hasData: !!emaSignals?.ema21,
-          error: !emaSignals?.ema21 ? (closes.length < 21 ? 'Need 21+ bars' : 'Calc failed') : null,
-          fallback: false // EMA21 doesn't use fallback - either calculates or shows as unavailable
-        },
-        EMA50: { 
-          value: emaSignals?.ema50?.value || null, 
-          signal: emaSignals?.ema50?.signal || 'neutral',
-          new: emaSignals?.ema50?.new || false,
-          quietMarket: false, // EMA not affected by quiet market
-          hasData: !!emaSignals?.ema50,
-          error: !emaSignals?.ema50 ? (closes.length < 50 ? 'Need 50+ bars' : 'Calc failed') : null,
-          fallback: false // EMA50 doesn't use fallback - either calculates or shows as unavailable
-        },
-        EMA200: { 
-          value: emaSignals?.ema200?.value || null, 
-          signal: emaSignals?.ema200?.signal || 'neutral',
-          new: emaSignals?.ema200?.new || false,
-          quietMarket: false, // EMA not affected by quiet market
-          hasData: !!emaSignals?.ema200,
-          error: !emaSignals?.ema200 ? (closes.length < 200 ? 'Need 200+ bars' : 'Calc failed') : null,
-          fallback: false // EMA200 doesn't use fallback - either calculates or shows as unavailable
-        },
-        MACD: { 
-          value: macdSignals?.macd || null, 
-          signal: macdSignals?.analysis?.signal || 'neutral',
-          new: macdSignals?.analysis?.new || false,
-          quietMarket: quietMarketInfo?.isQuiet || false, // MACD affected by quiet market
-          hasData: !!macdSignals,
-          error: !macdSignals ? (closes.length < 26 ? 'Need 26+ bars' : 'Calc failed') : null,
-          fallback: false // MACD doesn't use fallback - either calculates or shows as unavailable
-        },
-        RSI: { 
-          value: rsiSignals?.rsi || null, 
-          signal: rsiSignals?.analysis?.signal || 'neutral',
-          new: rsiSignals?.analysis?.new || false,
-          quietMarket: false, // RSI not affected by quiet market
-          hasData: !!rsiSignals,
-          error: !rsiSignals ? (closes.length < 15 ? 'Need 15+ bars' : 'Calc failed') : null,
-          fallback: false // RSI doesn't use fallback - either calculates or shows as unavailable
-        },
-        UTBOT: { 
-          value: utBot?.confidence || null, 
-          signal: utBot?.signal || 'neutral',
-          new: utBot?.new || false,
-          quietMarket: quietMarketInfo?.isQuiet || false, // UTBOT affected by quiet market
-          hasData: !!utBot,
-          error: !utBot ? (bars.length < 20 ? 'Need 20+ bars' : 'Calc failed') : null,
-          fallback: false // UTBOT doesn't use fallback - either calculates or shows as unavailable
-        },
-        IchimokuClone: { 
-          value: ichimokuSignals?.cloudTop || null, 
-          signal: ichimokuSignals?.analysis?.signal || 'neutral',
-          new: ichimokuSignals?.analysis?.new || false,
-          quietMarket: false, // IchimokuClone not affected by quiet market
-          hasData: !!ichimokuSignals,
-          error: !ichimokuSignals ? (bars.length < 52 ? 'Need 52+ bars' : 'Calc failed') : null,
-          fallback: false // Ichimoku doesn't use fallback - either calculates or shows as unavailable
-        }
+        ema21: { value: tfCloses[tfCloses.length - 1], signal: 'neutral', new: false },
+        ema50: { value: tfCloses[tfCloses.length - 1], signal: 'neutral', new: false },
+        ema200: { value: tfCloses[tfCloses.length - 1], signal: 'neutral', new: false }
+      });
+      const createMACDFallback = () => ({ macd: 0, signal: 0, histogram: 0, analysis: { signal: 'neutral', new: false } });
+      const createRSIFallback = () => ({ rsi: 50, analysis: { signal: 'neutral', new: false } });
+      const createUTBotFallback = () => ({ signal: 'neutral', confidence: 0.5, new: false });
+      const createIchimokuFallback = () => ({ analysis: { signal: 'neutral', new: false }, cloudTop: tfCloses[tfCloses.length - 1], cloudBottom: tfCloses[tfCloses.length - 1] });
+
+      const emaSignals = safeCalculate('EMA', () => calculateEMASignals(tfCloses), tfCloses.length >= 21 ? createEMAFallback : null);
+      const macdSignals = safeCalculate('MACD', () => calculateMACDSignals(tfCloses), tfCloses.length >= 26 ? createMACDFallback : null);
+      const rsiSignals = safeCalculate('RSI', () => calculateRSISignals(tfCloses, 14), tfCloses.length >= 15 ? createRSIFallback : null);
+      const utBot = safeCalculate('UTBOT', () => generateUTBotSignal(tfBars, tfCloses[tfCloses.length - 1]), tfBars.length >= 20 ? createUTBotFallback : null);
+      const ichimokuSignals = safeCalculate('Ichimoku', () => calculateIchimokuCloneSignals(tfBars), tfBars.length >= 26 ? createIchimokuFallback : null);
+      const quietMarketInfo = safeCalculate('QuietMarket', () => isQuietMarket(tfBars, 14), () => ({ isQuiet: false, currentATR: null, fifthPercentile: null }));
+      anyQuiet = anyQuiet || !!quietMarketInfo?.isQuiet;
+
+      const ema21Reason = emaSignals?.ema21 ? (emaSignals.ema21.signal === 'buy' ? 'close>EMA & slope≥0' : emaSignals.ema21.signal === 'sell' ? 'close<EMA & slope≤0' : 'neutral') : null;
+      const ema50Reason = emaSignals?.ema50 ? (emaSignals.ema50.signal === 'buy' ? 'close>EMA & slope≥0' : emaSignals.ema50.signal === 'sell' ? 'close<EMA & slope≤0' : 'neutral') : null;
+      const ema200Reason = emaSignals?.ema200 ? (emaSignals.ema200.signal === 'buy' ? 'close>EMA & slope≥0' : emaSignals.ema200.signal === 'sell' ? 'close<EMA & slope≤0' : 'neutral') : null;
+      const macdReason = macdSignals?.analysis ? (
+        macdSignals.analysis.macdAboveSignal && macdSignals.analysis.macdAboveZero ? 'MACD>Signal & >0' :
+        macdSignals.analysis.macdBelowSignal && macdSignals.analysis.macdBelowZero ? 'MACD<Signal & <0' :
+        macdSignals.analysis.macdAboveSignal ? 'MACD>Signal' :
+        macdSignals.analysis.macdBelowSignal ? 'MACD<Signal' : 'neutral'
+      ) : null;
+      const rsiReason = rsiSignals ? (rsiSignals.rsi <= 30 ? 'RSI≤30' : rsiSignals.rsi >= 70 ? 'RSI≥70' : '50-zone') : null;
+      const utbotReason = utBot ? (utBot.type === 'long' ? 'flip→Long/above short stop' : utBot.type === 'short' ? 'flip→Short/below long stop' : 'neutral') : null;
+      const ichimokuReason = ichimokuSignals?.analysis ? (
+        ichimokuSignals.analysis.reason === 'price_above_cloud' ? 'Price > Cloud' :
+        ichimokuSignals.analysis.reason === 'price_below_cloud' ? 'Price < Cloud' :
+        ichimokuSignals.analysis.reason === 'tenkan_above_kijun' ? 'Tenkan > Kijun' :
+        ichimokuSignals.analysis.reason === 'tenkan_below_kijun' ? 'Tenkan < Kijun' :
+        ichimokuSignals.analysis.reason === 'cloud_bullish' ? 'SpanA > SpanB' :
+        ichimokuSignals.analysis.reason === 'cloud_bearish' ? 'SpanA < SpanB' :
+        ichimokuSignals.analysis.reason === 'chikou_above_price' ? 'Chikou > Price_26' :
+        ichimokuSignals.analysis.reason === 'chikou_below_price' ? 'Chikou < Price_26' : 'neutral'
+      ) : null;
+
+      const tfData = {
+        EMA21: { value: emaSignals?.ema21?.value || null, signal: emaSignals?.ema21?.signal || 'neutral', new: emaSignals?.ema21?.new || false, reason: ema21Reason, quietMarket: false, hasData: !!emaSignals?.ema21, error: !emaSignals?.ema21 ? (tfCloses.length < 21 ? 'Need 21+ bars' : 'Calc failed') : null, fallback: false },
+        EMA50: { value: emaSignals?.ema50?.value || null, signal: emaSignals?.ema50?.signal || 'neutral', new: emaSignals?.ema50?.new || false, reason: ema50Reason, quietMarket: false, hasData: !!emaSignals?.ema50, error: !emaSignals?.ema50 ? (tfCloses.length < 50 ? 'Need 50+ bars' : 'Calc failed') : null, fallback: false },
+        EMA200: { value: emaSignals?.ema200?.value || null, signal: emaSignals?.ema200?.signal || 'neutral', new: emaSignals?.ema200?.new || false, reason: ema200Reason, quietMarket: false, hasData: !!emaSignals?.ema200, error: !emaSignals?.ema200 ? (tfCloses.length < 200 ? 'Need 200+ bars' : 'Calc failed') : null, fallback: false },
+        MACD: { value: macdSignals?.macd || null, signal: macdSignals?.analysis?.signal || 'neutral', new: macdSignals?.analysis?.new || false, reason: macdReason, quietMarket: quietMarketInfo?.isQuiet || false, hasData: !!macdSignals, error: !macdSignals ? (tfCloses.length < 26 ? 'Need 26+ bars' : 'Calc failed') : null, fallback: false },
+        RSI: { value: rsiSignals?.rsi || null, signal: rsiSignals?.analysis?.signal || 'neutral', new: rsiSignals?.analysis?.new || false, reason: rsiReason, quietMarket: false, hasData: !!rsiSignals, error: !rsiSignals ? (tfCloses.length < 15 ? 'Need 15+ bars' : 'Calc failed') : null, fallback: false },
+        UTBOT: { value: utBot?.confidence || null, signal: utBot?.signal || 'neutral', new: utBot?.new || false, reason: utbotReason, quietMarket: quietMarketInfo?.isQuiet || false, hasData: !!utBot, error: !utBot ? (tfBars.length < 20 ? 'Need 20+ bars' : 'Calc failed') : null, fallback: false },
+        IchimokuClone: { value: ichimokuSignals?.cloudTop || null, signal: ichimokuSignals?.analysis?.signal || 'neutral', new: ichimokuSignals?.analysis?.new || false, reason: ichimokuReason, quietMarket: false, hasData: !!ichimokuSignals, error: !ichimokuSignals ? (tfBars.length < 52 ? 'Need 52+ bars' : 'Calc failed') : null, fallback: false }
       };
+
+      data[timeframe] = tfData;
     });
-    
-    // Add comprehensive metadata for debugging and monitoring
+
     data._metadata = {
       symbol: currentSymbol,
-      dataCount: closes.length,
-      dataQuality,
+      dataCount: maxDataCount,
       calculationErrors,
       calculationWarnings,
-      hasQuietMarket: quietMarketInfo?.isQuiet || false,
-      quietMarketDetails: {
-        currentATR: quietMarketInfo?.currentATR,
-        fifthPercentile: quietMarketInfo?.fifthPercentile,
-        affectedIndicators: quietMarketInfo?.isQuiet ? ['MACD', 'UTBOT'] : []
-      },
-      indicatorStatus: {
-        EMA: !!emaSignals,
-        MACD: !!macdSignals,
-        RSI: !!rsiSignals,
-        UTBOT: !!utBot,
-        Ichimoku: !!ichimokuSignals
-      },
-      dataRequirements: {
-        EMA21: { required: 21, available: closes.length, sufficient: closes.length >= 21 },
-        EMA50: { required: 50, available: closes.length, sufficient: closes.length >= 50 },
-        EMA200: { required: 200, available: closes.length, sufficient: closes.length >= 200 },
-        MACD: { required: 26, available: closes.length, sufficient: closes.length >= 26 },
-        RSI: { required: 15, available: closes.length, sufficient: closes.length >= 15 },
-        UTBOT: { required: 20, available: bars.length, sufficient: bars.length >= 20 },
-        Ichimoku: { required: 52, available: bars.length, sufficient: bars.length >= 52 }
-      },
+      hasQuietMarket: anyQuiet,
       timestamp: new Date().toISOString()
     };
     
     return data;
-  }, [currentSymbol, ohlcData, timeframes]);
+  }, [currentSymbol, ohlcByTimeframe, timeframes]);
   
   // Calculate scores and final results with error handling
   const { scores, finalResults, dataStatus } = useMemo(() => {

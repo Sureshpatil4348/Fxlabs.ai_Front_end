@@ -160,6 +160,14 @@ class UserStateService {
           // CHF crosses (1)
           'CHFJPYm'
         ]
+      },
+      
+      // Multi-Indicator Heatmap Settings
+      multiIndicatorHeatmap: {
+        symbol: 'EURUSDm',
+        tradingStyle: 'dayTrader',
+        indicatorWeight: 'equal',
+        showNewSignals: true
       }
     };
   }
@@ -192,7 +200,8 @@ class UserStateService {
       global: { ...defaults.global, ...userSettings.global },
       rsiCorrelation: { ...defaults.rsiCorrelation, ...userSettings.rsiCorrelation },
       rsiTracker: { ...defaults.rsiTracker, ...userSettings.rsiTracker },
-      currencyStrength: { ...defaults.currencyStrength, ...userSettings.currencyStrength }
+      currencyStrength: { ...defaults.currencyStrength, ...userSettings.currencyStrength },
+      multiIndicatorHeatmap: { ...defaults.multiIndicatorHeatmap, ...userSettings.multiIndicatorHeatmap }
     };
   }
 
@@ -209,7 +218,8 @@ class UserStateService {
       global: { ...currentSettings.global, ...settings.global },
       rsiCorrelation: { ...currentSettings.rsiCorrelation, ...settings.rsiCorrelation },
       rsiTracker: { ...currentSettings.rsiTracker, ...settings.rsiTracker },
-      currencyStrength: { ...currentSettings.currencyStrength, ...settings.currencyStrength }
+      currencyStrength: { ...currentSettings.currencyStrength, ...settings.currencyStrength },
+      multiIndicatorHeatmap: { ...currentSettings.multiIndicatorHeatmap, ...settings.multiIndicatorHeatmap }
     };
 
     const { data, error } = await supabase

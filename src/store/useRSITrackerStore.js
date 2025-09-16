@@ -29,7 +29,8 @@ const useRSITrackerStore = create(
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
     tickData: new Map(),      // symbol -> latest ticks
-    ohlcData: new Map(),      // symbol -> OHLC bars
+    ohlcData: new Map(),      // symbol -> OHLC bars (default timeframe; kept for backward compatibility)
+    ohlcByTimeframe: new Map(), // symbol -> Map(timeframe -> { symbol, timeframe, bars, lastUpdate })
     initialOhlcReceived: new Set(), // symbols that received initial OHLC
     
     // RSI Data
@@ -69,7 +70,7 @@ const useRSITrackerStore = create(
     
     // UI state
     logs: [],
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D'],
+    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'],
     
     // Connection Actions
     connect: () => {
@@ -205,6 +206,7 @@ const useRSITrackerStore = create(
         subscriptions: new Map(),
         tickData: new Map(),
         ohlcData: new Map(),
+        ohlcByTimeframe: new Map(),
         initialOhlcReceived: new Set()
       });
     },
@@ -271,6 +273,8 @@ const useRSITrackerStore = create(
           newTickData.delete(message.symbol);
           const newOhlcData = new Map(state.ohlcData);
           newOhlcData.delete(message.symbol);
+          const newOhlcByTimeframe = new Map(state.ohlcByTimeframe);
+          newOhlcByTimeframe.delete(message.symbol);
           const newInitialReceived = new Set(state.initialOhlcReceived);
           newInitialReceived.delete(message.symbol);
           
@@ -278,6 +282,7 @@ const useRSITrackerStore = create(
             subscriptions: newSubscriptions,
             tickData: newTickData,
             ohlcData: newOhlcData,
+            ohlcByTimeframe: newOhlcByTimeframe,
             initialOhlcReceived: newInitialReceived
           });
           get().addLog(`Unsubscribed from ${message.symbol}`, 'warning');
@@ -291,11 +296,24 @@ const useRSITrackerStore = create(
             bars: message.data,
             lastUpdate: new Date()
           });
+
+          // Update multi-timeframe structure
+          const ohlcByTimeframe = new Map(state.ohlcByTimeframe);
+          const perSymbol = new Map(ohlcByTimeframe.get(message.symbol) || new Map());
+          perSymbol.set(message.timeframe, {
+            symbol: message.symbol,
+            timeframe: message.timeframe,
+            bars: message.data,
+            lastUpdate: new Date()
+          });
+          ohlcByTimeframe.set(message.symbol, perSymbol);
+
           const initialReceived = new Set(state.initialOhlcReceived);
           initialReceived.add(message.symbol);
           
           set({ 
             ohlcData,
+            ohlcByTimeframe,
             initialOhlcReceived: initialReceived
           });
           get().addLog(`Received ${message.data.length} initial OHLC bars for ${message.symbol}`, 'info');
@@ -319,17 +337,15 @@ const useRSITrackerStore = create(
           
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);
-          const symbolData = currentOhlcData.get(message.data.symbol);
-          if (symbolData) {
-            // Update the most recent bar or add new one
-            const bars = [...symbolData.bars];
+          const topLevelSymbolData = currentOhlcData.get(message.data.symbol);
+          if (topLevelSymbolData) {
+            // Update the most recent bar or add new one (top-level default timeframe)
+            const bars = [...topLevelSymbolData.bars];
             const lastBar = bars[bars.length - 1];
             
             if (lastBar && lastBar.time === message.data.time) {
-              // Update existing bar - don't log
               bars[bars.length - 1] = message.data;
             } else {
-              // Add new bar and keep only last 100 - log this as it's a new candle
               bars.push(message.data);
               if (bars.length > 100) {
                 bars.shift();
@@ -337,16 +353,39 @@ const useRSITrackerStore = create(
               get().addLog(`New candle: ${message.data.symbol} - ${message.data.close}`, 'info');
             }
             
-            symbolData.bars = bars;
-            symbolData.lastUpdate = new Date();
-            currentOhlcData.set(message.data.symbol, symbolData);
-            set({ ohlcData: currentOhlcData });
-            
-            // Trigger RSI recalculation when new data arrives
-            setTimeout(() => {
-              get().recalculateAllRsi();
-            }, 100);
+            topLevelSymbolData.bars = bars;
+            topLevelSymbolData.lastUpdate = new Date();
+            currentOhlcData.set(message.data.symbol, topLevelSymbolData);
           }
+
+          // Update multi-timeframe map
+          const currentByTf = new Map(state.ohlcByTimeframe);
+          const perSymbolTf = new Map(currentByTf.get(message.data.symbol) || new Map());
+          const existingTfData = perSymbolTf.get(message.data.timeframe);
+          const tfBars = existingTfData ? [...existingTfData.bars] : [];
+          const tfLast = tfBars[tfBars.length - 1];
+          if (tfLast && tfLast.time === message.data.time) {
+            tfBars[tfBars.length - 1] = message.data;
+          } else {
+            tfBars.push(message.data);
+            if (tfBars.length > 100) {
+              tfBars.shift();
+            }
+          }
+          perSymbolTf.set(message.data.timeframe, {
+            symbol: message.data.symbol,
+            timeframe: message.data.timeframe,
+            bars: tfBars,
+            lastUpdate: new Date()
+          });
+          currentByTf.set(message.data.symbol, perSymbolTf);
+
+          set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
+          
+          // Trigger RSI recalculation when new data arrives
+          setTimeout(() => {
+            get().recalculateAllRsi();
+          }, 100);
           break;
           
         case 'pong':
@@ -655,6 +694,13 @@ const useRSITrackerStore = create(
     getOhlcForSymbol: (symbol) => {
       const ohlcData = get().ohlcData.get(symbol);
       return ohlcData ? ohlcData.bars : [];
+    },
+
+    getOhlcForSymbolAndTimeframe: (symbol, timeframe) => {
+      const byTf = get().ohlcByTimeframe.get(symbol);
+      if (!byTf) return [];
+      const tfData = byTf.get(timeframe);
+      return tfData ? tfData.bars : [];
     },
 
     getTicksForSymbol: (symbol) => {
