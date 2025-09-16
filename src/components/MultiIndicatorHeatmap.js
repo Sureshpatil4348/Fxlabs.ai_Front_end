@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
+import userStateService from '../services/userStateService';
+import useRSITrackerStore from '../store/useRSITrackerStore';
 import { 
   calculateEMASignals,
   calculateMACDSignals,
@@ -17,8 +19,6 @@ import {
   QUIET_MARKET_PARAMETERS
 } from '../utils/calculations';
 import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
-import userStateService from '../services/userStateService';
-import useRSITrackerStore from '../store/useRSITrackerStore';
 
 // Ichimoku Clone calculation (simplified version) - keeping for potential future use
 // const calculateIchimokuClone = (bars) => {
