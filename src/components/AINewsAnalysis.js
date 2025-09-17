@@ -433,8 +433,17 @@ const AINewsAnalysis = () => {
 
   // Initialize from persisted state only once after store loads from DB
   useEffect(() => {
-    if (tabStateHasLoaded && tabState.news?.filter && !userSetFilterRef.current) {
-      setNewsFilter(tabState.news.filter);
+    if (!tabStateHasLoaded) return;
+    const persisted = tabState.news?.filter;
+    const cached = typeof window !== 'undefined' ? window.localStorage.getItem('ainews_filter') : null;
+    if (!userSetFilterRef.current && persisted) {
+      setNewsFilter(persisted);
+      try { if (cached !== persisted) window.localStorage.setItem('ainews_filter', persisted); } catch (e) {}
+    } else if (!persisted && cached) {
+      // Fallback: use local cache and sync to Supabase
+      userSetFilterRef.current = true;
+      setNewsFilter(cached);
+      updateNewsFilter(cached).catch((e) => console.error('Failed to sync cached news filter to Supabase:', e));
     }
     // Run only once after initial load
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -512,6 +521,7 @@ const AINewsAnalysis = () => {
   const handleFilterChange = async (filter) => {
     userSetFilterRef.current = true;
     setNewsFilter(filter);
+    try { if (typeof window !== 'undefined') window.localStorage.setItem('ainews_filter', filter); } catch (e) {}
     try {
       await updateNewsFilter(filter);
     } catch (error) {
