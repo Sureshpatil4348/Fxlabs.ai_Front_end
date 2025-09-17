@@ -398,7 +398,7 @@ const RSICorrelationDashboard = () => {
           </p>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 sm:self-start">
           {/* Calculation Mode Toggle */}
           <button
             onClick={handleCalculationModeToggle}
