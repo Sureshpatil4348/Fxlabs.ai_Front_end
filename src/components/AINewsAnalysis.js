@@ -541,7 +541,7 @@ const AINewsAnalysis = () => {
           <Newspaper className="w-5 h-5 text-primary-600" />
           <div>
             <h2 className="text-lg font-semibold text-gray-900">AI News Analysis</h2>
-            <p className="text-sm text-gray-500">AI-powered forex news insights</p>
+            <p className="widget-subtitle">AI-powered forex news insights</p>
           </div>
         </div>
         {!apiAvailable && (

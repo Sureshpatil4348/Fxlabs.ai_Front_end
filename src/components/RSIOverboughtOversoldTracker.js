@@ -229,16 +229,18 @@ const RSIOverboughtOversoldTracker = () => {
           <div>
             <div className="flex items-center space-x-2">
               <Activity className="w-5 h-5 text-purple-600" />
-              <h2 className="text-lg font-semibold text-gray-900">RSI Tracker</h2>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">RSI Tracker</h2>
+                <p className="widget-subtitle">
+                  Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought} | Period: {settings.rsiPeriod} | {settings.timeframe}
+                </p>
+              </div>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium ${
                 isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
                 {isConnected ? '● Connected' : '● Disconnected'}
               </span>
             </div>
-            <p className="text-[10px] text-gray-500 pt-1">
-              Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought} | Period: {settings.rsiPeriod} | {settings.timeframe}
-            </p>
           </div>
           <div className="flex items-center space-x-1">
             <button

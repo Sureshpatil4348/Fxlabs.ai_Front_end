@@ -369,11 +369,20 @@ const RSICorrelationDashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
         <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center space-x-2">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            <div>
               <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
+              <p className="widget-subtitle">
+                {localSettings.calculationMode === 'real_correlation' ? (
+                  `Correlation Window: ${localSettings.correlationWindow} | ${localSettings.timeframe}`
+                ) : (
+                  `Period: ${localSettings.rsiPeriod} | Overbought: ${localSettings.rsiOverbought} | Oversold: ${localSettings.rsiOversold} | ${localSettings.timeframe}`
+                )}
+              </p>
             </div>
+          </div>
+          <div className="flex items-center space-x-3 mt-1">
             <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium w-fit shadow-md transition-all duration-300 ${
               isConnected ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border border-emerald-200/50' : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200/50'
             }`}>
@@ -387,13 +396,6 @@ const RSICorrelationDashboard = () => {
               <span>Total Pairs</span>
             </div>
           </div>
-          <p className="text-xs text-slate-600 mt-1 font-medium">
-            {localSettings.calculationMode === 'real_correlation' ? (
-              `Correlation Window: ${localSettings.correlationWindow} | ${localSettings.timeframe}`
-            ) : (
-              `Period: ${localSettings.rsiPeriod} | Overbought: ${localSettings.rsiOverbought} | Oversold: ${localSettings.rsiOversold} | ${localSettings.timeframe}`
-            )}
-          </p>
         </div>
         
         <div className="flex items-center space-x-2 sm:self-start">

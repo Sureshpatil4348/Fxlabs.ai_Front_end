@@ -320,15 +320,15 @@ const CurrencyStrengthMeter = () => {
         <div className="flex items-center justify-between mb-2">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
-          <p className="text-sm text-gray-500">
+          <p className="widget-subtitle">
             {settings.timeframe} • Updates on candle close
-            <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+          </p>
+          <div className="flex items-center space-x-2 mt-1">
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}>
               {isConnected ? '● Connected' : '● Disconnected'}
             </span>
-          </p>
-          <div className="flex items-center space-x-2 mt-1">
             {strengthData.length === 0 && subscriptions.size > 0 && (
               <span className="text-xs text-blue-600">
                 📊 Calculating strength for {settings.timeframe} timeframe...
