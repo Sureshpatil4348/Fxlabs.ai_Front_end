@@ -1,6 +1,6 @@
-import { Home, LogIn, BarChart3, TrendingUp, HelpCircle, Gift } from 'lucide-react'
+import { LogIn, BarChart3, TrendingUp, Bell } from 'lucide-react'
 import React from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import UserProfileDropdown from './UserProfileDropdown'
 import { useAuth } from '../auth/AuthProvider'
@@ -8,7 +8,6 @@ import { useAuth } from '../auth/AuthProvider'
 const Navbar = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
 
   const handleLoginClick = () => {
     navigate('/login')
@@ -18,32 +17,12 @@ const Navbar = () => {
     navigate('/dashboard')
   }
 
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
-    }
-  }
-
-  // Check if we're on the dashboard page
-  const isDashboard = location.pathname === '/dashboard'
-  
-  const navbarLinks = [
-    { id: 'hero', label: 'Home', icon: Home },
-    { id: 'trading-charts', label: 'Trading Charts', icon: BarChart3 },
-    { id: 'subscription', label: 'Pricing', icon: Gift },
-    { id: 'features', label: 'Features', icon: TrendingUp },
-    { id: 'faq', label: 'FAQ', icon: HelpCircle }
-  ]
 
   return (
     <header className="bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-600/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo Section */}
+        <div className="flex items-center h-16">
+          {/* Left Section - FXLabs Logo */}
           <div className="flex items-center space-x-3">
             <Link to="/" className="flex items-center space-x-3 group">
               <div className="relative">
@@ -61,55 +40,28 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-6">
-            {!isDashboard ? (
-              // Show all navigation links on home page
-              <>
-                {navbarLinks.map((link) => (
-                  <button
-                    key={link.id}
-                    onClick={() => scrollToSection(link.id)}
-                    className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
-                  >
-                    <link.icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="font-medium text-sm">{link.label}</span>
-                  </button>
-                ))}
-                
-                {user && (
-                  <button
-                    onClick={handleDashboardClick}
-                    className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group ml-4 pl-4 border-l border-gray-600"
-                  >
-                    <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="font-medium text-sm">Dashboard</span>
-                  </button>
-                )}
-              </>
-            ) : (
-              // Show only Home and Dashboard links on dashboard page
-              <>
-                <Link 
-                  to="/" 
-                  className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
-                >
-                  <Home className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-medium text-sm">Home</span>
-                </Link>
-                
-                <div className="flex items-center space-x-2 text-green-400 ml-4 pl-4 border-l border-gray-600">
-                  <BarChart3 className="w-4 h-4" />
-                  <span className="font-medium text-sm">Dashboard</span>
-                </div>
-              </>
+          {/* Center Section - Dashboard */}
+          <div className="flex-1 flex justify-center">
+            {user && (
+              <button
+                onClick={handleDashboardClick}
+                className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
+              >
+                <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium text-sm">Dashboard</span>
+              </button>
             )}
-          </nav>
+          </div>
           
-          {/* Right Section - Login/User */}
+          {/* Right Section - Notification + Account */}
           <div className="flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-3">
+                {/* Notification Icon */}
+                <button className="p-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group">
+                  <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                </button>
+                {/* Account Button */}
                 <UserProfileDropdown />
               </div>
             ) : (

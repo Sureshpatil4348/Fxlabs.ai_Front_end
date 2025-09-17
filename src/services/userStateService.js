@@ -57,10 +57,12 @@ class UserStateService {
       .upsert(
         [{ 
           user_id: user.id, 
-          tab_state: mergedState,
-          updated_at: new Date().toISOString()
+          tab_state: mergedState
         }],
-        { onConflict: "user_id" }
+        { 
+          onConflict: "user_id",
+          ignoreDuplicates: false
+        }
       )
       .select()
       .single();
@@ -227,10 +229,12 @@ class UserStateService {
       .upsert(
         [{ 
           user_id: user.id, 
-          dashboard_settings: mergedSettings,
-          updated_at: new Date().toISOString()
+          dashboard_settings: mergedSettings
         }],
-        { onConflict: "user_id" }
+        { 
+          onConflict: "user_id",
+          ignoreDuplicates: false
+        }
       )
       .select()
       .single();

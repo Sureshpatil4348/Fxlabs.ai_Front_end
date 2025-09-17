@@ -36,6 +36,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Real-time Updates**: Live data streaming with automatic reconnection
 - **User Authentication**: Secure login with Supabase authentication
 
+## Recent Fixes
+
+### Tab State Update Issue (Fixed)
+- **Issue**: Tab state updates were failing with "record 'new' has no field 'updatedat'" error
+- **Root Cause**: Database column name mismatch - database expected `updatedat` but code was using `updated_at`
+- **Solution**: Updated all service files to use correct column name `updatedat` instead of `updated_at`
+- **Files Fixed**: `src/services/userStateService.js`, `src/services/usertabService.js`
+- **Impact**: All tab state persistence now works correctly across all components
+
 ## Tab State Persistence
 
 The application automatically saves and restores your dashboard preferences:
