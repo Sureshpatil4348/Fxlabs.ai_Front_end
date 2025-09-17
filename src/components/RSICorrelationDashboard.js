@@ -504,29 +504,7 @@ const RSICorrelationDashboard = () => {
         </div>
         </div>
 
-        {/* Color Legend Section */}
-        <div className="mt-3 mb-2">
-          <div className="bg-gradient-to-r from-slate-50/80 to-blue-50/50 rounded-xl p-2 border border-slate-200/50 backdrop-blur-sm">
-            <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-emerald-100 to-green-200 border border-emerald-400 ring-1 ring-emerald-200"></div>
-                <span className="text-slate-700 font-medium">Strong Match</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-red-100 to-rose-200 border border-red-400 ring-1 ring-red-200"></div>
-                <span className="text-slate-700 font-medium">Strong Mismatch</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-gray-100 to-slate-200 border border-gray-400"></div>
-                <span className="text-slate-700 font-medium">Weak Correlation</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-50 to-emerald-50 border border-green-300"></div>
-                <span className="text-slate-700 font-medium">Moderate</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Color legend removed per request for cleaner header */}
 
       </div>
 
