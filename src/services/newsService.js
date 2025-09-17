@@ -14,10 +14,18 @@ const transformFXLabsData = (apiResponse) => {
     // Extract currency from the API response
     let currency = item.currency || 'USD';
     
-    // Use backend-provided impact from analysis
+    // Use backend-provided impact from analysis; fallback to item.impact; default to 'medium'
     let impact = 'medium';
     if (item.analysis && typeof item.analysis.impact === 'string') {
-      impact = item.analysis.impact.toLowerCase(); // high | medium | low | unknown
+      const v = item.analysis.impact.toLowerCase();
+      if (v === 'high' || v === 'medium' || v === 'low') {
+        impact = v;
+      }
+    } else if (typeof item.impact === 'string') {
+      const v = item.impact.toLowerCase();
+      if (v === 'high' || v === 'medium' || v === 'low') {
+        impact = v;
+      }
     }
 
     // Parse the time string from the API. Supports:
