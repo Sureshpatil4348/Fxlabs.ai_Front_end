@@ -416,8 +416,7 @@ const AINewsAnalysis = () => {
   const { 
     newsData, 
     aiAnalysis, 
-    newsLoading, 
-    fetchNews 
+    newsLoading 
   } = useBaseMarketStore();
   
   // Get tab state from base market store
@@ -426,8 +425,8 @@ const AINewsAnalysis = () => {
   const [newsFilter, setNewsFilter] = useState(tabState.news?.filter || 'upcoming');
   const [selectedNews, setSelectedNews] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [apiAvailable, setApiAvailable] = useState(true);
-  const [nowTick, setNowTick] = useState(0);
+  const [apiAvailable] = useState(true);
+  const [, setNowTick] = useState(0);
 
   // Load tab state on component mount
   useEffect(() => {

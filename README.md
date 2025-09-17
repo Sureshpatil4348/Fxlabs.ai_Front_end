@@ -35,6 +35,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - **Tabs UI Consistency**: News filter tabs now match RSI Tracker tabs (compact height, smaller font, tighter badges)
   - **Bullish/Bearish Styling Update**: Cards now use border-only green/red accents for bullish/bearish effects (no full background fills)
   - **Impact Filter Update (Latest)**: Removed global HIGH-only filter; AI News now shows all impacts (High, Medium, Low) while keeping the same Upcoming/Released tabs and counts
+  - **Tab Persistence Fix (Latest)**: Selecting the "All" tab no longer reverts to "Released" due to a background tab state load. The store now preserves locally updated sections when merging with database state to avoid race-condition overwrites.
   - **RSI Tabs Cleanup**: Removed icons from RSI Tracker tab headers for a cleaner look
   - **Timezone-Aware Timestamps (Latest)**: News timestamps now respect provided timezones (e.g., ISO like `2025-09-16T21:00:00Z`) and are displayed in the browser's local timezone. Legacy format `YYYY.MM.DD HH:mm:ss` is treated as UTC for consistency.
   - **Today's News Only (Latest)**: The AI News widget now shows only today's news based on the browser's local date (midnight-to-midnight in your timezone). Tabs and counts reflect this filter.

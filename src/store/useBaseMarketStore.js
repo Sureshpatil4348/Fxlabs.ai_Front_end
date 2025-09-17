@@ -25,6 +25,8 @@ const useBaseMarketStore = create(
       currencyStrength: { viewMode: 'bars' },
       news: { filter: 'upcoming' }
     },
+    // Track which tab sections were updated locally to avoid DB race overwrites
+    tabStateLocalUpdatedSections: new Set(),
     tabStateLoading: false,
     tabStateError: null,
     
@@ -98,9 +100,24 @@ const useBaseMarketStore = create(
       set({ tabStateLoading: true, tabStateError: null });
       
       try {
-        const tabState = await userStateService.getUserTabState();
-        set({ tabState, tabStateLoading: false });
-        return tabState;
+        const dbTabState = await userStateService.getUserTabState();
+        // Merge DB state with local state, preserving locally updated sections
+        set((state) => {
+          const updatedSections = state.tabStateLocalUpdatedSections;
+          if (updatedSections && updatedSections.size > 0) {
+            const merged = { ...dbTabState };
+            updatedSections.forEach((section) => {
+              // If this section was updated locally, keep the local value
+              if (state.tabState && Object.prototype.hasOwnProperty.call(state.tabState, section)) {
+                merged[section] = state.tabState[section];
+              }
+            });
+            return { tabState: merged, tabStateLoading: false };
+          }
+          // No local updates yet; trust DB fully (overrides defaults)
+          return { tabState: dbTabState, tabStateLoading: false };
+        });
+        return dbTabState;
       } catch (error) {
         console.error('Failed to load tab state:', error);
         set({ tabStateError: error.message, tabStateLoading: false });
@@ -111,13 +128,18 @@ const useBaseMarketStore = create(
     updateTabState: async (tabType, tabValue) => {
       try {
         // Update local state immediately for responsive UI
-        set((state) => ({
-          tabState: {
-            ...state.tabState,
-            [tabType]: tabValue
-          },
-          tabStateError: null
-        }));
+        set((state) => {
+          const updatedSections = new Set(state.tabStateLocalUpdatedSections);
+          updatedSections.add(tabType);
+          return {
+            tabState: {
+              ...state.tabState,
+              [tabType]: tabValue
+            },
+            tabStateError: null,
+            tabStateLocalUpdatedSections: updatedSections
+          };
+        });
 
         // Update database in background
         await userStateService.updateTabState(tabType, tabValue);
@@ -153,7 +175,7 @@ const useBaseMarketStore = create(
           currencyStrength: { viewMode: 'bars' },
           news: { filter: 'upcoming' }
         };
-        set({ tabState: defaultState, tabStateError: null });
+        set({ tabState: defaultState, tabStateError: null, tabStateLocalUpdatedSections: new Set() });
       } catch (error) {
         console.error('Failed to reset tab state:', error);
         set({ tabStateError: error.message });
