@@ -1,6 +1,6 @@
-import { Home, LogIn, BarChart3, TrendingUp, HelpCircle, Gift } from 'lucide-react'
+import { LogIn, BarChart3, Bell, TrendingUp } from 'lucide-react'
 import React from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import UserProfileDropdown from './UserProfileDropdown'
 import { useAuth } from '../auth/AuthProvider'
@@ -8,43 +8,18 @@ import { useAuth } from '../auth/AuthProvider'
 const Navbar = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
 
   const handleLoginClick = () => {
     navigate('/login')
   }
 
-  const handleDashboardClick = () => {
-    navigate('/dashboard')
-  }
-
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
-    }
-  }
-
-  // Check if we're on the dashboard page
-  const isDashboard = location.pathname === '/dashboard'
-  
-  const navbarLinks = [
-    { id: 'hero', label: 'Home', icon: Home },
-    { id: 'trading-charts', label: 'Trading Charts', icon: BarChart3 },
-    { id: 'subscription', label: 'Pricing', icon: Gift },
-    { id: 'features', label: 'Features', icon: TrendingUp },
-    { id: 'faq', label: 'FAQ', icon: HelpCircle }
-  ]
 
   return (
     <header className="bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-600/50 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex justify-between items-center h-16">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-3">
+          {/* Logo Section - Subtle Extreme Left */}
+          <div className="flex items-center -ml-8 sm:-ml-16 lg:-ml-20 xl:-ml-28 2xl:-ml-36">
             <Link to="/" className="flex items-center space-x-3 group">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
@@ -61,55 +36,32 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-6">
-            {!isDashboard ? (
-              // Show all navigation links on home page
-              <>
-                {navbarLinks.map((link) => (
-                  <button
-                    key={link.id}
-                    onClick={() => scrollToSection(link.id)}
-                    className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
-                  >
-                    <link.icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="font-medium text-sm">{link.label}</span>
-                  </button>
-                ))}
-                
-                {user && (
-                  <button
-                    onClick={handleDashboardClick}
-                    className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group ml-4 pl-4 border-l border-gray-600"
-                  >
-                    <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="font-medium text-sm">Dashboard</span>
-                  </button>
-                )}
-              </>
-            ) : (
-              // Show only Home and Dashboard links on dashboard page
-              <>
-                <Link 
-                  to="/" 
-                  className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
-                >
-                  <Home className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-medium text-sm">Home</span>
-                </Link>
-                
-                <div className="flex items-center space-x-2 text-green-400 ml-4 pl-4 border-l border-gray-600">
-                  <BarChart3 className="w-4 h-4" />
-                  <span className="font-medium text-sm">Dashboard</span>
-                </div>
-              </>
+          {/* Center Section - Dashboard */}
+          <div className="flex-1 flex justify-center">
+            {user && (
+              <Link
+                to="/dashboard"
+                className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
+              >
+                <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium text-base">Dashboard</span>
+              </Link>
             )}
-          </nav>
+          </div>
           
-          {/* Right Section - Login/User */}
-          <div className="flex items-center space-x-4">
+          {/* Right Section - Subtle Extreme Right - Notification + Account */}
+          <div className="flex items-center space-x-4 -mr-8 sm:-mr-16 lg:-mr-20 xl:-mr-28 2xl:-mr-36">
             {user ? (
               <div className="flex items-center space-x-3">
+                {/* Notification Icon */}
+                <button 
+                  type="button"
+                  aria-label="View notifications"
+                  className="p-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
+                >
+                  <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                </button>
+                {/* Account Button */}
                 <UserProfileDropdown />
               </div>
             ) : (

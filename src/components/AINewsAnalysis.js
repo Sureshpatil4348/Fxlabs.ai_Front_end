@@ -133,19 +133,28 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   const currencyInfo = formatCurrency(news.currency);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 pt-20"
+      style={{ paddingTop: `max(5rem, env(safe-area-inset-top) + 1rem)` }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="news-modal-title"
+      aria-describedby="news-modal-content"
+    >
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between py-2 px-6 border-b">
           <div className="flex items-center space-x-3">
             <span className="text-2xl">{currencyInfo.flag}</span>
             <div className="flex flex-row items-center w-full justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">{news.title.split('(')[0]}</h2>
+              <h2 id="news-modal-title" className="text-lg font-semibold text-gray-900">{news.title.split('(')[0]}</h2>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close news modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -165,7 +174,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 space-y-6">
+        <div id="news-modal-content" className="p-6 space-y-6">
           {/* AI Analysis - Moved to top */}
           {analysis && (
             <div>
