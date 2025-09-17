@@ -32,6 +32,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **AI News Analysis**: AI-powered forex news insights and analysis
   - **Enhanced News Cards**: Suggested pairs to watch displayed directly in news cards
   - **Reorganized Modal Layout**: AI analysis at top, suggested pairs, economic data, and detailed analysis
+  - **Tabs UI Consistency**: News filter tabs now match RSI Tracker tabs (compact height, smaller font, tighter badges)
+  - **RSI Tabs Cleanup**: Removed icons from RSI Tracker tab headers for a cleaner look
 - **Watchlist Management**: Personalized symbol tracking with database persistence
   - Watchlist "Add Currency Pair" derives available pairs from `useRSITrackerStore.settings.autoSubscribeSymbols`
   - To add/remove options, update `autoSubscribeSymbols` in `src/store/useRSITrackerStore.js` (use 'm' suffix)

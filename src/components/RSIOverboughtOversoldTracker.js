@@ -204,14 +204,12 @@ const RSIOverboughtOversoldTracker = () => {
     { 
       id: 'oversold', 
       label: 'Oversold', 
-      icon: TrendingDown, 
       count: oversoldPairs.length,
       color: 'text-success-600'
     },
     { 
       id: 'overbought', 
       label: 'Overbought', 
-      icon: TrendingUp, 
       count: overboughtPairs.length,
       color: 'text-danger-600'
     }
@@ -258,28 +256,24 @@ const RSIOverboughtOversoldTracker = () => {
 
         {/* Tab Navigation */}
         <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Icon className={`w-3 h-3 mr-1 ${activeTab === tab.id ? tab.color : ''}`} />
-              {tab.label}
-              <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
-                activeTab === tab.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
-              }`}>
-                {tab.count}
-              </span>
-            </button>
-          );
-        })}
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => handleTabChange(tab.id)}
+            className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
+              activeTab === tab.id
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            {tab.label}
+            <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
+              activeTab === tab.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
+            }`}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
         </div>
       </div>
 

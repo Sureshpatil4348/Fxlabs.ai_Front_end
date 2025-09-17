@@ -551,20 +551,20 @@ const AINewsAnalysis = () => {
         )}
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex space-x-1 mb-3 p-1 bg-gray-100 rounded-lg">
+        {/* Filter Tabs (match RSI Tracker styles) */}
+        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
             onClick={() => handleFilterChange(filterOption.id)}
-            className={`flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
               newsFilter === filterOption.id
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             {filterOption.label}
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+            <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
               newsFilter === filterOption.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
             }`}>
               {filterOption.count}
