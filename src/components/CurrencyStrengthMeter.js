@@ -317,7 +317,7 @@ const CurrencyStrengthMeter = () => {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
           <p className="text-sm text-gray-500">
