@@ -344,10 +344,10 @@ const RSICorrelationDashboard = () => {
   const gridPairs = sortedPairs;
   
   // Calculate statistics based on calculation mode
-  let totalPairs, _matches, _mismatches, _neutral;
+  let _totalPairs, _matches, _mismatches, _neutral;
   
   if (localSettings.calculationMode === 'real_correlation') {
-    totalPairs = sortedPairs.length;
+    _totalPairs = sortedPairs.length;
     const strongCorrelations = sortedPairs.filter(([, data]) => data.strength === 'strong').length;
     const moderateCorrelations = sortedPairs.filter(([, data]) => data.strength === 'moderate').length;
     const weakCorrelations = sortedPairs.filter(([, data]) => data.strength === 'weak').length;
@@ -356,7 +356,7 @@ const RSICorrelationDashboard = () => {
     _mismatches = weakCorrelations;
     _neutral = moderateCorrelations;
   } else {
-    totalPairs = sortedPairs.length;
+    _totalPairs = sortedPairs.length;
     _matches = sortedPairs.filter(([, data]) => data.status === 'match').length;
     _mismatches = sortedPairs.filter(([, data]) => data.status === 'mismatch').length;
     _neutral = sortedPairs.filter(([, data]) => data.status === 'neutral').length;

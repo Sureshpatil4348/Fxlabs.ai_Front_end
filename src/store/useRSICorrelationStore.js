@@ -594,23 +594,15 @@ const useRSICorrelationStore = create(
           let status;
           const { rsiOverbought, rsiOversold } = state.settings;
 
-          // Strict mismatch/match rules per requirement
+          // Strict mismatch rules use configurable thresholds
           if (isPositiveCorrelation) {
-            // Mismatch if one > 70 and the other < 30
-            const mismatch = (rsi1 > 70 && rsi2 < 30) || (rsi2 > 70 && rsi1 < 30);
-            if (mismatch) {
-              status = 'mismatch';
-            } else {
-              status = 'neutral';
-            }
+            // Mismatch if one > overbought and the other < oversold
+            const mismatch = (rsi1 > rsiOverbought && rsi2 < rsiOversold) || (rsi2 > rsiOverbought && rsi1 < rsiOversold);
+            status = mismatch ? 'mismatch' : 'neutral';
           } else {
-            // Negative correlation: mismatch if both > 70 or both < 30
-            const mismatch = (rsi1 > 70 && rsi2 > 70) || (rsi1 < 30 && rsi2 < 30);
-            if (mismatch) {
-              status = 'mismatch';
-            } else {
-              status = 'neutral';
-            }
+            // Negative correlation: mismatch if both > overbought or both < oversold
+            const mismatch = (rsi1 > rsiOverbought && rsi2 > rsiOverbought) || (rsi1 < rsiOversold && rsi2 < rsiOversold);
+            status = mismatch ? 'mismatch' : 'neutral';
           }
 
           newCorrelationStatus.set(pairKey, {
