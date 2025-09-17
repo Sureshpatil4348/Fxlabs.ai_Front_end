@@ -1,7 +1,6 @@
 import { 
   Activity,
-  LayoutGrid,
-  Zap
+  LayoutGrid
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -768,7 +767,7 @@ useEffect(() => {
             return (
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-semibold text-slate-600 mr-0.5">Recommendation:</span>
-                <div className={`bg-white rounded-xl px-3 py-1.5 border ${primaryClasses}`}>
+                <div className={`bg-white rounded-xl px-3 py-1.5 border-2 shadow ${primaryClasses}`}>
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm font-bold">{recommend === 'buy' ? 'Buy' : 'Sell'}</span>
                     <span className="text-sm font-semibold">{primaryPct}%</span>
@@ -988,19 +987,10 @@ useEffect(() => {
         <table className="w-full border-collapse h-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left py-0.5 px-1 font-semibold text-gray-700 text-xs w-16"><div className="ml-2">TF</div></th>
+              <th className="text-left py-0.5 px-1 font-bold text-gray-700 text-sm w-16"><div className="ml-2">TF</div></th>
               {indicators.map(indicator => (
-                <th key={indicator} className="text-center py-0.5 px-0.5 font-semibold text-gray-700">
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs">{indicator}</span>
-                    {indicator === 'EMA21' && <span className="text-xs">📈</span>}
-                    {indicator === 'EMA50' && <span className="text-xs">📊</span>}
-                    {indicator === 'EMA200' && <span className="text-xs">📈</span>}
-                    {indicator === 'MACD' && <span className="text-xs">📊</span>}
-                    {indicator === 'RSI' && <span className="text-xs">⚡</span>}
-                    {indicator === 'UTBOT' && <Zap className="w-2 h-2 text-yellow-500" />}
-                    {indicator === 'IchimokuClone' && <Activity className="w-2 h-2 text-purple-500" />}
-                  </div>
+                <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700">
+                  <span className="text-sm font-bold">{indicator}</span>
                 </th>
               ))}
             </tr>
@@ -1010,7 +1000,7 @@ useEffect(() => {
               <tr key={timeframe} className="border-b border-slate-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30" style={{ height: 'calc(100% / ' + [...new Set(timeframes)].length + ')' }}>
                 <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
                   <div className="flex items-center space-x-1 ml-2">
-                    <span className="text-sm font-bold">{timeframe}</span>
+                    <span className="text-sm font-normal">{timeframe}</span>
                     {/* Show status indicator for failed calculations in this timeframe */}
                     {indicators.some(indicator => !indicatorData[timeframe]?.[indicator]?.hasData) && (
                       <span 
@@ -1031,7 +1021,7 @@ useEffect(() => {
                     <td key={indicator} className="text-center py-1 px-1">
                       <div className="relative h-full flex items-center justify-center">
                         <div 
-                          className={`inline-flex items-center justify-center w-16 h-8 rounded-lg font-semibold text-xs shadow-sm transition-all duration-200 hover:shadow-md ${
+                          className={`inline-flex items-center justify-center w-16 h-8 rounded-lg font-semibold text-xs shadow-sm transition-all duration-200 ${
                             hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
                           }`}
                           title={
