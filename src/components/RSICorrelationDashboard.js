@@ -1,9 +1,9 @@
 import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
-import { createPortal } from 'react-dom';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {
