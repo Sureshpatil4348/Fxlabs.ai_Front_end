@@ -314,6 +314,11 @@ const CurrencyStrengthMeter = () => {
 
   return (
     <div className="card z-10 relative h-full flex flex-col">
+      <div
+        className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
+        aria-label={isConnected ? 'Connected' : 'Disconnected'}
+        title={isConnected ? 'Connected' : 'Disconnected'}
+      />
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -324,11 +329,7 @@ const CurrencyStrengthMeter = () => {
             {settings.timeframe} • Updates on candle close
           </p>
           <div className="flex items-center space-x-2 mt-1">
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              {isConnected ? '● Connected' : '● Disconnected'}
-            </span>
+            {/* Connection status pill removed; status shown as top-right dot */}
             {strengthData.length === 0 && subscriptions.size > 0 && (
               <span className="text-xs text-blue-600">
                 📊 Calculating strength for {settings.timeframe} timeframe...

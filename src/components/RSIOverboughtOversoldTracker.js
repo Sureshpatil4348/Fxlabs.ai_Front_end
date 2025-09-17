@@ -221,6 +221,11 @@ const RSIOverboughtOversoldTracker = () => {
 
   return (
     <div className="widget-card px-4 pb-4 h-full flex flex-col z-10 relative">
+      <div
+        className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
+        aria-label={isConnected ? 'Connected' : 'Disconnected'}
+        title={isConnected ? 'Connected' : 'Disconnected'}
+      />
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -235,11 +240,7 @@ const RSIOverboughtOversoldTracker = () => {
                   Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought} | Period: {settings.rsiPeriod} | {settings.timeframe}
                 </p>
               </div>
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium ${
-                isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {isConnected ? '● Connected' : '● Disconnected'}
-              </span>
+              {/* Connection status pill removed; status shown as top-right dot */}
             </div>
           </div>
           <div className="flex items-center space-x-1">

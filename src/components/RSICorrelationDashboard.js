@@ -364,6 +364,11 @@ const RSICorrelationDashboard = () => {
 
   return (
     <div className="widget-card px-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
+      <div
+        className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
+        aria-label={isConnected ? 'Connected' : 'Disconnected'}
+        title={isConnected ? 'Connected' : 'Disconnected'}
+      />
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -383,12 +388,7 @@ const RSICorrelationDashboard = () => {
             </div>
           </div>
           <div className="flex items-center space-x-3 mt-1">
-            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium w-fit shadow-md transition-all duration-300 ${
-              isConnected ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border border-emerald-200/50' : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200/50'
-            }`}>
-              <div className={`w-2 h-2 rounded-full mr-2 ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-              {isConnected ? 'Connected' : 'Disconnected'}
-            </span>
+            {/* Connection status pill removed; status shown as top-right dot */}
             {/* Total Pairs Pill */}
             <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-xs font-medium shadow-md border border-blue-200/50">
               <Activity className="w-3 h-3 mr-1" />

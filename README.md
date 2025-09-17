@@ -36,6 +36,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - To add/remove options, update `autoSubscribeSymbols` in `src/store/useRSITrackerStore.js` (use 'm' suffix)
 
 ### User Experience Features
+- **Connection Status Dots**: All widgets now show a small top-right status dot (green = connected, red = disconnected). The previous "Connected/Disconnected" badges have been removed for a cleaner header.
 - **Tab State Persistence**: All user interface states are automatically saved and restored
   - RSI Threshold settings (overbought/oversold values)
   - RSI Tracker active tab (Oversold/Overbought)
