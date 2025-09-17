@@ -12,7 +12,7 @@ import {
 import React, { useState, useEffect } from 'react';
 
 import useBaseMarketStore from '../store/useBaseMarketStore';
-import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming } from '../utils/formatters';
+import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming, formatSymbolDisplay } from '../utils/formatters';
 
 // Secure HTML sanitization function to prevent XSS attacks
 const sanitizeHtml = (text) => {
@@ -209,7 +209,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                           key={pair}
                           className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
                         >
-                          {pair}
+                          {formatSymbolDisplay(pair)}
                         </span>
                       ))}
                     </div>
@@ -373,7 +373,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
                 key={pair}
                 className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
               >
-                {pair}
+                {formatSymbolDisplay(pair)}
               </span>
             ))}
           </div>
