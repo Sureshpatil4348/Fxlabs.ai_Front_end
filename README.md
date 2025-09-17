@@ -38,7 +38,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - **RSI Tabs Cleanup**: Removed icons from RSI Tracker tab headers for a cleaner look
   - **Timezone-Aware Timestamps (Latest)**: News timestamps now respect provided timezones (e.g., ISO like `2025-09-16T21:00:00Z`) and are displayed in the browser's local timezone. Legacy format `YYYY.MM.DD HH:mm:ss` is treated as UTC for consistency.
   - **Today's News Only (Latest)**: The AI News widget now shows only today's news based on the browser's local date (midnight-to-midnight in your timezone). Tabs and counts reflect this filter.
-  - **Impacted Currency & Suggested Pairs (Latest)**: Impacted Currency now strictly uses the backend-provided `currency`. Suggested Pairs are derived from the system pair list (Add Currency Pair modal) containing that currency.
+  - **Impacted Currency & Suggested Pairs (Latest)**: Impacted Currency strictly uses backend `currency`. Suggested Pairs derive from the system pair list (Add Currency Pair modal) containing that currency. Impact now comes from backend `analysis.impact` (high/medium/low/unknown) and effect uses backend `analysis.effect` (normalized for display).
 - **Watchlist Management**: Personalized symbol tracking with database persistence
   - Watchlist "Add Currency Pair" derives available pairs from `useRSITrackerStore.settings.autoSubscribeSymbols`
   - To add/remove options, update `autoSubscribeSymbols` in `src/store/useRSITrackerStore.js` (use 'm' suffix)

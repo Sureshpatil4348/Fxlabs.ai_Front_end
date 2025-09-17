@@ -14,52 +14,10 @@ const transformFXLabsData = (apiResponse) => {
     // Extract currency from the API response
     let currency = item.currency || 'USD';
     
-    // Determine impact based on analysis effect and other factors
+    // Use backend-provided impact from analysis
     let impact = 'medium';
-    if (item.analysis && item.analysis.effect) {
-      // Base impact on the type of economic data and effect
-      if (item.analysis.effect === 'Neutral') {
-        impact = 'low';
-      } else if (item.analysis.effect === 'Bullish' || item.analysis.effect === 'Bearish') {
-        // For Bullish/Bearish, determine impact based on the type of data
-        // High impact indicators: Interest rates, CPI, GDP, Employment, FOMC
-        // Medium impact indicators: Consumer sentiment, retail sales, manufacturing
-        // Low impact indicators: Minor economic releases
-        
-        const headline = item.headline || '';
-        const isHighImpact = headline.includes('Interest Rate') || 
-                           headline.includes('CPI') || 
-                           headline.includes('GDP') || 
-                           headline.includes('Employment') || 
-                           headline.includes('Non-Farm') || 
-                           headline.includes('FOMC') || 
-                           headline.includes('ECB') || 
-                           headline.includes('Fed') ||
-                           headline.includes('Inflation');
-        
-        const isLowImpact = headline.includes('Consumer') || 
-                           headline.includes('Sentiment') || 
-                           headline.includes('Manufacturing') || 
-                           headline.includes('Construction') ||
-                           headline.includes('Leading Index');
-        
-        if (isHighImpact) {
-          impact = 'high';
-        } else if (isLowImpact) {
-          impact = 'low';
-        } else {
-          impact = 'medium';
-        }
-        
-        // Debug logging
-        // eslint-disable-next-line no-console
-        console.log(`Impact determination for "${headline}":`, {
-          effect: item.analysis.effect,
-          isHighImpact,
-          isLowImpact,
-          finalImpact: impact
-        });
-      }
+    if (item.analysis && typeof item.analysis.impact === 'string') {
+      impact = item.analysis.impact.toLowerCase(); // high | medium | low | unknown
     }
 
     // Parse the time string from the API. Supports:
@@ -240,8 +198,10 @@ export const analyzeNewsWithAI = async (newsItem) => {
         }
       }
 
+      const effectLower = typeof analysis.effect === 'string' ? analysis.effect.toLowerCase() : 'neutral';
+      const effectTitle = effectLower === 'bullish' ? 'Bullish' : effectLower === 'bearish' ? 'Bearish' : 'Neutral';
       return {
-        effect: analysis.effect || 'Neutral',
+        effect: effectTitle,
         impactedCurrencies: impactedCurrency ? [impactedCurrency] : [],
         suggestedPairs,
         explanation: analysis.full_analysis || 'Analysis available from FX Labs API.'
