@@ -742,9 +742,9 @@ useEffect(() => {
   return (
     <div className="widget-card" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
-      <div className="mb-2 px-4 pt-2">
+      <div className="mb-2 px-4">
         {/* Top Row - Title, Trading Signals, and Controls */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="widget-header flex items-center justify-between mb-2">
           {/* Title */}
           <div className="flex items-center space-x-2">
             <LayoutGrid className="w-5 h-5 text-blue-600" />

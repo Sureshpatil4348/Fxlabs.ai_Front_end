@@ -134,7 +134,7 @@ const WishlistPanel = () => {
   return (
     <div className="widget-card p-4 h-full min-h-[180px] flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between mb-2">
+      <div className="widget-header flex-shrink-0 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <Star className="w-5 h-5 text-green-500" />
           <h2 className="text-lg font-semibold text-gray-900">Watchlist</h2>

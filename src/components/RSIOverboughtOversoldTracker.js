@@ -225,7 +225,7 @@ const RSIOverboughtOversoldTracker = () => {
       <div className="flex-shrink-0">
         {/* Header */}
         <div className="mb-2">
-        <div className="flex items-center justify-between">
+        <div className="widget-header flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
               <Activity className="w-5 h-5 text-purple-600" />

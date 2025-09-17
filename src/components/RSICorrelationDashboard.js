@@ -363,11 +363,11 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="widget-card px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
+    <div className="widget-card px-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
+        <div className="widget-header flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
         <div className="flex-1">
           <div className="flex items-center space-x-2">
             <BarChart3 className="w-5 h-5 text-blue-600" />

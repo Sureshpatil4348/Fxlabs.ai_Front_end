@@ -88,6 +88,11 @@
   .widget-subtitle {
     @apply text-xs text-slate-600 font-medium mt-1 leading-snug;
   }
+
+  /* Standardized top spacing for widget icon-title headers */
+  .widget-header {
+    @apply mt-2;
+  }
 }
 
 /* Custom scrollbar */
