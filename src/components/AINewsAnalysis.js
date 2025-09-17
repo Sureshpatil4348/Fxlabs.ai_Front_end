@@ -35,6 +35,20 @@ const sanitizeHtml = (text) => {
     .replace(/\n/g, '<br />');
 };
 
+// Helper: is the news item's date today in the browser's local timezone?
+const isNewsTodayLocal = (newsItem) => {
+  const { dateObj } = formatNewsLocalDateTime({ 
+    dateIso: newsItem.date, 
+    originalTime: newsItem.originalTime 
+  });
+  const now = new Date();
+  return (
+    dateObj.getFullYear() === now.getFullYear() &&
+    dateObj.getMonth() === now.getMonth() &&
+    dateObj.getDate() === now.getDate()
+  );
+};
+
 // Countdown Timer Component
 const CountdownTimer = ({ newsItem, className = "" }) => {
   const [timeLeft, setTimeLeft] = useState(null);
@@ -426,8 +440,8 @@ const AINewsAnalysis = () => {
     }
   }, [tabState.news?.filter]);
 
-  // Use all news (no global restriction to high-impact only)
-  const allNews = newsData;
+  // Restrict to today's news in local timezone
+  const allNews = newsData.filter(isNewsTodayLocal);
 
 
   // Initialize news data when component mounts
