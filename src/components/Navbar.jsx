@@ -16,10 +16,10 @@ const Navbar = () => {
 
   return (
     <header className="bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-600/50 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex justify-between items-center h-16">
-          {/* Logo Section - Leftmost */}
-          <div className="flex items-center space-x-3">
+          {/* Logo Section - Subtle Extreme Left */}
+          <div className="flex items-center -ml-8 sm:-ml-16 lg:-ml-20 xl:-ml-28 2xl:-ml-36">
             <Link to="/" className="flex items-center space-x-3 group">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
@@ -43,14 +43,14 @@ const Navbar = () => {
                 to="/dashboard"
                 className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
               >
-                <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                <span className="font-medium text-sm">Dashboard</span>
+                <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium text-base">Dashboard</span>
               </Link>
             )}
           </div>
           
-          {/* Right Section - Notification + Account */}
-          <div className="flex items-center space-x-4">
+          {/* Right Section - Subtle Extreme Right - Notification + Account */}
+          <div className="flex items-center space-x-4 -mr-8 sm:-mr-16 lg:-mr-20 xl:-mr-28 2xl:-mr-36">
             {user ? (
               <div className="flex items-center space-x-3">
                 {/* Notification Icon */}
