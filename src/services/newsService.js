@@ -211,61 +211,39 @@ export const analyzeNewsWithAI = async (newsItem) => {
     // If we have analysis data from the API, use it
     if (newsItem.analysis) {
       const analysis = newsItem.analysis;
-      
-      // Extract suggested pairs from the analysis
-      let suggestedPairs = ['EURUSD', 'GBPUSD', 'USDJPY'];
-      if (analysis.currency_pairs && analysis.currency_pairs !== 'Major pairs') {
-        // Parse currency pairs if they're specified
-        if (analysis.currency_pairs.includes('EUR/USD')) suggestedPairs = ['EURUSD'];
-        else if (analysis.currency_pairs.includes('GBP/USD')) suggestedPairs = ['GBPUSD'];
-        else if (analysis.currency_pairs.includes('USD/JPY')) suggestedPairs = ['USDJPY'];
-        else if (analysis.currency_pairs.includes('AUD/USD')) suggestedPairs = ['AUDUSD'];
-        else if (analysis.currency_pairs.includes('USD/CAD')) suggestedPairs = ['USDCAD'];
-        else if (analysis.currency_pairs.includes('EUR/GBP')) suggestedPairs = ['EURGBP'];
-        else if (analysis.currency_pairs.includes('EUR/CHF')) suggestedPairs = ['EURCHF'];
-        else if (analysis.currency_pairs.includes('CHF/JPY')) suggestedPairs = ['CHFJPY'];
-        else if (analysis.currency_pairs.includes('AUD/JPY')) suggestedPairs = ['AUDJPY'];
-        else if (analysis.currency_pairs.includes('NOK/USD')) suggestedPairs = ['NOKUSD'];
-        else if (analysis.currency_pairs.includes('USD/RUB')) suggestedPairs = ['USDRUB'];
-      }
 
-      // Extract impacted currencies from the analysis text
-      let impactedCurrencies = [newsItem.currency];
-      if (analysis.currencies_impacted && analysis.currencies_impacted !== 'Multiple') {
-        // Try to extract specific currencies from the analysis
-        const currencyMatch = analysis.currencies_impacted.match(/(USD|EUR|GBP|JPY|AUD|CAD|CHF|NZD|NOK|RUB|MXN)/g);
-        if (currencyMatch) {
-          impactedCurrencies = [...new Set(currencyMatch)];
-        }
-      }
+      // Impacted currency: strictly use backend-provided currency
+      const impactedCurrency = (newsItem.currency || '').toUpperCase();
 
-      // Also try to extract currencies from the full analysis text
-      if (analysis.full_analysis) {
-        const currencyPattern = /(USD|EUR|GBP|JPY|AUD|CAD|CHF|NZD|NOK|RUB|MXN)/g;
-        const foundCurrencies = analysis.full_analysis.match(currencyPattern);
-        if (foundCurrencies) {
-          const uniqueCurrencies = [...new Set(foundCurrencies)];
-          // Merge with existing currencies, avoiding duplicates
-          impactedCurrencies = [...new Set([...impactedCurrencies, ...uniqueCurrencies])];
-        }
-      }
-
-      // Extract specific currency pairs mentioned in the analysis
-      if (analysis.full_analysis) {
-        const pairPattern = /([A-Z]{3}\/[A-Z]{3})/g;
-        const foundPairs = analysis.full_analysis.match(pairPattern);
-        if (foundPairs) {
-          const uniquePairs = [...new Set(foundPairs)];
-          // Convert to our format (remove slashes)
-          const convertedPairs = uniquePairs.map(pair => pair.replace('/', ''));
-          suggestedPairs = [...new Set([...suggestedPairs, ...convertedPairs])];
+      // Build suggested pairs from system list that include the impacted currency
+      let suggestedPairs = [];
+      try {
+        const rsiModule = await import('../store/useRSITrackerStore');
+        const systemPairs = rsiModule.default.getState().settings.autoSubscribeSymbols || [];
+        const cleaned = systemPairs
+          .map((sym) => sym.replace(/m$/i, '').toUpperCase())
+          .filter((sym) => sym.length >= 6);
+        const filtered = cleaned.filter((sym) => {
+          const base = sym.slice(0, 3);
+          const quote = sym.slice(3, 6);
+          return base === impactedCurrency || quote === impactedCurrency;
+        });
+        suggestedPairs = [...new Set(filtered)];
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('Falling back: unable to read system pairs for suggestions', e);
+        // Reasonable defaults if system list unavailable
+        if (impactedCurrency) {
+          suggestedPairs = ['EURUSD', 'GBPUSD', 'USDJPY'].filter((p) => p.includes(impactedCurrency));
+        } else {
+          suggestedPairs = ['EURUSD'];
         }
       }
 
       return {
         effect: analysis.effect || 'Neutral',
-        impactedCurrencies: impactedCurrencies,
-        suggestedPairs: suggestedPairs,
+        impactedCurrencies: impactedCurrency ? [impactedCurrency] : [],
+        suggestedPairs,
         explanation: analysis.full_analysis || 'Analysis available from FX Labs API.'
       };
     }
@@ -273,8 +251,8 @@ export const analyzeNewsWithAI = async (newsItem) => {
     // Fallback analysis if no API data is available
     return {
       effect: 'Neutral',
-      impactedCurrencies: [newsItem.currency],
-      suggestedPairs: ['EURUSD'],
+      impactedCurrencies: newsItem.currency ? [newsItem.currency] : [],
+      suggestedPairs: (newsItem.currency ? ['EURUSD', 'GBPUSD', 'USDJPY'].filter((p) => p.includes(newsItem.currency)) : ['EURUSD']),
       explanation: 'Analysis unavailable. Please monitor market conditions manually.'
     };
 

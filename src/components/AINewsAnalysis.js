@@ -216,9 +216,9 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* Impacted Currencies - Moved to third position */}
+                {/* Impacted Currency - Moved to third position */}
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-gray-700 font-medium mb-3">Impacted Currencies:</div>
+                  <div className="text-gray-700 font-medium mb-3">Impacted Currency:</div>
                   <div className="flex flex-wrap gap-2">
                     {analysis.impactedCurrencies.map(currency => {
                       const info = formatCurrency(currency);
