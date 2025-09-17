@@ -11,6 +11,7 @@ const useBaseMarketStore = create(
     newsData: [],
     aiAnalysis: new Map(), // newsId -> AI analysis
     newsLoading: false,
+    newsLastFetchedAt: 0,
     
     // Wishlist (shared across all dashboards)
     wishlist: new Set(), // tracked symbols
@@ -33,6 +34,14 @@ const useBaseMarketStore = create(
       if (get().newsLoading) {
         // eslint-disable-next-line no-console
         console.log('News fetch already in progress, skipping...');
+        return;
+      }
+      // Debounce/TTL: skip if fetched within last 30 seconds
+      const now = Date.now();
+      const last = get().newsLastFetchedAt || 0;
+      if (now - last < 30 * 1000) {
+        // eslint-disable-next-line no-console
+        console.log('News fetched recently, skipping duplicate fetch');
         return;
       }
       
@@ -71,7 +80,7 @@ const useBaseMarketStore = create(
         
         // eslint-disable-next-line no-console
         console.log('Store: Setting news data and analysis...');
-        set({ newsData: news, aiAnalysis, newsLoading: false });
+        set({ newsData: news, aiAnalysis, newsLoading: false, newsLastFetchedAt: Date.now() });
       } catch (error) {
         console.error('Failed to fetch news:', error);
         set({ newsLoading: false });

@@ -427,6 +427,7 @@ const AINewsAnalysis = () => {
   const [selectedNews, setSelectedNews] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apiAvailable, setApiAvailable] = useState(true);
+  const [nowTick, setNowTick] = useState(0);
 
   // Load tab state on component mount
   useEffect(() => {
@@ -444,44 +445,15 @@ const AINewsAnalysis = () => {
   const allNews = newsData.filter(isNewsTodayLocal);
 
 
-  // Initialize news data when component mounts
+  // Trigger periodic re-render so items move from Upcoming -> Released as time passes
   useEffect(() => {
-    // Fetch news data immediately when component mounts
-    // eslint-disable-next-line no-console
-    console.log('AINewsAnalysis component mounted, fetching initial news data...');
-    
-    // Only fetch if we don't already have news data
-    if (newsData.length === 0) {
-      fetchNews();
-    }
-    
-    // Set up polling every 10 minutes (600,000 ms)
     const interval = setInterval(() => {
-      // eslint-disable-next-line no-console
-      console.log('Polling for fresh news data...');
-      fetchNews();
-    }, 10 * 60 * 1000);
-    
-    // Cleanup interval on component unmount
+      setNowTick((t) => t + 1);
+    }, 15 * 1000);
     return () => clearInterval(interval);
-  }, [fetchNews, newsData.length]);
-
-  // Check API availability once on mount
-  useEffect(() => {
-    let isMounted = true;
-    (async () => {
-      try {
-        const newsService = await import('../services/newsService');
-        const result = await newsService.testAPIEndpoint();
-        if (isMounted) setApiAvailable(!!result?.success);
-      } catch (e) {
-        if (isMounted) setApiAvailable(false);
-      }
-    })();
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  // API availability banner disabled to avoid extra API call; rely on data presence
 
   const handleShowDetails = (news) => {
     setSelectedNews(news);
@@ -493,14 +465,15 @@ const AINewsAnalysis = () => {
     setSelectedNews(null);
   };
 
-  // Filter news based on selected tab (applied on complete news set)
+  // Filter news based on selected tab (applied on today-only news set)
   const filteredNews = allNews.filter(news => {
-    const eventTiming = getEventTiming(news);
+    const { dateObj } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
+    const now = new Date();
     switch (newsFilter) {
       case 'upcoming':
-        return eventTiming.isUpcoming;
+        return dateObj.getTime() > now.getTime();
       case 'released':
-        return eventTiming.isPast || (news.actual !== 'N/A' && news.actual !== null);
+        return dateObj.getTime() <= now.getTime();
       default:
         return true;
     }
@@ -525,8 +498,14 @@ const AINewsAnalysis = () => {
   });
 
   const filters = [
-    { id: 'upcoming', label: 'Upcoming', count: allNews.filter(n => getEventTiming(n).isUpcoming).length },
-    { id: 'released', label: 'Released', count: allNews.filter(n => getEventTiming(n).isPast || (n.actual !== 'N/A' && n.actual !== null)).length },
+    { id: 'upcoming', label: 'Upcoming', count: allNews.filter(n => {
+      const { dateObj } = formatNewsLocalDateTime({ dateIso: n.date, originalTime: n.originalTime });
+      return dateObj.getTime() > Date.now();
+    }).length },
+    { id: 'released', label: 'Released', count: allNews.filter(n => {
+      const { dateObj } = formatNewsLocalDateTime({ dateIso: n.date, originalTime: n.originalTime });
+      return dateObj.getTime() <= Date.now();
+    }).length },
     { id: 'all', label: 'All', count: allNews.length }
   ];
 
