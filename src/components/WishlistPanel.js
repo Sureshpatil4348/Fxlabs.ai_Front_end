@@ -132,7 +132,7 @@ const WishlistPanel = () => {
   }
 
   return (
-    <div className="widget-card p-4 h-full min-h-[180px] flex flex-col overflow-hidden">
+    <div className="widget-card px-4 pb-4 h-full min-h-[180px] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="widget-header flex-shrink-0 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
