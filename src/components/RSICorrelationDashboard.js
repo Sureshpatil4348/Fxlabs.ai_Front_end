@@ -389,12 +389,6 @@ const RSICorrelationDashboard = () => {
           </div>
           <div className="flex items-center space-x-3 mt-1">
             {/* Connection status pill removed; status shown as top-right dot */}
-            {/* Total Pairs Pill */}
-            <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-xs font-medium shadow-md border border-blue-200/50">
-              <Activity className="w-3 h-3 mr-1" />
-              <span className="font-bold mr-1">{totalPairs}</span>
-              <span>Total Pairs</span>
-            </div>
           </div>
         </div>
         

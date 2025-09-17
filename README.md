@@ -10,6 +10,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Currency Strength Meter**: Multi-view currency strength analysis (Bar Chart, Line Chart, Heatmap)
 - **RSI Correlation Dashboard**: Advanced correlation analysis between currency pairs
   - Color legend header removed for a cleaner dashboard header
+  - Total Pairs pill removed from header for a cleaner look
   - Mismatch-first sorting and simplified styling to surface divergences quickly
   - Mismatch rules:
     - RSI Threshold mode:
