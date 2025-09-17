@@ -282,8 +282,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   // Get event timing information
   const eventTiming = getEventTiming(news);
   
-  // Determine if this is an upcoming event (no actual data yet)
-  const isUpcomingEvent = eventTiming.isUpcoming;
 
   // Determine if actual vs forecast shows positive/negative surprise
   let _surprise = null;
@@ -300,11 +298,8 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
   const borderClass =
     effect === 'Bullish' ? 'border-success-600 border-2' :
     effect === 'Bearish' ? 'border-danger-600 border-2' :
-    eventTiming.isStartingSoon ? 'border-orange-300' :
-    (isUpcomingEvent ? 'border-yellow-300' : 'border-gray-200');
-  const backgroundClass = 
-    eventTiming.isStartingSoon ? 'bg-orange-50' :
-    (isUpcomingEvent ? 'bg-yellow-50' : 'bg-white');
+    'border-gray-200';
+  const backgroundClass = 'bg-white';
 
   return (
     <div
@@ -323,9 +318,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               {news.impact?.toUpperCase() || 'MEDIUM'}
             </span>
             {eventTiming.isUpcoming && (
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                eventTiming.isStartingSoon ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
-              }`}>
+              <span className={"text-xs px-2 py-1 rounded-full font-medium bg-gray-100 text-gray-800"}>
                 {eventTiming.isStartingSoon ? 'STARTING SOON' : 'UPCOMING'}
               </span>
             )}

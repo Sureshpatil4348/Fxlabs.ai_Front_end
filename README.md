@@ -35,6 +35,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - **Tabs UI Consistency**: News filter tabs now match RSI Tracker tabs (compact height, smaller font, tighter badges)
   - **Default Tab (Latest)**: The default AI News tab is "Upcoming". Your selection (Upcoming, Released, or All) is saved to Supabase per user and restored on login.
   - **Bullish/Bearish Styling Update**: Cards now use border-only green/red accents for bullish/bearish effects (no full background fills)
+  - **Upcoming Styling Update**: Upcoming news no longer uses yellow backgrounds/borders; appearance matches released news with neutral background. Only bullish/bearish keep green/red borders.
   - **Impact Filter Update (Latest)**: Removed global HIGH-only filter; AI News now shows all impacts (High, Medium, Low) while keeping the same Upcoming/Released tabs and counts
   - **Tab Persistence Fix (Latest)**: Selecting the "All" tab no longer reverts to "Released" due to a background tab state load. The store now preserves locally updated sections when merging with database state to avoid race-condition overwrites.
   - **RSI Tabs Cleanup**: Removed icons from RSI Tracker tab headers for a cleaner look
