@@ -62,35 +62,57 @@ const transformFXLabsData = (apiResponse) => {
       }
     }
 
-    // Parse the time string from the API (format: "2025.08.27 17:30:00")
-    let date = new Date();
-    let timeString = item.time || '';
+    // Parse the time string from the API. Supports:
+    // - ISO with timezone, e.g., "2025-09-16T21:00:00Z"
+    // - Legacy "YYYY.MM.DD HH:mm:ss" (assumed UTC)
+    let dateObj = null;
+    const timeString = item.time || '';
     let gmtTime = '';
-    
+
     if (timeString) {
-      try {
-        // Parse the time string format "2025.08.27 17:30:00"
-        const [datePart, timePart] = timeString.split(' ');
-        const [year, month, day] = datePart.split('.');
-        const [hour, minute, second] = timePart.split(':');
-        
-        // Create date object (month is 0-indexed in JavaScript)
-        date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second));
-        
-        // Format time for display
-        gmtTime = `${hour}:${minute} GMT`;
-      } catch (error) {
-        console.error('Error parsing time:', timeString, error);
-        date = new Date();
-        gmtTime = 'N/A';
+      const asIso = new Date(timeString);
+      if (!isNaN(asIso.getTime())) {
+        // ISO with timezone
+        dateObj = asIso;
+      } else {
+        try {
+          const [datePart, timePart] = timeString.split(' ');
+          const [year, month, day] = (datePart || '').split('.');
+          const [hour, minute, second] = (timePart || '').split(':');
+          // Treat legacy format as UTC to avoid local-time ambiguity
+          dateObj = new Date(
+            Date.UTC(
+              parseInt(year, 10),
+              parseInt(month, 10) - 1,
+              parseInt(day, 10),
+              parseInt(hour, 10),
+              parseInt(minute, 10),
+              parseInt(second, 10)
+            )
+          );
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Error parsing legacy time:', timeString, error);
+          dateObj = null;
+        }
       }
     }
 
     // Use analyzed_at as fallback for date if time parsing fails
-    if (date.toString() === 'Invalid Date' && item.analyzed_at) {
-      date = new Date(item.analyzed_at);
-      gmtTime = date.toLocaleTimeString('en-GB', { timeZone: 'GMT' });
+    if ((!dateObj || isNaN(dateObj.getTime())) && item.analyzed_at) {
+      const analyzed = new Date(item.analyzed_at);
+      if (!isNaN(analyzed.getTime())) {
+        dateObj = analyzed;
+      }
     }
+
+    // Final fallback: now
+    if (!dateObj || isNaN(dateObj.getTime())) {
+      dateObj = new Date();
+    }
+
+    // Create a GMT display string for potential use (not shown directly in UI)
+    gmtTime = `${dateObj.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })} GMT`;
 
     return {
       id: index + 1,
@@ -101,7 +123,7 @@ const transformFXLabsData = (apiResponse) => {
       actual: item.actual || 'N/A',
       impact: impact,
       currency: currency,
-      date: date.toISOString(),
+      date: dateObj.toISOString(),
       // Store the full analysis data for potential use
       analysis: item.analysis || null,
       analyzed_at: item.analyzed_at || null,

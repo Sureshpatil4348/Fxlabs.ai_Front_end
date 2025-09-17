@@ -426,9 +426,8 @@ const AINewsAnalysis = () => {
     }
   }, [tabState.news?.filter]);
 
-  // Restrict to high-impact news globally
-  const highImpactNews = newsData.filter((n) => n.impact === 'high');
-  // const highImpactNews = newsData; Test for all news
+  // Use all news (no global restriction to high-impact only)
+  const allNews = newsData;
 
 
   // Initialize news data when component mounts
@@ -480,8 +479,8 @@ const AINewsAnalysis = () => {
     setSelectedNews(null);
   };
 
-  // Filter news based on selected tab (applied on high-impact set)
-  const filteredNews = highImpactNews.filter(news => {
+  // Filter news based on selected tab (applied on complete news set)
+  const filteredNews = allNews.filter(news => {
     const eventTiming = getEventTiming(news);
     switch (newsFilter) {
       case 'upcoming':
@@ -512,9 +511,9 @@ const AINewsAnalysis = () => {
   });
 
   const filters = [
-    { id: 'upcoming', label: 'Upcoming', count: highImpactNews.filter(n => getEventTiming(n).isUpcoming).length },
-    { id: 'released', label: 'Released', count: highImpactNews.filter(n => getEventTiming(n).isPast || (n.actual !== 'N/A' && n.actual !== null)).length },
-    { id: 'all', label: 'All', count: highImpactNews.length }
+    { id: 'upcoming', label: 'Upcoming', count: allNews.filter(n => getEventTiming(n).isUpcoming).length },
+    { id: 'released', label: 'Released', count: allNews.filter(n => getEventTiming(n).isPast || (n.actual !== 'N/A' && n.actual !== null)).length },
+    { id: 'all', label: 'All', count: allNews.length }
   ];
 
   // Handle news filter change with persistence
