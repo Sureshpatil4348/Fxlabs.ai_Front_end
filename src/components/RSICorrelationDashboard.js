@@ -60,17 +60,17 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     }
 
     return (
-      <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
+      <div className={`p-0.5 pr-0.5 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
         <div className="mb-0 text-center">
           <div className="flex items-center justify-center">
             <span className={`text-sm font-black ${iconColor}`}>
               {type === 'positive' ? (
                 <span className="flex items-center">
-                  <Plus className="w-5 h-5 mr-1 font-black stroke-2" />
+                  <Plus className="w-4 h-4 mr-1 font-black stroke-2" />
                 </span>
               ) : (
                 <span className="flex items-center">
-                  <Minus className="w-5 h-5 mr-1 font-black stroke-2" />
+                  <Minus className="w-4 h-4 mr-1 font-black stroke-2" />
                 </span>
               )}
             </span>
@@ -138,17 +138,17 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
 
   return (
-    <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
+    <div className={`p-0.5 pr-0.5 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
       <div className="mb-0 text-center">
         <div className="flex items-center justify-center">
           <span className={`text-sm font-black ${iconColor}`}>
             {type === 'positive' ? (
               <span className="flex items-center">
-                <Plus className="w-5 h-5 mr-1 font-black stroke-2" />
+                <Plus className="w-4 h-4 mr-1 font-black stroke-2" />
               </span>
             ) : (
               <span className="flex items-center">
-                <Minus className="w-5 h-5 mr-1 font-black stroke-2" />
+                <Minus className="w-4 h-4 mr-1 font-black stroke-2" />
               </span>
             )}
           </span>
@@ -159,11 +159,11 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
         <div className="grid grid-cols-2 gap-0 text-xs">
           <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
             <div className={`font-normal text-[8px] ${textColor}`}>{formatSymbolDisplay(symbol1)}</div>
-            <div className={`font-semibold text-sm transition-all duration-300 ${textColor}`}>{formatRsi(rsi1)}</div>
+            <div className={`font-semibold text-xs transition-all duration-300 ${textColor}`}>{formatRsi(rsi1)}</div>
           </div>
           <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
             <div className={`font-normal text-[8px] ${textColor}`}>{formatSymbolDisplay(symbol2)}</div>
-            <div className={`font-semibold text-sm transition-all duration-300 ${textColor}`}>{formatRsi(rsi2)}</div>
+            <div className={`font-semibold text-xs transition-all duration-300 ${textColor}`}>{formatRsi(rsi2)}</div>
           </div>
         </div>
       </div>
@@ -470,7 +470,7 @@ const RSICorrelationDashboard = () => {
         </div>
 
         {/* Desktop Grid Layout - Dynamic columns based on available width */}
-        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-1">
+        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
           {gridPairs.map(([pairKey, pairData]) => {
             const [symbol1, symbol2] = pairKey.split('_');
             return (
