@@ -368,6 +368,26 @@ Two simple options for weighting indicators (both sum to 1.0):
   4. **Chikou vs Price**: above = Buy; below = Sell; else Neutral
 - **New Signal**: Tenkan/Kijun cross or price cloud breakout within last K bars (default K=3)
 
+## Accessibility
+
+The application follows web accessibility best practices to ensure an inclusive user experience:
+
+### Navigation Accessibility
+- **Semantic Navigation**: Uses proper `<Link>` components for navigation instead of buttons where appropriate
+- **Button Types**: All interactive buttons include proper `type="button"` attributes to prevent form submission
+- **Accessible Labels**: Icon-only buttons include descriptive `aria-label` attributes for screen readers
+- **Keyboard Navigation**: All interactive elements support keyboard navigation and focus management
+
+### Recent Accessibility Improvements
+- **Navbar Navigation**: Dashboard navigation now uses semantic `<Link>` components for better accessibility and open-in-new-tab behavior
+- **Notification Button**: Added proper `type="button"` and `aria-label="View notifications"` to the notification icon button
+- **AI News Modal**: Enhanced modal accessibility with proper dialog semantics, ARIA attributes, and z-index management
+  - Fixed z-index conflict with sticky navbar (raised to z-[60])
+  - Added `role="dialog"`, `aria-modal="true"`, and proper labeling
+  - Implemented safe-area inset support for mobile devices
+  - Added accessible close button with proper labeling
+- **Screen Reader Support**: All interactive elements now provide meaningful labels for assistive technologies
+
 ## Security
 
 - **Row Level Security (RLS)**: All user data is protected with Supabase RLS policies

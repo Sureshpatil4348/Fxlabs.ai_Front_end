@@ -13,10 +13,6 @@ const Navbar = () => {
     navigate('/login')
   }
 
-  const handleDashboardClick = () => {
-    navigate('/dashboard')
-  }
-
 
   return (
     <header className="bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-600/50 sticky top-0 z-50">
@@ -43,13 +39,13 @@ const Navbar = () => {
           {/* Center Section - Dashboard */}
           <div className="flex-1 flex justify-center">
             {user && (
-              <button
-                onClick={handleDashboardClick}
+              <Link
+                to="/dashboard"
                 className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
               >
                 <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-medium text-sm">Dashboard</span>
-              </button>
+              </Link>
             )}
           </div>
           
@@ -58,7 +54,11 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center space-x-3">
                 {/* Notification Icon */}
-                <button className="p-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group">
+                <button 
+                  type="button"
+                  aria-label="View notifications"
+                  className="p-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
+                >
                   <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                 </button>
                 {/* Account Button */}
