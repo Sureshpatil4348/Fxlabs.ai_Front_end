@@ -228,9 +228,7 @@ const RSIOverboughtOversoldTracker = () => {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <div className="p-1.5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
+              <Activity className="w-5 h-5 text-purple-600" />
               <h2 className="text-lg font-semibold text-gray-900">RSI Tracker</h2>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium ${
                 isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

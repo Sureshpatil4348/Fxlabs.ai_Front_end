@@ -747,9 +747,7 @@ useEffect(() => {
         <div className="flex items-center justify-between mb-2">
           {/* Title */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <LayoutGrid className="w-4 h-4 text-white" />
-            </div>
+            <LayoutGrid className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">All in One Currency</h2>
           </div>
           

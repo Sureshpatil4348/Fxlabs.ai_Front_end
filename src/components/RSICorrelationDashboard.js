@@ -371,9 +371,7 @@ const RSICorrelationDashboard = () => {
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <BarChart3 className="w-4 h-4 text-white" />
-              </div>
+              <BarChart3 className="w-5 h-5 text-blue-600" />
               <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
             </div>
             <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium w-fit shadow-md transition-all duration-300 ${
