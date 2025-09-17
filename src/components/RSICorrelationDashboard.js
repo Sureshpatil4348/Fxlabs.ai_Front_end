@@ -21,47 +21,20 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     const { correlation, strength: _strength, type } = correlationData;
     const correlationValue = (correlation * 100).toFixed(1);
     
-    // Determine color based on correlation type (positive/negative) and strength for highlighting
-    let cardColor, strengthColor, highlightClass;
-    
-    // Check if pair matches (strong correlation) or doesn't match (weak correlation)
-    const isMatch = correlationData.strength === 'strong';
-    const isMismatch = correlationData.strength === 'weak';
-    
-    if (isMatch) {
-      // Unique highlighting for matching pairs
-      if (type === 'positive') {
-        cardColor = 'border-emerald-400 bg-gradient-to-br from-emerald-100 to-green-200 shadow-lg ring-2 ring-emerald-200';
-        strengthColor = 'text-emerald-800';
-        highlightClass = '';
-      } else {
-        cardColor = 'border-red-400 bg-gradient-to-br from-red-100 to-rose-200 shadow-lg ring-2 ring-red-200';
-        strengthColor = 'text-red-800';
-        highlightClass = '';
-      }
-    } else if (isMismatch) {
-      // Grey highlighting for non-matching pairs
-      cardColor = 'border-gray-400 bg-gradient-to-br from-gray-100 to-slate-200 shadow-sm';
-      strengthColor = 'text-gray-600';
-      highlightClass = '';
-    } else {
-      // Moderate correlation - neutral styling
-      if (type === 'positive') {
-        cardColor = 'border-green-300 bg-green-50';
-        strengthColor = 'text-green-700';
-      } else {
-        cardColor = 'border-red-300 bg-red-50';
-        strengthColor = 'text-red-700';
-      }
-      highlightClass = '';
-    }
+    // Determine mismatch and styling per requirement
+    const computedIsMismatch = (type === 'positive' && correlation < 0.25) || (type === 'negative' && correlation > -0.15);
+    const isMismatch = correlationData.isMismatch !== undefined ? correlationData.isMismatch : computedIsMismatch;
+    const cardColor = isMismatch ? 'border-emerald-500 bg-white' : 'border-gray-300 bg-gray-50';
+    const textColor = 'text-gray-700';
+    const iconColor = 'text-gray-500';
+    const highlightClass = '';
     
     if (isMobile) {
       return (
         <div className={`p-1 pr-2 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
           <div className="flex items-center justify-between mb-0">
             <div className="flex items-center space-x-1">
-              <span className={`text-lg font-black ${strengthColor}`}>
+              <span className={`text-lg font-black ${iconColor}`}>
                 {type === 'positive' ? (
                   <span className="flex items-center">
                     <Plus className="w-6 h-6 mr-2 font-black stroke-2" />
@@ -72,12 +45,12 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
                   </span>
                 )}
               </span>
-              <span className="text-sm font-medium text-gray-600">
+              <span className={`text-sm font-medium ${textColor}`}>
                 {formatSymbolDisplay(symbol1)} / {formatSymbolDisplay(symbol2)}
               </span>
             </div>
             <div className="text-right">
-              <div className={`text-xs ${strengthColor}`}>
+              <div className={`text-xs ${textColor}`}>
                 {correlationValue}%
               </div>
             </div>
@@ -90,7 +63,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
       <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
         <div className="mb-0 text-center">
           <div className="flex items-center justify-center">
-            <span className={`text-sm font-black ${strengthColor}`}>
+            <span className={`text-sm font-black ${iconColor}`}>
               {type === 'positive' ? (
                 <span className="flex items-center">
                   <Plus className="w-5 h-5 mr-1 font-black stroke-2" />
@@ -110,13 +83,13 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
         <div>
           <div className="grid grid-cols-2 gap-0 text-xs">
             <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
-              <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol1)}</div>
+              <div className={`font-normal text-[8px] ${textColor}`}>{formatSymbolDisplay(symbol1)}</div>
             </div>
             <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
-              <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol2)}</div>
+              <div className={`font-normal text-[8px] ${textColor}`}>{formatSymbolDisplay(symbol2)}</div>
             </div>
           </div>
-          <div className={`text-center p-0 rounded text-xs font-semibold ${strengthColor}`}>
+          <div className={`text-center p-0 rounded text-xs font-semibold ${textColor}`}>
             {correlationValue}%
           </div>
         </div>
@@ -127,63 +100,35 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   // Original RSI threshold mode
   const { status, rsi1, rsi2, type } = pairData;
   
-  // Determine card color and text color based on correlation type and status for RSI threshold mode
-  let cardColor, strengthColor, highlightClass;
-  
-  // Check if pair matches or doesn't match based on status
-  const isMatch = status === 'match';
+  // Styling for RSI threshold mode: mismatches green border, others grey
   const isMismatch = status === 'mismatch';
-  
-  if (isMatch) {
-    // Unique highlighting for matching pairs
-    if (type === 'positive') {
-      cardColor = 'border-emerald-400 bg-gradient-to-br from-emerald-100 to-green-200 shadow-lg ring-2 ring-emerald-200';
-      strengthColor = 'text-emerald-800';
-      highlightClass = '';
-    } else {
-      cardColor = 'border-red-400 bg-gradient-to-br from-red-100 to-rose-200 shadow-lg ring-2 ring-red-200';
-      strengthColor = 'text-red-800';
-      highlightClass = '';
-    }
-  } else if (isMismatch) {
-    // Grey highlighting for non-matching pairs
-    cardColor = 'border-gray-400 bg-gradient-to-br from-gray-100 to-slate-200 shadow-sm';
-    strengthColor = 'text-gray-600';
-    highlightClass = '';
-  } else {
-    // Neutral status - standard styling
-    if (type === 'positive') {
-      cardColor = 'border-green-300 bg-green-50';
-      strengthColor = 'text-green-700';
-    } else {
-      cardColor = 'border-red-300 bg-red-50';
-      strengthColor = 'text-red-700';
-    }
-    highlightClass = '';
-  }
+  const cardColor = isMismatch ? 'border-emerald-500 bg-white' : 'border-gray-300 bg-gray-50';
+  const textColor = 'text-gray-700';
+  const iconColor = 'text-gray-500';
+  const highlightClass = '';
 
   if (isMobile) {
     return (
       <div className={`p-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
         <div className="flex items-center justify-between mb-0">
           <div className="flex items-center space-x-1">
-            <span className="text-lg font-black">
+            <span className={`text-lg font-black ${iconColor}`}>
               {type === 'positive' ? (
-                <span className="flex items-center text-green-600">
+                <span className="flex items-center">
                   <Plus className="w-6 h-6 mr-2 font-black stroke-2" />
                 </span>
               ) : (
-                <span className="flex items-center text-red-600">
+                <span className="flex items-center">
                   <Minus className="w-6 h-6 mr-2 font-black stroke-2" />
                 </span>
               )}
             </span>
-            <span className={`text-sm font-medium ${strengthColor}`}>
+            <span className={`text-sm font-medium ${textColor}`}>
               {formatSymbolDisplay(symbol1)} / {formatSymbolDisplay(symbol2)}
             </span>
           </div>
           <div className="text-right">
-            <div className={`text-xs ${strengthColor}`}>
+            <div className={`text-xs ${textColor}`}>
               RSI: {formatRsi(rsi1)} / {formatRsi(rsi2)}
             </div>
           </div>
@@ -196,13 +141,13 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     <div className={`p-0.5 pr-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
       <div className="mb-0 text-center">
         <div className="flex items-center justify-center">
-          <span className="text-sm font-black">
+          <span className={`text-sm font-black ${iconColor}`}>
             {type === 'positive' ? (
-              <span className="flex items-center text-green-600">
+              <span className="flex items-center">
                 <Plus className="w-5 h-5 mr-1 font-black stroke-2" />
               </span>
             ) : (
-              <span className="flex items-center text-red-600">
+              <span className="flex items-center">
                 <Minus className="w-5 h-5 mr-1 font-black stroke-2" />
               </span>
             )}
@@ -213,12 +158,12 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
       <div className="space-y-0">
         <div className="grid grid-cols-2 gap-0 text-xs">
           <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
-            <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol1)}</div>
-            <div className={`font-semibold text-sm transition-all duration-300 ${strengthColor}`}>{formatRsi(rsi1)}</div>
+            <div className={`font-normal text-[8px] ${textColor}`}>{formatSymbolDisplay(symbol1)}</div>
+            <div className={`font-semibold text-sm transition-all duration-300 ${textColor}`}>{formatRsi(rsi1)}</div>
           </div>
           <div className="text-center p-0 bg-opacity-50 rounded transition-all duration-300">
-            <div className={`font-normal text-[8px] ${strengthColor}`}>{formatSymbolDisplay(symbol2)}</div>
-            <div className={`font-semibold text-sm transition-all duration-300 ${strengthColor}`}>{formatRsi(rsi2)}</div>
+            <div className={`font-normal text-[8px] ${textColor}`}>{formatSymbolDisplay(symbol2)}</div>
+            <div className={`font-semibold text-sm transition-all duration-300 ${textColor}`}>{formatRsi(rsi2)}</div>
           </div>
         </div>
       </div>
@@ -385,18 +330,11 @@ const RSICorrelationDashboard = () => {
   let sortedPairs;
   if (localSettings.calculationMode === 'real_correlation') {
     sortedPairs = Array.from(realCorrelationData.entries()).sort(([, a], [, b]) => {
-      // Prioritize mismatches (weak correlations) first, then non-neutral pairs
-      if (a.strength === 'weak' && b.strength !== 'weak') return -1;
-      if (a.strength !== 'weak' && b.strength === 'weak') return 1;
-      
-      // Within non-neutral pairs, prioritize strong over moderate
-      if (a.strength !== 'weak' && b.strength !== 'weak') {
-        if (a.strength === 'strong' && b.strength === 'moderate') return -1;
-        if (a.strength === 'moderate' && b.strength === 'strong') return 1;
-      }
-      
-      // Within same strength, sort by correlation strength (absolute value)
-      return Math.abs(b.correlation) - Math.abs(a.correlation);
+      const aMismatch = (a.isMismatch !== undefined) ? a.isMismatch : ((a.type === 'positive' && a.correlation < 0.25) || (a.type === 'negative' && a.correlation > -0.15));
+      const bMismatch = (b.isMismatch !== undefined) ? b.isMismatch : ((b.type === 'positive' && b.correlation < 0.25) || (b.type === 'negative' && b.correlation > -0.15));
+      if (aMismatch && !bMismatch) return -1;
+      if (!aMismatch && bMismatch) return 1;
+      return 0;
     });
   } else {
     sortedPairs = sortCorrelationPairs(correlationStatus);

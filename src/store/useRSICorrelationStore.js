@@ -504,7 +504,7 @@ const useRSICorrelationStore = create(
       return correlation;
     },
     
-    // Calculate all correlations
+      // Calculate all correlations
     calculateAllCorrelations: () => {
       const state = get();
       const newCorrelationData = new Map();
@@ -516,7 +516,7 @@ const useRSICorrelationStore = create(
         
         const correlation = get().calculateRollingCorrelation(sym1, sym2, state.settings.correlationWindow);
         
-        if (correlation !== null) {
+          if (correlation !== null) {
           const pairKey = `${symbol1}_${symbol2}`;
           
           // Determine correlation strength
@@ -532,14 +532,26 @@ const useRSICorrelationStore = create(
           // Determine trend (simplified - could be enhanced with historical comparison)
           let trend = 'stable';
           // TODO: Implement trend calculation by comparing with previous window
-          
+            
+            // Determine correlation sign type
+            const pairType = state.correlationPairs.positive.some(
+              p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
+            ) ? 'positive' : 'negative';
+
+            // Mismatch logic for Real Correlation mode
+            // For Positive cells: correlation below +0.25 -> mismatch
+            // For Negative cells: correlation above -0.15 -> mismatch
+            const isMismatch = (
+              (pairType === 'positive' && correlation < 0.25) ||
+              (pairType === 'negative' && correlation > -0.15)
+            );
+
           newCorrelationData.set(pairKey, {
             correlation: correlation,
             strength: strength,
             trend: trend,
-            type: state.correlationPairs.positive.some(
-              p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
-            ) ? 'positive' : 'negative',
+              type: pairType,
+              isMismatch,
             timestamp: new Date()
           });
         }
@@ -582,27 +594,19 @@ const useRSICorrelationStore = create(
           let status;
           const { rsiOverbought, rsiOversold } = state.settings;
 
+          // Strict mismatch/match rules per requirement
           if (isPositiveCorrelation) {
-            // Positive correlation: both should move in same direction
-            const bothOverbought = rsi1 >= rsiOverbought && rsi2 >= rsiOverbought;
-            const bothOversold = rsi1 <= rsiOversold && rsi2 <= rsiOversold;
-            const bothNeutral = (rsi1 > rsiOversold && rsi1 < rsiOverbought) && (rsi2 > rsiOversold && rsi2 < rsiOverbought);
-            
-            if (bothOverbought || bothOversold || bothNeutral) {
-              status = 'match';
-            } else if ((rsi1 >= rsiOverbought && rsi2 <= rsiOversold) || (rsi1 <= rsiOversold && rsi2 >= rsiOverbought)) {
+            // Mismatch if one > 70 and the other < 30
+            const mismatch = (rsi1 > 70 && rsi2 < 30) || (rsi2 > 70 && rsi1 < 30);
+            if (mismatch) {
               status = 'mismatch';
             } else {
               status = 'neutral';
             }
           } else {
-            // Negative correlation: should move in opposite directions
-            const oppositeExtreme = (rsi1 >= rsiOverbought && rsi2 <= rsiOversold) || (rsi1 <= rsiOversold && rsi2 >= rsiOverbought);
-            const sameExtreme = (rsi1 >= rsiOverbought && rsi2 >= rsiOverbought) || (rsi1 <= rsiOversold && rsi2 <= rsiOversold);
-            
-            if (oppositeExtreme) {
-              status = 'match';
-            } else if (sameExtreme) {
+            // Negative correlation: mismatch if both > 70 or both < 30
+            const mismatch = (rsi1 > 70 && rsi2 > 70) || (rsi1 < 30 && rsi2 < 30);
+            if (mismatch) {
               status = 'mismatch';
             } else {
               status = 'neutral';

@@ -9,6 +9,18 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **RSI Analysis**: Overbought/oversold tracking with customizable thresholds
 - **Currency Strength Meter**: Multi-view currency strength analysis (Bar Chart, Line Chart, Heatmap)
 - **RSI Correlation Dashboard**: Advanced correlation analysis between currency pairs
+  - Color legend header removed for a cleaner dashboard header
+  - Mismatch-first sorting and simplified styling to surface divergences quickly
+  - Mismatch rules:
+    - RSI Threshold mode:
+      - Positive pairs: mismatch if one RSI > 70 and the other < 30
+      - Negative pairs: mismatch if both RSIs > 70 or both < 30
+    - Real Correlation mode:
+      - Positive pairs: mismatch if correlation < +25%
+      - Negative pairs: mismatch if correlation > -15%
+  - Styling:
+    - Mismatch cells: green border highlight
+    - Non-mismatch cells: grey background and grey border
 - **Multi-Indicator Heatmap**: Comprehensive technical analysis dashboard with multiple indicators across timeframes
   - Symbol dropdown now derives from `useRSITrackerStore.settings.autoSubscribeSymbols` (same source as watchlist)
   - **Enhanced Data Validation**: Robust error handling with insufficient data detection
