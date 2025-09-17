@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
+import { createPortal } from 'react-dom';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {
@@ -485,8 +486,8 @@ const RSICorrelationDashboard = () => {
       </div>
 
       {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-100 p-4">
+      {showSettings && createPortal(
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Correlation Settings</h3>
             
@@ -618,7 +619,8 @@ const RSICorrelationDashboard = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
