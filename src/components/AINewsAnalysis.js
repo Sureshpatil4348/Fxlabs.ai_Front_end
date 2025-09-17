@@ -9,7 +9,7 @@ import {
   Target,
   X
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming, formatSymbolDisplay } from '../utils/formatters';
@@ -420,25 +420,25 @@ const AINewsAnalysis = () => {
   } = useBaseMarketStore();
   
   // Get tab state from base market store
-  const { tabState, updateNewsFilter, loadTabState } = useBaseMarketStore();
+  const { tabState, tabStateHasLoaded, updateNewsFilter } = useBaseMarketStore();
   
   const [newsFilter, setNewsFilter] = useState(tabState.news?.filter || 'upcoming');
+  const userSetFilterRef = useRef(false);
   const [selectedNews, setSelectedNews] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apiAvailable] = useState(true);
   const [, setNowTick] = useState(0);
 
-  // Load tab state on component mount
-  useEffect(() => {
-    loadTabState();
-  }, [loadTabState]);
+  // Removed redundant loadTabState here to avoid overwriting user selection after initial load
 
-  // Update newsFilter when tabState changes
+  // Initialize from persisted state only once after store loads from DB
   useEffect(() => {
-    if (tabState.news?.filter) {
+    if (tabStateHasLoaded && tabState.news?.filter && !userSetFilterRef.current) {
       setNewsFilter(tabState.news.filter);
     }
-  }, [tabState.news?.filter]);
+    // Run only once after initial load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabStateHasLoaded]);
 
   // Restrict to today's news in local timezone
   const allNews = newsData.filter(isNewsTodayLocal);
@@ -510,13 +510,13 @@ const AINewsAnalysis = () => {
 
   // Handle news filter change with persistence
   const handleFilterChange = async (filter) => {
+    userSetFilterRef.current = true;
     setNewsFilter(filter);
     try {
       await updateNewsFilter(filter);
     } catch (error) {
       console.error('Failed to update news filter:', error);
-      // Revert on error
-      setNewsFilter(newsFilter);
+      // Do not revert UI on error to avoid auto-switching back
     }
   };
 

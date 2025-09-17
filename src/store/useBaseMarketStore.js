@@ -29,6 +29,7 @@ const useBaseMarketStore = create(
     tabStateLocalUpdatedSections: new Set(),
     tabStateLoading: false,
     tabStateError: null,
+    tabStateHasLoaded: false,
     
     // News Actions
     fetchNews: async () => {
@@ -97,6 +98,9 @@ const useBaseMarketStore = create(
 
     // Tab State Actions
     loadTabState: async () => {
+      if (get().tabStateHasLoaded) {
+        return get().tabState;
+      }
       set({ tabStateLoading: true, tabStateError: null });
       
       try {
@@ -112,10 +116,10 @@ const useBaseMarketStore = create(
                 merged[section] = state.tabState[section];
               }
             });
-            return { tabState: merged, tabStateLoading: false };
+            return { tabState: merged, tabStateLoading: false, tabStateHasLoaded: true };
           }
           // No local updates yet; trust DB fully (overrides defaults)
-          return { tabState: dbTabState, tabStateLoading: false };
+          return { tabState: dbTabState, tabStateLoading: false, tabStateHasLoaded: true };
         });
         return dbTabState;
       } catch (error) {
