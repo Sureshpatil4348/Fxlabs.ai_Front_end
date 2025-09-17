@@ -740,7 +740,7 @@ useEffect(() => {
   // Component rendering with trading style
   
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-white rounded-lg shadow-lg border border-slate-200/50" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
+    <div className="widget-card" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
       <div className="mb-1 px-4 pt-2">
         {/* Top Row - Title, Trading Signals, and Controls */}

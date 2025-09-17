@@ -363,7 +363,7 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50/50 via-white to-blue-50/30 rounded-2xl shadow-2xl border border-white/20 backdrop-blur-sm px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
+    <div className="widget-card px-4 pt-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -446,8 +446,8 @@ const RSICorrelationDashboard = () => {
 
       </div>
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-3 bg-gradient-to-br from-slate-50/30 to-white rounded-xl">
+      {/* Scrollable Content Area - remove inner rounded/background to avoid nested card look */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-3">
         {/* Mobile List Layout */}
         <div className="block sm:hidden">
           <div className="space-y-2 pr-1">

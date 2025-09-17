@@ -220,7 +220,7 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col z-10 relative">
+    <div className="widget-card p-4 h-full flex flex-col z-10 relative">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}

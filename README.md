@@ -42,6 +42,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Currency Strength Meter view mode (Bar Chart, Line Chart, or Heatmap)
   - AI News Analysis filter (Upcoming or Latest news)
 - **Enhanced UI Spacing**: Improved table and component spacing for better readability
+  - Unified widget card styling across dashboard (consistent rounded corners and elevation)
   - Proper padding and margins in RSI Tracker tables
   - Consistent spacing across all view modes (table, cards, expandable)
   - Better visual separation between columns and rows
