@@ -442,8 +442,10 @@ const AINewsAnalysis = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabStateHasLoaded]);
 
-  // Restrict to today's news in local timezone
-  const allNews = newsData.filter(isNewsTodayLocal);
+  // Restrict to today's news in local timezone and HIGH impact only
+  const allNews = newsData
+    .filter(isNewsTodayLocal)
+    .filter((n) => (typeof n.impact === 'string' ? n.impact.toLowerCase() === 'high' : false));
 
 
   // Trigger periodic re-render so items move from Upcoming -> Released as time passes
