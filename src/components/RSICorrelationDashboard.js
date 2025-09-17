@@ -24,7 +24,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     // Determine mismatch and styling per requirement
     const computedIsMismatch = (type === 'positive' && correlation < 0.25) || (type === 'negative' && correlation > -0.15);
     const isMismatch = correlationData.isMismatch !== undefined ? correlationData.isMismatch : computedIsMismatch;
-    const cardColor = isMismatch ? 'border-emerald-500 bg-white' : 'border-gray-300 bg-gray-50';
+    const cardColor = isMismatch ? 'border-2 border-emerald-500 bg-white' : 'border-2 border-gray-300 bg-white';
     const textColor = 'text-gray-700';
     const iconColor = 'text-gray-500';
     const highlightClass = '';
@@ -102,7 +102,7 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   
   // Styling for RSI threshold mode: mismatches green border, others grey
   const isMismatch = status === 'mismatch';
-  const cardColor = isMismatch ? 'border-emerald-500 bg-white' : 'border-gray-300 bg-gray-50';
+  const cardColor = isMismatch ? 'border-2 border-emerald-500 bg-white' : 'border-2 border-gray-300 bg-white';
   const textColor = 'text-gray-700';
   const iconColor = 'text-gray-500';
   const highlightClass = '';

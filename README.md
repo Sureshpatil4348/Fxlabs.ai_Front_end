@@ -19,8 +19,9 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
       - Positive pairs: mismatch if correlation < +25%
       - Negative pairs: mismatch if correlation > -15%
   - Styling:
-    - Mismatch cells: green border highlight
-    - Non-mismatch cells: grey background and grey border
+    - Mismatch cells: green border highlight (thicker border)
+    - Non-mismatch cells: white background with grey border
+    - Heatmap cells: thicker borders for clearer separation
 - **Multi-Indicator Heatmap**: Comprehensive technical analysis dashboard with multiple indicators across timeframes
   - Symbol dropdown now derives from `useRSITrackerStore.settings.autoSubscribeSymbols` (same source as watchlist)
   - **Enhanced Data Validation**: Robust error handling with insufficient data detection

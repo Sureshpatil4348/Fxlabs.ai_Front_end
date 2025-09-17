@@ -664,9 +664,9 @@ useEffect(() => {
   
   // Get cell color based on score (updated for new scoring range [-1.25, +1.25])
   const getCellColor = (score) => {
-    if (score > 0) return 'bg-white text-slate-700 border border-emerald-500';
-    if (score < 0) return 'bg-white text-slate-700 border border-rose-500';
-    return 'bg-white text-slate-600 border border-gray-300';
+    if (score > 0) return 'bg-white text-slate-700 border-2 border-emerald-500';
+    if (score < 0) return 'bg-white text-slate-700 border-2 border-rose-500';
+    return 'bg-white text-slate-600 border-2 border-gray-300';
   };
   
   // Get signal text (updated for new scoring range [-1.25, +1.25])
@@ -1034,7 +1034,7 @@ useEffect(() => {
                       <div className="relative h-full flex items-center justify-center">
                         <div 
                           className={`inline-flex items-center justify-center w-16 h-8 rounded-lg font-semibold text-xs shadow-sm transition-all duration-200 hover:shadow-md ${
-                            hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border border-dashed border-gray-300'
+                            hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
                           }`}
                           title={
                             hasData ? `Signal: ${data.signal}, Score: ${score.toFixed(2)}` : data?.error || 'No data'
