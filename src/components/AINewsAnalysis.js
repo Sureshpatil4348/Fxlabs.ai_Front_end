@@ -289,8 +289,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
     eventTiming.isStartingSoon ? 'border-orange-300' :
     (isUpcomingEvent ? 'border-yellow-300' : 'border-gray-200');
   const backgroundClass = 
-    effect === 'Bullish' ? 'bg-success-50' :
-    effect === 'Bearish' ? 'bg-danger-50' :
     eventTiming.isStartingSoon ? 'bg-orange-50' :
     (isUpcomingEvent ? 'bg-yellow-50' : 'bg-white');
 

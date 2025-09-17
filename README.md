@@ -33,6 +33,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - **Enhanced News Cards**: Suggested pairs to watch displayed directly in news cards
   - **Reorganized Modal Layout**: AI analysis at top, suggested pairs, economic data, and detailed analysis
   - **Tabs UI Consistency**: News filter tabs now match RSI Tracker tabs (compact height, smaller font, tighter badges)
+  - **Bullish/Bearish Styling Update**: Cards now use border-only green/red accents for bullish/bearish effects (no full background fills)
   - **RSI Tabs Cleanup**: Removed icons from RSI Tracker tab headers for a cleaner look
 - **Watchlist Management**: Personalized symbol tracking with database persistence
   - Watchlist "Add Currency Pair" derives available pairs from `useRSITrackerStore.settings.autoSubscribeSymbols`
@@ -179,6 +180,10 @@ The Multi-Indicator Heatmap has been significantly enhanced for proper market wo
  - **Neutral Labeling**: Cells that previously showed `0%` now display `Neutral`
  - **Buy/Sell Styling**: Buy/Sell visuals use border-only (green/red) with no icons for a cleaner look
  - **Recommendation Cards**: In the All in One Currency Indicator header, we now display "Recommendation: Buy (xx%)" as a larger primary card and the opposite side "Sell (yy%)" as a smaller, lower-opacity card. The larger card dynamically reflects whichever side (Buy/Sell) has the higher percentage.
+ - **All in One Currency UI Tweaks (Latest)**:
+   - Primary recommendation card uses a thicker border and subtle elevation for emphasis
+   - Heatmap cells no longer increase depth on hover (no hover shadow)
+   - Table headers cleaned up: icons removed; headers are bold and slightly larger; timeframe labels (1M, 5M, etc.) are not bold
 
 #### **Market Data Requirements**
 - **EMA21**: Requires 21+ bars for accurate calculation
