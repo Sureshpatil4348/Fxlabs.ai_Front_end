@@ -1,11 +1,14 @@
-import { TrendingDown, TrendingUp, Settings, Activity } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings, Activity, Bell } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
 import RFIScoreCard from './RFIScoreCard';
+import RSIAlertConfig from './RSIAlertConfig';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
+import rsiAlertService from '../services/rsiAlertService';
+import { useAuth } from '../auth/AuthProvider';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
 // Utility function to clamp values within min/max bounds
@@ -55,6 +58,11 @@ const RSIOverboughtOversoldTracker = () => {
   // Get tab state from base market store
   const { tabState, updateRSITrackerTab, loadTabState } = useBaseMarketStore();
   
+  // Alert functionality
+  const { user } = useAuth();
+  const [showRSIAlertConfig, setShowRSIAlertConfig] = useState(false);
+  const [activeRSIAlertsCount, setActiveRSIAlertsCount] = useState(0);
+  
   const [activeTab, setActiveTab] = useState(tabState.rsiTracker?.activeTab || 'oversold');
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
@@ -77,6 +85,42 @@ const RSIOverboughtOversoldTracker = () => {
       setActiveTab(tabState.rsiTracker.activeTab);
     }
   }, [tabState.rsiTracker?.activeTab]);
+
+  // Alert handlers
+  const handleRSIBellClick = () => {
+    setShowRSIAlertConfig(true);
+  };
+
+  const handleRSIAlertConfigClose = () => {
+    setShowRSIAlertConfig(false);
+    // Refresh active RSI alerts count when modal closes
+    if (user) {
+      const loadActiveRSIAlertsCount = async () => {
+        try {
+          const activeRSIAlerts = await rsiAlertService.getActiveAlerts();
+          setActiveRSIAlertsCount(activeRSIAlerts.length);
+        } catch (error) {
+          console.error('Failed to load active RSI alerts count:', error);
+        }
+      };
+      loadActiveRSIAlertsCount();
+    }
+  };
+
+  // Load active RSI alerts count when user is logged in
+  useEffect(() => {
+    if (user) {
+      const loadActiveRSIAlertsCount = async () => {
+        try {
+          const activeRSIAlerts = await rsiAlertService.getActiveAlerts();
+          setActiveRSIAlertsCount(activeRSIAlerts.length);
+        } catch (error) {
+          console.error('Failed to load active RSI alerts count:', error);
+        }
+      };
+      loadActiveRSIAlertsCount();
+    }
+  }, [user]);
   
   // Auto-subscribe to major pairs when connection is established
   useEffect(() => {
@@ -218,6 +262,7 @@ const RSIOverboughtOversoldTracker = () => {
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
 
   return (
+    <>
     <div className="widget-card px-4 pb-4 h-full flex flex-col z-10 relative">
       <div
         className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
@@ -242,6 +287,22 @@ const RSIOverboughtOversoldTracker = () => {
             </div>
           </div>
           <div className="flex items-center space-x-1">
+            {/* RSI Alert Bell Icon */}
+            {user && (
+              <button 
+                type="button"
+                aria-label="Configure RSI alerts"
+                onClick={handleRSIBellClick}
+                className="relative p-1 text-gray-400 hover:text-orange-500 transition-colors duration-300 group"
+              >
+                <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                {activeRSIAlertsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    {activeRSIAlertsCount > 9 ? '9+' : activeRSIAlertsCount}
+                  </span>
+                )}
+              </button>
+            )}
             <button
               onClick={() => setShowSettings(true)}
               className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
@@ -381,141 +442,149 @@ const RSIOverboughtOversoldTracker = () => {
         )}
       </div>
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Tracker Settings</h3>
-            
-            <div className="space-y-4">
-              {/* Timeframe */}
-              <div>
-                <label htmlFor="rsi-tracker-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
-                  Timeframe
-                </label>
-                <select
-                  id="rsi-tracker-timeframe"
-                  value={localSettings.timeframe}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {timeframes.map(tf => (
-                    <option key={tf} value={tf}>{tf}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* RSI Period */}
-              <div>
-                <label htmlFor="rsi-tracker-period" className="block text-sm font-medium text-gray-700 mb-1">
-                  RSI Period
-                </label>
-                <input
-                  id="rsi-tracker-period"
-                  type="number"
-                  min="2"
-                  max="50"
-                  value={localSettings.rsiPeriod}
-                  onChange={(e) => {
-                    const n = Number.parseInt(e.target.value, 10);
-                    setLocalSettings(prev => ({ ...prev, rsiPeriod: Number.isFinite(n) ? clamp(n, 2, 50) : prev.rsiPeriod }));
-                  }}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              {/* Overbought Level */}
-              <div>
-                <label htmlFor="rsi-tracker-overbought" className="block text-sm font-medium text-gray-700 mb-1">
-                  Overbought Level
-                </label>
-                <input
-                  id="rsi-tracker-overbought"
-                  type="number"
-                  min="50"
-                  max="90"
-                  value={localSettings.rsiOverbought}
-                  onChange={(e) => {
-                    const n = Number.parseInt(e.target.value, 10);
-                    if (!Number.isFinite(n)) return;
-                    
-                    const newOverbought = clamp(n, 50, 90);
-                    setLocalSettings(prev => {
-                      // If new overbought <= current oversold, adjust oversold
-                      if (newOverbought <= prev.rsiOversold) {
-                        const newOversold = Math.max(10, newOverbought - 1);
-                        return { 
-                          ...prev, 
-                          rsiOverbought: newOverbought,
-                          rsiOversold: newOversold
-                        };
-                      }
-                      return { ...prev, rsiOverbought: newOverbought };
-                    });
-                  }}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              {/* Oversold Level */}
-              <div>
-                <label htmlFor="rsi-tracker-oversold" className="block text-sm font-medium text-gray-700 mb-1">
-                  Oversold Level
-                </label>
-                <input
-                  id="rsi-tracker-oversold"
-                  type="number"
-                  min="10"
-                  max="50"
-                  value={localSettings.rsiOversold}
-                  onChange={(e) => {
-                    const n = Number.parseInt(e.target.value, 10);
-                    if (!Number.isFinite(n)) return;
-                    
-                    const newOversold = clamp(n, 10, 50);
-                    setLocalSettings(prev => {
-                      // If new oversold >= current overbought, adjust overbought
-                      if (newOversold >= prev.rsiOverbought) {
-                        const newOverbought = Math.min(90, newOversold + 1);
-                        return { 
-                          ...prev, 
-                          rsiOversold: newOversold,
-                          rsiOverbought: newOverbought
-                        };
-                      }
-                      return { ...prev, rsiOversold: newOversold };
-                    });
-                  }}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={handleResetSettings}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              >
-                Reset
-              </button>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveSettings}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
+    
+    {/* RSI Alert Configuration Modal - Outside widget for proper z-index */}
+    <RSIAlertConfig 
+      isOpen={showRSIAlertConfig} 
+      onClose={handleRSIAlertConfigClose} 
+    />
+    
+    {/* Settings Modal - Outside widget for proper z-index */}
+    {showSettings && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Tracker Settings</h3>
+          
+          <div className="space-y-4">
+            {/* Timeframe */}
+            <div>
+              <label htmlFor="rsi-tracker-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
+                Timeframe
+              </label>
+              <select
+                id="rsi-tracker-timeframe"
+                value={localSettings.timeframe}
+                onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {timeframes.map(tf => (
+                  <option key={tf} value={tf}>{tf}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* RSI Period */}
+            <div>
+              <label htmlFor="rsi-tracker-period" className="block text-sm font-medium text-gray-700 mb-1">
+                RSI Period
+              </label>
+              <input
+                id="rsi-tracker-period"
+                type="number"
+                min="2"
+                max="50"
+                value={localSettings.rsiPeriod}
+                onChange={(e) => {
+                  const n = Number.parseInt(e.target.value, 10);
+                  setLocalSettings(prev => ({ ...prev, rsiPeriod: Number.isFinite(n) ? clamp(n, 2, 50) : prev.rsiPeriod }));
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Overbought Level */}
+            <div>
+              <label htmlFor="rsi-tracker-overbought" className="block text-sm font-medium text-gray-700 mb-1">
+                Overbought Level
+              </label>
+              <input
+                id="rsi-tracker-overbought"
+                type="number"
+                min="50"
+                max="90"
+                value={localSettings.rsiOverbought}
+                onChange={(e) => {
+                  const n = Number.parseInt(e.target.value, 10);
+                  if (!Number.isFinite(n)) return;
+                  
+                  const newOverbought = clamp(n, 50, 90);
+                  setLocalSettings(prev => {
+                    // If new overbought <= current oversold, adjust oversold
+                    if (newOverbought <= prev.rsiOversold) {
+                      const newOversold = Math.max(10, newOverbought - 1);
+                      return { 
+                        ...prev, 
+                        rsiOverbought: newOverbought,
+                        rsiOversold: newOversold
+                      };
+                    }
+                    return { ...prev, rsiOverbought: newOverbought };
+                  });
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Oversold Level */}
+            <div>
+              <label htmlFor="rsi-tracker-oversold" className="block text-sm font-medium text-gray-700 mb-1">
+                Oversold Level
+              </label>
+              <input
+                id="rsi-tracker-oversold"
+                type="number"
+                min="10"
+                max="50"
+                value={localSettings.rsiOversold}
+                onChange={(e) => {
+                  const n = Number.parseInt(e.target.value, 10);
+                  if (!Number.isFinite(n)) return;
+                  
+                  const newOversold = clamp(n, 10, 50);
+                  setLocalSettings(prev => {
+                    // If new oversold >= current overbought, adjust overbought
+                    if (newOversold >= prev.rsiOverbought) {
+                      const newOverbought = Math.min(90, newOversold + 1);
+                      return { 
+                        ...prev, 
+                        rsiOversold: newOversold,
+                        rsiOverbought: newOverbought
+                      };
+                    }
+                    return { ...prev, rsiOversold: newOversold };
+                  });
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={handleResetSettings}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+              Reset
+            </button>
+            <button
+              onClick={() => setShowSettings(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveSettings}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 
