@@ -18,6 +18,96 @@ class HeatmapAlertService {
    * @param {Object} config - Alert configuration
    * @returns {Object} - Validation result
    */
+  /**
+   * Convert snake_case database fields to camelCase for service layer
+   * @param {Object} dbAlert - Alert data from database in snake_case
+   * @returns {Object} - Alert data in camelCase format
+   */
+  _convertDbAlertToCamelCase(dbAlert) {
+    if (!dbAlert) return null;
+    
+    return {
+      id: dbAlert.id,
+      userId: dbAlert.user_id,
+      userEmail: dbAlert.user_email,
+      alertName: dbAlert.alert_name,
+      isActive: dbAlert.is_active,
+      pairs: dbAlert.pairs,
+      timeframes: dbAlert.timeframes,
+      selectedIndicators: dbAlert.selected_indicators,
+      tradingStyle: dbAlert.trading_style,
+      buyThresholdMin: dbAlert.buy_threshold_min,
+      buyThresholdMax: dbAlert.buy_threshold_max,
+      sellThresholdMin: dbAlert.sell_threshold_min,
+      sellThresholdMax: dbAlert.sell_threshold_max,
+      notificationMethods: dbAlert.notification_methods,
+      alertFrequency: dbAlert.alert_frequency,
+      createdAt: dbAlert.created_at,
+      updatedAt: dbAlert.updated_at,
+      previousValues: dbAlert.previous_values
+    };
+  }
+
+  /**
+   * Convert camelCase service layer fields to snake_case for database
+   * @param {Object} camelCaseUpdates - Updates in camelCase format
+   * @returns {Object} - Updates in snake_case format for database
+   */
+  _convertCamelCaseToDbFormat(camelCaseUpdates) {
+    if (!camelCaseUpdates) return {};
+    
+    const dbUpdates = {};
+    
+    // Whitelist of allowed fields that can be updated
+    const allowedFields = {
+      alertName: 'alert_name',
+      isActive: 'is_active',
+      pairs: 'pairs',
+      timeframes: 'timeframes',
+      selectedIndicators: 'selected_indicators',
+      tradingStyle: 'trading_style',
+      buyThresholdMin: 'buy_threshold_min',
+      buyThresholdMax: 'buy_threshold_max',
+      sellThresholdMin: 'sell_threshold_min',
+      sellThresholdMax: 'sell_threshold_max',
+      notificationMethods: 'notification_methods',
+      alertFrequency: 'alert_frequency'
+    };
+    
+    // Convert only whitelisted fields
+    Object.keys(camelCaseUpdates).forEach(camelKey => {
+      if (allowedFields.hasOwnProperty(camelKey)) {
+        const dbKey = allowedFields[camelKey];
+        dbUpdates[dbKey] = camelCaseUpdates[camelKey];
+      }
+    });
+    
+    return dbUpdates;
+  }
+
+  /**
+   * Deep merge two objects, with the second object taking precedence
+   * @param {Object} target - Target object to merge into
+   * @param {Object} source - Source object to merge from
+   * @returns {Object} - Merged object
+   */
+  _deepMergeObjects(target, source) {
+    if (!target || typeof target !== 'object') return source || {};
+    if (!source || typeof source !== 'object') return target || {};
+    
+    const result = { ...target };
+    
+    Object.keys(source).forEach(key => {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        result[key] = this._deepMergeObjects(result[key], source[key]);
+      } else {
+        result[key] = source[key];
+      }
+    });
+    
+    return result;
+  }
+
   _validateAlertConfig(config) {
     const errors = [];
     const warnings = [];
@@ -167,7 +257,9 @@ class HeatmapAlertService {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert response back to camelCase for caller
+    return this._convertDbAlertToCamelCase(data);
   }
 
   /**
@@ -185,7 +277,9 @@ class HeatmapAlertService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Convert response back to camelCase for caller
+    return (data || []).map(alert => this._convertDbAlertToCamelCase(alert));
   }
 
   /**
@@ -204,7 +298,9 @@ class HeatmapAlertService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Convert response back to camelCase for caller
+    return (data || []).map(alert => this._convertDbAlertToCamelCase(alert));
   }
 
   /**
@@ -224,7 +320,9 @@ class HeatmapAlertService {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert response back to camelCase for caller
+    return this._convertDbAlertToCamelCase(data);
   }
 
   /**
@@ -238,25 +336,39 @@ class HeatmapAlertService {
     if (!user) throw new Error("User not authenticated");
 
     // Validate updates if they include configuration changes
-    if (updates.pairs || updates.timeframes || updates.selectedIndicators || updates.tradingStyle) {
-      const currentAlert = await this.getAlertById(alertId);
-      const updatedConfig = { ...currentAlert, ...updates };
+    const configFields = [
+      'pairs', 'timeframes', 'selectedIndicators', 'tradingStyle',
+      'buyThresholdMin', 'buyThresholdMax', 'sellThresholdMin', 'sellThresholdMax',
+      'notificationMethods', 'alertFrequency', 'isActive'
+    ];
+    
+    const hasConfigChanges = configFields.some(field => updates.hasOwnProperty(field));
+    
+    if (hasConfigChanges) {
+      const currentAlertDb = await this.getAlertById(alertId);
+      const currentAlertCamelCase = this._convertDbAlertToCamelCase(currentAlertDb);
+      const updatedConfig = { ...currentAlertCamelCase, ...updates };
       const validation = this._validateAlertConfig(updatedConfig);
       if (!validation.isValid) {
         throw new Error(`Invalid alert configuration: ${validation.errors.join(', ')}`);
       }
     }
 
+    // Convert camelCase updates to snake_case for database
+    const dbUpdates = this._convertCamelCaseToDbFormat(updates);
+    
     const { data, error } = await supabase
       .from('heatmap_alerts')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', alertId)
       .eq('user_id', user.id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert response back to camelCase for caller
+    return this._convertDbAlertToCamelCase(data);
   }
 
   /**
@@ -342,21 +454,35 @@ class HeatmapAlertService {
     const user = await this.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
 
-    const { data, error } = await supabase
+    // First, perform the UPDATE only by trigger ID (no joined-table filters)
+    const { error: updateError } = await supabase
       .from('heatmap_alert_triggers')
       .update({ 
         is_acknowledged: true, 
         acknowledged_at: new Date().toISOString() 
       })
-      .eq('id', triggerId)
+      .eq('id', triggerId);
+
+    if (updateError) throw updateError;
+
+    // Then, fetch the updated trigger with joined heatmap_alerts relation
+    const { data, error } = await supabase
+      .from('heatmap_alert_triggers')
       .select(`
         *,
         heatmap_alerts!inner(user_id)
       `)
+      .eq('id', triggerId)
       .eq('heatmap_alerts.user_id', user.id)
       .single();
 
     if (error) throw error;
+    
+    // If no data returned, the trigger doesn't exist or user doesn't have access
+    if (!data) {
+      throw new Error("Trigger not found or access denied");
+    }
+    
     return data;
   }
 
@@ -637,7 +763,10 @@ class HeatmapAlertService {
 
     // Update previous values if we have new data
     if (Object.keys(newPreviousValues).length > 0) {
-      await this.updatePreviousValues(alertId, newPreviousValues);
+      // Merge newPreviousValues with existing previousValues to preserve other pairs/timeframes
+      const existingPreviousValues = previousValues || {};
+      const mergedPreviousValues = this._deepMergeObjects(existingPreviousValues, newPreviousValues);
+      await this.updatePreviousValues(alertId, mergedPreviousValues);
     }
 
     return { triggers, updated: true };

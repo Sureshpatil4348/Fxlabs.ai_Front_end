@@ -52,27 +52,35 @@ class RSIAlertService {
 
     // Validate RSI period
     if (config.rsiPeriod !== undefined) {
-      if (config.rsiPeriod < 5 || config.rsiPeriod > 50) {
+      if (!Number.isFinite(config.rsiPeriod)) {
+        errors.push("RSI period must be a valid number");
+      } else if (config.rsiPeriod < 5 || config.rsiPeriod > 50) {
         errors.push("RSI period must be between 5 and 50");
       }
     }
 
     // Validate RSI thresholds
     if (config.rsiOverboughtThreshold !== undefined) {
-      if (config.rsiOverboughtThreshold < 60 || config.rsiOverboughtThreshold > 90) {
+      if (!Number.isFinite(config.rsiOverboughtThreshold)) {
+        errors.push("RSI overbought threshold must be a valid number");
+      } else if (config.rsiOverboughtThreshold < 60 || config.rsiOverboughtThreshold > 90) {
         errors.push("RSI overbought threshold must be between 60 and 90");
       }
     }
     if (config.rsiOversoldThreshold !== undefined) {
-      if (config.rsiOversoldThreshold < 10 || config.rsiOversoldThreshold > 40) {
+      if (!Number.isFinite(config.rsiOversoldThreshold)) {
+        errors.push("RSI oversold threshold must be a valid number");
+      } else if (config.rsiOversoldThreshold < 10 || config.rsiOversoldThreshold > 40) {
         errors.push("RSI oversold threshold must be between 10 and 40");
       }
     }
 
     // Validate threshold order
     if (config.rsiOverboughtThreshold !== undefined && config.rsiOversoldThreshold !== undefined) {
-      if (config.rsiOverboughtThreshold <= config.rsiOversoldThreshold) {
-        errors.push("RSI overbought threshold must be greater than oversold threshold");
+      if (Number.isFinite(config.rsiOverboughtThreshold) && Number.isFinite(config.rsiOversoldThreshold)) {
+        if (config.rsiOverboughtThreshold <= config.rsiOversoldThreshold) {
+          errors.push("RSI overbought threshold must be greater than oversold threshold");
+        }
       }
     }
 
@@ -92,20 +100,26 @@ class RSIAlertService {
 
     // Validate RFI thresholds
     if (config.rfiStrongThreshold !== undefined) {
-      if (config.rfiStrongThreshold < 0.50 || config.rfiStrongThreshold > 1.00) {
+      if (!Number.isFinite(config.rfiStrongThreshold)) {
+        errors.push("RFI strong threshold must be a valid number");
+      } else if (config.rfiStrongThreshold < 0.50 || config.rfiStrongThreshold > 1.00) {
         errors.push("RFI strong threshold must be between 0.50 and 1.00");
       }
     }
     if (config.rfiModerateThreshold !== undefined) {
-      if (config.rfiModerateThreshold < 0.30 || config.rfiModerateThreshold > 0.80) {
+      if (!Number.isFinite(config.rfiModerateThreshold)) {
+        errors.push("RFI moderate threshold must be a valid number");
+      } else if (config.rfiModerateThreshold < 0.30 || config.rfiModerateThreshold > 0.80) {
         errors.push("RFI moderate threshold must be between 0.30 and 0.80");
       }
     }
 
     // Validate RFI threshold order
     if (config.rfiStrongThreshold !== undefined && config.rfiModerateThreshold !== undefined) {
-      if (config.rfiStrongThreshold < config.rfiModerateThreshold) {
-        errors.push("RFI strong threshold must be greater than or equal to moderate threshold");
+      if (Number.isFinite(config.rfiStrongThreshold) && Number.isFinite(config.rfiModerateThreshold)) {
+        if (config.rfiStrongThreshold < config.rfiModerateThreshold) {
+          errors.push("RFI strong threshold must be greater than or equal to moderate threshold");
+        }
       }
     }
 
@@ -130,6 +144,72 @@ class RSIAlertService {
       errors,
       warnings
     };
+  }
+
+  /**
+   * Convert snake_case database fields to camelCase for service layer
+   * @param {Object} dbAlert - Alert data from database in snake_case
+   * @returns {Object} - Alert data in camelCase format
+   */
+  _convertDbAlertToCamelCase(dbAlert) {
+    if (!dbAlert) return null;
+    
+    return {
+      id: dbAlert.id,
+      userId: dbAlert.user_id,
+      userEmail: dbAlert.user_email,
+      alertName: dbAlert.alert_name,
+      isActive: dbAlert.is_active,
+      pairs: dbAlert.pairs,
+      timeframes: dbAlert.timeframes,
+      alertConditions: dbAlert.alert_conditions,
+      rsiPeriod: dbAlert.rsi_period,
+      rsiOverboughtThreshold: dbAlert.rsi_overbought_threshold,
+      rsiOversoldThreshold: dbAlert.rsi_oversold_threshold,
+      rfiStrongThreshold: dbAlert.rfi_strong_threshold,
+      rfiModerateThreshold: dbAlert.rfi_moderate_threshold,
+      notificationMethods: dbAlert.notification_methods,
+      alertFrequency: dbAlert.alert_frequency,
+      createdAt: dbAlert.created_at,
+      updatedAt: dbAlert.updated_at
+    };
+  }
+
+  /**
+   * Convert camelCase service layer fields to snake_case for database
+   * @param {Object} camelCaseUpdates - Updates in camelCase format
+   * @returns {Object} - Updates in snake_case format for database
+   */
+  _convertCamelCaseToDbFormat(camelCaseUpdates) {
+    if (!camelCaseUpdates) return {};
+    
+    const dbUpdates = {};
+    
+    // Whitelist of allowed fields that can be updated
+    const allowedFields = {
+      alertName: 'alert_name',
+      isActive: 'is_active',
+      pairs: 'pairs',
+      timeframes: 'timeframes',
+      alertConditions: 'alert_conditions',
+      rsiPeriod: 'rsi_period',
+      rsiOverboughtThreshold: 'rsi_overbought_threshold',
+      rsiOversoldThreshold: 'rsi_oversold_threshold',
+      rfiStrongThreshold: 'rfi_strong_threshold',
+      rfiModerateThreshold: 'rfi_moderate_threshold',
+      notificationMethods: 'notification_methods',
+      alertFrequency: 'alert_frequency'
+    };
+    
+    // Convert only whitelisted fields
+    Object.keys(camelCaseUpdates).forEach(camelKey => {
+      if (allowedFields.hasOwnProperty(camelKey)) {
+        const dbKey = allowedFields[camelKey];
+        dbUpdates[dbKey] = camelCaseUpdates[camelKey];
+      }
+    });
+    
+    return dbUpdates;
   }
 
   /**
@@ -172,7 +252,9 @@ class RSIAlertService {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert response back to camelCase for caller
+    return this._convertDbAlertToCamelCase(data);
   }
 
   /**
@@ -190,7 +272,9 @@ class RSIAlertService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Convert response back to camelCase for caller
+    return (data || []).map(alert => this._convertDbAlertToCamelCase(alert));
   }
 
   /**
@@ -209,7 +293,9 @@ class RSIAlertService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Convert response back to camelCase for caller
+    return (data || []).map(alert => this._convertDbAlertToCamelCase(alert));
   }
 
   /**
@@ -229,7 +315,9 @@ class RSIAlertService {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert response back to camelCase for caller
+    return this._convertDbAlertToCamelCase(data);
   }
 
   /**
@@ -243,25 +331,39 @@ class RSIAlertService {
     if (!user) throw new Error("User not authenticated");
 
     // Validate updates if they include configuration changes
-    if (updates.pairs || updates.timeframes || updates.alertConditions || updates.rsiPeriod || updates.rsiOverboughtThreshold || updates.rsiOversoldThreshold) {
-      const currentAlert = await this.getAlertById(alertId);
-      const updatedConfig = { ...currentAlert, ...updates };
+    const configFields = [
+      'pairs', 'timeframes', 'alertConditions', 'rsiPeriod', 
+      'rsiOverboughtThreshold', 'rsiOversoldThreshold', 'rfiStrongThreshold', 
+      'rfiModerateThreshold', 'notificationMethods', 'alertFrequency', 'isActive'
+    ];
+    
+    const hasConfigChanges = configFields.some(field => updates.hasOwnProperty(field));
+    
+    if (hasConfigChanges) {
+      const currentAlertDb = await this.getAlertById(alertId);
+      const currentAlertCamelCase = this._convertDbAlertToCamelCase(currentAlertDb);
+      const updatedConfig = { ...currentAlertCamelCase, ...updates };
       const validation = this._validateRSIAlertConfig(updatedConfig);
       if (!validation.isValid) {
         throw new Error(`Invalid alert configuration: ${validation.errors.join(', ')}`);
       }
     }
 
+    // Convert camelCase updates to snake_case for database
+    const dbUpdates = this._convertCamelCaseToDbFormat(updates);
+    
     const { data, error } = await supabase
       .from('rsi_alerts')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', alertId)
       .eq('user_id', user.id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Convert response back to camelCase for caller
+    return this._convertDbAlertToCamelCase(data);
   }
 
   /**

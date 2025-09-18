@@ -2,6 +2,50 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Recent Updates
+
+### Heatmap Alert Service Fix (Latest)
+- Fixed snake_case to camelCase field mapping issue in `updateAlert` method
+- Added proper field conversion from database format to service layer format
+- Expanded validation trigger to include all configuration-related fields (thresholds, notification methods, frequency, etc.)
+- Ensures proper validation of alert configurations during updates
+- Added bidirectional field conversion: camelCase ↔ snake_case
+- Implemented field whitelisting for secure database updates
+- Fixed all public methods (`createAlert`, `getAlertById`, `getAlerts`, `getActiveAlerts`, `updateAlert`) to return consistent camelCase format
+- Prevents database field name mismatches and ensures data integrity
+- Fixed PostgREST/Supabase compatibility issue in `acknowledgeTrigger` method
+- Removed unsupported joined-table filter from UPDATE operation
+- Implemented proper two-step process: UPDATE by trigger ID, then SELECT with joined relation
+- Added proper error handling for unauthorized/not found cases
+- Relies on RLS (Row Level Security) for authorization enforcement
+- Fixed previous values overwrite issue in `processHeatmapData` method
+- Implemented deep merge logic to preserve existing pair/timeframe entries
+- Added `_deepMergeObjects` helper method for proper object merging
+- Handles null/undefined previousValues by treating as empty object before merging
+- Prevents data loss when updating only specific pairs/timeframes
+- Fixed numeric validation security issue in `rsiAlertService.js`
+- Added Number.isFinite guards to prevent NaN/Infinity bypassing validation
+- Protected RSI period, overbought/oversold thresholds, and RFI thresholds
+- Ensures proper validation of all numeric range and ordering comparisons
+- Prevents silent failures from non-finite numeric values
+- Fixed snake_case to camelCase field mapping issue in `rsiAlertService.js`
+- Added bidirectional field conversion utilities for RSI alert service
+- Implemented proper field normalization before validation
+- Updated all public methods to return consistent camelCase format
+- Ensures validation and business logic always work with camelCase
+- Prevents database field name mismatches in RSI alert operations
+- Fixed numeric validation security issue in `rsiCorrelationAlertService.js`
+- Added Number.isFinite guards to prevent NaN/Infinity bypassing validation
+- Protected RSI period, overbought/oversold thresholds, and correlation thresholds
+- Ensures proper validation of all numeric range and ordering comparisons
+- Prevents silent failures from non-finite numeric values
+- Fixed snake_case to camelCase field mapping issue in `rsiCorrelationAlertService.js`
+- Added bidirectional field conversion utilities for RSI correlation alert service
+- Implemented proper field normalization before validation
+- Updated all public methods to return consistent camelCase format
+- Ensures validation and business logic always work with camelCase
+- Prevents database field name mismatches in RSI correlation alert operations
+
 ## Features
 
 ### Core Trading Features
