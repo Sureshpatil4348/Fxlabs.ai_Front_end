@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
-import { useAuth } from '../auth/AuthProvider';
 import HeatmapAlertConfig from './HeatmapAlertConfig';
+import { useAuth } from '../auth/AuthProvider';
 import heatmapAlertService from '../services/heatmapAlertService';
 import userStateService from '../services/userStateService';
 import useRSITrackerStore from '../store/useRSITrackerStore';

@@ -2,8 +2,8 @@ import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity, Bell } from 'luc
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useAuth } from '../auth/AuthProvider';
 import RSICorrelationAlertConfig from './RSICorrelationAlertConfig';
+import { useAuth } from '../auth/AuthProvider';
 import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';

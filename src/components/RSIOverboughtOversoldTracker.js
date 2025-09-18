@@ -1,10 +1,10 @@
 import { TrendingDown, TrendingUp, Settings, Activity, Bell } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
-import { useAuth } from '../auth/AuthProvider';
 import ExpandablePairRow from './ExpandablePairRow';
 import RFIScoreCard from './RFIScoreCard';
 import RSIAlertConfig from './RSIAlertConfig';
+import { useAuth } from '../auth/AuthProvider';
 import rsiAlertService from '../services/rsiAlertService';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
