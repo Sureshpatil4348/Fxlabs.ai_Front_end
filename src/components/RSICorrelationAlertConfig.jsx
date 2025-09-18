@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
 import { BarChart3, Plus, Settings, X, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
 
@@ -206,7 +205,6 @@ const RSICorrelationAlertConfig = ({ isOpen, onClose }) => {
                     </legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-2">
                       {getAlertOptions().correlationPairs.map((pairOption, index) => {
-                        const pairKey = pairOption.pair.join('-');
                         const isSelected = (newAlert.correlationPairs || []).some(pair => 
                           pair[0] === pairOption.pair[0] && pair[1] === pairOption.pair[1]
                         );

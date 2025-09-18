@@ -5,11 +5,11 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
-import userStateService from '../services/userStateService';
-import useRSITrackerStore from '../store/useRSITrackerStore';
+import { useAuth } from '../auth/AuthProvider';
 import HeatmapAlertConfig from './HeatmapAlertConfig';
 import heatmapAlertService from '../services/heatmapAlertService';
-import { useAuth } from '../auth/AuthProvider';
+import userStateService from '../services/userStateService';
+import useRSITrackerStore from '../store/useRSITrackerStore';
 import { 
   calculateEMASignals,
   calculateMACDSignals,

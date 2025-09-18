@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
 import { TrendingUp, Plus, Settings, X, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 import rsiAlertService from '../services/rsiAlertService';
 

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
 import { Bell, Plus, Settings, X, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 import heatmapAlertService from '../services/heatmapAlertService';
 

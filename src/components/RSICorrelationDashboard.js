@@ -2,11 +2,11 @@ import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity, Bell } from 'luc
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import userStateService from '../services/userStateService';
-import useRSICorrelationStore from '../store/useRSICorrelationStore';
+import { useAuth } from '../auth/AuthProvider';
 import RSICorrelationAlertConfig from './RSICorrelationAlertConfig';
 import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
-import { useAuth } from '../auth/AuthProvider';
+import userStateService from '../services/userStateService';
+import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {

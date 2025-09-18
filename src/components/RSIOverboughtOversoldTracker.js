@@ -1,14 +1,14 @@
 import { TrendingDown, TrendingUp, Settings, Activity, Bell } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
+import { useAuth } from '../auth/AuthProvider';
 import ExpandablePairRow from './ExpandablePairRow';
 import RFIScoreCard from './RFIScoreCard';
 import RSIAlertConfig from './RSIAlertConfig';
+import rsiAlertService from '../services/rsiAlertService';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
-import rsiAlertService from '../services/rsiAlertService';
-import { useAuth } from '../auth/AuthProvider';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
 // Utility function to clamp values within min/max bounds
