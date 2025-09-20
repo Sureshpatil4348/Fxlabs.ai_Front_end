@@ -1,9 +1,13 @@
 import { 
   Activity,
-  LayoutGrid
+  LayoutGrid,
+  Bell
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
+import HeatmapAlertConfig from './HeatmapAlertConfig';
+import { useAuth } from '../auth/AuthProvider';
+import heatmapAlertService from '../services/heatmapAlertService';
 import userStateService from '../services/userStateService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { 
@@ -253,6 +257,11 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const [indicatorWeight, setIndicatorWeight] = useState('equal');
   const [currentSymbol, setCurrentSymbol] = useState(selectedSymbol);
   
+  // Alert functionality
+  const { user } = useAuth();
+  const [showAlertConfig, setShowAlertConfig] = useState(false);
+  const [activeAlertsCount, setActiveAlertsCount] = useState(0);
+  
   // Local settings state for persistence
   const [localSettings, setLocalSettings] = useState({
     symbol: selectedSymbol,
@@ -375,6 +384,42 @@ const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
     setShowNewSignals(show);
     await saveSettings({ showNewSignals: show });
   };
+
+  // Alert handlers
+  const handleBellClick = () => {
+    setShowAlertConfig(true);
+  };
+
+  const handleAlertConfigClose = () => {
+    setShowAlertConfig(false);
+    // Refresh active alerts count when modal closes
+    if (user) {
+      const loadActiveAlertsCount = async () => {
+        try {
+          const activeAlerts = await heatmapAlertService.getActiveAlerts();
+          setActiveAlertsCount(activeAlerts.length);
+        } catch (error) {
+          console.error('Failed to load active alerts count:', error);
+        }
+      };
+      loadActiveAlertsCount();
+    }
+  };
+
+  // Load active alerts count when user is logged in
+  useEffect(() => {
+    if (user) {
+      const loadActiveAlertsCount = async () => {
+        try {
+          const activeAlerts = await heatmapAlertService.getActiveAlerts();
+          setActiveAlertsCount(activeAlerts.length);
+        } catch (error) {
+          console.error('Failed to load active alerts count:', error);
+        }
+      };
+      loadActiveAlertsCount();
+    }
+  }, [user]);
 
 // Enhanced connection and auto-subscription with better logging
 useEffect(() => {
@@ -739,6 +784,7 @@ useEffect(() => {
   // Component rendering with trading style
   
   return (
+    <>
     <div className="widget-card" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
       <div className="mb-2 px-4">
@@ -749,6 +795,25 @@ useEffect(() => {
             <LayoutGrid className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">All in One Currency</h2>
           </div>
+          
+          {/* Alert Bell Icon */}
+          {user && (
+            <div className="flex items-center space-x-2">
+              <button 
+                type="button"
+                aria-label="Configure heatmap alerts"
+                onClick={handleBellClick}
+                className="relative p-2 text-gray-400 hover:text-blue-500 transition-colors duration-300 group"
+              >
+                <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                {activeAlertsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    {activeAlertsCount > 9 ? '9+' : activeAlertsCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
           
           {/* Recommendation cards - replaces Buy/Sell pills */}
           {(() => {
@@ -1045,6 +1110,13 @@ useEffect(() => {
       
       </div>
     </div>
+    
+    {/* Heatmap Alert Configuration Modal - Outside widget for proper z-index */}
+    <HeatmapAlertConfig 
+      isOpen={showAlertConfig} 
+      onClose={handleAlertConfigClose} 
+    />
+    </>
   );
 };
 

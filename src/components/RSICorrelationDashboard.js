@@ -1,7 +1,10 @@
-import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity } from 'lucide-react';
+import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity, Bell } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+import RSICorrelationAlertConfig from './RSICorrelationAlertConfig';
+import { useAuth } from '../auth/AuthProvider';
+import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
@@ -187,6 +190,11 @@ const RSICorrelationDashboard = () => {
     correlationWindows
   } = useRSICorrelationStore();
   
+  // Alert functionality
+  const { user } = useAuth();
+  const [showRSICorrelationAlertConfig, setShowRSICorrelationAlertConfig] = useState(false);
+  const [activeRSICorrelationAlertsCount, setActiveRSICorrelationAlertsCount] = useState(0);
+  
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -233,6 +241,42 @@ const RSICorrelationDashboard = () => {
   useEffect(() => {
     setHasAutoSubscribed(false);
   }, [settings.timeframe]);
+
+  // Alert handlers
+  const handleRSICorrelationBellClick = () => {
+    setShowRSICorrelationAlertConfig(true);
+  };
+
+  const handleRSICorrelationAlertConfigClose = () => {
+    setShowRSICorrelationAlertConfig(false);
+    // Refresh active RSI correlation alerts count when modal closes
+    if (user) {
+      const loadActiveRSICorrelationAlertsCount = async () => {
+        try {
+          const activeRSICorrelationAlerts = await rsiCorrelationAlertService.getActiveAlerts();
+          setActiveRSICorrelationAlertsCount(activeRSICorrelationAlerts.length);
+        } catch (error) {
+          console.error('Failed to load active RSI correlation alerts count:', error);
+        }
+      };
+      loadActiveRSICorrelationAlertsCount();
+    }
+  };
+
+  // Load active RSI correlation alerts count when user is logged in
+  useEffect(() => {
+    if (user) {
+      const loadActiveRSICorrelationAlertsCount = async () => {
+        try {
+          const activeRSICorrelationAlerts = await rsiCorrelationAlertService.getActiveAlerts();
+          setActiveRSICorrelationAlertsCount(activeRSICorrelationAlerts.length);
+        } catch (error) {
+          console.error('Failed to load active RSI correlation alerts count:', error);
+        }
+      };
+      loadActiveRSICorrelationAlertsCount();
+    }
+  }, [user]);
 
   // Load settings from database on component mount
   useEffect(() => {
@@ -364,6 +408,7 @@ const RSICorrelationDashboard = () => {
   }
 
   return (
+    <>
     <div className="widget-card px-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
       <div
         className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
@@ -418,6 +463,23 @@ const RSICorrelationDashboard = () => {
               </>
             )}
           </button>
+          
+          {/* RSI Correlation Alert Bell Icon */}
+          {user && (
+            <button 
+              type="button"
+              aria-label="Configure RSI correlation alerts"
+              onClick={handleRSICorrelationBellClick}
+              className="relative p-2 text-gray-400 hover:text-purple-500 transition-colors duration-300 group"
+            >
+              <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+              {activeRSICorrelationAlertsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                  {activeRSICorrelationAlertsCount > 9 ? '9+' : activeRSICorrelationAlertsCount}
+                </span>
+              )}
+            </button>
+          )}
           
           <button
             onClick={() => setShowSettings(true)}
@@ -624,6 +686,13 @@ const RSICorrelationDashboard = () => {
       )}
 
     </div>
+    
+    {/* RSI Correlation Alert Configuration Modal - Outside widget for proper z-index */}
+    <RSICorrelationAlertConfig 
+      isOpen={showRSICorrelationAlertConfig} 
+      onClose={handleRSICorrelationAlertConfigClose} 
+    />
+    </>
   );
 };
 
