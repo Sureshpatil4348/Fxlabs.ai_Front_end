@@ -227,13 +227,30 @@ class RSIAlertService {
       throw new Error(`Invalid alert configuration: ${validation.errors.join(', ')}`);
     }
 
+    // Map UI symbols to broker-specific symbols
+    const mapSymbolsToBroker = (symbols) => {
+      const symbolMapping = {
+        "EURUSD": "EURUSDm",
+        "GBPUSD": "GBPUSDm", 
+        "USDJPY": "USDJPYm",
+        "USDCHF": "USDCHFm",
+        "AUDUSD": "AUDUSDm",
+        "USDCAD": "USDCADm",
+        "NZDUSD": "NZDUSDm",
+        "XAUUSD": "XAUUSDm",
+        "BTCUSD": "BTCUSDm",
+        "ETHUSD": "ETHUSDm"
+      };
+      return symbols.map(symbol => symbolMapping[symbol] || symbol);
+    };
+
     // Prepare data for insertion
     const alertData = {
       user_id: user.id,
       user_email: user.email, // Add user email for backend notifications
       alert_name: alertConfig.alertName || `RSI Alert ${new Date().toLocaleString()}`,
       is_active: alertConfig.isActive !== undefined ? alertConfig.isActive : true,
-      pairs: alertConfig.pairs,
+      pairs: mapSymbolsToBroker(alertConfig.pairs),
       timeframes: alertConfig.timeframes || ['1H'],
       rsi_period: alertConfig.rsiPeriod || 14,
       rsi_overbought_threshold: alertConfig.rsiOverboughtThreshold || 70,
