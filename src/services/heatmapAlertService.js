@@ -336,10 +336,11 @@ class HeatmapAlertService {
     if (!user) throw new Error("User not authenticated");
 
     // Validate updates if they include configuration changes
+    // Include all fields that _validateAlertConfig actually validates
     const configFields = [
       'pairs', 'timeframes', 'selectedIndicators', 'tradingStyle',
       'buyThresholdMin', 'buyThresholdMax', 'sellThresholdMin', 'sellThresholdMax',
-      'notificationMethods', 'alertFrequency', 'isActive'
+      'notificationMethods', 'alertFrequency'
     ];
     
     const hasConfigChanges = configFields.some(field => updates.hasOwnProperty(field));
@@ -397,7 +398,7 @@ class HeatmapAlertService {
    * @returns {Object} - Updated alert
    */
   async toggleAlert(alertId, isActive) {
-    return await this.updateAlert(alertId, { is_active: isActive });
+    return await this.updateAlert(alertId, { isActive: isActive });
   }
 
   /**
@@ -805,7 +806,7 @@ class HeatmapAlertService {
   }
 
   /**
-   * Create a new alert trigger record
+   * Create a new alert trigger record (now secured by RLS policies)
    * @param {string} alertId - Alert ID
    * @param {Object} triggerData - Trigger data
    * @returns {Object} - Created trigger

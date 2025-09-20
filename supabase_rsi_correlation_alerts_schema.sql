@@ -161,8 +161,14 @@ CREATE POLICY "Users can view triggers for their RSI correlation alerts" ON rsi_
         )
     );
 
-CREATE POLICY "System can insert RSI correlation alert triggers" ON rsi_correlation_alert_triggers
-    FOR INSERT WITH CHECK (true); -- Allow system to insert triggers
+CREATE POLICY "Users can insert triggers for their own RSI correlation alerts" ON rsi_correlation_alert_triggers
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM rsi_correlation_alerts 
+            WHERE rsi_correlation_alerts.id = rsi_correlation_alert_triggers.alert_id 
+            AND rsi_correlation_alerts.user_id = auth.uid()
+        )
+    );
 
 CREATE POLICY "Users can update their own RSI correlation alert triggers" ON rsi_correlation_alert_triggers
     FOR UPDATE USING (

@@ -129,8 +129,14 @@ CREATE POLICY "Users can view triggers for their RSI alerts" ON rsi_alert_trigge
         )
     );
 
-CREATE POLICY "System can insert RSI alert triggers" ON rsi_alert_triggers
-    FOR INSERT WITH CHECK (true); -- Allow system to insert triggers
+CREATE POLICY "Users can insert triggers for their own RSI alerts" ON rsi_alert_triggers
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM rsi_alerts 
+            WHERE rsi_alerts.id = rsi_alert_triggers.alert_id 
+            AND rsi_alerts.user_id = auth.uid()
+        )
+    );
 
 CREATE POLICY "Users can update their own RSI alert triggers" ON rsi_alert_triggers
     FOR UPDATE USING (

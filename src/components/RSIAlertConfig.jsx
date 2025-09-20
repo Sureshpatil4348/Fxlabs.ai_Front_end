@@ -1,4 +1,4 @@
-import { TrendingUp, Plus, Settings, X, Check, AlertCircle } from 'lucide-react';
+import { TrendingUp, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import rsiAlertService from '../services/rsiAlertService';
@@ -57,14 +57,6 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleToggleAlert = async (alertId, isActive) => {
-    try {
-      await rsiAlertService.toggleAlert(alertId, !isActive);
-      await loadAlerts(); // Reload alerts
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleDeleteAlert = async (alertId) => {
     if (window.confirm('Are you sure you want to delete this alert?')) {
@@ -397,38 +389,27 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-medium text-gray-900">{alert.alert_name}</h4>
+                          <h4 className="font-medium text-gray-900">{alert.alertName}</h4>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            alert.is_active 
+                            alert.isActive 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {alert.is_active ? 'Active' : 'Inactive'}
+                            {alert.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 space-y-1">
-                          <p><span className="font-medium">Pairs:</span> {alert.pairs.join(', ')}</p>
-                          <p><span className="font-medium">Timeframes:</span> {(alert.timeframes || ['1H']).join(', ')}</p>
-                          <p><span className="font-medium">RSI Period:</span> {alert.rsi_period}</p>
-                          <p><span className="font-medium">Thresholds:</span> Overbought {alert.rsi_overbought_threshold}, Oversold {alert.rsi_oversold_threshold}</p>
-                          <p><span className="font-medium">Conditions:</span> {alert.alert_conditions.join(', ')}</p>
-                          {alert.alert_conditions.some(c => c.includes('rfi')) && (
-                            <p><span className="font-medium">RFI Thresholds:</span> Strong {alert.rfi_strong_threshold}, Moderate {alert.rfi_moderate_threshold}</p>
+                          <p><span className="font-medium">Pairs:</span> {alert.pairs?.join(', ') || 'N/A'}</p>
+                          <p><span className="font-medium">Timeframes:</span> {alert.timeframes?.join(', ') || 'N/A'}</p>
+                          <p><span className="font-medium">RSI Period:</span> {alert.rsiPeriod || 'N/A'}</p>
+                          <p><span className="font-medium">Thresholds:</span> Overbought {alert.rsiOverboughtThreshold || 'N/A'}, Oversold {alert.rsiOversoldThreshold || 'N/A'}</p>
+                          <p><span className="font-medium">Conditions:</span> {alert.alertConditions?.join(', ') || 'N/A'}</p>
+                          {alert.alertConditions?.some(c => c.includes('rfi')) && (
+                            <p><span className="font-medium">RFI Thresholds:</span> Strong {alert.rfiStrongThreshold || 'N/A'}, Moderate {alert.rfiModerateThreshold || 'N/A'}</p>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleToggleAlert(alert.id, alert.is_active)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            alert.is_active 
-                              ? 'text-green-600 hover:bg-green-50' 
-                              : 'text-gray-400 hover:bg-gray-50'
-                          }`}
-                          title={alert.is_active ? 'Deactivate' : 'Activate'}
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"

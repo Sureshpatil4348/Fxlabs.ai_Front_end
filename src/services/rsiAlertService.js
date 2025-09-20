@@ -392,7 +392,7 @@ class RSIAlertService {
    * @returns {Object} - Updated alert
    */
   async toggleAlert(alertId, isActive) {
-    return await this.updateAlert(alertId, { is_active: isActive });
+    return await this.updateAlert(alertId, { isActive: isActive });
   }
 
   /**

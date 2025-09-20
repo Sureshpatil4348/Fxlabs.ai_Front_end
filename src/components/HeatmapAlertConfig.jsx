@@ -1,4 +1,4 @@
-import { Bell, Plus, Settings, X, Check, AlertCircle } from 'lucide-react';
+import { Bell, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import heatmapAlertService from '../services/heatmapAlertService';
@@ -46,14 +46,6 @@ const HeatmapAlertConfig = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleToggleAlert = async (alertId, isActive) => {
-    try {
-      await heatmapAlertService.toggleAlert(alertId, !isActive);
-      await loadAlerts(); // Reload alerts
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleDeleteAlert = async (alertId) => {
     if (window.confirm('Are you sure you want to delete this alert?')) {
@@ -375,35 +367,24 @@ const HeatmapAlertConfig = ({ isOpen, onClose }) => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-medium text-gray-900">{alert.alert_name}</h4>
+                          <h4 className="font-medium text-gray-900">{alert.alertName}</h4>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            alert.is_active 
+                            alert.isActive 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {alert.is_active ? 'Active' : 'Inactive'}
+                            {alert.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 space-y-1">
-                          <p><span className="font-medium">Pairs:</span> {alert.pairs.join(', ')}</p>
-                          <p><span className="font-medium">Timeframes:</span> {alert.timeframes.join(', ')}</p>
-                          <p><span className="font-medium">Indicators:</span> {alert.selected_indicators.join(', ')}</p>
-                          <p><span className="font-medium">Style:</span> {alert.trading_style}</p>
-                          <p><span className="font-medium">Buy:</span> {alert.buy_threshold_min}-{alert.buy_threshold_max} | <span className="font-medium">Sell:</span> {alert.sell_threshold_min}-{alert.sell_threshold_max}</p>
+                          <p><span className="font-medium">Pairs:</span> {alert.pairs?.join(', ') || 'N/A'}</p>
+                          <p><span className="font-medium">Timeframes:</span> {alert.timeframes?.join(', ') || 'N/A'}</p>
+                          <p><span className="font-medium">Indicators:</span> {alert.selectedIndicators?.join(', ') || 'N/A'}</p>
+                          <p><span className="font-medium">Style:</span> {alert.tradingStyle || 'N/A'}</p>
+                          <p><span className="font-medium">Buy:</span> {alert.buyThresholdMin || 'N/A'}-{alert.buyThresholdMax || 'N/A'} | <span className="font-medium">Sell:</span> {alert.sellThresholdMin || 'N/A'}-{alert.sellThresholdMax || 'N/A'}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleToggleAlert(alert.id, alert.is_active)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            alert.is_active 
-                              ? 'text-green-600 hover:bg-green-50' 
-                              : 'text-gray-400 hover:bg-gray-50'
-                          }`}
-                          title={alert.is_active ? 'Deactivate' : 'Activate'}
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"

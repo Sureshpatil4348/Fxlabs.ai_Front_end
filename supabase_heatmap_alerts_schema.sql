@@ -131,8 +131,14 @@ CREATE POLICY "Users can view triggers for their alerts" ON heatmap_alert_trigge
         )
     );
 
-CREATE POLICY "System can insert alert triggers" ON heatmap_alert_triggers
-    FOR INSERT WITH CHECK (true); -- Allow system to insert triggers
+CREATE POLICY "Users can insert triggers for their own alerts" ON heatmap_alert_triggers
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM heatmap_alerts 
+            WHERE heatmap_alerts.id = heatmap_alert_triggers.alert_id 
+            AND heatmap_alerts.user_id = auth.uid()
+        )
+    );
 
 CREATE POLICY "Users can update their own alert triggers" ON heatmap_alert_triggers
     FOR UPDATE USING (

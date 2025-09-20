@@ -4,11 +4,29 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
-### Heatmap Alert Service Fix (Latest)
+### Critical Security Fix: RLS Policy Enforcement (Latest)
+- **MAJOR SECURITY IMPROVEMENT**: Fixed critical vulnerability where end users could forge alert triggers
+- Updated RLS policies to restrict trigger insertion to alert owners only
+- Replaced unsafe `FOR INSERT WITH CHECK (true)` policies with proper ownership verification
+- Added comprehensive authorization checks to verify alert ownership before trigger creation
+- **Security Impact**: Prevents malicious users from creating fake triggers for other users' alerts
+- **Affected Services**: All alert services (Heatmap, RSI, RSI Correlation)
+- **Implementation**: Uses existing Python backend infrastructure with secure RLS policies
+
+### Previous Heatmap Alert Service Validation Fix
+- Fixed validation trigger issue in `updateAlert` method around lines 339-355
+- Expanded `configFields` array to include all fields that `_validateAlertConfig` actually validates
+- Ensures proper validation of alert configurations during updates by including all relevant fields
+- Fixed issue where validation only triggered for limited subset of fields
+- Now properly validates thresholds, notification methods, frequency, indicators, pairs, timeframes, and trading style
+- Maintains existing snake_case to camelCase conversion before validation
+- Ensures `_validateAlertConfig` receives normalized camelCase config for proper validation
+- Prevents validation bypass when updating configuration fields
+- Added comprehensive field coverage for alert configuration validation
+
+### Previous Heatmap Alert Service Fixes
 - Fixed snake_case to camelCase field mapping issue in `updateAlert` method
 - Added proper field conversion from database format to service layer format
-- Expanded validation trigger to include all configuration-related fields (thresholds, notification methods, frequency, etc.)
-- Ensures proper validation of alert configurations during updates
 - Added bidirectional field conversion: camelCase ↔ snake_case
 - Implemented field whitelisting for secure database updates
 - Fixed all public methods (`createAlert`, `getAlertById`, `getAlerts`, `getActiveAlerts`, `updateAlert`) to return consistent camelCase format

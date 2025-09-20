@@ -1,4 +1,4 @@
-import { BarChart3, Plus, Settings, X, Check, AlertCircle } from 'lucide-react';
+import { BarChart3, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
@@ -61,14 +61,6 @@ const RSICorrelationAlertConfig = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleToggleAlert = async (alertId, isActive) => {
-    try {
-      await rsiCorrelationAlertService.toggleAlert(alertId, !isActive);
-      await loadAlerts(); // Reload alerts
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleDeleteAlert = async (alertId) => {
     if (window.confirm('Are you sure you want to delete this alert?')) {
@@ -488,51 +480,40 @@ const RSICorrelationAlertConfig = ({ isOpen, onClose }) => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-medium text-gray-900">{alert.alert_name}</h4>
+                          <h4 className="font-medium text-gray-900">{alert.alertName}</h4>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            alert.is_active 
+                            alert.isActive 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {alert.is_active ? 'Active' : 'Inactive'}
+                            {alert.isActive ? 'Active' : 'Inactive'}
                           </span>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            alert.calculation_mode === 'rsi_threshold'
+                            alert.calculationMode === 'rsi_threshold'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-purple-100 text-purple-800'
                           }`}>
-                            {alert.calculation_mode === 'rsi_threshold' ? 'RSI Threshold' : 'Real Correlation'}
+                            {alert.calculationMode === 'rsi_threshold' ? 'RSI Threshold' : 'Real Correlation'}
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 space-y-1">
-                          <p><span className="font-medium">Pairs:</span> {alert.correlation_pairs.map(pair => `${pair[0]}-${pair[1]}`).join(', ')}</p>
-                          <p><span className="font-medium">Timeframes:</span> {(alert.timeframes || ['1H']).join(', ')}</p>
-                          {alert.calculation_mode === 'rsi_threshold' ? (
+                          <p><span className="font-medium">Pairs:</span> {alert.correlationPairs?.map(pair => `${pair[0]}-${pair[1]}`).join(', ') || 'N/A'}</p>
+                          <p><span className="font-medium">Timeframes:</span> {alert.timeframes?.join(', ') || 'N/A'}</p>
+                          {alert.calculationMode === 'rsi_threshold' ? (
                             <>
-                              <p><span className="font-medium">RSI Period:</span> {alert.rsi_period}</p>
-                              <p><span className="font-medium">Thresholds:</span> Overbought {alert.rsi_overbought_threshold}, Oversold {alert.rsi_oversold_threshold}</p>
+                              <p><span className="font-medium">RSI Period:</span> {alert.rsiPeriod || 'N/A'}</p>
+                              <p><span className="font-medium">Thresholds:</span> Overbought {alert.rsiOverboughtThreshold || 'N/A'}, Oversold {alert.rsiOversoldThreshold || 'N/A'}</p>
                             </>
                           ) : (
-                            <p><span className="font-medium">Correlation Window:</span> {alert.correlation_window} periods</p>
+                            <p><span className="font-medium">Correlation Window:</span> {alert.correlationWindow || 'N/A'} periods</p>
                           )}
-                          <p><span className="font-medium">Conditions:</span> {alert.alert_conditions.join(', ')}</p>
-                          {alert.calculation_mode === 'real_correlation' && alert.alert_conditions.some(c => ['strong_positive', 'strong_negative', 'weak_correlation'].includes(c)) && (
-                            <p><span className="font-medium">Correlation Thresholds:</span> Strong {alert.strong_correlation_threshold}, Moderate {alert.moderate_correlation_threshold}, Weak {alert.weak_correlation_threshold}</p>
+                          <p><span className="font-medium">Conditions:</span> {alert.alertConditions?.join(', ') || 'N/A'}</p>
+                          {alert.calculationMode === 'real_correlation' && alert.alertConditions?.some(c => ['strong_positive', 'strong_negative', 'weak_correlation'].includes(c)) && (
+                            <p><span className="font-medium">Correlation Thresholds:</span> Strong {alert.strongCorrelationThreshold || 'N/A'}, Moderate {alert.moderateCorrelationThreshold || 'N/A'}, Weak {alert.weakCorrelationThreshold || 'N/A'}</p>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleToggleAlert(alert.id, alert.is_active)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            alert.is_active 
-                              ? 'text-green-600 hover:bg-green-50' 
-                              : 'text-gray-400 hover:bg-gray-50'
-                          }`}
-                          title={alert.is_active ? 'Deactivate' : 'Activate'}
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
                         <button
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
