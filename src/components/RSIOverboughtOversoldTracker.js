@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, Settings, Activity, Bell } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings, Activity, Bell, Star, List, Trash2, Loader2 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
@@ -35,6 +35,57 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   );
 };
 
+const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLatestTickForSymbol, getLatestOhlcForSymbol, isRemoving }) => {
+  // Convert watchlist symbol (base format) to RSI Tracker format (with 'm' suffix)
+  const rsiSymbol = symbol + 'm';
+  
+  const latestTick = getLatestTickForSymbol(rsiSymbol);
+  const latestBar = getLatestOhlcForSymbol(rsiSymbol);
+  const rsiValue = rsiData.get(rsiSymbol)?.value ?? null;
+  
+  const price = latestTick?.bid || latestBar?.close || null;
+  const change = latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : null;
+  const priceText = price != null
+    ? (symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5))
+    : '--';
+  const rsiText = rsiValue != null ? formatRsi(rsiValue) : '--';
+  const changeText = change != null ? formatPercentage(change) : '--';
+
+  return (
+    <tr className="hover:bg-gray-50">
+      <td className="px-3 py-2 text-xs font-medium text-gray-900 text-center">
+        {formatSymbolDisplay(symbol)}
+      </td>
+      <td className={`px-3 py-2 text-xs font-bold text-center ${rsiValue != null ? getRsiColor(rsiValue, settings.rsiOverbought, settings.rsiOversold) : 'text-gray-400'}`}>
+        {rsiText}
+      </td>
+      <td className="px-3 py-2 text-xs text-gray-900 font-mono text-center">
+        {priceText}
+      </td>
+      <td className={`px-3 py-2 text-xs font-medium text-center ${change != null ? (change >= 0 ? 'text-success-600' : 'text-danger-600') : 'text-gray-400'}`}>
+        {changeText}
+      </td>
+      <td className="px-3 py-2 text-center">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemoveFromWishlist(symbol);
+          }}
+          disabled={isRemoving}
+          className="p-1 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-md transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Remove from watchlist"
+        >
+          {isRemoving ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Trash2 className="w-3 h-3" />
+          )}
+        </button>
+      </td>
+    </tr>
+  );
+};
+
 
 
 const RSIOverboughtOversoldTracker = () => {
@@ -52,11 +103,20 @@ const RSIOverboughtOversoldTracker = () => {
     isConnected,
     autoSubscribeToMajorPairs,
     updateSettings,
-    timeframes
+    timeframes,
+    getLatestTickForSymbol,
+    getLatestOhlcForSymbol
   } = useRSITrackerStore();
   
   // Get tab state from base market store
-  const { tabState, updateRSITrackerTab, loadTabState } = useBaseMarketStore();
+  const { 
+    tabState, 
+    updateRSITrackerTab, 
+    loadTabState,
+    getWishlistArray,
+    removeFromWishlist,
+    isInWishlist: _isInWishlistBase
+  } = useBaseMarketStore();
   
   // Alert functionality
   const { user } = useAuth();
@@ -67,6 +127,8 @@ const RSIOverboughtOversoldTracker = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [viewMode] = useState('table'); // 'table', 'cards', or 'expandable'
+  const [showWatchlist, setShowWatchlist] = useState(false); // New state for watchlist view
+  const [removingSymbol, setRemovingSymbol] = useState(null); // State for tracking which symbol is being removed
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
     rsiPeriod: settings.rsiPeriod,
@@ -187,6 +249,25 @@ const RSIOverboughtOversoldTracker = () => {
     addToWishlist(symbol);
   };
 
+  const handleRemoveFromWishlist = async (symbol) => {
+    if (!user) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    setRemovingSymbol(symbol);
+    try {
+      await removeFromWishlist(symbol);
+    } catch (error) {
+      console.error('Failed to remove from watchlist:', error);
+    } finally {
+      setRemovingSymbol(null);
+    }
+  };
+
+  // Get watchlist symbols
+  const watchlistSymbols = getWishlistArray();
+
   const handleSaveSettings = async () => {
     try {
       // Validate and enforce oversold < overbought constraint
@@ -279,14 +360,25 @@ const RSIOverboughtOversoldTracker = () => {
               <Activity className="w-5 h-5 text-purple-600" />
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">RSI Tracker</h2>
-                <p className="widget-subtitle">
-                  Oversold &lt; {settings.rsiOversold} | Overbought &gt; {settings.rsiOverbought} | Period: {settings.rsiPeriod} | {settings.timeframe}
-                </p>
               </div>
               {/* Connection status pill removed; status shown as top-right dot */}
             </div>
           </div>
           <div className="flex items-center space-x-1">
+            {/* Watchlist Toggle Button */}
+            <button
+              onClick={() => setShowWatchlist(!showWatchlist)}
+              className={`px-3 py-1.5 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1.5 ${
+                showWatchlist 
+                  ? 'text-blue-600 bg-blue-100 shadow-blue-200' 
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 shadow-gray-200'
+              }`}
+              title={showWatchlist ? "Show RSI Tracker" : "Show Watchlist"}
+            >
+              {showWatchlist ? <List className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+              <span className="text-xs font-medium">{showWatchlist ? 'RSI Tracker' : 'Watchlist'}</span>
+            </button>
+            
             {/* RSI Alert Bell Icon */}
             {user && (
               <button 
@@ -315,34 +407,37 @@ const RSIOverboughtOversoldTracker = () => {
         </div>
 
 
-        {/* Tab Navigation */}
-        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {tab.label}
-            <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
-              activeTab === tab.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
-            }`}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
-        </div>
+        {/* Tab Navigation - Only show when not in watchlist mode */}
+        {!showWatchlist && (
+          <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 rounded-lg">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {tab.label}
+              <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
+                activeTab === tab.id ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-600'
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+          </div>
+        )}
       </div>
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto min-h-0 p-1">
-        {currentPairs.length > 0 ? (
-          <div>
-            {viewMode === 'table' ? (
+        {showWatchlist ? (
+          // Watchlist View
+          watchlistSymbols.length > 0 ? (
+            <div>
               <table className="w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -358,87 +453,147 @@ const RSIOverboughtOversoldTracker = () => {
                     <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
                       Daily %
                     </th>
+                    <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 text-xs text-left">
+                  {watchlistSymbols.map((symbol) => {
+                    const isRemoving = removingSymbol === symbol;
+                    return (
+                      <WatchlistRow
+                        key={symbol}
+                        symbol={symbol}
+                        onRemoveFromWishlist={handleRemoveFromWishlist}
+                        settings={settings}
+                        rsiData={rsiData}
+                        getLatestTickForSymbol={getLatestTickForSymbol}
+                        getLatestOhlcForSymbol={getLatestOhlcForSymbol}
+                        isRemoving={isRemoving}
+                      />
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center bg-blue-100">
+                  <Star className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No watchlist items
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Click on currency pairs in the RSI tracker to add them to your watchlist.
+                </p>
+              </div>
+            </div>
+          )
+        ) : (
+          // RSI Tracker View
+          currentPairs.length > 0 ? (
+            <div>
+              {viewMode === 'table' ? (
+                <table className="w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Pair
+                      </th>
+                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        RSI
+                      </th>
+                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Price
+                      </th>
+                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Daily %
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200 text-xs text-left">
+                    {currentPairs.map((pair) => (
+                      <PairRow
+                        key={pair.symbol}
+                        pair={pair}
+                        onAddToWishlist={handleAddToWishlist}
+                        isInWishlist={isInWishlist(pair.symbol)}
+                        settings={settings}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              ) : viewMode === 'cards' ? (
+                <div className="grid grid-cols-1 gap-2 p-2">
                   {currentPairs.map((pair) => (
-                    <PairRow
+                    <RFIScoreCard
+                      key={pair.symbol}
+                      symbol={pair.symbol}
+                      rfiData={pair.rfiData}
+                      price={pair.price}
+                      change={pair.change}
+                      volume={pair.volume}
+                      onAddToWishlist={handleAddToWishlist}
+                      isInWishlist={isInWishlist(pair.symbol)}
+                      className="text-xs"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white">
+                  {/* Expandable View Header */}
+                  <div className="bg-gray-50 border-b border-gray-200 px-3 py-3">
+                    <div className="flex items-center text-xs font-medium text-gray-500">
+                      <div className="w-24 text-center px-2">Pair</div>
+                      <div className="w-20 text-center px-2">RSI</div>
+                      <div className="w-24 text-center px-2">Price</div>
+                      <div className="w-20 text-center px-2">Change</div>
+                      <div className="w-16 text-center px-2">Events</div>
+                      <div className="w-12 text-center px-2"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Expandable Rows */}
+                  {currentPairs.map((pair) => (
+                    <ExpandablePairRow
                       key={pair.symbol}
                       pair={pair}
                       onAddToWishlist={handleAddToWishlist}
                       isInWishlist={isInWishlist(pair.symbol)}
                       settings={settings}
+                      rsiHistory={getRsiHistory(pair.symbol)}
+                      priceHistory={getPriceHistory(pair.symbol)}
+                      rsiEvents={getRsiEvents(pair.symbol)}
                     />
                   ))}
-                </tbody>
-              </table>
-            ) : viewMode === 'cards' ? (
-              <div className="grid grid-cols-1 gap-2 p-2">
-                {currentPairs.map((pair) => (
-                  <RFIScoreCard
-                    key={pair.symbol}
-                    symbol={pair.symbol}
-                    rfiData={pair.rfiData}
-                    price={pair.price}
-                    change={pair.change}
-                    volume={pair.volume}
-                    onAddToWishlist={handleAddToWishlist}
-                    isInWishlist={isInWishlist(pair.symbol)}
-                    className="text-xs"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white">
-                {/* Expandable View Header */}
-                <div className="bg-gray-50 border-b border-gray-200 px-3 py-3">
-                  <div className="flex items-center text-xs font-medium text-gray-500">
-                    <div className="w-24 text-center px-2">Pair</div>
-                    <div className="w-20 text-center px-2">RSI</div>
-                    <div className="w-24 text-center px-2">Price</div>
-                    <div className="w-20 text-center px-2">Change</div>
-                    <div className="w-16 text-center px-2">Events</div>
-                    <div className="w-12 text-center px-2"></div>
-                  </div>
                 </div>
-                
-                {/* Expandable Rows */}
-                {currentPairs.map((pair) => (
-                  <ExpandablePairRow
-                    key={pair.symbol}
-                    pair={pair}
-                    onAddToWishlist={handleAddToWishlist}
-                    isInWishlist={isInWishlist(pair.symbol)}
-                    settings={settings}
-                    rsiHistory={getRsiHistory(pair.symbol)}
-                    priceHistory={getPriceHistory(pair.symbol)}
-                    rsiEvents={getRsiEvents(pair.symbol)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-            <div className={`w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center ${
-              activeTab === 'oversold' ? 'bg-success-100' : 'bg-danger-100'
-            }`}>
-              {activeTab === 'oversold' ? (
-                <TrendingDown className="w-6 h-6 text-success-600" />
-              ) : (
-                <TrendingUp className="w-6 h-6 text-danger-600" />
               )}
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No {activeTab} pairs found
-            </h3>
-            <p className="text-gray-500 text-sm">
-              No currency pairs are currently in the {activeTab} zone 
-              ({activeTab === 'oversold' ? `< ${settings.rsiOversold}` : `> ${settings.rsiOverbought}`}).
-            </p>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+              <div className={`w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                activeTab === 'oversold' ? 'bg-success-100' : 'bg-danger-100'
+              }`}>
+                {activeTab === 'oversold' ? (
+                  <TrendingDown className="w-6 h-6 text-success-600" />
+                ) : (
+                  <TrendingUp className="w-6 h-6 text-danger-600" />
+                )}
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No {activeTab} pairs found
+              </h3>
+              <p className="text-gray-500 text-sm">
+                No currency pairs are currently in the {activeTab} zone 
+                ({activeTab === 'oversold' ? `< ${settings.rsiOversold}` : `> ${settings.rsiOverbought}`}).
+              </p>
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
 

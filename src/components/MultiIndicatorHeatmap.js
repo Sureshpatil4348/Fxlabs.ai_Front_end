@@ -1,11 +1,12 @@
 import { 
   Activity,
-  LayoutGrid,
   Bell
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
+
 import HeatmapAlertConfig from './HeatmapAlertConfig';
+import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
 import heatmapAlertService from '../services/heatmapAlertService';
 import userStateService from '../services/userStateService';
@@ -19,7 +20,33 @@ import {
   isQuietMarket,
   QUIET_MARKET_PARAMETERS
 } from '../utils/calculations';
-import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
+// import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
+
+// Format timeframe for UI display
+const formatTimeframeDisplay = (timeframe) => {
+  const timeframeMap = {
+    '1M': '1 Min',
+    '5M': '5 Min', 
+    '15M': '15 Mins',
+    '30M': '30 Mins',
+    '1H': '1 Hour',
+    '4H': '4 Hours',
+    '1D': '1 Day'
+  };
+  return timeframeMap[timeframe] || timeframe;
+};
+
+// Format indicator name for UI display
+const formatIndicatorDisplay = (indicator) => {
+  const indicatorMap = {
+    'EMA21': 'EMA 21',
+    'EMA50': 'EMA 50',
+    'EMA200': 'EMA 200',
+    'UTBOT': 'UT BOT',
+    'IchimokuClone': 'Ichimoku'
+  };
+  return indicatorMap[indicator] || indicator;
+};
 
 // Ichimoku Clone calculation (simplified version) - keeping for potential future use
 // const calculateIchimokuClone = (bars) => {
@@ -76,8 +103,7 @@ const TRADING_STYLE_WEIGHTS = {
     '30M': 0.20,
     '1H': 0.15,
     '4H': 0.05,
-    '1D': 0.00,
-    '1W': 0.00
+    '1D': 0.00
   },
   dayTrader: {
     '5M': 0.10,
@@ -85,8 +111,7 @@ const TRADING_STYLE_WEIGHTS = {
     '30M': 0.25,
     '1H': 0.25,
     '4H': 0.10,
-    '1D': 0.05,
-    '1W': 0.00
+    '1D': 0.05
   },
   swingTrader: {
     '5M': 0.00,
@@ -94,8 +119,7 @@ const TRADING_STYLE_WEIGHTS = {
     '30M': 0.10,
     '1H': 0.25,
     '4H': 0.35,
-    '1D': 0.30,
-    '1W': 0.00
+    '1D': 0.30
   }
 };
 
@@ -256,6 +280,7 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const [tradingStyle, setTradingStyle] = useState(DEFAULT_TRADING_STYLE);
   const [indicatorWeight, setIndicatorWeight] = useState('equal');
   const [currentSymbol, setCurrentSymbol] = useState(selectedSymbol);
+  const [isSymbolDropdownOpen, setIsSymbolDropdownOpen] = useState(false);
   
   // Alert functionality
   const { user } = useAuth();
@@ -285,18 +310,11 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   // Available symbols from store (e.g., 32 pairs). Keep 'm' suffix for RSI tracker
   const availableSymbols = useMemo(() => settings?.autoSubscribeSymbols || [], [settings?.autoSubscribeSymbols]);
 
-  // Build dropdown options with flags and pretty labels
+  // Build dropdown options with simple text
   const dropdownOptions = useMemo(() => {
     return availableSymbols.map((sym) => {
-      const label = formatSymbolDisplay(sym);
       const clean = sym.replace(/m$/, '').toUpperCase();
-      let flag = '';
-      if (clean.length === 6) {
-        const base = clean.slice(0, 3);
-        const quote = clean.slice(3);
-        flag = `${formatCurrency(base).flag}${formatCurrency(quote).flag}`;
-      }
-      return { value: sym, label, flag };
+      return { value: sym, label: clean };
     });
   }, [availableSymbols]);
 
@@ -466,7 +484,7 @@ useEffect(() => {
   // Subscribe the current symbol to required multiple timeframes for heatmap
   useEffect(() => {
     if (!isConnected || !currentSymbol) return;
-    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'];
+    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D'];
     const supported = Array.isArray(timeframes) && timeframes.length > 0 ? timeframes : desiredTimeframes;
     const toSubscribe = desiredTimeframes.filter(tf => supported.includes(tf));
     toSubscribe.forEach(tf => {
@@ -523,7 +541,7 @@ useEffect(() => {
   const indicatorData = useMemo(() => {
     const data = {};
     
-    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'];
+    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D'];
     const supported = Array.isArray(timeframes) && timeframes.length > 0 ? timeframes : desiredTimeframes;
     const tfs = desiredTimeframes.filter(tf => supported.includes(tf));
 
@@ -707,11 +725,11 @@ useEffect(() => {
   }, [indicatorData, tradingStyle, indicatorWeight]);
   
   // Get cell color based on score (updated for new scoring range [-1.25, +1.25])
-  const getCellColor = (score) => {
-    if (score > 0) return 'bg-white text-slate-700 border-2 border-emerald-500';
-    if (score < 0) return 'bg-white text-slate-700 border-2 border-rose-500';
-    return 'bg-white text-slate-600 border-2 border-gray-300';
-  };
+  // const getCellColor = (score) => {
+  //   if (score > 0) return 'text-white border-0 shadow-md hover:opacity-75 focus:opacity-75';
+  //   if (score < 0) return 'text-white border-0 shadow-md hover:opacity-75 focus:opacity-75';
+  //   return 'bg-gray-300 text-gray-600 border-0 shadow-sm';
+  // };
   
   // Get signal text (updated for new scoring range [-1.25, +1.25])
   const getSignalText = (score) => {
@@ -792,8 +810,8 @@ useEffect(() => {
         <div className="widget-header flex items-center justify-between mb-2">
           {/* Title */}
           <div className="flex items-center space-x-2">
-            <LayoutGrid className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">All in One Currency</h2>
+            <img src={quantImage} alt="Quantum" className="w-5 h-5" />
+            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Quantum Analysis</h2>
           </div>
           
           {/* Alert Bell Icon */}
@@ -815,35 +833,42 @@ useEffect(() => {
             </div>
           )}
           
-          {/* Recommendation cards - replaces Buy/Sell pills */}
+          {/* Buy/Sell Progress Bar */}
           {(() => {
             const buyPct = finalResults.buyNowPercent;
             const sellPct = finalResults.sellNowPercent;
-            const recommend = buyPct >= sellPct ? 'buy' : 'sell';
-            const primaryPct = recommend === 'buy' ? buyPct : sellPct;
-            const secondaryPct = recommend === 'buy' ? sellPct : buyPct;
-            const primaryClasses = recommend === 'buy'
-              ? 'border-emerald-500 text-emerald-700'
-              : 'border-rose-500 text-rose-700';
-            const secondaryClasses = recommend === 'buy'
-              ? 'border-rose-300 text-rose-600'
-              : 'border-emerald-300 text-emerald-600';
             
             return (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-semibold text-slate-600 mr-0.5">Recommendation:</span>
-                <div className={`bg-white rounded-xl px-3 py-1.5 border-2 shadow ${primaryClasses}`}>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold">{recommend === 'buy' ? 'Buy' : 'Sell'}</span>
-                    <span className="text-sm font-semibold">{primaryPct}%</span>
+              <div className="flex items-center gap-3 w-full max-w-[300px]">
+                <span 
+                  className="text-xs font-bold text-emerald-600 whitespace-nowrap"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                >BUY {buyPct.toFixed(1)}%</span>
+                <div className="flex-1 relative">
+                  <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full transition-all duration-500 ease-out"
+                      style={{ 
+                        width: `${buyPct}%`,
+                        background: '#03c05d',
+                        borderRadius: '8px 0 0 8px'
+                      }}
+                    />
+                    <div 
+                      className="absolute top-0 h-full transition-all duration-500 ease-out"
+                      style={{ 
+                        left: `${buyPct}%`,
+                        width: `${sellPct}%`,
+                        background: '#dc2626',
+                        borderRadius: '0 8px 8px 0'
+                      }}
+                    />
                   </div>
                 </div>
-                <div className={`bg-white rounded-lg px-2 py-1 border ${secondaryClasses} opacity-60`}>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xs font-medium">{recommend === 'buy' ? 'Sell' : 'Buy'}</span>
-                    <span className="text-xs font-medium">{secondaryPct}%</span>
-                  </div>
-                </div>
+                <span 
+                  className="text-xs font-bold text-red-600 whitespace-nowrap"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                >SELL {sellPct.toFixed(1)}%</span>
               </div>
             );
           })()}
@@ -853,21 +878,42 @@ useEffect(() => {
           {/* Symbol Dropdown */}
           <div className="flex items-center space-x-1">
             <div className="relative">
-              <select
-                value={currentSymbol}
-                onChange={(e) => handleSymbolChange(e.target.value)}
-                className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-blue-200/50 focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
+              <div 
+                onMouseEnter={() => setIsSymbolDropdownOpen(true)}
+                onMouseLeave={() => setIsSymbolDropdownOpen(false)}
+                className="relative"
               >
-                {dropdownOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.flag ? `${option.flag} ` : ''}{option.label}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                <svg className="w-2 h-2 text-blue-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <button
+                  onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
+                  className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-blue-200/50 focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
+                >
+                  {dropdownOptions.find(opt => opt.value === currentSymbol)?.label || currentSymbol}
+                </button>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                  <svg className={`w-2 h-2 text-blue-600 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                
+                {/* Custom Dropdown Menu */}
+                {isSymbolDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {dropdownOptions.map(option => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          handleSymbolChange(option.value);
+                          setIsSymbolDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 transition-colors duration-150 ${
+                          option.value === currentSymbol ? 'bg-blue-100 text-blue-800 font-semibold' : 'text-gray-700'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -875,19 +921,26 @@ useEffect(() => {
           {/* Style Dropdown */}
           <div className="flex items-center space-x-1">
             <div className="relative">
-              <select
-                value={tradingStyle}
-                onChange={(e) => handleTradingStyleChange(e.target.value)}
-                className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-purple-200/50 focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
+              <div 
+                onMouseEnter={(e) => {
+                  const select = e.currentTarget.querySelector('select');
+                  if (select) select.click();
+                }}
               >
-                <option value="scalper">⚡ Scalper</option>
-                <option value="dayTrader">📈 Day Trader</option>
-                <option value="swingTrader">📊 Swing Trader</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                <svg className="w-2 h-2 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <select
+                  value={tradingStyle}
+                  onChange={(e) => handleTradingStyleChange(e.target.value)}
+                  className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-purple-200/50 focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
+                >
+                <option value="scalper">Scalper</option>
+                <option value="dayTrader">Day Trader</option>
+                <option value="swingTrader">Swing Trader</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                  <svg className="w-2 h-2 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -1052,29 +1105,20 @@ useEffect(() => {
         <table className="w-full border-collapse h-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left py-0.5 px-1 font-bold text-gray-700 text-sm w-16"><div className="ml-2">TF</div></th>
+              <th className="text-left py-0.5 px-1 font-bold text-gray-700 text-sm w-20"></th>
               {indicators.map(indicator => (
                 <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700">
-                  <span className="text-sm font-bold">{indicator}</span>
+                  <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="h-full">
-            {[...new Set(timeframes)].map((timeframe) => (
-              <tr key={timeframe} className="border-b border-slate-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30" style={{ height: 'calc(100% / ' + [...new Set(timeframes)].length + ')' }}>
+            {[...new Set(timeframes)].filter(tf => tf !== '1W').map((timeframe) => (
+              <tr key={timeframe} className="border-b border-slate-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30" style={{ height: 'calc(100% / ' + [...new Set(timeframes)].filter(tf => tf !== '1W').length + ')' }}>
                 <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
                   <div className="flex items-center space-x-1 ml-2">
-                    <span className="text-sm font-normal">{timeframe}</span>
-                    {/* Show status indicator for failed calculations in this timeframe */}
-                    {indicators.some(indicator => !indicatorData[timeframe]?.[indicator]?.hasData) && (
-                      <span 
-                        className="text-xs ml-1 text-red-500" 
-                        title="Some calculations failed - insufficient data"
-                      >
-                        ⚠️
-                      </span>
-                    )}
+                    <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>
                   </div>
                 </td>
                 {indicators.map(indicator => {
@@ -1085,16 +1129,72 @@ useEffect(() => {
                   return (
                     <td key={indicator} className="text-center py-1 px-1">
                       <div className="relative h-full flex items-center justify-center">
-                        <div 
-                          className={`inline-flex items-center justify-center w-16 h-8 rounded-lg font-semibold text-xs shadow-sm transition-all duration-200 ${
-                            hasData ? getCellColor(score) : 'bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
-                          }`}
+                        <button 
+                          className="button-31"
+                          style={hasData ? {
+                            backgroundColor: score > 0 ? '#03c05d' : score < 0 ? '#e03f4c' : '#d1d5db',
+                            borderRadius: '4px',
+                            borderStyle: 'none',
+                            boxSizing: 'border-box',
+                            color: '#fff',
+                            cursor: 'pointer',
+                            display: 'inline-block',
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            lineHeight: '1.5',
+                            margin: '0',
+                            maxWidth: 'none',
+                            minHeight: '32px',
+                            minWidth: '64px',
+                            outline: 'none',
+                            overflow: 'hidden',
+                            padding: '6px 8px',
+                            position: 'relative',
+                            textAlign: 'center',
+                            textTransform: 'none',
+                            userSelect: 'none',
+                            WebkitUserSelect: 'none',
+                            touchAction: 'manipulation',
+                            width: '64px',
+                            height: '32px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)'
+                          } : {
+                            backgroundColor: '#f3f4f6',
+                            color: '#9ca3af',
+                            border: '2px dashed #d1d5db',
+                            borderRadius: '4px',
+                            borderStyle: 'none',
+                            boxSizing: 'border-box',
+                            cursor: 'not-allowed',
+                            display: 'inline-block',
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            lineHeight: '1.5',
+                            margin: '0',
+                            maxWidth: 'none',
+                            minHeight: '32px',
+                            minWidth: '64px',
+                            outline: 'none',
+                            overflow: 'hidden',
+                            padding: '6px 8px',
+                            position: 'relative',
+                            textAlign: 'center',
+                            textTransform: 'none',
+                            userSelect: 'none',
+                            WebkitUserSelect: 'none',
+                            touchAction: 'manipulation',
+                            width: '64px',
+                            height: '32px'
+                          }}
                           title={
                             hasData ? `Signal: ${data.signal}, Score: ${score.toFixed(2)}` : data?.error || 'No data'
                           }
+                          disabled={!hasData}
                         >
                           {hasData ? getSignalText(score) : <span className="text-xs">⋯</span>}
-                        </div>
+                        </button>
                       </div>
                     </td>
                   );

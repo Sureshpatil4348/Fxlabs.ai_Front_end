@@ -7,7 +7,6 @@
   import Navbar from '../components/Navbar'
   import RSICorrelationDashboard from '../components/RSICorrelationDashboard'
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
-  import WishlistPanel from '../components/WishlistPanel'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketStore from '../store/useMarketStore'
 
@@ -81,14 +80,9 @@
               <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
             </div>
 
-            {/* Section 3rd - RSI Tracker (top right) */}
-            <div className="col-span-5 row-span-4">
+            {/* Section 3rd - RSI Tracker (top right) - Balanced height */}
+            <div className="col-span-5 row-span-5">
               <RSIOverboughtOversoldTracker />
-            </div>
-
-            {/* Section 4th - Wishlist Panel (middle right) */}
-            <div className="col-span-5 row-span-3">
-              <WishlistPanel />
             </div>
 
             {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
@@ -96,8 +90,8 @@
               <RSICorrelationDashboard />
             </div>
 
-            {/* Section 5th - AI News Analysis (bottom right) - Increased height */}
-            <div className="col-span-5 row-span-5 row-start-8">
+            {/* Section 5th - AI News Analysis (bottom right) - Balanced height */}
+            <div className="col-span-5 row-span-7 row-start-6">
               <AINewsAnalysis />
             </div>
 
