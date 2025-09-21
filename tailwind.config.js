@@ -48,7 +48,14 @@ module.exports = {
         }
       },
       fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace'],
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
       }
     },
   },

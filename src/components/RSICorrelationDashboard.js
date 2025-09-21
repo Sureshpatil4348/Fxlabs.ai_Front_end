@@ -28,14 +28,17 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     // Determine mismatch and styling per requirement
     const computedIsMismatch = (type === 'positive' && correlation < 0.25) || (type === 'negative' && correlation > -0.15);
     const isMismatch = correlationData.isMismatch !== undefined ? correlationData.isMismatch : computedIsMismatch;
-    const cardColor = isMismatch ? 'border-2 border-emerald-500 bg-white' : 'border-2 border-gray-300 bg-white';
-    const textColor = 'text-gray-700';
-    const iconColor = 'text-gray-500';
+    const cardColor = isMismatch ? 'border-2 border-gray-300' : 'border-2 border-gray-300 bg-white';
+    const textColor = isMismatch ? 'text-white' : 'text-gray-700';
+    const iconColor = isMismatch ? 'text-white' : 'text-gray-500';
     const highlightClass = '';
     
     if (isMobile) {
       return (
-        <div className={`p-1 pr-2 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
+        <div 
+          className={`p-1 pr-2 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}
+          style={isMismatch ? { backgroundColor: '#03c05d', borderColor: '#03c05d' } : {}}
+        >
           <div className="flex items-center justify-between mb-0">
             <div className="flex items-center space-x-1">
               <span className={`text-lg font-black ${iconColor}`}>
@@ -64,7 +67,10 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
     }
 
     return (
-      <div className={`p-0.5 pr-0.5 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
+      <div 
+        className={`p-0.5 pr-0.5 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}
+        style={isMismatch ? { backgroundColor: '#03c05d', borderColor: '#03c05d' } : {}}
+      >
         <div className="mb-0 text-center">
           <div className="flex items-center justify-center">
             <span className={`text-sm font-black ${iconColor}`}>
@@ -106,14 +112,17 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   
   // Styling for RSI threshold mode: mismatches green border, others grey
   const isMismatch = status === 'mismatch';
-  const cardColor = isMismatch ? 'border-2 border-emerald-500 bg-white' : 'border-2 border-gray-300 bg-white';
-  const textColor = 'text-gray-700';
-  const iconColor = 'text-gray-500';
+  const cardColor = isMismatch ? 'border-2 border-gray-300' : 'border-2 border-gray-300 bg-white';
+  const textColor = isMismatch ? 'text-white' : 'text-gray-700';
+  const iconColor = isMismatch ? 'text-white' : 'text-gray-500';
   const highlightClass = '';
 
   if (isMobile) {
     return (
-      <div className={`p-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
+      <div 
+        className={`p-1 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}
+        style={isMismatch ? { backgroundColor: '#03c05d', borderColor: '#03c05d' } : {}}
+      >
         <div className="flex items-center justify-between mb-0">
           <div className="flex items-center space-x-1">
             <span className={`text-lg font-black ${iconColor}`}>
@@ -142,7 +151,10 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
   }
 
   return (
-    <div className={`p-0.5 pr-0.5 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}>
+    <div 
+      className={`p-0.5 pr-0.5 rounded-md border transition-all duration-500 hover:shadow-sm ${cardColor} ${highlightClass}`}
+      style={isMismatch ? { backgroundColor: '#03c05d', borderColor: '#03c05d' } : {}}
+    >
       <div className="mb-0 text-center">
         <div className="flex items-center justify-center">
           <span className={`text-sm font-black ${iconColor}`}>
@@ -424,13 +436,6 @@ const RSICorrelationDashboard = () => {
             <BarChart3 className="w-5 h-5 text-blue-600" />
             <div>
               <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
-              <p className="widget-subtitle">
-                {localSettings.calculationMode === 'real_correlation' ? (
-                  `Correlation Window: ${localSettings.correlationWindow} | ${localSettings.timeframe}`
-                ) : (
-                  `Period: ${localSettings.rsiPeriod} | Overbought: ${localSettings.rsiOverbought} | Oversold: ${localSettings.rsiOversold} | ${localSettings.timeframe}`
-                )}
-              </p>
             </div>
           </div>
           <div className="flex items-center space-x-3 mt-1">

@@ -4,7 +4,44 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
-### Symbol Formatting Fix: Alert Creation and Updates (Latest)
+### Multi-Indicator Heatmap UI Enhancement (Latest)
+- **READABLE TIMEFRAME DISPLAY**: Updated timeframe labels from abbreviated format (1M, 5M, 15M) to readable format (1 Min, 5 Min, 15 Mins, 1 Hour, 4 Hours, 1 Day, 1 Week)
+- **READABLE INDICATOR NAMES**: Updated indicator labels (EMA21 → EMA 21, EMA50 → EMA 50, EMA200 → EMA 200, UTBOT → UT BOT, IchimokuClone → Ichimoku)
+- **ENHANCED BUY/SELL BUTTONS**: Updated Buy/Sell cell buttons with square design, proper colors (#03c05d for Buy, #e03f4c for Sell), and subtle shadow effects
+- **REMOVED TF HEADER**: Removed "TF" header from heatmap table for cleaner UI
+- **ENHANCED USER EXPERIENCE**: More intuitive timeframe and indicator display without changing business logic
+- **UI-ONLY CHANGES**: All business logic and calculations remain unchanged, only visual presentation improved
+
+### Typography Enhancement
+- **INTER MEDIUM FONT**: Updated entire dashboard to use Inter Medium (font-weight: 500) for consistent typography
+- **GLOBAL FONT APPLICATION**: Applied Inter Medium to all text elements across the dashboard and tabs
+- **ENHANCED READABILITY**: Improved text clarity and professional appearance with Inter font family
+- **FONT CONFIGURATION**: Updated Tailwind config to include Inter font family with proper weight definitions
+- **MONOSPACE PRESERVATION**: Maintained JetBrains Mono for code elements while applying Inter Medium to all other text
+
+### Dashboard Layout Optimization
+- **WATCHLIST SECTION REMOVED**: Removed the dedicated watchlist panel from the dashboard layout
+- **RSI TRACKER EXPANSION**: RSI Tracker height increased from 4 rows to 6 rows for better content visibility
+- **AI NEWS BALANCED**: AI News Analysis adjusted to 6 rows starting from row 7 to prevent congestion
+- **IMPROVED LAYOUT**: Better balance between RSI Tracker and AI News sections for optimal user experience
+- **INTEGRATED WATCHLIST**: Watchlist functionality is now fully integrated within the RSI Tracker component
+- **SPACE EFFICIENCY**: Better utilization of dashboard space with consolidated watchlist management
+
+### RSI Tracker Watchlist Integration
+- **WATCHLIST TOGGLE**: Added watchlist button to RSI Tracker header for seamless switching between RSI analysis and watchlist views
+- **Integrated Watchlist View**: Content area now converts to watchlist display when watchlist button is clicked
+- **Watchlist Management**: Users can view, manage, and remove symbols from their watchlist directly within the RSI Tracker
+- **Visual Indicators**: Watchlist button shows active state with blue highlighting when in watchlist mode
+- **Tab Navigation**: RSI tracker tabs (Oversold/Overbought) are hidden when in watchlist mode for cleaner interface
+- **Real-time Data**: Watchlist items display current RSI values, prices, and daily changes using live market data
+- **Enhanced Data Handling**: Proper symbol conversion (EURUSD → EURUSDm) for RSI data lookup
+- **Loading States**: Shows loading spinner when removing symbols from watchlist
+- **Error Handling**: Graceful handling of missing data with "--" placeholders
+- **Remove Functionality**: Users can remove symbols from watchlist with trash icon and loading feedback
+- **Empty State**: Clean empty state message when no watchlist items exist with helpful instructions
+- **Seamless Integration**: Leverages existing watchlist service and base market store for consistent data management
+
+### Symbol Formatting Fix: Alert Creation and Updates
 - **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
 - Updated all three alert services to apply symbol mapping in both `createAlert` and `updateAlert` methods
 - **Affected Services**: HeatmapAlertService, RSIAlertService, RSICorrelationAlertService

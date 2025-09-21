@@ -325,9 +325,6 @@ const CurrencyStrengthMeter = () => {
         <div className="widget-header flex items-center justify-between mb-2">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
-          <p className="widget-subtitle">
-            {settings.timeframe} • Updates on candle close
-          </p>
           <div className="flex items-center space-x-2 mt-1">
             {/* Connection status pill removed; status shown as top-right dot */}
             {strengthData.length === 0 && subscriptions.size > 0 && (
