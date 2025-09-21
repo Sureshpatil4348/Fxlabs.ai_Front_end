@@ -404,6 +404,32 @@ class RSICorrelationAlertService {
     const user = await this.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
 
+    // Map UI symbols to broker-specific symbols if correlation pairs are being updated
+    if (updates.correlationPairs) {
+      const mapSymbolsToBroker = (symbols) => {
+        const symbolMapping = {
+          "EURUSD": "EURUSDm",
+          "GBPUSD": "GBPUSDm", 
+          "USDJPY": "USDJPYm",
+          "USDCHF": "USDCHFm",
+          "AUDUSD": "AUDUSDm",
+          "USDCAD": "USDCADm",
+          "NZDUSD": "NZDUSDm",
+          "XAUUSD": "XAUUSDm",
+          "BTCUSD": "BTCUSDm",
+          "ETHUSD": "ETHUSDm"
+        };
+        return symbols.map(symbol => symbolMapping[symbol] || symbol);
+      };
+      
+      // Map correlation pairs (each pair is [symbol1, symbol2])
+      const mapCorrelationPairs = (pairs) => {
+        return pairs.map(pair => mapSymbolsToBroker(pair));
+      };
+      
+      updates.correlationPairs = mapCorrelationPairs(updates.correlationPairs);
+    }
+
     // Validate updates if they include configuration changes
     const configFields = [
       'correlationPairs', 'timeframes', 'calculationMode', 'alertConditions', 
