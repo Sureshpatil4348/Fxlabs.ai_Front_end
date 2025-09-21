@@ -4,7 +4,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
-### Critical Security Fix: RLS Policy Enforcement (Latest)
+### Symbol Formatting Fix: Alert Creation and Updates (Latest)
+- **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
+- Updated all three alert services to apply symbol mapping in both `createAlert` and `updateAlert` methods
+- **Affected Services**: HeatmapAlertService, RSIAlertService, RSICorrelationAlertService
+- **Implementation**: Added symbol mapping logic to `updateAlert` methods to ensure consistency between creation and updates
+- **Symbol Mapping**: EURUSD → EURUSDm, GBPUSD → GBPUSDm, USDJPY → USDJPYm, etc.
+- **Impact**: Ensures alerts work correctly with backend MT5 data regardless of whether they're created or updated
+
+### Critical Security Fix: RLS Policy Enforcement
 - **MAJOR SECURITY IMPROVEMENT**: Fixed critical vulnerability where end users could forge alert triggers
 - Updated RLS policies to restrict trigger insertion to alert owners only
 - Replaced unsafe `FOR INSERT WITH CHECK (true)` policies with proper ownership verification

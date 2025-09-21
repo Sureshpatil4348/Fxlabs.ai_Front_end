@@ -352,6 +352,26 @@ class HeatmapAlertService {
     const user = await this.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
 
+    // Map UI symbols to broker-specific symbols if pairs are being updated
+    if (updates.pairs) {
+      const mapSymbolsToBroker = (symbols) => {
+        const symbolMapping = {
+          "EURUSD": "EURUSDm",
+          "GBPUSD": "GBPUSDm", 
+          "USDJPY": "USDJPYm",
+          "USDCHF": "USDCHFm",
+          "AUDUSD": "AUDUSDm",
+          "USDCAD": "USDCADm",
+          "NZDUSD": "NZDUSDm",
+          "XAUUSD": "XAUUSDm",
+          "BTCUSD": "BTCUSDm",
+          "ETHUSD": "ETHUSDm"
+        };
+        return symbols.map(symbol => symbolMapping[symbol] || symbol);
+      };
+      updates.pairs = mapSymbolsToBroker(updates.pairs);
+    }
+
     // Validate updates if they include configuration changes
     // Include all fields that _validateAlertConfig actually validates
     const configFields = [
