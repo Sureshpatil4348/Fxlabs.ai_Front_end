@@ -422,11 +422,6 @@ const RSICorrelationDashboard = () => {
   return (
     <>
     <div className="widget-card px-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
-      <div
-        className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
-        aria-label={isConnected ? 'Connected' : 'Disconnected'}
-        title={isConnected ? 'Connected' : 'Disconnected'}
-      />
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
