@@ -2,8 +2,6 @@ import {
   TrendingUp, 
   BarChart3, 
   Shield, 
-  Zap, 
-  Target, 
   ArrowRight,
   Play,
   Star,
@@ -14,145 +12,184 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
+import useRSITrackerStore from '../store/useRSITrackerStore'
 
 const HeroSection = () => {
   const { user } = useAuth()
-  const [currentPrice, setCurrentPrice] = useState(1.2345)
-  const [priceChange, setPriceChange] = useState(0.0023)
+  const { 
+    ohlcData, 
+    tickData, 
+    isConnected,
+    connect,
+    subscribe
+  } = useRSITrackerStore()
+  
+  const [currentPrice, setCurrentPrice] = useState(0)
+  const [priceChange, setPriceChange] = useState(0)
   const [chartData, setChartData] = useState([])
   const [activeChart, setActiveChart] = useState(0)
+  const [selectedSymbol] = useState('EURUSDm')
   const _scale = 1
 
-  // Generate initial chart data
+  // Connect to real market data
   useEffect(() => {
-    const generateData = () => {
-      const data = []
-      let basePrice = 1.2300
-      for (let i = 0; i < 30; i++) {
-        const change = (Math.random() - 0.5) * 0.01
-        const newPrice = basePrice + change
-        
-        // Generate proper OHLC data
-        const open = basePrice
-        const close = newPrice
-        const high = Math.max(open, close) + Math.random() * 0.005
-        const low = Math.min(open, close) - Math.random() * 0.005
-        
-        data.push({
-          x: i,
-          y: close,
-          open: open,
-          high: high,
-          low: low,
-          close: close
-        })
-        basePrice = newPrice
-      }
-      return data
+    if (!isConnected) {
+      connect()
     }
-    setChartData(generateData())
-  }, [])
+  }, [isConnected, connect])
 
-  // Update price and chart data
+  // Subscribe to market data
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPrice(prev => {
-        const change = (Math.random() - 0.5) * 0.002
-        const newPrice = prev + change
-        setPriceChange(change)
-        return newPrice
+    if (isConnected) {
+      // Subscribe to main symbol for chart
+      subscribe(selectedSymbol, '1H', ['ticks', 'ohlc'])
+      
+      // Subscribe to additional pairs for live data
+      const livePairs = ['GBPUSDm', 'USDJPYm', 'AUDUSDm']
+      livePairs.forEach(symbol => {
+        subscribe(symbol, '1H', ['ticks', 'ohlc'])
       })
+    }
+  }, [isConnected, selectedSymbol, subscribe])
 
-      // Update chart data
-      setChartData(prev => {
-        const newData = [...prev]
-        const lastCandle = newData[newData.length - 1]
-        const change = (Math.random() - 0.5) * 0.01
-        
-        // Generate new candle with proper OHLC
-        const open = lastCandle.close
-        const close = open + change
-        const high = Math.max(open, close) + Math.random() * 0.005
-        const low = Math.min(open, close) - Math.random() * 0.005
-        
-        newData.shift() // Remove first point
-        newData.push({
-          x: newData.length,
-          y: close,
-          open: open,
-          high: high,
-          low: low,
-          close: close
+  // Update chart data from real market data
+  useEffect(() => {
+    // Try OHLC data first
+    const ohlcSymbolData = ohlcData.get(selectedSymbol)
+    if (ohlcSymbolData && ohlcSymbolData.bars && ohlcSymbolData.bars.length > 0) {
+      const bars = ohlcSymbolData.bars.slice(-30) // Get last 30 bars
+      const data = bars.map((bar, index) => ({
+        x: index,
+        y: bar.close,
+        open: bar.open,
+        high: bar.high,
+        low: bar.low,
+        close: bar.close
+      }))
+      setChartData(data)
+    } else {
+      // Fallback to tick data for line chart
+      const tickSymbolData = tickData.get(selectedSymbol)
+      if (tickSymbolData && tickSymbolData.ticks && tickSymbolData.ticks.length > 0) {
+        const ticks = tickSymbolData.ticks.slice(-30) // Get last 30 ticks
+        const data = ticks.map((tick, index) => {
+          const price = tick.bid || tick.ask || tick.price || tick.close || 0
+          return {
+            x: index,
+            y: price,
+            open: price,
+            high: price,
+            low: price,
+            close: price,
+            volume: Math.abs(tick.change || 0) * 1000 || 0 // Calculate volume from price change
+          }
         })
-        return newData
-      })
-    }, 1500)
+        setChartData(data)
+      } else {
+        // No data available
+        setChartData([])
+      }
+    }
+  }, [ohlcData, tickData, selectedSymbol])
 
-    return () => clearInterval(interval)
-  }, [])
+  // Update price from real tick data
+  useEffect(() => {
+    const symbolData = tickData.get(selectedSymbol)
+    if (symbolData && symbolData.ticks && symbolData.ticks.length > 0) {
+      // Get the latest tick (last element in the array)
+      const latestTick = symbolData.ticks[symbolData.ticks.length - 1]
+      if (latestTick && latestTick.bid) {
+        const newPrice = latestTick.bid
+        setCurrentPrice(prev => {
+          const change = newPrice - prev
+          setPriceChange(change)
+          return newPrice
+        })
+      }
+    }
+  }, [tickData, selectedSymbol])
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Animated Background Elements */}
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900">
+      {/* Matrix-Style Animated Background Elements */}
       <div className="absolute inset-0">
-        {/* Floating Trading Symbols */}
+        {/* Floating Particles */}
         <div className="absolute top-20 left-10 w-4 h-4 bg-green-400 rounded-full animate-pulse opacity-60"></div>
         <div className="absolute top-40 right-20 w-6 h-6 bg-blue-400 rounded-full animate-bounce opacity-40"></div>
         <div className="absolute bottom-40 left-20 w-3 h-3 bg-yellow-400 rounded-full animate-ping opacity-50"></div>
         <div className="absolute top-60 right-40 w-5 h-5 bg-purple-400 rounded-full animate-pulse opacity-30"></div>
         
-        {/* Grid Pattern Overlay */}
+        {/* Matrix Grid Pattern */}
         <div className="absolute inset-0 opacity-20">
           <div className="w-full h-full" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundRepeat: 'repeat'
+            backgroundImage: `
+              linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            animation: 'gridMove 20s linear infinite'
           }}></div>
         </div>
         
-        {/* Gradient Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        {/* Matrix-Style Gradient Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-yellow-500/5 to-orange-500/5 rounded-full blur-2xl animate-pulse delay-500"></div>
+        
+        {/* Matrix Code Rain Effect */}
+        <div className="absolute inset-0 opacity-5">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-green-400 font-mono text-xs animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${3 + Math.random() * 4}s`
+              }}
+            >
+              {Math.random().toString(36).substring(2, 8)}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           
           {/* Left Side - Text Content */}
-          <div className="space-y-8">
-            {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2 text-green-400 text-sm font-medium">
+          <div className="space-y-6">
+            {/* Premium Badge */}
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-6 py-3 text-green-400 text-sm font-semibold shadow-lg shadow-green-500/20 backdrop-blur-sm">
               <Sparkles className="w-4 h-4" />
               <span>AI-Powered Trading Intelligence</span>
             </div>
 
-            {/* Main Headline with Gradient */}
+            {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+              <h1 className="text-4xl md:text-5xl font-bold leading-tight text-left">
                 <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent animate-pulse">
-                  Decode
-                </span>
-                <br />
-                <span className="text-white">
-                  the Market
+                  Advanced Trading
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-green-400 bg-clip-text text-transparent">
-                  with AI
+                  Intelligence Platform
                 </span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-gray-300 leading-relaxed max-w-2xl">
-                Transform your forex trading with <span className="text-green-400 font-semibold">real-time RSI analysis</span>, 
-                <span className="text-blue-400 font-semibold"> AI-powered insights</span>, and 
-                <span className="text-purple-400 font-semibold"> professional-grade tools</span>
+              <p className="text-lg text-gray-300 leading-relaxed max-w-xl text-left">
+                Professional-grade AI tools for <span className="text-green-400 font-semibold">market analysis</span>, 
+                <span className="text-blue-400 font-semibold"> real-time insights</span>, and 
+                <span className="text-emerald-400 font-semibold"> precision trading</span>
               </p>
             </div>
 
-            {/* Key Benefits */}
+            {/* Key Features */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3 text-gray-300">
                 <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <span>Real-time RSI Correlation</span>
+                <span>AI Chart Analysis</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-300">
                 <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
@@ -160,106 +197,152 @@ const HeroSection = () => {
               </div>
               <div className="flex items-center space-x-3 text-gray-300">
                 <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <span>Currency Strength Meter</span>
+                <span>Real-time RSI Updates</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-300">
                 <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <span>Professional Dashboard</span>
+                <span>Daily Market Overview</span>
               </div>
             </div>
 
-            {/* CTA Buttons */}
+            {/* Premium CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               {user ? (
                 <Link
                   to="/dashboard"
-                  className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold text-lg rounded-xl transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
                 >
-                  <BarChart3 className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                  <BarChart3 className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Go to Dashboard</span>
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               ) : (
                 <Link
                   to="/login"
-                  className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold text-lg rounded-xl transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
                 >
-                  <Shield className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-                  <span>Start Trading Now</span>
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Shield className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                  <span>Get Started Now</span>
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               )}
               
-              <button className="group inline-flex items-center justify-center px-8 py-4 border-2 border-gray-600 hover:border-green-400 text-gray-300 hover:text-white font-semibold text-lg rounded-xl transition-all duration-300 backdrop-blur-sm">
-                <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
+              <button className="group inline-flex items-center justify-center px-6 py-3 border-2 border-gray-600 hover:border-green-400 text-gray-300 hover:text-white font-semibold text-base rounded-xl transition-all duration-300 backdrop-blur-sm">
+                <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
                 <span>Watch Demo</span>
               </button>
             </div>
 
-            {/* Trust Indicators */}
+            {/* Premium Trust Indicators */}
             <div className="flex items-center space-x-6 pt-4">
               <div className="flex items-center space-x-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                  <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
                 ))}
-                <span className="text-gray-400 text-sm ml-2">4.9/5 Rating</span>
+                <span className="text-gray-400 text-xs ml-2">4.9/5 Rating</span>
               </div>
-              <div className="text-gray-400 text-sm">
+              <div className="text-gray-400 text-xs">
                 <span className="text-green-400 font-semibold">10,000+</span> Active Traders
               </div>
             </div>
           </div>
 
-          {/* Right Side - Visual Element */}
-          <div className="relative">
-            {/* Main Trading Visual Container */}
-            <div className="relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-600/50 shadow-2xl">
+          {/* Right Side - Supreme Professional Visual */}
+          <div className="relative group">
+            {/* Matrix-Style Trading Visual Container */}
+            <div className="relative bg-black/20 backdrop-blur-xl rounded-3xl p-6 border border-green-500/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
+                 style={{
+                   transformStyle: 'preserve-3d',
+                   perspective: '1000px',
+                   background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(16,185,129,0.1) 50%, rgba(0,0,0,0.2) 100%)',
+                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.2)'
+                 }}>
               
-              {/* Animated Trading Dashboard Mockup */}
-              <div className="space-y-6">
-                {/* Header */}
+              {/* Matrix Pattern Overlay */}
+              <div className="absolute inset-0 opacity-10">
+                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <defs>
+                    <pattern id="matrixGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#10b981" strokeWidth="0.5"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#matrixGrid)" />
+                </svg>
+              </div>
+              
+              {/* Matrix Corner Accents */}
+              <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-green-500/30 to-transparent rounded-br-3xl"></div>
+              <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-emerald-500/30 to-transparent rounded-tl-3xl"></div>
+              
+              {/* Matrix Professional Dashboard */}
+              <div className="relative space-y-4 z-10">
+                {/* Compact Matrix Header */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   </div>
-                  <div className="text-gray-400 text-sm font-mono">FXLabs.AI Dashboard</div>
+                  <div className="flex items-center space-x-2 bg-green-500/10 backdrop-blur-md rounded-xl px-4 py-2 border border-green-500/20">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-white text-xs font-semibold tracking-wide">FXLabs.AI</span>
+                    <div className="w-1 h-1 bg-emerald-400 rounded-full animate-ping"></div>
+                  </div>
                 </div>
 
-                {/* Chart Tabs */}
+                {/* Compact Chart Tabs */}
                 <div className="flex space-x-2 mb-4">
-                  {['Line Chart', 'Candlestick', 'Volume'].map((tab, index) => (
+                  {['Line Chart', 'Candlestick'].map((tab, index) => (
                     <button
                       key={tab}
                       onClick={() => setActiveChart(index)}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 ${
+                      className={`relative px-4 py-2 rounded-lg text-xs font-medium transition-all duration-500 ${
                         activeChart === index
-                          ? 'bg-green-500 text-white shadow-lg'
-                          : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
+                          ? 'bg-green-500/20 text-white border border-green-500/30 shadow-lg backdrop-blur-md'
+                          : 'bg-white/5 text-gray-300 hover:bg-green-500/10 hover:text-white border border-white/10 backdrop-blur-sm'
                       }`}
+                      style={{
+                        background: activeChart === index 
+                          ? 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.1) 100%)'
+                          : 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
+                      }}
                     >
-                      {tab}
+                      <div className="flex items-center space-x-1">
+                        <span className="text-xs">{index === 0 ? '📈' : '🕯️'}</span>
+                        <span className="tracking-wide">{tab}</span>
+                      </div>
                     </button>
                   ))}
                 </div>
 
-                {/* Trading Chart Area */}
-                <div className="bg-gray-800/90 rounded-2xl p-6 border border-gray-600/50">
+                {/* Matrix Chart Area */}
+                <div className="bg-black/20 backdrop-blur-xl rounded-xl p-4 border border-green-500/20 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="w-5 h-5 text-green-400" />
-                      <span className="text-white font-semibold">EUR/USD</span>
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center border border-green-500/20">
+                        <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <span className="text-white font-bold text-sm tracking-wide">EUR/USD</span>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <span className="text-emerald-300 text-xs font-medium tracking-wider">LIVE</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className={`font-mono text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {currentPrice.toFixed(4)} {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(4)}
+                    <div className="text-right">
+                      <div className={`font-mono text-sm font-bold ${priceChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {currentPrice.toFixed(4)}
+                      </div>
+                      <div className={`text-xs font-medium ${priceChange >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                        {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(4)}
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Working Line Chart */}
+                  {/* Matrix Line Chart */}
                   {activeChart === 0 && (
-                    <div className="relative h-40 bg-gray-700/70 rounded-lg p-4">
+                    <div className="relative h-32 bg-black/30 backdrop-blur-sm rounded-lg p-3 border border-green-500/10">
                       <svg className="w-full h-full" viewBox="0 0 300 120">
                         {/* Grid lines */}
                         <defs>
@@ -270,29 +353,53 @@ const HeroSection = () => {
                         <rect width="100%" height="100%" fill="url(#grid)" />
                         
                         {/* Line chart */}
-                        {chartData.length > 1 && (
-                          <path
-                            d={`M ${chartData[0].x * 10},${120 - ((chartData[0].y - 1.2) * 1000)} ${chartData.slice(1).map(point => 
-                              `L ${point.x * 10},${120 - ((point.y - 1.2) * 1000)}`
-                            ).join(' ')}`}
-                            stroke="url(#lineGradient)"
-                            strokeWidth="2"
-                            fill="none"
-                            className="animate-pulse"
-                          />
-                        )}
+                        {chartData.length > 1 && (() => {
+                          // Calculate proper scaling for real market data
+                          const prices = chartData.map(point => point.y)
+                          const minPrice = Math.min(...prices)
+                          const maxPrice = Math.max(...prices)
+                          const priceRange = maxPrice - minPrice || 0.01 // Avoid division by zero
+                          
+                          // Scale prices to fit in the chart area (10 to 110 pixels)
+                          const scaleY = (price) => 110 - ((price - minPrice) / priceRange) * 100
+                          const scaleX = (index) => (index / (chartData.length - 1)) * 280 + 10
+                          
+                          const pathData = chartData.map((point, index) => 
+                            `${index === 0 ? 'M' : 'L'} ${scaleX(index)},${scaleY(point.y)}`
+                          ).join(' ')
+                          
+                          return (
+                            <path
+                              d={pathData}
+                              stroke="url(#lineGradient)"
+                              strokeWidth="2"
+                              fill="none"
+                              className="animate-pulse"
+                            />
+                          )
+                        })()}
                         
                         {/* Data points */}
-                        {chartData.map((point, index) => (
-                          <circle
-                            key={index}
-                            cx={point.x * 10}
-                            cy={120 - ((point.y - 1.2) * 1000)}
-                            r="2"
-                            fill="#10b981"
-                            className="animate-pulse"
-                          />
-                        ))}
+                        {chartData.length > 0 && (() => {
+                          const prices = chartData.map(point => point.y)
+                          const minPrice = Math.min(...prices)
+                          const maxPrice = Math.max(...prices)
+                          const priceRange = maxPrice - minPrice || 0.01
+                          
+                          const scaleY = (price) => 110 - ((price - minPrice) / priceRange) * 100
+                          const scaleX = (index) => (index / (chartData.length - 1)) * 280 + 10
+                          
+                          return chartData.map((point, index) => (
+                            <circle
+                              key={index}
+                              cx={scaleX(index)}
+                              cy={scaleY(point.y)}
+                              r="2"
+                              fill="#10b981"
+                              className="animate-pulse"
+                            />
+                          ))
+                        })()}
                         
                         <defs>
                           <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -305,9 +412,9 @@ const HeroSection = () => {
                     </div>
                   )}
 
-                  {/* Working Candlestick Chart */}
+                  {/* Matrix Candlestick Chart */}
                   {activeChart === 1 && (
-                    <div className="relative h-40 bg-gray-700/70 rounded-lg p-4">
+                    <div className="relative h-32 bg-black/30 backdrop-blur-sm rounded-lg p-3 border border-green-500/10">
                       <svg className="w-full h-full" viewBox="0 0 300 120">
                         {chartData.slice(-20).map((candle, index) => {
                           const x = index * 14 + 15
@@ -358,103 +465,85 @@ const HeroSection = () => {
                     </div>
                   )}
 
-                  {/* Volume Chart */}
-                  {activeChart === 2 && (
-                    <div className="relative h-40 bg-gray-700/70 rounded-lg p-4">
-                      <svg className="w-full h-full" viewBox="0 0 300 120">
-                        {chartData.slice(-20).map((point, index) => {
-                          const x = index * 15 + 10
-                          const volume = Math.random() * 100
-                          const height = volume * 0.8
-                          
-                          return (
-                            <rect
-                              key={index}
-                              x={x - 3}
-                              y={120 - height}
-                              width="6"
-                              height={height}
-                              fill="#06b6d4"
-                              opacity="0.7"
-                              className="animate-pulse"
-                            />
-                          )
-                        })}
-                      </svg>
-                    </div>
-                  )}
-                </div>
-
-                {/* Dynamic Indicators */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-800/90 rounded-xl p-4 border border-gray-600/50">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Target className="w-4 h-4 text-blue-400" />
-                      <span className="text-gray-300 text-sm">RSI</span>
-                    </div>
-                    <div className="text-green-400 font-mono text-lg">
-                      {(30 + Math.random() * 40).toFixed(1)}
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
-                      <div 
-                        className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${30 + Math.random() * 40}%` }}
-                      ></div>
-                    </div>
-                  </div>
                   
-                  <div className="bg-gray-800/90 rounded-xl p-4 border border-gray-600/50">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Zap className="w-4 h-4 text-purple-400" />
-                      <span className="text-gray-300 text-sm">Volume</span>
-                    </div>
-                    <div className="text-purple-400 font-mono text-lg">
-                      {(Math.random() * 1000).toFixed(0)}K
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
-                      <div 
-                        className="bg-gradient-to-r from-purple-400 to-pink-400 h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${Math.random() * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
                 </div>
 
-                {/* Live Data Feed */}
-                <div className="bg-gray-800/90 rounded-xl p-4 border border-gray-600/50">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-gray-300 text-sm">Live Market Data</span>
+               
+
+                {/* Compact Live Data Feed */}
+                <div className="bg-black/20 rounded-lg p-3 border border-green-500/20">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-gray-300 text-xs font-medium">Live Market Data</span>
                   </div>
                   <div className="space-y-2">
-                    {[
-                      { pair: 'GBP/USD', price: 1.2650 + (Math.random() - 0.5) * 0.01, change: (Math.random() - 0.5) * 0.005 },
-                      { pair: 'USD/JPY', price: 149.50 + (Math.random() - 0.5) * 0.5, change: (Math.random() - 0.5) * 0.1 },
-                      { pair: 'AUD/USD', price: 0.6580 + (Math.random() - 0.5) * 0.005, change: (Math.random() - 0.5) * 0.002 }
-                    ].map((item, index) => {
-                      const isPositive = item.change >= 0
-                      return (
-                        <div key={index} className="flex justify-between text-sm">
-                          <span className="text-gray-400">{item.pair}</span>
-                          <div className="text-right">
-                            <div className="text-white font-mono">{item.price.toFixed(4)}</div>
-                            <div className={`text-xs ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                              {isPositive ? '+' : ''}{item.change.toFixed(4)}
+                    {(() => {
+                      const livePairs = [
+                        { symbol: 'GBPUSDm', display: 'GBP/USD' },
+                        { symbol: 'USDJPYm', display: 'USD/JPY' },
+                        { symbol: 'AUDUSDm', display: 'AUD/USD' }
+                      ]
+                      
+                      // Filter pairs that have real data
+                      const pairsWithData = livePairs.filter(pair => {
+                        const symbolData = tickData.get(pair.symbol)
+                        if (!symbolData || !symbolData.ticks || symbolData.ticks.length === 0) return false
+                        
+                        // Get the latest tick
+                        const latestTick = symbolData.ticks[symbolData.ticks.length - 1]
+                        if (!latestTick) return false
+                        
+                        const price = latestTick.bid || latestTick.ask || latestTick.price || latestTick.close || 0
+                        return price > 0
+                      })
+                      
+                      // If no pairs have data, show a message
+                      if (pairsWithData.length === 0) {
+                        return (
+                          <div className="text-center text-gray-400 text-sm py-4">
+                            Waiting for market data...
+                          </div>
+                        )
+                      }
+                      
+                      return pairsWithData.map((pair, index) => {
+                        const symbolData = tickData.get(pair.symbol)
+                        // Get the latest tick
+                        const latestTick = symbolData.ticks[symbolData.ticks.length - 1]
+                        
+                        // We know this pair has data, so extract it
+                        const price = latestTick.bid || latestTick.ask || latestTick.price || latestTick.close || 0
+                        const change = latestTick.change || latestTick.point || 0
+                        const isPositive = change >= 0
+                        
+                        return (
+                          <div key={index} className="flex justify-between text-xs">
+                            <span className="text-gray-400 font-medium">{pair.display}</span>
+                            <div className="text-right">
+                              <div className="text-white font-mono font-bold text-sm">
+                                {price.toFixed(4)}
+                              </div>
+                              <div className={`text-xs font-medium ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {change !== 0 ? (isPositive ? '+' : '') + change.toFixed(4) : '0.0000'}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })
+                    })()}
                   </div>
                 </div>
               </div>
 
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                <TrendingUp className="w-4 h-4 text-white" />
+              {/* Matrix Floating Elements */}
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-500/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-green-500/20 shadow-lg animate-bounce">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
               </div>
-              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                <BarChart3 className="w-3 h-3 text-white" />
+              <div className="absolute -bottom-4 -left-4 w-7 h-7 bg-green-500/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-green-500/20 shadow-lg animate-pulse">
+                <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
+              </div>
+              <div className="absolute top-1/2 -right-6 w-6 h-6 bg-green-500/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-green-500/20 shadow-lg animate-ping">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
               </div>
             </div>
           </div>
@@ -463,6 +552,16 @@ const HeroSection = () => {
 
       {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-900 to-transparent"></div>
+      
+      {/* Matrix CSS Animations */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+          }
+        `
+      }} />
     </section>
   )
 }

@@ -447,10 +447,10 @@ const RSICorrelationDashboard = () => {
           {/* Calculation Mode Toggle */}
           <button
             onClick={handleCalculationModeToggle}
-            className={`px-3 py-2 text-xs font-medium rounded-xl transition-all duration-300 flex items-center space-x-2 shadow-md hover:shadow-lg hover:scale-105 ${
+            className={`px-3 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md ${
               localSettings.calculationMode === 'real_correlation'
-                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border border-blue-200/50'
-                : 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 border border-slate-200/50'
+                ? 'text-blue-600 bg-blue-100 shadow-blue-200'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 shadow-gray-200'
             }`}
             title={`Switch to ${localSettings.calculationMode === 'rsi_threshold' ? 'Real Correlation' : 'RSI Threshold'} mode`}
           >

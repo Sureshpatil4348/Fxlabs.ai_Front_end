@@ -1,4 +1,4 @@
-import { LogIn, TrendingUp, BarChart3 } from 'lucide-react'
+import { LogIn, BarChart3 } from 'lucide-react'
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -19,21 +19,14 @@ const Navbar = () => {
       <header className="bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-600/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-16">
-            {/* Logo Section - Subtle Extreme Left */}
-            <div className="flex items-center -ml-8 sm:-ml-16 lg:-ml-20 xl:-ml-28 2xl:-ml-36">
-              <Link to="/" className="flex items-center space-x-3 group">
-                <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-green-400 font-bold text-xl leading-none group-hover:text-green-300 transition-colors duration-300">
-                    FX<span className="text-gray-300 font-normal">LABS</span>
-                  </div>
-                  <div className="text-gray-400 text-xs leading-none">Decode the Market</div>
-                </div>
+            {/* Logo Section - Raw Logo */}
+            <div className="flex items-center -ml-10 sm:-ml-16 lg:-ml-28 xl:-ml-36 2xl:-ml-36">
+              <Link to="/" className="group">
+                <img 
+                  src={require('../assets/logo1.png')} 
+                  alt="FXLabs Logo" 
+                  className="w-48 h-48 object-contain filter brightness-110 contrast-110 transition-all duration-300 group-hover:scale-105"
+                />
               </Link>
             </div>
             

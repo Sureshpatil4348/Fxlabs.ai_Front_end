@@ -80,9 +80,9 @@
               <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
             </div>
 
-            {/* Section 3rd - RSI Tracker (top right) - Balanced height */}
-            <div className="col-span-5 row-span-5">
-              <RSIOverboughtOversoldTracker />
+            {/* Section 3rd - AI News Analysis (top right) - Further increased height */}
+            <div className="col-span-5 row-span-7">
+              <AINewsAnalysis />
             </div>
 
             {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
@@ -90,9 +90,9 @@
               <RSICorrelationDashboard />
             </div>
 
-            {/* Section 5th - AI News Analysis (bottom right) - Balanced height */}
-            <div className="col-span-5 row-span-7 row-start-6">
-              <AINewsAnalysis />
+            {/* Section 5th - RSI Tracker (bottom right) - Further reduced height */}
+            <div className="col-span-5 row-span-5 row-start-8">
+              <RSIOverboughtOversoldTracker />
             </div>
 
           </div>
