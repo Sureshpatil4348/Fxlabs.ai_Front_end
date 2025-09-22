@@ -23,15 +23,19 @@ const TradingDashboardSection = () => {
   const _connectionAttempts = useMarketStore(state => state.globalConnectionState.connectionAttempts)
   const _dashboardConnections = useMarketStore(state => state.globalConnectionState.dashboardConnections)
 
-  const { loadTabState, tabStateHasLoaded } = useBaseMarketStore()
+  const { loadTabState } = useBaseMarketStore()
 
   useEffect(() => {
-    // Only reset if we're dealing with a different user
+    // Only reset if we're dealing with a different user (or no user for public access)
     if (user?.id && connectionInitiated.current !== user.id) {
       connectionInitiated.current = user.id
       useMarketStore.getState().initiateGlobalConnection()
+    } else if (!user && !connectionInitiated.current) {
+      // For public access, initialize connection once
+      connectionInitiated.current = 'public'
+      useMarketStore.getState().initiateGlobalConnection()
     }
-  }, [user?.id])
+  }, [user])
 
   useEffect(() => {
     useBaseMarketStore.getState().fetchNews()
@@ -113,14 +117,14 @@ const TradingDashboardSection = () => {
   }, [])
 
 
-  // Wait for user tab state to load before rendering widgets so their initial state matches persisted preferences
-  if (!tabStateHasLoaded) {
-    return (
-      <div className="relative h-screen bg-gray-100 overflow-hidden flex items-center justify-center">
-        <div className="text-center text-sm text-gray-600">Loading your dashboard preferences…</div>
-      </div>
-    )
-  }
+  // Load tab state in background (optional for public access)
+  React.useEffect(() => {
+    if (user) {
+      loadTabState().catch(error => {
+        console.error('Failed to load tab states:', error);
+      });
+    }
+  }, [user, loadTabState]);
 
 
   return (

@@ -272,6 +272,9 @@ const RSICorrelationDashboard = () => {
         }
       };
       loadActiveRSICorrelationAlertsCount();
+    } else {
+      // For public access, set count to 0
+      setActiveRSICorrelationAlertsCount(0);
     }
   };
 
@@ -287,6 +290,9 @@ const RSICorrelationDashboard = () => {
         }
       };
       loadActiveRSICorrelationAlertsCount();
+    } else {
+      // For public access, set count to 0
+      setActiveRSICorrelationAlertsCount(0);
     }
   }, [user]);
 
@@ -294,30 +300,31 @@ const RSICorrelationDashboard = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const savedSettings = await userStateService.getUserDashboardSettings();
-        if (savedSettings.rsiCorrelation) {
-          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
-          
-          // Update local settings state
-          setLocalSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold,
-            correlationWindow: correlationWindow || settings.correlationWindow,
-            calculationMode: calculationMode || settings.calculationMode
-          });
+        if (user) {
+          const savedSettings = await userStateService.getUserDashboardSettings();
+          if (savedSettings.rsiCorrelation) {
+            const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
+            
+            // Update local settings state
+            setLocalSettings({
+              timeframe: timeframe || settings.timeframe,
+              rsiPeriod: rsiPeriod || settings.rsiPeriod,
+              rsiOverbought: rsiOverbought || settings.rsiOverbought,
+              rsiOversold: rsiOversold || settings.rsiOversold,
+              correlationWindow: correlationWindow || settings.correlationWindow,
+              calculationMode: calculationMode || settings.calculationMode
+            });
 
-          // Update store settings
-          updateSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold,
-            correlationWindow: correlationWindow || settings.correlationWindow,
-            calculationMode: calculationMode || settings.calculationMode
-          });
-
+            // Update store settings
+            updateSettings({
+              timeframe: timeframe || settings.timeframe,
+              rsiPeriod: rsiPeriod || settings.rsiPeriod,
+              rsiOverbought: rsiOverbought || settings.rsiOverbought,
+              rsiOversold: rsiOversold || settings.rsiOversold,
+              correlationWindow: correlationWindow || settings.correlationWindow,
+              calculationMode: calculationMode || settings.calculationMode
+            });
+          }
         }
       } catch (error) {
         console.error('❌ Failed to load RSI Correlation settings:', error);
@@ -325,7 +332,7 @@ const RSICorrelationDashboard = () => {
     };
 
     loadSettings();
-  }, [settings.calculationMode, settings.correlationWindow, settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings]);
+  }, [settings.calculationMode, settings.correlationWindow, settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings, user]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -349,17 +356,19 @@ const RSICorrelationDashboard = () => {
         calculationMode: localSettings.calculationMode
       });
 
-      // Persist to database
-      await userStateService.updateUserDashboardSettings({
-        rsiCorrelation: {
-          timeframe: localSettings.timeframe,
-          rsiPeriod: localSettings.rsiPeriod,
-          rsiOverbought: localSettings.rsiOverbought,
-          rsiOversold: localSettings.rsiOversold,
-          correlationWindow: localSettings.correlationWindow,
-          calculationMode: localSettings.calculationMode
-        }
-      });
+      // Persist to database (only if user is logged in)
+      if (user) {
+        await userStateService.updateUserDashboardSettings({
+          rsiCorrelation: {
+            timeframe: localSettings.timeframe,
+            rsiPeriod: localSettings.rsiPeriod,
+            rsiOverbought: localSettings.rsiOverbought,
+            rsiOversold: localSettings.rsiOversold,
+            correlationWindow: localSettings.correlationWindow,
+            calculationMode: localSettings.calculationMode
+          }
+        });
+      }
 
       setShowSettings(false);
     } catch (error) {

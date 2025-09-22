@@ -21,7 +21,7 @@
     const connectionAttempts = useMarketStore(state => state.globalConnectionState.connectionAttempts)
     const dashboardConnections = useMarketStore(state => state.globalConnectionState.dashboardConnections)
 
-  const { loadTabState, tabStateHasLoaded } = useBaseMarketStore();
+  const { loadTabState, tabStateHasLoaded: _tabStateHasLoaded } = useBaseMarketStore();
 
     React.useEffect(() => {
       // Only reset if we're dealing with a different user
@@ -39,21 +39,12 @@
       return () => clearInterval(newsInterval)
     }, [])
 
-    // Load user tab states on dashboard mount
+    // Load user tab states on dashboard mount (optional)
     React.useEffect(() => {
       loadTabState().catch(error => {
         console.error('Failed to load tab states:', error);
       });
     }, [loadTabState]);
-
-    // Wait for user tab state to load before rendering widgets so their initial state matches persisted preferences
-    if (!tabStateHasLoaded) {
-      return (
-        <div className="relative h-screen bg-gray-100 overflow-hidden flex items-center justify-center">
-          <div className="text-center text-sm text-gray-600">Loading your dashboard preferences…</div>
-        </div>
-      )
-    }
 
     return (
       <div className="relative h-screen bg-gray-100 overflow-hidden flex flex-col">

@@ -1,16 +1,17 @@
 import { LogIn, BarChart3 } from 'lucide-react'
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
+import LoginModal from './LoginModal'
 import UserProfileDropdown from './UserProfileDropdown'
 import { useAuth } from '../auth/AuthProvider'
 
 const Navbar = () => {
   const { user } = useAuth()
-  const navigate = useNavigate()
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const handleLoginClick = () => {
-    navigate('/login')
+    setIsLoginModalOpen(true)
   }
 
 
@@ -63,6 +64,12 @@ const Navbar = () => {
           </div>
         </div>
       </header>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </>
   )
 }
