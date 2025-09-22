@@ -345,11 +345,6 @@ const RSIOverboughtOversoldTracker = () => {
   return (
     <>
     <div className="widget-card px-4 pb-4 h-full flex flex-col z-10 relative">
-      <div
-        className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
-        aria-label={isConnected ? 'Connected' : 'Disconnected'}
-        title={isConnected ? 'Connected' : 'Disconnected'}
-      />
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}

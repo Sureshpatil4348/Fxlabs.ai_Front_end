@@ -272,6 +272,9 @@ const RSICorrelationDashboard = () => {
         }
       };
       loadActiveRSICorrelationAlertsCount();
+    } else {
+      // For public access, set count to 0
+      setActiveRSICorrelationAlertsCount(0);
     }
   };
 
@@ -287,6 +290,9 @@ const RSICorrelationDashboard = () => {
         }
       };
       loadActiveRSICorrelationAlertsCount();
+    } else {
+      // For public access, set count to 0
+      setActiveRSICorrelationAlertsCount(0);
     }
   }, [user]);
 
@@ -294,30 +300,31 @@ const RSICorrelationDashboard = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const savedSettings = await userStateService.getUserDashboardSettings();
-        if (savedSettings.rsiCorrelation) {
-          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
-          
-          // Update local settings state
-          setLocalSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold,
-            correlationWindow: correlationWindow || settings.correlationWindow,
-            calculationMode: calculationMode || settings.calculationMode
-          });
+        if (user) {
+          const savedSettings = await userStateService.getUserDashboardSettings();
+          if (savedSettings.rsiCorrelation) {
+            const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
+            
+            // Update local settings state
+            setLocalSettings({
+              timeframe: timeframe || settings.timeframe,
+              rsiPeriod: rsiPeriod || settings.rsiPeriod,
+              rsiOverbought: rsiOverbought || settings.rsiOverbought,
+              rsiOversold: rsiOversold || settings.rsiOversold,
+              correlationWindow: correlationWindow || settings.correlationWindow,
+              calculationMode: calculationMode || settings.calculationMode
+            });
 
-          // Update store settings
-          updateSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold,
-            correlationWindow: correlationWindow || settings.correlationWindow,
-            calculationMode: calculationMode || settings.calculationMode
-          });
-
+            // Update store settings
+            updateSettings({
+              timeframe: timeframe || settings.timeframe,
+              rsiPeriod: rsiPeriod || settings.rsiPeriod,
+              rsiOverbought: rsiOverbought || settings.rsiOverbought,
+              rsiOversold: rsiOversold || settings.rsiOversold,
+              correlationWindow: correlationWindow || settings.correlationWindow,
+              calculationMode: calculationMode || settings.calculationMode
+            });
+          }
         }
       } catch (error) {
         console.error('❌ Failed to load RSI Correlation settings:', error);
@@ -325,7 +332,7 @@ const RSICorrelationDashboard = () => {
     };
 
     loadSettings();
-  }, [settings.calculationMode, settings.correlationWindow, settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings]);
+  }, [settings.calculationMode, settings.correlationWindow, settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings, user]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -349,17 +356,19 @@ const RSICorrelationDashboard = () => {
         calculationMode: localSettings.calculationMode
       });
 
-      // Persist to database
-      await userStateService.updateUserDashboardSettings({
-        rsiCorrelation: {
-          timeframe: localSettings.timeframe,
-          rsiPeriod: localSettings.rsiPeriod,
-          rsiOverbought: localSettings.rsiOverbought,
-          rsiOversold: localSettings.rsiOversold,
-          correlationWindow: localSettings.correlationWindow,
-          calculationMode: localSettings.calculationMode
-        }
-      });
+      // Persist to database (only if user is logged in)
+      if (user) {
+        await userStateService.updateUserDashboardSettings({
+          rsiCorrelation: {
+            timeframe: localSettings.timeframe,
+            rsiPeriod: localSettings.rsiPeriod,
+            rsiOverbought: localSettings.rsiOverbought,
+            rsiOversold: localSettings.rsiOversold,
+            correlationWindow: localSettings.correlationWindow,
+            calculationMode: localSettings.calculationMode
+          }
+        });
+      }
 
       setShowSettings(false);
     } catch (error) {
@@ -422,11 +431,6 @@ const RSICorrelationDashboard = () => {
   return (
     <>
     <div className="widget-card px-4 pb-1 z-10 relative h-full flex flex-col mb-[15px]">
-      <div
-        className={`absolute top-2 right-2 w-2 h-2 rounded-full pointer-events-none ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}
-        aria-label={isConnected ? 'Connected' : 'Disconnected'}
-        title={isConnected ? 'Connected' : 'Disconnected'}
-      />
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -447,10 +451,10 @@ const RSICorrelationDashboard = () => {
           {/* Calculation Mode Toggle */}
           <button
             onClick={handleCalculationModeToggle}
-            className={`px-3 py-2 text-xs font-medium rounded-xl transition-all duration-300 flex items-center space-x-2 shadow-md hover:shadow-lg hover:scale-105 ${
+            className={`px-3 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md ${
               localSettings.calculationMode === 'real_correlation'
-                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border border-blue-200/50'
-                : 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700 border border-slate-200/50'
+                ? 'text-blue-600 bg-blue-100 shadow-blue-200'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 shadow-gray-200'
             }`}
             title={`Switch to ${localSettings.calculationMode === 'rsi_threshold' ? 'Real Correlation' : 'RSI Threshold'} mode`}
           >

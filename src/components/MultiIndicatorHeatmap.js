@@ -814,18 +814,20 @@ useEffect(() => {
             <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Quantum Analysis</h2>
           </div>
           
+          {/* Controls Row */}
+          <div className="flex items-center space-x-1">
           {/* Alert Bell Icon */}
           {user && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center">
               <button 
                 type="button"
                 aria-label="Configure heatmap alerts"
                 onClick={handleBellClick}
-                className="relative p-2 text-gray-400 hover:text-blue-500 transition-colors duration-300 group"
+                className="relative p-1 text-gray-400 hover:text-blue-500 transition-colors duration-300 group"
               >
-                <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 {activeAlertsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                     {activeAlertsCount > 9 ? '9+' : activeAlertsCount}
                   </span>
                 )}
@@ -833,48 +835,6 @@ useEffect(() => {
             </div>
           )}
           
-          {/* Buy/Sell Progress Bar */}
-          {(() => {
-            const buyPct = finalResults.buyNowPercent;
-            const sellPct = finalResults.sellNowPercent;
-            
-            return (
-              <div className="flex items-center gap-3 w-full max-w-[300px]">
-                <span 
-                  className="text-xs font-bold text-emerald-600 whitespace-nowrap"
-                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
-                >BUY {buyPct.toFixed(1)}%</span>
-                <div className="flex-1 relative">
-                  <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full transition-all duration-500 ease-out"
-                      style={{ 
-                        width: `${buyPct}%`,
-                        background: '#03c05d',
-                        borderRadius: '8px 0 0 8px'
-                      }}
-                    />
-                    <div 
-                      className="absolute top-0 h-full transition-all duration-500 ease-out"
-                      style={{ 
-                        left: `${buyPct}%`,
-                        width: `${sellPct}%`,
-                        background: '#dc2626',
-                        borderRadius: '0 8px 8px 0'
-                      }}
-                    />
-                  </div>
-                </div>
-                <span 
-                  className="text-xs font-bold text-red-600 whitespace-nowrap"
-                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
-                >SELL {sellPct.toFixed(1)}%</span>
-              </div>
-            );
-          })()}
-          
-          {/* Controls Row */}
-          <div className="flex items-center space-x-1">
           {/* Symbol Dropdown */}
           <div className="flex items-center space-x-1">
             <div className="relative">
@@ -885,12 +845,12 @@ useEffect(() => {
               >
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-blue-200/50 focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 text-xs font-semibold border border-gray-200 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100"
                 >
                   {dropdownOptions.find(opt => opt.value === currentSymbol)?.label || currentSymbol}
                 </button>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className={`w-2 h-2 text-blue-600 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-2 h-2 text-gray-500 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -930,14 +890,14 @@ useEffect(() => {
                 <select
                   value={tradingStyle}
                   onChange={(e) => handleTradingStyleChange(e.target.value)}
-                  className="appearance-none pl-2 pr-6 py-1.5 bg-white/80 backdrop-blur-sm text-slate-800 rounded-xl text-xs font-semibold border-2 border-purple-200/50 focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400 transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-white hover:shadow-md hover:scale-105 shadow-sm"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 text-xs font-semibold border border-gray-200 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100"
                 >
                 <option value="scalper">Scalper</option>
                 <option value="dayTrader">Day Trader</option>
                 <option value="swingTrader">Swing Trader</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className="w-2 h-2 text-purple-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-2 h-2 text-gray-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -1115,7 +1075,7 @@ useEffect(() => {
           </thead>
           <tbody className="h-full">
             {[...new Set(timeframes)].filter(tf => tf !== '1W').map((timeframe) => (
-              <tr key={timeframe} className="border-b border-slate-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30" style={{ height: 'calc(100% / ' + [...new Set(timeframes)].filter(tf => tf !== '1W').length + ')' }}>
+              <tr key={timeframe} className="border-b border-slate-100/50" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
                 <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
                   <div className="flex items-center space-x-1 ml-2">
                     <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>
@@ -1130,9 +1090,9 @@ useEffect(() => {
                     <td key={indicator} className="text-center py-1 px-1">
                       <div className="relative h-full flex items-center justify-center">
                         <button 
-                          className="button-31"
+                          className=""
                           style={hasData ? {
-                            backgroundColor: score > 0 ? '#03c05d' : score < 0 ? '#e03f4c' : '#d1d5db',
+                            backgroundColor: score > 0 ? '#03c05d' : score < 0 ? '#e03f4c' : '#9ca3af',
                             borderRadius: '4px',
                             borderStyle: 'none',
                             boxSizing: 'border-box',
@@ -1201,6 +1161,57 @@ useEffect(() => {
                 })}
               </tr>
             ))}
+            
+            {/* Buy/Sell Progress Bar Row */}
+            <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
+              <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
+                <div className="flex items-center space-x-1 ml-2">
+                  <span className="text-sm font-normal">Buy/Sell</span>
+                </div>
+              </td>
+              <td colSpan={indicators.length} className="py-1 px-1">
+                <div className="flex items-center justify-center">
+                  {(() => {
+                    const buyPct = finalResults.buyNowPercent;
+                    const sellPct = finalResults.sellNowPercent;
+                    
+                    return (
+                      <div className="flex items-center gap-3 w-full max-w-[400px]">
+                        <span 
+                          className="text-xs font-bold text-emerald-600 whitespace-nowrap"
+                          style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                        >BUY {buyPct.toFixed(1)}%</span>
+                        <div className="flex-1 relative">
+                          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full transition-all duration-500 ease-out"
+                              style={{ 
+                                width: `${buyPct}%`,
+                                background: '#03c05d',
+                                borderRadius: '8px 0 0 8px'
+                              }}
+                            />
+                            <div 
+                              className="absolute top-0 h-full transition-all duration-500 ease-out"
+                              style={{ 
+                                left: `${buyPct}%`,
+                                width: `${sellPct}%`,
+                                background: '#dc2626',
+                                borderRadius: '0 8px 8px 0'
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <span 
+                          className="text-xs font-bold text-red-600 whitespace-nowrap"
+                          style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                        >SELL {sellPct.toFixed(1)}%</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

@@ -7,7 +7,6 @@ import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
-import Login from './pages/Login';
 import Reset from './pages/Reset';
 
 function App() {
@@ -28,7 +27,6 @@ function App() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
       <Route path="/forgot" element={<ForgotPassword />} />
       <Route path="/reset" element={<Reset />} />
       

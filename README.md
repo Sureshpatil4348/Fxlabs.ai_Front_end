@@ -4,7 +4,17 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
-### Multi-Indicator Heatmap UI Enhancement (Latest)
+### Subscription Section Redesign (Latest)
+- **MINIMAL PREMIUM DESIGN**: Completely redesigned subscription section with clean, minimal layout
+- **REMOVED VISUAL CLUTTER**: Eliminated excessive animations, floating icons, and background elements
+- **STREAMLINED PRICING**: Simplified pricing display with clear visual hierarchy
+- **FOCUSED CTA**: Single, compelling call-to-action button for better conversion
+- **ENHANCED USER EXPERIENCE**: Cleaner interface that instantly catches user attention
+- **PREMIUM AESTHETICS**: Professional design with subtle hover effects and proper spacing
+- **SIMPLIFIED FEATURES**: Reduced feature lists to essential items for better readability
+- **IMPROVED ACCESSIBILITY**: Better contrast and cleaner typography for enhanced usability
+
+### Multi-Indicator Heatmap UI Enhancement
 - **READABLE TIMEFRAME DISPLAY**: Updated timeframe labels from abbreviated format (1M, 5M, 15M) to readable format (1 Min, 5 Min, 15 Mins, 1 Hour, 4 Hours, 1 Day, 1 Week)
 - **READABLE INDICATOR NAMES**: Updated indicator labels (EMA21 → EMA 21, EMA50 → EMA 50, EMA200 → EMA 200, UTBOT → UT BOT, IchimokuClone → Ichimoku)
 - **ENHANCED BUY/SELL BUTTONS**: Updated Buy/Sell cell buttons with square design, proper colors (#03c05d for Buy, #e03f4c for Sell), and subtle shadow effects
