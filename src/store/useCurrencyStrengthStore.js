@@ -210,6 +210,12 @@ const useCurrencyStrengthStore = create(
       const { websocket, isConnected } = get();
       if (!isConnected || !websocket) return;
       
+      // Check if WebSocket is ready to send data
+      if (websocket.readyState !== WebSocket.OPEN) {
+        get().addLog(`WebSocket not ready for subscription to ${symbol}`, 'warning');
+        return;
+      }
+      
       const formattedSymbol = formatSymbol(symbol);
       
       const subscription = {
@@ -219,13 +225,23 @@ const useCurrencyStrengthStore = create(
         data_types: dataTypes
       };
       
-      websocket.send(JSON.stringify(subscription));
-      get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
+      try {
+        websocket.send(JSON.stringify(subscription));
+        get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
+      } catch (error) {
+        get().addLog(`Failed to subscribe to ${formattedSymbol}: ${error.message}`, 'error');
+      }
     },
     
     unsubscribe: (symbol) => {
       const { websocket, isConnected } = get();
       if (!isConnected || !websocket) return;
+      
+      // Check if WebSocket is ready to send data
+      if (websocket.readyState !== WebSocket.OPEN) {
+        get().addLog(`WebSocket not ready for unsubscription from ${symbol}`, 'warning');
+        return;
+      }
       
       const formattedSymbol = formatSymbol(symbol);
       
@@ -234,8 +250,12 @@ const useCurrencyStrengthStore = create(
         symbol: formattedSymbol
       };
       
-      websocket.send(JSON.stringify(message));
-      get().addLog(`Unsubscribing from ${formattedSymbol}`, 'warning');
+      try {
+        websocket.send(JSON.stringify(message));
+        get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
+      } catch (error) {
+        get().addLog(`Failed to unsubscribe from ${formattedSymbol}: ${error.message}`, 'error');
+      }
     },
     
     handleMessage: (message) => {

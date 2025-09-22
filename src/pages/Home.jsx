@@ -1,4 +1,5 @@
 import React from 'react'
+import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
 // import AfterPurchaseSection from '../components/AfterPurchaseSection'
@@ -15,7 +16,12 @@ import VideoExplanationSection from '../components/VideoExplanationSection'
 // import WhySystemWorks from '../components/WhySystemWorks'
 
 const Home = () => {
-  const { /* user: _user */ } = useAuth()
+  const { user } = useAuth()
+
+  // Redirect to dashboard if user is authenticated
+  if (user) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   return (
     <div className="min-h-screen">
