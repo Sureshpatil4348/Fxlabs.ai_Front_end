@@ -319,38 +319,7 @@ const TradingDashboardSection = () => {
     <section className="relative py-16">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* Extraordinary Header with 3D Effects */}
-        <div className="text-center mb-16">
-          <div className="relative">
-
-          <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="relative group">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/50 transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-12">
-                  <BarChart3 className="w-10 h-10 text-white" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-            </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white drop-shadow-2xl transform transition-all duration-500 hover:scale-105 font-poppins">
-                  <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent">
-                    AI Analysis
-                  </span>
-                </h1>
-                <p className="text-gray-600 dark:text-gray-300 text-lg font-light mt-2 transition-colors duration-300">Advanced market  analysis</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Extraordinary Status Badge */}
-          <div className="relative inline-block">
-            <div className="flex items-center justify-center space-x-3 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-teal-500/20 dark:from-emerald-500/20 dark:via-green-500/20 dark:to-teal-500/20 border border-emerald-500/30 dark:border-emerald-500/30 rounded-full px-8 py-3 shadow-2xl shadow-emerald-500/30 dark:shadow-emerald-500/30 backdrop-blur-sm transform transition-all duration-500 hover:scale-105">
-              <div className="w-3 h-3 bg-emerald-500 dark:bg-emerald-400 rounded-full shadow-lg shadow-emerald-500/50 dark:shadow-emerald-400/50" title="Live Dynamic Data"></div>
-              <span className="text-emerald-600 dark:text-emerald-300 text-lg font-semibold">Live Dynamic Market Data</span>
-              <div className="w-2 h-2 bg-emerald-500 dark:bg-emerald-400 rounded-full"></div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-teal-500/20 rounded-full blur-xl opacity-50"></div>
-          </div>
-        </div>
+       
 
         {/* Master Trader AI Dashboard Section */}
         <div className="relative mb-16 ml-4" style={{ width: 'calc(100vw - 2rem)', marginLeft: 'calc(-50vw + 50% + 1rem)' }}>
@@ -478,49 +447,29 @@ const TradingDashboardSection = () => {
           </div>
         </div>
 
-        {/* Premium Live News Analysis Showcase */}
-        <div className="mb-20">
-          <div className="text-center mb-16">
-            <div className="relative">
-
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-6 transform transition-all duration-500 hover:scale-105 font-poppins">
-                <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-green-600 dark:from-blue-400 dark:via-cyan-300 dark:to-green-400 bg-clip-text text-transparent">
-                  Live News Analysis
-                </span>
-                <br />
-                <span className="text-gray-600 dark:text-gray-300">AI-Powered Insights</span>
-              </h2>
-              
-              <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed transition-colors duration-300">
-                Get <span className="text-blue-600 dark:text-blue-400 font-bold">real-time market intelligence</span> with our advanced AI news analysis system
-              </p>
-            </div>
-          </div>
-
-          {/* Premium News Analysis Carousel */}
-          <div className="relative max-w-6xl mx-auto">
-            <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-3xl p-8 border border-blue-500/20 shadow-2xl relative overflow-hidden"
+        {/* Premium  Showcase */}
+        <div className="relative mb-16 ml-4" style={{ width: 'calc(100vw - 2rem)', marginLeft: 'calc(-50vw + 50% + 1rem)' }}>
+          <div className="w-full">
+            <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-lg p-6 border border-blue-500/20 shadow-2xl relative overflow-hidden"
                  style={{
-                   transformStyle: 'preserve-3d',
-                   perspective: '1000px',
                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.2)'
                  }}>
               
               {/* Premium Background Effects */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-cyan-500/5"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5"></div>
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
               
-              {/* News Analysis Header */}
-              <div className="flex items-center justify-between mb-8 relative z-10">
+              {/* Premium AI Intelligence Header */}
+              <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-blue-600/30 rounded-lg flex items-center justify-center border border-blue-500/30 shadow-lg">
                     <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
+                  </div>
                   <div>
-                    <h3 className="text-gray-800 dark:text-white text-2xl font-bold">
-                      AI News Intelligence
-                    </h3>
+                    <h2 className="text-gray-800 dark:text-white text-2xl font-bold font-poppins">
+                      Premium AI Intelligence
+                    </h2>
                     <p className="text-gray-600 dark:text-gray-400 text-xs">
                       Real-time market sentiment analysis
                     </p>
@@ -533,7 +482,7 @@ const TradingDashboardSection = () => {
               </div>
 
               {/* Premium News Analysis Image Carousel */}
-              <div className="relative z-10">
+              <div className="relative z-10 mb-6">
                 <div className="relative overflow-hidden rounded-2xl">
                   {/* Carousel Container */}
                   <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentNewsSlide * 100}%)` }}>
@@ -692,7 +641,7 @@ const TradingDashboardSection = () => {
               </div>
 
               {/* AI Analysis Summary */}
-              <div className="mt-8 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/20 shadow-lg relative z-10">
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/20 shadow-lg relative z-10">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500/30 to-cyan-500/30 rounded-lg flex items-center justify-center">
                     <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -724,175 +673,156 @@ const TradingDashboardSection = () => {
                   </div>
                 </div>
               </div>
-            </div>
+
+              {/* Email & Telegram Alert Flow Section */}
+              <div className="mt-6 relative z-10">
+             
+             {/* Flow Steps */}
+             <div className="relative z-10">
+               <div className="flex flex-col lg:flex-row items-center justify-between space-y-8 lg:space-y-0 lg:space-x-8">
+                 
+                 {/* Step 1: Market Condition */}
+                 <div className="flex flex-col items-center text-center group">
+                   <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-green-500/25">
+                     <TrendingUp className="w-10 h-10 text-green-400 group-hover:animate-pulse" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-green-500/50">
+                       <span className="text-white text-xs font-bold">1</span>
+                     </div>
+                     {/* Real-time pulse effect */}
+                     <div className="absolute inset-0 rounded-2xl border-2 border-green-400/30 animate-ping"></div>
+                   </div>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 font-poppins">Market Condition</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">RSI &gt; 70 on EUR/USD</p>
+                 </div>
+
+                 {/* Arrow 1 */}
+                 <div className="hidden lg:block">
+                   <div className="flex items-center space-x-2 group">
+                     <div className="w-8 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 group-hover:w-12 transition-all duration-500"></div>
+                     <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 group-hover:text-blue-500 transition-all duration-300" />
+                   </div>
+                 </div>
+
+                 {/* Step 2: Alert Triggered */}
+                 <div className="flex flex-col items-center text-center group">
+                   <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-yellow-500/25">
+                     <Bell className="w-10 h-10 text-yellow-400 group-hover:animate-bounce" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-yellow-500/50">
+                       <span className="text-white text-xs font-bold">2</span>
+                     </div>
+                     {/* Alert pulse effect */}
+                     <div className="absolute inset-0 rounded-2xl border-2 border-yellow-400/30 animate-ping"></div>
+                     {/* Alert notification dot */}
+                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+                   </div>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300 font-poppins">Alert Triggered</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Condition met instantly</p>
+                 </div>
+
+                 {/* Arrow 2 */}
+                 <div className="hidden lg:block">
+                   <div className="flex items-center space-x-2 group">
+                     <div className="w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-purple-500 group-hover:w-12 transition-all duration-500"></div>
+                     <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 group-hover:text-purple-500 transition-all duration-300" />
+                   </div>
+                 </div>
+
+                 {/* Step 3: Notifications Sent */}
+                 <div className="flex flex-col items-center text-center group">
+                   <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-purple-500/25">
+                     <Zap className="w-10 h-10 text-purple-400 group-hover:animate-pulse" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
+                       <span className="text-white text-xs font-bold">3</span>
+                     </div>
+                     {/* Notification pulse effect */}
+                     <div className="absolute inset-0 rounded-2xl border-2 border-purple-400/30 animate-ping"></div>
+                     {/* Success checkmark */}
+                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+                       <CheckCircle className="w-2.5 h-2.5 text-white" />
+                     </div>
+                   </div>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 font-poppins">Notifications Sent</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Email + Telegram</p>
+                 </div>
+               </div>
+
+               {/* Notification Channels */}
+               <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                 
+                 {/* Email Notification */}
+                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/25">
+                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
+                   
+                   <div className="relative z-10">
+                     <div className="flex items-center space-x-4 mb-4">
+                       <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/50">
+                         <Mail className="w-6 h-6 text-white group-hover:animate-bounce" />
+                       </div>
+                       <div>
+                         <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 font-poppins">Email Alert</h4>
+                         <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Instant delivery</p>
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-3">
+                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
+                         <div className="text-blue-600 dark:text-blue-400 text-sm font-semibold group-hover:animate-pulse">Subject: 🚨 EUR/USD RSI Alert</div>
+                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 (Above 70 threshold)</div>
+                       </div>
+                       <div className="flex items-center space-x-2 text-green-400 text-sm">
+                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                         <span className="group-hover:text-green-500 transition-colors duration-300">Delivered instantly</span>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Telegram Notification */}
+                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-cyan-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/25">
+                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
+                   
+                   <div className="relative z-10">
+                     <div className="flex items-center space-x-4 mb-4">
+                       <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/50">
+                         <svg className="w-6 h-6 text-white group-hover:animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                         </svg>
+                       </div>
+                       <div>
+                         <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300 font-poppins">Telegram Bot</h4>
+                         <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Push notification</p>
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-3">
+                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
+                         <div className="text-cyan-600 dark:text-cyan-400 text-sm font-semibold group-hover:animate-pulse">📊 EUR/USD Alert</div>
+                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 ⚠️ Overbought</div>
+                       </div>
+                       <div className="flex items-center space-x-2 text-green-400 text-sm">
+                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                         <span className="group-hover:text-green-500 transition-colors duration-300">Sent to your device</span>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+           </div>
+
+               {/* CTA */}
+               <div className="text-center mt-8">
+                 <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-6 py-3">
+                   <Shield className="w-5 h-5 text-green-400" />
+                   <span className="text-green-400 font-semibold">Free Setup • 24/7 Monitoring</span>
+                   <ArrowRight className="w-4 h-4 text-green-400" />
+                 </div>
+               </div>
+             </div>
+           </div>
           </div>
         </div>
-
-        {/* Minimal Email & Telegram Alert Flow */}
-        <div className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4 font-poppins">
-              <span className="bg-gradient-to-r from-blue-600 via-purple-500 to-pink-600 dark:from-blue-400 dark:via-purple-300 dark:to-pink-400 bg-clip-text text-transparent">
-                Instant Market Alerts
-              </span>
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-              Get notified instantly via <span className="text-blue-600 dark:text-blue-400 font-semibold">Email</span> and <span className="text-cyan-600 dark:text-cyan-400 font-semibold">Telegram</span> when market conditions match your criteria
-            </p>
-          </div>
-
-          {/* Minimal Alert Flow Animation */}
-          <div className="relative max-w-5xl mx-auto">
-            <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-3xl p-8 border border-blue-500/20 shadow-2xl relative overflow-hidden">
-              
-              {/* Background Effects */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5"></div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
-              
-              {/* Flow Steps */}
-              <div className="relative z-10">
-                <div className="flex flex-col lg:flex-row items-center justify-between space-y-8 lg:space-y-0 lg:space-x-8">
-                  
-                  {/* Step 1: Market Condition */}
-                  <div className="flex flex-col items-center text-center group">
-                    <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-green-500/25">
-                      <TrendingUp className="w-10 h-10 text-green-400 group-hover:animate-pulse" />
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-green-500/50">
-                        <span className="text-white text-xs font-bold">1</span>
-                      </div>
-                      {/* Real-time pulse effect */}
-                      <div className="absolute inset-0 rounded-2xl border-2 border-green-400/30 animate-ping"></div>
-                    </div>
-                    <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 font-poppins">Market Condition</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">RSI &gt; 70 on EUR/USD</p>
-                  </div>
-
-                  {/* Arrow 1 */}
-                  <div className="hidden lg:block">
-                    <div className="flex items-center space-x-2 group">
-                      <div className="w-8 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 group-hover:w-12 transition-all duration-500"></div>
-                      <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 group-hover:text-blue-500 transition-all duration-300" />
-                    </div>
-                  </div>
-
-                  {/* Step 2: Alert Triggered */}
-                  <div className="flex flex-col items-center text-center group">
-                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-yellow-500/25">
-                      <Bell className="w-10 h-10 text-yellow-400 group-hover:animate-bounce" />
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-yellow-500/50">
-                        <span className="text-white text-xs font-bold">2</span>
-                      </div>
-                      {/* Alert pulse effect */}
-                      <div className="absolute inset-0 rounded-2xl border-2 border-yellow-400/30 animate-ping"></div>
-                      {/* Alert notification dot */}
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-                    </div>
-                    <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300 font-poppins">Alert Triggered</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Condition met instantly</p>
-                  </div>
-
-                  {/* Arrow 2 */}
-                  <div className="hidden lg:block">
-                    <div className="flex items-center space-x-2 group">
-                      <div className="w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-purple-500 group-hover:w-12 transition-all duration-500"></div>
-                      <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 group-hover:text-purple-500 transition-all duration-300" />
-                    </div>
-                  </div>
-
-                  {/* Step 3: Notifications Sent */}
-                  <div className="flex flex-col items-center text-center group">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-purple-500/25">
-                      <Zap className="w-10 h-10 text-purple-400 group-hover:animate-pulse" />
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
-                        <span className="text-white text-xs font-bold">3</span>
-                      </div>
-                      {/* Notification pulse effect */}
-                      <div className="absolute inset-0 rounded-2xl border-2 border-purple-400/30 animate-ping"></div>
-                      {/* Success checkmark */}
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
-                        <CheckCircle className="w-2.5 h-2.5 text-white" />
-                      </div>
-                    </div>
-                    <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 font-poppins">Notifications Sent</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Email + Telegram</p>
-                  </div>
-                </div>
-
-                {/* Notification Channels */}
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-                  
-                  {/* Email Notification */}
-                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/25">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
-                    
-                    <div className="relative z-10">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/50">
-                          <Mail className="w-6 h-6 text-white group-hover:animate-bounce" />
-                        </div>
-                        <div>
-                          <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 font-poppins">Email Alert</h4>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Instant delivery</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
-                          <div className="text-blue-600 dark:text-blue-400 text-sm font-semibold group-hover:animate-pulse">Subject: 🚨 EUR/USD RSI Alert</div>
-                          <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 (Above 70 threshold)</div>
-                        </div>
-                        <div className="flex items-center space-x-2 text-green-400 text-sm">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                          <span className="group-hover:text-green-500 transition-colors duration-300">Delivered instantly</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Telegram Notification */}
-                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-cyan-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/25">
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
-                    
-                    <div className="relative z-10">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/50">
-                          <svg className="w-6 h-6 text-white group-hover:animate-bounce" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300 font-poppins">Telegram Bot</h4>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Push notification</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
-                          <div className="text-cyan-600 dark:text-cyan-400 text-sm font-semibold group-hover:animate-pulse">📊 EUR/USD Alert</div>
-                          <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 ⚠️ Overbought</div>
-                        </div>
-                        <div className="flex items-center space-x-2 text-green-400 text-sm">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                          <span className="group-hover:text-green-500 transition-colors duration-300">Sent to your device</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-            </div>
-
-                {/* CTA */}
-                <div className="text-center mt-8">
-                  <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-6 py-3">
-                    <Shield className="w-5 h-5 text-green-400" />
-                    <span className="text-green-400 font-semibold">Free Setup • 24/7 Monitoring</span>
-                    <ArrowRight className="w-4 h-4 text-green-400" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
+
+        
 
       </div>
     </section>

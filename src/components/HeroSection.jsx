@@ -184,20 +184,17 @@ const HeroSection = () => {
           {/* Left Side - Text Content */}
           <div className="space-y-6">
             {/* Premium Badge */}
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-500/20 dark:border-green-500/20 rounded-full px-6 py-3 text-green-600 dark:text-green-400 text-sm font-semibold shadow-lg shadow-green-500/20 dark:shadow-green-500/20 backdrop-blur-sm transition-colors duration-300">
-              <Sparkles className="w-4 h-4" />
-              <span>AI-Powered Trading Intelligence</span>
-            </div>
+           
 
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl font-bold leading-tight text-left font-poppins">
                 <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent animate-pulse">
-                  Advanced Trading
+                  Decode Market
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-green-600 dark:from-blue-400 dark:via-cyan-300 dark:to-green-400 bg-clip-text text-transparent">
-                  Intelligence Platform
+                  with AI
                 </span>
               </h1>
               
