@@ -8,7 +8,6 @@ import {
   CheckCircle,
   Sparkles,
   MessageSquare,
-  Smartphone,
   Mail,
   Quote
 } from 'lucide-react'
@@ -90,192 +89,136 @@ const SuccessStories = () => {
   ]
 
   return (
-    <section className="relative py-20 bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 overflow-hidden">
-      {/* Unique Background Elements */}
-      <div className="absolute inset-0">
-        {/* Animated Success Particles */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-        
-        {/* Floating Success Icons */}
-        <div className="absolute top-20 right-20 w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center animate-bounce">
-          <Trophy className="w-6 h-6 text-emerald-400" />
-        </div>
-        <div className="absolute bottom-32 left-16 w-10 h-10 bg-yellow-500/20 rounded-2xl flex items-center justify-center animate-ping">
-          <Star className="w-5 h-5 text-yellow-400" />
-        </div>
-        <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-blue-500/30 rounded-2xl animate-pulse"></div>
-        
-        {/* Geometric Pattern Overlay */}
-        <div className="absolute inset-0 opacity-5">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <pattern id="successGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#successGrid)" />
-          </svg>
-        </div>
-      </div>
-
+    <section className="relative py-20">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Unique Header Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 rounded-full px-6 py-3 text-emerald-300 text-sm font-semibold mb-6 shadow-lg shadow-emerald-500/20 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+        {/* Premium Header Section */}
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-6 py-2 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-8">
+            <Sparkles className="w-4 h-4" />
             <span>REAL TRADER SUCCESS STORIES</span>
-            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></div>
           </div>
           
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-teal-400 bg-clip-text text-transparent drop-shadow-lg">
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-8 leading-tight font-poppins">
+            <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">
               Success Stories
             </span>
             <br />
-            <span className="text-gray-300 text-2xl md:text-3xl">That Inspire</span>
+            <span className="text-gray-600 dark:text-gray-300 text-2xl md:text-3xl font-normal">That Inspire</span>
           </h2>
           
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            See how real traders transformed their results with <span className="text-emerald-400 font-bold">FXLabs.AI</span> - 
-            from missed opportunities to <span className="text-green-400 font-bold">consistent profits</span>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            See how real traders transformed their results with <span className="text-emerald-600 dark:text-emerald-400 font-semibold">FXLabs.AI</span> - 
+            from missed opportunities to <span className="text-green-600 dark:text-green-400 font-semibold">consistent profits</span>
           </p>
         </div>
 
         {/* Success Stories Grid */}
-        <div className="space-y-12 mb-12">
+        <div className="space-y-20 mb-20">
           {successStories.map((story, index) => (
-            <div key={story.id} className={`grid grid-cols-1 lg:grid-cols-2 gap-8 items-center ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
+            <div key={story.id} className={`flex flex-col lg:flex-row gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
               
-              {/* Story Content */}
-              <div className={`${index % 2 === 1 ? 'lg:col-start-2' : ''}`}>
+              {/* Story Content - Left Side */}
+              <div className="flex-1 space-y-8">
                 {/* Headline */}
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight font-poppins">
                   {story.headline}
                 </h3>
 
                 {/* Trader Snapshot */}
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-xl shadow-emerald-500/30">
-                    <span className="text-white font-bold text-lg">{story.trader.avatar}</span>
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-xl">{story.trader.avatar}</span>
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="text-lg font-bold text-white">{story.trader.name}</h4>
+                      <h4 className="text-xl font-bold text-gray-900 dark:text-white">{story.trader.name}</h4>
                       {story.trader.verified && (
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                          <CheckCircle className="w-3 h-3 text-white" />
-                        </div>
+                        <CheckCircle className="w-5 h-5 text-emerald-500" />
                       )}
                     </div>
-                    <p className="text-gray-300 font-semibold text-sm">{story.trader.role}</p>
+                    <p className="text-gray-600 dark:text-gray-300 font-medium">{story.trader.role}</p>
                     <div className="flex items-center space-x-1 mt-1">
                       {[...Array(story.trader.rating)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                       ))}
-                      <span className="text-gray-400 text-xs ml-1 font-medium">Verified Trader</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Before & After Story */}
-                <div className="space-y-4 mb-6">
-                  <div className="bg-gradient-to-r from-red-500/10 to-red-600/5 border-l-4 border-red-400 p-4 rounded-r-xl backdrop-blur-sm">
-                    <p className="text-gray-200 font-semibold text-sm">
-                      <span className="text-red-400 font-bold">The Struggle:</span> {story.story.before}
+                {/* Story Flow */}
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
+                      <span className="font-semibold text-gray-900 dark:text-white">Before:</span> {story.story.before}
                     </p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 border-l-4 border-blue-400 p-4 rounded-r-xl backdrop-blur-sm">
-                    <p className="text-gray-200 font-semibold text-sm">
-                      <span className="text-blue-400 font-bold">The Breakthrough:</span> {story.story.breakthrough}
+                    <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
+                      <span className="font-semibold text-gray-900 dark:text-white">Breakthrough:</span> {story.story.breakthrough}
                     </p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-green-500/10 to-green-600/5 border-l-4 border-green-400 p-4 rounded-r-xl backdrop-blur-sm">
-                    <p className="text-gray-200 font-semibold text-sm">
-                      <span className="text-green-400 font-bold">The Result:</span> {story.story.after}
+                    <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed">
+                      <span className="font-semibold text-gray-900 dark:text-white">Result:</span> {story.story.after}
                     </p>
                   </div>
                 </div>
 
                 {/* Pull Quote */}
-                <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-6 mb-6 border border-gray-700/50 shadow-xl">
-                  <Quote className="w-6 h-6 text-emerald-400 mb-4" />
-                  <blockquote className="text-lg font-bold text-white leading-relaxed mb-4">
+                <div className="bg-white dark:bg-gray-800/50 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700/50">
+                  <Quote className="w-8 h-8 text-emerald-500 mb-4" />
+                  <blockquote className="text-2xl font-bold text-gray-900 dark:text-white leading-relaxed italic mb-4">
                     &ldquo;{story.pullQuote}&rdquo;
                   </blockquote>
-                  <div className="text-emerald-400 font-bold text-base">
+                  <div className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">
                     {story.profit}
                   </div>
                 </div>
               </div>
 
-              {/* Visual Element */}
-              <div className={`${index % 2 === 1 ? 'lg:col-start-1' : ''}`}>
-                <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-gray-700/50">
+              {/* Visual Element - Right Side */}
+              <div className="flex-1">
+                <div className="bg-white dark:bg-gray-800/50 rounded-xl p-8 shadow-lg border border-gray-200 dark:border-gray-700/50 h-96 flex items-center justify-center">
                   {story.visual.type === 'telegram' && (
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                          <MessageSquare className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white text-sm">Telegram Alert</h4>
-                          <p className="text-xs text-gray-400">FXLabs.AI Bot</p>
-                        </div>
+                    <div className="text-center space-y-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                        <MessageSquare className="w-10 h-10 text-white" />
                       </div>
-                      <div className="bg-black/50 rounded-xl p-4 text-emerald-400 font-mono text-sm border border-gray-700/50">
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-white">Telegram Alert</h4>
+                        <p className="text-gray-600 dark:text-gray-300">Instant notifications</p>
+                      </div>
+                      <div className="bg-gray-100 dark:bg-gray-700/50 rounded-lg p-4 text-emerald-600 dark:text-emerald-400 font-mono text-sm">
                         {story.visual.content}
-                      </div>
-                      <div className="flex items-center space-x-2 text-gray-400 text-xs">
-                        <Smartphone className="w-4 h-4" />
-                        <span>Instant notification</span>
                       </div>
                     </div>
                   )}
 
                   {story.visual.type === 'chart' && (
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                          <TrendingUp className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white text-sm">Trade Analysis</h4>
-                          <p className="text-xs text-gray-400">AI News Impact</p>
-                        </div>
+                    <div className="text-center space-y-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                        <TrendingUp className="w-10 h-10 text-white" />
                       </div>
-                      <div className="bg-black/30 rounded-xl p-6 h-40 flex items-center justify-center border border-gray-700/50">
-                        <div className="text-center">
-                          <TrendingUp className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-                          <p className="text-gray-200 font-semibold text-sm">{story.visual.content}</p>
-                          <p className="text-xs text-gray-400 mt-2">Chart with highlighted entry point</p>
-                        </div>
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-white">Trade Analysis</h4>
+                        <p className="text-gray-600 dark:text-gray-300">AI-powered insights</p>
+                      </div>
+                      <div className="bg-gray-100 dark:bg-gray-700/50 rounded-lg p-6">
+                        <TrendingUp className="w-16 h-16 text-emerald-500 mx-auto mb-3" />
+                        <p className="text-gray-700 dark:text-gray-200 font-semibold">{story.visual.content}</p>
                       </div>
                     </div>
                   )}
 
                   {story.visual.type === 'email' && (
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                          <Mail className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white text-sm">Email Alert</h4>
-                          <p className="text-xs text-gray-400">FXLabs.AI System</p>
-                        </div>
+                    <div className="text-center space-y-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                        <Mail className="w-10 h-10 text-white" />
                       </div>
-                      <div className="bg-black/30 rounded-xl p-4 border border-gray-700/50">
-                        <div className="text-sm text-gray-200 mb-2 font-semibold">Subject: {story.visual.content}</div>
-                        <div className="text-xs text-gray-400">Correlation strength: 87% | Confidence: High</div>
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-white">Email Alert</h4>
+                        <p className="text-gray-600 dark:text-gray-300">Detailed analysis</p>
                       </div>
-                      <div className="flex items-center space-x-2 text-gray-400 text-xs">
-                        <Mail className="w-4 h-4" />
-                        <span>Email notification</span>
+                      <div className="bg-gray-100 dark:bg-gray-700/50 rounded-lg p-4">
+                        <div className="text-sm text-gray-700 dark:text-gray-200 mb-2 font-semibold">Subject: {story.visual.content}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Correlation strength: 87% | Confidence: High</div>
                       </div>
                     </div>
                   )}
@@ -286,30 +229,30 @@ const SuccessStories = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-12 shadow-xl border border-gray-700/50">
+        <div className="text-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-xl rounded-2xl p-12 shadow-xl border border-gray-300 dark:border-gray-700/50 transition-colors duration-300">
           <div className="max-w-4xl mx-auto">
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-tight">
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-6 leading-tight">
               Ready to Write Your Own
-              <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent"> Success Story?</span>
+              <span className="bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-400 dark:to-blue-400 bg-clip-text text-transparent"> Success Story?</span>
             </h3>
             
-            <p className="text-lg text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
               Join hundreds of traders who are already generating consistent profits with our proven system. 
               Start your free trial today and see the difference.
             </p>
 
             {/* Key Benefits */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="flex items-center justify-center space-x-3 text-gray-200">
-                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div className="flex items-center justify-center space-x-3 text-gray-700 dark:text-gray-200">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <span className="font-semibold text-base">Instant Telegram Alerts</span>
               </div>
-              <div className="flex items-center justify-center space-x-3 text-gray-200">
-                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div className="flex items-center justify-center space-x-3 text-gray-700 dark:text-gray-200">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <span className="font-semibold text-base">AI News Analysis</span>
               </div>
-              <div className="flex items-center justify-center space-x-3 text-gray-200">
-                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div className="flex items-center justify-center space-x-3 text-gray-700 dark:text-gray-200">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <span className="font-semibold text-base">Proven Results</span>
               </div>
             </div>
@@ -336,24 +279,24 @@ const SuccessStories = () => {
                 </Link>
               )}
               
-              <button className="group inline-flex items-center justify-center px-10 py-4 border-2 border-gray-300 hover:border-green-500 text-gray-700 hover:text-green-600 font-semibold text-lg rounded-xl transition-all duration-300">
+              <button className="group inline-flex items-center justify-center px-10 py-4 border-2 border-gray-400 dark:border-gray-300 hover:border-green-500 text-gray-700 dark:text-gray-300 hover:text-green-600 font-semibold text-lg rounded-xl transition-all duration-300">
                 <Users className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
                 <span>View More Stories</span>
               </button>
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex items-center justify-center space-x-8 mt-8 pt-8 border-t border-gray-600/50">
-              <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+            <div className="flex items-center justify-center space-x-8 mt-8 pt-8 border-t border-gray-400 dark:border-gray-600/50">
+              <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 text-sm">
+                <div className="w-2 h-2 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-pulse"></div>
                 <span className="font-medium">Live Community</span>
               </div>
-              <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 text-sm">
+                <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse"></div>
                 <span className="font-medium">24/7 Support</span>
               </div>
-              <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+              <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 text-sm">
+                <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-pulse"></div>
                 <span className="font-medium">Proven Results</span>
               </div>
             </div>

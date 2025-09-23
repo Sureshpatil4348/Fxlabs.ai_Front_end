@@ -439,7 +439,7 @@ const RSICorrelationDashboard = () => {
           <div className="flex items-center space-x-2">
             <BarChart3 className="w-5 h-5 text-blue-600" />
             <div>
-              <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
+              <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
             </div>
           </div>
           <div className="flex items-center space-x-3 mt-1">
@@ -453,8 +453,8 @@ const RSICorrelationDashboard = () => {
             onClick={handleCalculationModeToggle}
             className={`px-3 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md ${
               localSettings.calculationMode === 'real_correlation'
-                ? 'text-blue-600 bg-blue-100 shadow-blue-200'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 shadow-gray-200'
+                ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200'
+                : 'text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-gray-200'
             }`}
             title={`Switch to ${localSettings.calculationMode === 'rsi_threshold' ? 'Real Correlation' : 'RSI Threshold'} mode`}
           >
@@ -479,7 +479,7 @@ const RSICorrelationDashboard = () => {
               type="button"
               aria-label="Configure RSI correlation alerts"
               onClick={handleRSICorrelationBellClick}
-              className="relative p-2 text-gray-400 hover:text-purple-500 transition-colors duration-300 group"
+              className="relative p-2 text-gray-400 dark:text-slate-400 hover:text-purple-500 transition-colors duration-300 group"
             >
               <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
               {activeRSICorrelationAlertsCount > 0 && (
@@ -492,7 +492,7 @@ const RSICorrelationDashboard = () => {
           
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2.5 text-slate-600 hover:text-slate-800 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
+            className="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
             title="Dashboard Settings"
           >
             <Settings className="w-4 h-4" />
@@ -500,7 +500,7 @@ const RSICorrelationDashboard = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-2.5 text-slate-600 hover:text-slate-800 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -559,20 +559,20 @@ const RSICorrelationDashboard = () => {
       {/* Settings Modal */}
       {showSettings && createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Correlation Settings</h3>
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">RSI Correlation Settings</h3>
             
             <div className="space-y-4">
               {/* Calculation Mode */}
               <div>
-                <label htmlFor="rsi-calc-mode" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-calc-mode" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   Calculation Mode
                 </label>
                 <select
                   id="rsi-calc-mode"
                   value={localSettings.calculationMode}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, calculationMode: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="rsi_threshold">RSI Threshold Analysis</option>
                   <option value="real_correlation">Real Rolling Correlation</option>
@@ -581,14 +581,14 @@ const RSICorrelationDashboard = () => {
 
               {/* Timeframe */}
               <div>
-                <label htmlFor="rsi-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="rsi-timeframe" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   Timeframe
                 </label>
                 <select
                   id="rsi-timeframe"
                   value={localSettings.timeframe}
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {timeframes.map(tf => (
                     <option key={tf} value={tf}>{tf}</option>
@@ -599,14 +599,14 @@ const RSICorrelationDashboard = () => {
               {/* Correlation Window (only show for real correlation mode) */}
               {localSettings.calculationMode === 'real_correlation' && (
                 <div>
-                  <label htmlFor="rsi-corr-window" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="rsi-corr-window" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                     Correlation Window
                   </label>
                   <select
                     id="rsi-corr-window"
                     value={localSettings.correlationWindow}
                     onChange={(e) => setLocalSettings(prev => ({ ...prev, correlationWindow: parseInt(e.target.value) }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     {correlationWindows.map(window => (
                       <option key={window} value={window}>{window} periods</option>
@@ -620,7 +620,7 @@ const RSICorrelationDashboard = () => {
                 <>
                   {/* RSI Period */}
                   <div>
-                    <label htmlFor="rsi-period-input" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rsi-period-input" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                       RSI Period
                     </label>
                     <input
@@ -630,13 +630,13 @@ const RSICorrelationDashboard = () => {
                       max="50"
                       value={localSettings.rsiPeriod}
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiPeriod: parseInt(e.target.value) }))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   {/* Overbought Level */}
                   <div>
-                    <label htmlFor="rsi-overbought-input" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rsi-overbought-input" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                       Overbought Level
                     </label>
                     <input
@@ -646,13 +646,13 @@ const RSICorrelationDashboard = () => {
                       max="90"
                       value={localSettings.rsiOverbought}
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOverbought: parseInt(e.target.value) }))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   {/* Oversold Level */}
                   <div>
-                    <label htmlFor="rsi-oversold-input" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rsi-oversold-input" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                       Oversold Level
                     </label>
                     <input
@@ -662,7 +662,7 @@ const RSICorrelationDashboard = () => {
                       max="50"
                       value={localSettings.rsiOversold}
                       onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOversold: parseInt(e.target.value) }))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </>
@@ -672,13 +672,13 @@ const RSICorrelationDashboard = () => {
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
               <button
                 onClick={handleResetSettings}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-600 hover:bg-gray-200 dark:hover:bg-slate-500 rounded-md transition-colors"
               >
                 Reset
               </button>
               <button
                 onClick={() => setShowSettings(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-600 hover:bg-gray-200 dark:hover:bg-slate-500 rounded-md transition-colors"
               >
                 Cancel
               </button>

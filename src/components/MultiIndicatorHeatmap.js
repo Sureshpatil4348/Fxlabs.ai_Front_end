@@ -811,7 +811,7 @@ useEffect(() => {
           {/* Title */}
           <div className="flex items-center space-x-2">
             <img src={quantImage} alt="Quantum" className="w-5 h-5" />
-            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Quantum Analysis</h2>
+            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
@@ -845,19 +845,19 @@ useEffect(() => {
               >
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 text-xs font-semibold border border-gray-200 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                   {dropdownOptions.find(opt => opt.value === currentSymbol)?.label || currentSymbol}
                 </button>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className={`w-2 h-2 text-gray-500 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
                 
                 {/* Custom Dropdown Menu */}
                 {isSymbolDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border-0 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                     {dropdownOptions.map(option => (
                       <button
                         key={option.value}
@@ -865,8 +865,8 @@ useEffect(() => {
                           handleSymbolChange(option.value);
                           setIsSymbolDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 transition-colors duration-150 ${
-                          option.value === currentSymbol ? 'bg-blue-100 text-blue-800 font-semibold' : 'text-gray-700'
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
+                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-semibold' : 'text-gray-700 dark:text-slate-300'
                         }`}
                       >
                         {option.label}
@@ -890,14 +890,14 @@ useEffect(() => {
                 <select
                   value={tradingStyle}
                   onChange={(e) => handleTradingStyleChange(e.target.value)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 text-xs font-semibold border border-gray-200 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                 <option value="scalper">Scalper</option>
                 <option value="dayTrader">Day Trader</option>
                 <option value="swingTrader">Swing Trader</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className="w-2 h-2 text-gray-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -912,7 +912,7 @@ useEffect(() => {
               <select
                 value={indicatorWeight}
                 onChange={(e) => handleIndicatorWeightChange(e.target.value)}
-                className="appearance-none pl-2 pr-6 py-1 bg-orange-50 text-orange-900 rounded text-xs font-medium border border-orange-200 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 min-w-[70px] cursor-pointer hover:bg-orange-100"
+                className="appearance-none pl-2 pr-6 py-1 bg-orange-50 text-orange-900 rounded text-xs font-medium border-0 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 min-w-[70px] cursor-pointer hover:bg-orange-100"
               >
                 <option value="equal">⚖️ Equal</option>
                 <option value="trendTilted">📈 Trend-Tilted</option>
@@ -932,7 +932,7 @@ useEffect(() => {
               <select
                 value={showNewSignals ? 'on' : 'off'}
                 onChange={(e) => handleShowNewSignalsChange(e.target.value === 'on')}
-                className="appearance-none pl-2 pr-6 py-1 bg-green-50 text-green-900 rounded text-xs font-medium border border-green-200 focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200 min-w-[60px] cursor-pointer hover:bg-green-100"
+                className="appearance-none pl-2 pr-6 py-1 bg-green-50 text-green-900 rounded text-xs font-medium border-0 focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200 min-w-[60px] cursor-pointer hover:bg-green-100"
               >
                 <option value="on">🟢 ON</option>
                 <option value="off">🔴 OFF</option>
@@ -1015,29 +1015,29 @@ useEffect(() => {
           <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
             <Activity className="w-8 h-8 text-red-500" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
             {dataStatus.error === 'NO_DATA' ? 'No Market Data' : 
              dataStatus.error === 'NO_BARS' ? 'No OHLC Data' : 
              dataStatus.error === 'INSUFFICIENT_DATA' ? 'Insufficient Data' : 'Data Error'}
           </h3>
-          <p className="text-gray-500 text-sm mb-4">
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
             {dataStatus.message}
           </p>
           {dataStatus.error === 'INSUFFICIENT_DATA' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+            <div className="bg-blue-50 dark:bg-slate-700 border border-blue-200 dark:border-slate-600 rounded-lg p-4 max-w-md mx-auto">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-blue-700">Data Progress:</span>
-                <span className="text-sm font-medium text-blue-800">
+                <span className="text-sm text-blue-700 dark:text-slate-300">Data Progress:</span>
+                <span className="text-sm font-medium text-blue-800 dark:text-slate-200">
                   {dataStatus.dataCount}/{dataStatus.required} bars
                 </span>
               </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
+              <div className="w-full bg-blue-200 dark:bg-slate-600 rounded-full h-2">
                 <div 
                   className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${Math.min(100, (dataStatus.dataCount / dataStatus.required) * 100)}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-blue-600 mt-2">
+              <p className="text-xs text-blue-600 dark:text-slate-400 mt-2">
                 Market data is still loading. Indicators will activate as more data becomes available.
               </p>
             </div>
@@ -1064,10 +1064,10 @@ useEffect(() => {
       <div className="overflow-x-auto flex-1">
         <table className="w-full border-collapse h-full">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-0.5 px-1 font-bold text-gray-700 text-sm w-20"></th>
+            <tr className="border-b border-gray-200 dark:border-slate-600">
+              <th className="text-left py-0.5 px-1 font-bold text-gray-700 dark:text-slate-300 text-sm w-20"></th>
               {indicators.map(indicator => (
-                <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700">
+                <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700 dark:text-slate-300">
                   <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
                 </th>
               ))}
@@ -1075,8 +1075,8 @@ useEffect(() => {
           </thead>
           <tbody className="h-full">
             {[...new Set(timeframes)].filter(tf => tf !== '1W').map((timeframe) => (
-              <tr key={timeframe} className="border-b border-slate-100/50" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
-                <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
+              <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
+                <td className="py-0.5 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
                   <div className="flex items-center space-x-1 ml-2">
                     <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>
                   </div>
@@ -1164,9 +1164,8 @@ useEffect(() => {
             
             {/* Buy/Sell Progress Bar Row */}
             <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
-              <td className="py-0.5 px-1 font-medium text-slate-800 text-xs">
+              <td className="py-0.5 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
                 <div className="flex items-center space-x-1 ml-2">
-                  <span className="text-sm font-normal">Buy/Sell</span>
                 </div>
               </td>
               <td colSpan={indicators.length} className="py-1 px-1">
@@ -1176,13 +1175,12 @@ useEffect(() => {
                     const sellPct = finalResults.sellNowPercent;
                     
                     return (
-                      <div className="flex items-center gap-3 w-full max-w-[400px]">
+                      <div className="flex items-center gap-3 w-full">
                         <span 
-                          className="text-xs font-bold text-emerald-600 whitespace-nowrap"
-                          style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                          className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap -ml-16"
                         >BUY {buyPct.toFixed(1)}%</span>
                         <div className="flex-1 relative">
-                          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="w-full h-4 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
                             <div 
                               className="h-full transition-all duration-500 ease-out"
                               style={{ 
@@ -1203,8 +1201,7 @@ useEffect(() => {
                           </div>
                         </div>
                         <span 
-                          className="text-xs font-bold text-red-600 whitespace-nowrap"
-                          style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                          className="text-xs font-bold text-red-600 dark:text-red-400 whitespace-nowrap m-2"
                         >SELL {sellPct.toFixed(1)}%</span>
                       </div>
                     );

@@ -4,6 +4,7 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       screens: {
@@ -49,6 +50,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        poppins: ['Poppins', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace'],
       },
       fontWeight: {

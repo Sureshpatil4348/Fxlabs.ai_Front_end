@@ -1,6 +1,7 @@
 import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabaseClient'
@@ -14,6 +15,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [showPassword, setShowPassword] = useState(false)
   
   const { user } = useAuth()
+  const navigate = useNavigate()
 
   // Close modal if user is already logged in
   React.useEffect(() => {
@@ -40,6 +42,7 @@ const LoginModal = ({ isOpen, onClose }) => {
         setSuccess('Login successful! Redirecting...')
         setTimeout(() => {
           onClose()
+          navigate('/dashboard')
         }, 1000)
       }
     } catch (err) {
