@@ -188,17 +188,17 @@ const HeroSection = () => {
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight text-left font-poppins">
-                <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent animate-pulse">
-                  Decode Market
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-left font-poppins">
+                <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent animate-pulse ml-10">
+                  Decode the
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-green-600 dark:from-blue-400 dark:via-cyan-300 dark:to-green-400 bg-clip-text text-transparent">
-                  with AI
+                Market with AI
                 </span>
               </h1>
               
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl text-left transition-colors duration-300">
+              <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl text-left transition-colors duration-300">
                 Professional-grade AI tools for <span className="text-green-600 dark:text-green-400 font-semibold">market analysis</span>, 
                 <span className="text-blue-600 dark:text-blue-400 font-semibold"> real-time insights</span>, and 
                 <span className="text-emerald-600 dark:text-emerald-400 font-semibold"> precision trading</span>
@@ -208,20 +208,20 @@ const HeroSection = () => {
             {/* Key Features */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span>AI Chart Analysis</span>
+                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-lg font-medium">AI Chart Analysis</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span>AI News Analysis</span>
+                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-lg font-medium">AI News Analysis</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span>Real-time RSI Updates</span>
+                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-lg font-medium">Real-time RSI Updates</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span>Daily Market Overview</span>
+                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-lg font-medium">Daily Market Overview</span>
               </div>
             </div>
 

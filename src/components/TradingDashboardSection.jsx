@@ -322,7 +322,7 @@ const TradingDashboardSection = () => {
        
 
         {/* Unified Master Trader AI & Premium Intelligence Section */}
-        <div className="relative mb-16 ml-4" style={{ width: 'calc(100vw - 2rem)', marginLeft: 'calc(-50vw + 50% + 1rem)' }}>
+        <div className="relative mb-16 w-full">
           <div className="w-full">
             <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-lg p-6 border border-green-500/20 shadow-2xl relative overflow-hidden"
                  style={{
@@ -395,18 +395,18 @@ const TradingDashboardSection = () => {
                             <div 
                               className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 border border-blue-400/30 dark:border-blue-500/30"
                             >
-                              <span className="text-gray-800 dark:text-white font-bold text-lg">{pair.icon}</span>
+                              <span className="text-gray-800 dark:text-white font-bold text-sm">{pair.icon}</span>
                             </div>
                             <div>
-                              <div className="text-gray-800 dark:text-white font-bold text-lg leading-tight">{pair.symbol}</div>
-                              <div className="text-red-400 text-sm font-medium leading-tight">{pair.trend}</div>
+                              <div className="text-gray-800 dark:text-white font-bold text-sm leading-tight">{pair.symbol}</div>
+                              <div className="text-red-400 text-xs font-medium leading-tight">{pair.trend}</div>
                             </div>
                           </div>
                           
                           {/* Right Side - Price and Change */}
                           <div className="text-right">
-                            <div className="text-gray-800 dark:text-white font-bold text-xl leading-tight">{pair.price}</div>
-                            <div className={`text-sm flex items-center justify-end ${
+                            <div className="text-gray-800 dark:text-white font-bold text-lg leading-tight">{pair.price}</div>
+                            <div className={`text-xs flex items-center justify-end ${
                               isPositive ? 'text-green-400' : 'text-red-400'
                             }`}>
                               {pair.change}
@@ -422,8 +422,8 @@ const TradingDashboardSection = () => {
                         {/* Bottom Section - Success Probability */}
                         <div className="mt-auto">
                           <div className="flex items-center justify-between mb-2">
-                            <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">Success Probability</div>
-                            <div className="text-gray-800 dark:text-white text-sm font-medium">{pair.probability}%</div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs font-medium">Success Probability</div>
+                            <div className="text-gray-800 dark:text-white text-xs font-medium">{pair.probability}%</div>
                           </div>
                           <div 
                             className="w-full rounded-full h-1.5 overflow-hidden bg-gray-300 dark:bg-gray-700"
@@ -448,23 +448,8 @@ const TradingDashboardSection = () => {
               <div className="mt-8 relative z-10">
                 {/* Premium AI Intelligence Sub-Header */}
                 <div className="flex flex-col items-center justify-center mb-6">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-blue-600/30 rounded-lg flex items-center justify-center border border-blue-500/30 shadow-lg">
-                      <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div className="text-center">
-                      <h3 className="text-gray-800 dark:text-white text-xl font-bold font-poppins">
-                        Premium AI Intelligence
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-xs">
-                        Real-time market sentiment analysis
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-blue-500/20 backdrop-blur-md rounded-full px-4 py-2 border border-blue-500/30 shadow-lg">
-                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                    <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Live Analysis</span>
-                  </div>
+                 
+                  
                 </div>
 
               {/* Premium News Analysis Image Carousel */}
@@ -626,39 +611,7 @@ const TradingDashboardSection = () => {
                 </div>
               </div>
 
-              {/* AI Analysis Summary */}
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/20 shadow-lg relative z-10">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500/30 to-cyan-500/30 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <span className="text-blue-600 dark:text-blue-400 font-semibold">AI Market Sentiment Summary</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800 dark:text-white mb-1">87%</div>
-                    <div className="text-gray-600 dark:text-gray-400 text-sm">Bullish Sentiment</div>
-                    <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2 mt-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{width: '87%'}}></div>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800 dark:text-white mb-1">12</div>
-                    <div className="text-gray-600 dark:text-gray-400 text-sm">Active Alerts</div>
-                    <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2 mt-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{width: '60%'}}></div>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-800 dark:text-white mb-1">24/7</div>
-                    <div className="text-gray-600 dark:text-gray-400 text-sm">Monitoring</div>
-                    <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2 mt-2">
-                      <div className="bg-cyan-500 h-2 rounded-full" style={{width: '100%'}}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+             
 
               {/* Email & Telegram Alert Flow Section */}
               <div className="mt-6 relative z-10">
