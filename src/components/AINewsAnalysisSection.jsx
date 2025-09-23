@@ -44,7 +44,7 @@ const AINewsAnalysisSection = () => {
   }, [newsData.length])
 
   return (
-    <section className="relative py-20 overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <section className="relative py-20 overflow-hidden bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors duration-300">
       {/* Animated Background */}
       <div className="absolute inset-0">
         {/* Floating Particles */}
@@ -73,18 +73,18 @@ const AINewsAnalysisSection = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-6 py-3 mb-6">
-            <Sparkles className="w-5 h-5 text-green-400" />
-            <span className="text-green-400 font-semibold text-sm">AI-Powered News Analysis</span>
+          <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20 border border-green-500/20 dark:border-green-500/30 rounded-full px-6 py-3 mb-6">
+            <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <span className="text-green-600 dark:text-green-400 font-semibold text-sm">AI-Powered News Analysis</span>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent animate-pulse">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-6">
+            <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent animate-pulse">
               Real-time Market Intelligence
             </span>
           </h2>
           
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
             Get instant AI-powered analysis of market news with sentiment scoring and impact assessment
           </p>
         </div>
@@ -128,58 +128,57 @@ const AINewsAnalysisSection = () => {
 
           {/* Right Side - Frameless Premium News Feed */}
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-gray-900/60 to-black/60 backdrop-blur-xl rounded-3xl p-10 shadow-2xl"
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-xl rounded-3xl p-10 shadow-2xl transition-colors duration-300"
                  style={{
-                   background: 'linear-gradient(135deg, rgba(17,24,39,0.6) 0%, rgba(0,0,0,0.6) 100%)',
                    boxShadow: '0 25px 50px -12px rgba(16, 185, 129, 0.15)'
                  }}>
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Live News Analysis</h3>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Live News Analysis</h3>
               </div>
               
               {/* News Item - Frameless Premium */}
               <div className="space-y-4">
-                <div className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-2xl p-8 backdrop-blur-sm"
+                <div className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 dark:from-green-500/10 dark:to-emerald-500/10 rounded-2xl p-8 backdrop-blur-sm"
                      style={{
                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)'
                      }}>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-white font-semibold text-lg">{newsData[currentNews].title}</h4>
+                    <h4 className="text-gray-800 dark:text-white font-semibold text-lg">{newsData[currentNews].title}</h4>
                     <div className="flex items-center space-x-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-600'}`} />
+                        <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-500 dark:text-yellow-400 fill-current' : 'text-gray-400 dark:text-gray-600'}`} />
                       ))}
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div className="bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-xl p-4 backdrop-blur-sm">
-                      <span className="text-gray-400 text-sm font-medium">Sentiment</span>
+                    <div className="bg-gradient-to-br from-green-500/5 to-emerald-500/5 dark:from-green-500/10 dark:to-emerald-500/10 rounded-xl p-4 backdrop-blur-sm">
+                      <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Sentiment</span>
                       <div className={`font-bold text-xl ${
-                        newsData[currentNews].sentiment === 'Bullish' ? 'text-green-400' :
-                        newsData[currentNews].sentiment === 'Bearish' ? 'text-red-400' : 'text-yellow-400'
+                        newsData[currentNews].sentiment === 'Bullish' ? 'text-green-600 dark:text-green-400' :
+                        newsData[currentNews].sentiment === 'Bearish' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
                       }`}>
                         {newsData[currentNews].sentiment}
                       </div>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-xl p-4 backdrop-blur-sm">
-                      <span className="text-gray-400 text-sm font-medium">Impact</span>
-                      <div className="text-white font-bold text-xl">{newsData[currentNews].impact}</div>
+                    <div className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 dark:from-blue-500/10 dark:to-cyan-500/10 rounded-xl p-4 backdrop-blur-sm">
+                      <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Impact</span>
+                      <div className="text-gray-800 dark:text-white font-bold text-xl">{newsData[currentNews].impact}</div>
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">Source: {newsData[currentNews].source}</span>
-                    <span className="text-blue-400">{newsData[currentNews].time}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Source: {newsData[currentNews].source}</span>
+                    <span className="text-blue-600 dark:text-blue-400">{newsData[currentNews].time}</span>
                   </div>
                   
-                  <div className="mt-6 p-4 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-xl backdrop-blur-sm">
+                  <div className="mt-6 p-4 bg-gradient-to-r from-green-500/5 to-emerald-500/5 dark:from-green-500/10 dark:to-emerald-500/10 rounded-xl backdrop-blur-sm">
                     <div className="flex items-center space-x-3">
-                      <Sparkles className="w-5 h-5 text-green-400" />
-                      <span className="text-green-300 font-semibold text-base">
+                      <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <span className="text-green-700 dark:text-green-300 font-semibold text-base">
                         AI Confidence: {newsData[currentNews].confidence}
                       </span>
                     </div>

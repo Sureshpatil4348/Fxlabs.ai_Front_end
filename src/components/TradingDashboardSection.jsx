@@ -1,21 +1,47 @@
-import { BarChart3, Bell, Mail, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Zap, Shield, Target, Rocket, Star, Crown, Sparkles } from 'lucide-react'
+import { BarChart3, Bell, Mail, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ArrowRight, Zap, Shield } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
-import RSICorrelationDashboard from './RSICorrelationDashboard'
 import { useAuth } from '../auth/AuthProvider'
 import useBaseMarketStore from '../store/useBaseMarketStore'
 import useMarketStore from '../store/useMarketStore'
+import useRSITrackerStore from '../store/useRSITrackerStore'
 
 const TradingDashboardSection = () => {
   const { user } = useAuth()
   const { } = useMarketStore()
+  const { 
+    tickData, 
+    ohlcData, 
+    isConnected,
+    connect,
+    subscribe
+  } = useRSITrackerStore()
   const connectionInitiated = useRef(false)
   const [showAlertDemo, setShowAlertDemo] = useState(false)
-  const [currentAlertStep, setCurrentAlertStep] = useState(0)
-  const [particles, setParticles] = useState([])
+  const [_currentAlertStep, _setCurrentAlertStep] = useState(0)
+  const [_particles, _setParticles] = useState([])
   const [_isHovered] = useState(false)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [cursorTrail, setCursorTrail] = useState([])
+  const [_mousePosition, _setMousePosition] = useState({ x: 0, y: 0 })
+  const [_cursorTrail, _setCursorTrail] = useState([])
+  const [activeFilter, setActiveFilter] = useState('All Pairs')
+  const [currentNewsSlide, setCurrentNewsSlide] = useState(0)
+  const [currencyPairs, setCurrencyPairs] = useState([
+    { symbol: 'BTC/USD', name: 'Bitcoin', price: '112874.66', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'B' },
+    { symbol: 'ETH/USD', name: 'Ethereum', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'E' },
+    { symbol: 'XRP/USD', name: 'Ripple', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'X' },
+    { symbol: 'SOL/USD', name: 'Solana', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'S' },
+    { symbol: 'EUR/USD', name: 'Euro', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'E' },
+    { symbol: 'GBP/USD', name: 'British Pound', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'G' },
+    { symbol: 'XAU/USD', name: 'Gold', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'X' },
+    { symbol: 'USD/JPY', name: 'US Dollar/Japanese Yen', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'U' }
+  ])
+  const [dataInitialized, setDataInitialized] = useState(false)
+  const [lastUpdateTime, setLastUpdateTime] = useState(0)
+  
+  // Filter currency pairs based on active filter
+  const filteredPairs = activeFilter === 'All Pairs' 
+    ? currencyPairs 
+    : currencyPairs.filter(pair => pair.type === activeFilter.toLowerCase())
   
   // Subscribe only to the specific parts we need for rendering
   const _showLoader = useMarketStore(state => state.globalConnectionState.showLoader)
@@ -37,6 +63,25 @@ const TradingDashboardSection = () => {
     }
   }, [user])
 
+  // Connect to real market data for TradingDashboardSection
+  useEffect(() => {
+    if (!isConnected) {
+      // console.log('🔌 TradingDashboardSection - Connecting to WebSocket...')
+      connect()
+    }
+  }, [isConnected, connect])
+
+  // Subscribe to market data for TradingDashboardSection
+  useEffect(() => {
+    if (isConnected) {
+      // console.log('📡 TradingDashboardSection - Subscribing to market data...')
+      const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USDJPYm']
+      symbols.forEach(symbol => {
+        subscribe(symbol, '1H', ['ticks', 'ohlc'])
+      })
+    }
+  }, [isConnected, subscribe])
+
   useEffect(() => {
     useBaseMarketStore.getState().fetchNews()
     const newsInterval = setInterval(() => {
@@ -45,10 +90,144 @@ const TradingDashboardSection = () => {
     return () => clearInterval(newsInterval)
   }, [])
 
+  // Console log real data for TradingDashboardSection
+  useEffect(() => {
+    // console.log('🔍 TradingDashboardSection - Real Data Check:', {
+    //   isConnected,
+    //   tickDataSize: tickData.size,
+    //   ohlcDataSize: ohlcData.size,
+    //   allTickData: tickData,
+    //   allOhlcData: ohlcData
+    // })
+    
+    // Log specific currency pairs data
+    const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USDJPYm']
+    symbols.forEach(symbol => {
+      const tickSymbolData = tickData.get(symbol)
+      const ohlcSymbolData = ohlcData.get(symbol)
+      
+      if (tickSymbolData || ohlcSymbolData) {
+        // console.log(`📊 ${symbol} Data:`, {
+        //   tickData: tickSymbolData,
+        //   ohlcData: ohlcSymbolData,
+        //   latestTick: tickSymbolData?.ticks?.[tickSymbolData.ticks.length - 1],
+        //   latestOhlc: ohlcSymbolData?.bars?.[ohlcSymbolData.bars.length - 1]
+        // })
+      }
+    })
+  }, [tickData, ohlcData, isConnected])
+
+  // Update currency pairs with real dynamic data (throttled to every 3 seconds)
+  useEffect(() => {
+    if (tickData.size > 0) {
+      const now = Date.now()
+      const timeSinceLastUpdate = now - lastUpdateTime
+      
+      // Only update every 3 seconds to avoid too frequent changes
+      if (timeSinceLastUpdate < 3000) {
+        return
+      }
+      
+      // console.log('🔄 TradingDashboardSection - Updating currency pairs with real data:', {
+      //   tickDataSize: tickData.size,
+      //   allSymbols: Array.from(tickData.keys()),
+      //   timeSinceLastUpdate: `${timeSinceLastUpdate}ms`
+      // })
+      
+      setLastUpdateTime(now)
+
+      const symbolMapping = {
+        'BTCUSDm': { symbol: 'BTC/USD', name: 'Bitcoin', icon: 'B', type: 'crypto' },
+        'ETHUSDm': { symbol: 'ETH/USD', name: 'Ethereum', icon: 'E', type: 'crypto' },
+        'XRPUSDm': { symbol: 'XRP/USD', name: 'Ripple', icon: 'X', type: 'crypto' },
+        'SOLUSDm': { symbol: 'SOL/USD', name: 'Solana', icon: 'S', type: 'crypto' },
+        'EURUSDm': { symbol: 'EUR/USD', name: 'Euro', icon: 'E', type: 'forex' },
+        'GBPUSDm': { symbol: 'GBP/USD', name: 'British Pound', icon: 'G', type: 'forex' },
+        'XAUUSDm': { symbol: 'XAU/USD', name: 'Gold', icon: 'X', type: 'forex' },
+        'USDJPYm': { symbol: 'USD/JPY', name: 'US Dollar/Japanese Yen', icon: 'U', type: 'forex' }
+      }
+
+      setCurrencyPairs(prevPairs => {
+        return prevPairs.map(pair => {
+          const symbolKey = Object.keys(symbolMapping).find(key => 
+            symbolMapping[key].symbol === pair.symbol
+          )
+          
+          if (symbolKey) {
+            const tickSymbolData = tickData.get(symbolKey)
+            
+            if (tickSymbolData && tickSymbolData.ticks && tickSymbolData.ticks.length > 0) {
+              const ticks = tickSymbolData.ticks
+              const latestTick = ticks[ticks.length - 1]
+              
+              if (latestTick && latestTick.bid) {
+                const currentPrice = latestTick.bid
+                
+                // Calculate percentage change from previous price
+                let changePercent = 0
+                let trend = 'Neutral'
+                let probability = 50
+                
+                if (ticks.length > 1) {
+                  const previousTick = ticks[ticks.length - 2]
+                  if (previousTick && previousTick.bid) {
+                    const previousPrice = previousTick.bid
+                    changePercent = ((currentPrice - previousPrice) / previousPrice) * 100
+                    
+                    // Determine trend based on percentage change - very sensitive thresholds for real market data
+                    if (changePercent > 0.005) {
+                      trend = 'Strong Uptrend'
+                      probability = 75
+                    } else if (changePercent > 0.0005) {
+                      trend = 'Uptrend'
+                      probability = 65
+                    } else if (changePercent > -0.0005) {
+                      trend = 'Neutral'
+                      probability = 50
+                    } else if (changePercent > -0.005) {
+                      trend = 'Weak Downtrend'
+                      probability = 35
+                    } else {
+                      trend = 'Downtrend'
+                      probability = 25
+                    }
+                  }
+                }
+                
+                const changeSign = changePercent >= 0 ? '+' : ''
+                const changeText = `${changeSign}${changePercent.toFixed(4)}%`
+                
+                // console.log(`🔄 ${pair.symbol} Final Data:`, {
+                //   price: currentPrice.toFixed(2),
+                //   change: changeText,
+                //   trend,
+                //   probability
+                // })
+                
+                return {
+                  ...pair,
+                  price: currentPrice.toFixed(2),
+                  change: changeText,
+                  trend: trend,
+                  probability: probability
+                }
+              }
+            }
+          }
+          return pair
+        })
+      })
+
+      if (!dataInitialized) {
+        setDataInitialized(true)
+      }
+    }
+  }, [tickData, dataInitialized, lastUpdateTime])
+
   // Load user tab states on dashboard mount
   useEffect(() => {
-    loadTabState().catch(error => {
-      console.error('Failed to load tab states:', error);
+    loadTabState().catch(_error => {
+      // console.error('Failed to load tab states:', _error);
     });
   }, [loadTabState]);
 
@@ -64,12 +243,21 @@ const TradingDashboardSection = () => {
   useEffect(() => {
     if (showAlertDemo) {
       const stepTimer = setInterval(() => {
-        setCurrentAlertStep(prev => (prev + 1) % 4)
+        _setCurrentAlertStep(prev => (prev + 1) % 4)
       }, 3000)
 
       return () => clearInterval(stepTimer)
     }
   }, [showAlertDemo])
+
+  // Auto-rotate news carousel
+  useEffect(() => {
+    const carouselTimer = setInterval(() => {
+      setCurrentNewsSlide(prev => (prev + 1) % 3)
+    }, 5000)
+
+    return () => clearInterval(carouselTimer)
+  }, [])
 
   // Particle System
   useEffect(() => {
@@ -87,7 +275,7 @@ const TradingDashboardSection = () => {
           opacity: Math.random() * 0.5 + 0.2
         })
       }
-      setParticles(newParticles)
+      _setParticles(newParticles)
     }
 
     generateParticles()
@@ -96,7 +284,7 @@ const TradingDashboardSection = () => {
   // Premium Cursor Trail Animation
   useEffect(() => {
     const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
+      _setMousePosition({ x: e.clientX, y: e.clientY })
       
       // Add new trail point
       const newTrail = {
@@ -106,7 +294,7 @@ const TradingDashboardSection = () => {
         timestamp: Date.now()
       }
       
-      setCursorTrail(prev => {
+      _setCursorTrail(prev => {
         const updated = [newTrail, ...prev].slice(0, 8) // Keep only 8 trail points
         return updated
       })
@@ -120,416 +308,463 @@ const TradingDashboardSection = () => {
   // Load tab state in background (optional for public access)
   React.useEffect(() => {
     if (user) {
-      loadTabState().catch(error => {
-        console.error('Failed to load tab states:', error);
+      loadTabState().catch(_error => {
+        // console.error('Failed to load tab states:', _error);
       });
     }
   }, [user, loadTabState]);
 
 
   return (
-    <section className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 py-16 overflow-hidden">
-      {/* Extraordinary Particle System */}
-      <div className="absolute inset-0">
-        {particles.map((particle) => (
-          <div
-            key={particle.id}
-            className="absolute rounded-full animate-pulse"
-            style={{
-              left: particle.x,
-              top: particle.y,
-              width: particle.size,
-              height: particle.size,
-              backgroundColor: particle.color,
-              opacity: particle.opacity,
-              transform: `translate(${particle.vx}px, ${particle.vy}px)`,
-              animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2}s`
-            }}
-          />
-        ))}
+    <section className="relative py-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* Premium Cursor Trail Animation */}
-        {cursorTrail.map((point, index) => (
-          <div
-            key={point.id}
-            className="absolute pointer-events-none"
-            style={{
-              left: point.x - 4,
-              top: point.y - 4,
-              width: 8 - index,
-              height: 8 - index,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, rgba(16, 185, 129, ${0.8 - index * 0.1}) 0%, transparent 70%)`,
-              animation: `trailFade ${1 + index * 0.2}s ease-out forwards`,
-              zIndex: 1000 - index
-            }}
-          />
-        ))}
+       
 
-        {/* Dynamic Grid Pattern */}
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-            animation: 'gridMove 20s linear infinite'
-          }}
-        />
-
-        {/* Premium Mouse Follower Effect */}
-        <div
-          className="absolute w-64 h-64 rounded-full opacity-20 pointer-events-none"
-          style={{
-            left: mousePosition.x - 128,
-            top: mousePosition.y - 128,
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 70%)',
-            transition: 'all 0.3s ease-out',
-            animation: 'pulse 2s ease-in-out infinite'
-          }}
-        />
-        
-        {/* Secondary Glow Effect */}
-        <div
-          className="absolute w-32 h-32 rounded-full opacity-30 pointer-events-none"
-          style={{
-            left: mousePosition.x - 64,
-            top: mousePosition.y - 64,
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.6) 0%, transparent 70%)',
-            transition: 'all 0.2s ease-out'
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Extraordinary Header with 3D Effects */}
-        <div className="text-center mb-16">
-          <div className="relative">
-            {/* 3D Floating Icons */}
-            <div className="absolute -top-8 -left-8 w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-bounce shadow-2xl shadow-yellow-500/50">
-              <Star className="w-6 h-6 text-white" />
-            </div>
-            <div className="absolute -top-4 -right-12 w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-ping">
-              <Crown className="w-4 h-4 text-white" />
-            </div>
-            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center animate-pulse">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-
-          <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="relative group">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/50 transform transition-all duration-500 group-hover:scale-110 group-hover:rotate-12">
-                  <BarChart3 className="w-10 h-10 text-white" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-            </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-2xl transform transition-all duration-500 hover:scale-105">
-                  <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent animate-pulse">
-                    RSI Correlation
-                  </span>
-                </h1>
-                <p className="text-gray-300 text-lg font-light mt-2">Advanced market correlation analysis</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Extraordinary Status Badge */}
-          <div className="relative inline-block">
-            <div className="flex items-center justify-center space-x-3 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-teal-500/20 border border-emerald-500/30 rounded-full px-8 py-3 shadow-2xl shadow-emerald-500/30 backdrop-blur-sm transform transition-all duration-500 hover:scale-105">
-              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
-              <span className="text-emerald-300 text-lg font-semibold">Real-time Correlation Data</span>
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-teal-500/20 rounded-full blur-xl opacity-50"></div>
-          </div>
-        </div>
-
-        {/* RSI Correlation Dashboard Section - Now at Top */}
-        <div className="relative mb-16">
-          <div className="max-w-6xl mx-auto">
-            <RSICorrelationDashboard />
-          </div>
-        </div>
-
-        {/* Extraordinary Interactive Market Experience - Now Below RSI */}
-        <div className="mb-16">
-          <div className="text-center mb-12">
-            <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 transform transition-all duration-500 hover:scale-105">
-                <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent animate-pulse">
-                  Real-time
-                </span>
-                <br />
-                <span className="text-gray-300">Market Alerts</span>
-              </h2>
+        {/* Unified Master Trader AI & Premium Intelligence Section */}
+        <div className="relative mb-16 w-full">
+          <div className="w-full">
+            <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-lg p-6 border border-green-500/20 shadow-2xl relative overflow-hidden"
+                 style={{
+                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(16, 185, 129, 0.2)'
+                 }}>
               
-              {/* Floating Action Icons */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center animate-bounce shadow-2xl shadow-red-500/50">
-                <Rocket className="w-8 h-8 text-white" />
-              </div>
-              <div className="absolute -bottom-2 -left-4 w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center animate-ping">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              Create custom alerts and receive <span className="text-green-400 font-bold animate-pulse">instant email notifications</span> when market conditions match your criteria
-            </p>
-          </div>
-
-          {/* Alert Demo Animation */}
-          <div className="relative max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              {/* Premium Background Effects */}
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-emerald-500/5"></div>
+             
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-500/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
               
-              {/* Left Side - Alert Creation Demo */}
-              <div className="space-y-6">
-                <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/50 shadow-2xl">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                      <Bell className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white">Create Your Alert</h3>
+              {/* Master Trader AI Header */}
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500/30 to-purple-600/30 rounded-lg flex items-center justify-center border border-purple-500/30 shadow-lg">
+                    <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
-                  
-                  <div className="space-y-4">
-                    {/* Alert Steps */}
-                    <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-500 ${
-                      currentAlertStep >= 0 ? 'bg-green-500/10 border border-green-500/30' : 'bg-gray-700/50'
-                    }`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        currentAlertStep >= 0 ? 'bg-green-500' : 'bg-gray-600'
-                      }`}>
-                        {currentAlertStep >= 0 ? <CheckCircle className="w-4 h-4 text-white" /> : <span className="text-xs text-gray-400">1</span>}
-                      </div>
-                      <span className="text-gray-300 text-sm">Select Currency Pair: EUR/USD</span>
-                    </div>
-
-                    <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-500 ${
-                      currentAlertStep >= 1 ? 'bg-green-500/10 border border-green-500/30' : 'bg-gray-700/50'
-                    }`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        currentAlertStep >= 1 ? 'bg-green-500' : 'bg-gray-600'
-                      }`}>
-                        {currentAlertStep >= 1 ? <CheckCircle className="w-4 h-4 text-white" /> : <span className="text-xs text-gray-400">2</span>}
-                      </div>
-                      <span className="text-gray-300 text-sm">Set RSI Threshold: Above 70</span>
-                    </div>
-
-                    <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-500 ${
-                      currentAlertStep >= 2 ? 'bg-green-500/10 border border-green-500/30' : 'bg-gray-700/50'
-                    }`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        currentAlertStep >= 2 ? 'bg-green-500' : 'bg-gray-600'
-                      }`}>
-                        {currentAlertStep >= 2 ? <CheckCircle className="w-4 h-4 text-white" /> : <span className="text-xs text-gray-400">3</span>}
-                      </div>
-                      <span className="text-gray-300 text-sm">Choose Notification: Email</span>
-                    </div>
-
-                    <div className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-500 ${
-                      currentAlertStep >= 3 ? 'bg-green-500/10 border border-green-500/30' : 'bg-gray-700/50'
-                    }`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        currentAlertStep >= 3 ? 'bg-green-500' : 'bg-gray-600'
-                      }`}>
-                        {currentAlertStep >= 3 ? <CheckCircle className="w-4 h-4 text-white" /> : <span className="text-xs text-gray-400">4</span>}
-                      </div>
-                      <span className="text-gray-300 text-sm">Alert Created Successfully!</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side - Email Notification Demo */}
-              <div className="relative">
-                {/* Email Icon with Animation */}
-                <div className="flex justify-center mb-6">
-                  <div className={`w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 ${
-                    showAlertDemo ? 'animate-bounce shadow-green-500/50' : ''
-                  }`}>
-                    <Mail className="w-10 h-10 text-white" />
-                  </div>
-                </div>
-
-                {/* Email Notification Card */}
-                <div className={`bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-600/50 shadow-2xl transition-all duration-500 transform ${
-                  showAlertDemo ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
-                      <AlertTriangle className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold text-sm">Market Alert Triggered!</h4>
-                      <p className="text-gray-400 text-xs">EUR/USD RSI Alert</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-400 text-xs">Currency Pair:</span>
-                      <span className="text-white font-semibold text-xs">EUR/USD</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-400 text-xs">Current RSI:</span>
-                      <span className="text-red-400 font-bold text-xs">72.5</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-400 text-xs">Threshold:</span>
-                      <span className="text-white text-xs">Above 70</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-400 text-xs">Time:</span>
-                      <span className="text-green-400 text-xs">Just Now</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                    <p className="text-green-400 text-xs font-medium">
-                      <Zap className="w-3 h-3 inline mr-1" />
-                      Alert sent to your email instantly!
+                  <div>
+                    <h2 className="text-gray-800 dark:text-white text-2xl font-bold font-poppins">
+                      Master Trader AI
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs">
+                      Advanced multi-timeframe analysis & AI Intelligence
                     </p>
                   </div>
                 </div>
-
-                {/* Floating Notification Icons */}
-                {showAlertDemo && (
-                  <>
-                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center animate-ping">
-                      <Bell className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-bounce">
-                      <TrendingUp className="w-3 h-3 text-white" />
-                    </div>
-                  </>
-                )}
+                <div className="flex items-center space-x-2 bg-green-500/20 backdrop-blur-md rounded-full px-4 py-2 border border-green-500/30 shadow-lg">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                  <span className="text-green-600 dark:text-green-400 text-xs font-semibold">Live Analysis</span>
+                </div>
               </div>
-            </div>
 
-            {/* Bottom CTA */}
-            <div className="text-center mt-12">
-              <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-8 py-4">
-                <Shield className="w-6 h-6 text-green-400" />
-                <span className="text-green-300 font-semibold text-sm">Never Miss a Trading Opportunity</span>
-                <ArrowRight className="w-5 h-5 text-green-400 animate-pulse" />
+              {/* Filter Buttons */}
+              <div className="flex space-x-3 mb-6 relative z-10">
+                {['All Pairs', 'Crypto', 'Forex'].map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                      activeFilter === filter
+                        ? 'bg-purple-500 text-white shadow-lg'
+                        : 'bg-gray-200 dark:bg-slate-700/80 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-slate-600/80'
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
               </div>
-            </div>
+
+              {/* Currency Pairs Grid - Exact Image Design */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+                {filteredPairs.map((pair, _index) => {
+                  const isPositive = pair.change.startsWith('+')
+                  const _isNegative = pair.change.startsWith('-')
+                  
+                  return (
+                    <div 
+                      key={pair.symbol}
+                      className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-4 border border-purple-500/50 dark:border-purple-400/50 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group min-h-[180px]"
+                    >
+                      {/* Card Background Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      
+                      <div className="relative z-10 h-full flex flex-col">
+                        {/* Top Section - Icon, Symbol, Trend */}
+                        <div className="flex items-start justify-between mb-4">
+                          {/* Left Side - Icon and Symbol */}
+                          <div className="flex items-center space-x-3">
+                            <div 
+                              className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 border border-blue-400/30 dark:border-blue-500/30"
+                            >
+                              <span className="text-gray-800 dark:text-white font-bold text-sm">{pair.icon}</span>
+                            </div>
+                            <div>
+                              <div className="text-gray-800 dark:text-white font-bold text-sm leading-tight">{pair.symbol}</div>
+                              <div className="text-red-400 text-xs font-medium leading-tight">{pair.trend}</div>
+                            </div>
+                          </div>
+                          
+                          {/* Right Side - Price and Change */}
+                          <div className="text-right">
+                            <div className="text-gray-800 dark:text-white font-bold text-lg leading-tight">{pair.price}</div>
+                            <div className={`text-xs flex items-center justify-end ${
+                              isPositive ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {pair.change}
+                              {isPositive ? (
+                                <TrendingUp className="w-3 h-3 ml-1" />
+                              ) : (
+                                <TrendingDown className="w-3 h-3 ml-1" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Bottom Section - Success Probability */}
+                        <div className="mt-auto">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-gray-600 dark:text-gray-400 text-xs font-medium">Success Probability</div>
+                            <div className="text-gray-800 dark:text-white text-xs font-medium">{pair.probability}%</div>
+                          </div>
+                          <div 
+                            className="w-full rounded-full h-1.5 overflow-hidden bg-gray-300 dark:bg-gray-700"
+                          >
+                            <div 
+                              className={`h-1.5 rounded-full transition-all duration-500 ${
+                                pair.probability <= 35 ? 'bg-red-500' : 'bg-yellow-500'
+                              }`}
+                              style={{
+                                width: `${pair.probability}%`
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Premium AI Intelligence Section */}
+              <div className="mt-8 relative z-10">
+                {/* Premium AI Intelligence Sub-Header */}
+                <div className="flex flex-col items-center justify-center mb-6">
+                 
+                  
+                </div>
+
+              {/* Premium News Analysis Image Carousel */}
+              <div className="relative z-10 mb-6">
+                <div className="relative overflow-hidden rounded-2xl">
+                  {/* Carousel Container */}
+                  <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentNewsSlide * 100}%)` }}>
+                    
+                    {/* Slide 1 - Fed Rate Decision */}
+                    <div className="w-full flex-shrink-0">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-red-500/30 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5"></div>
+                        
+                        <div className="relative z-10 flex items-center space-x-6">
+                          {/* News Image/Icon */}
+                          <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-red-500/30">
+                            <AlertTriangle className="w-12 h-12 text-red-400" />
+                      </div>
+                          
+                          {/* News Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-3">
+                              <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-semibold">HIGH IMPACT</span>
+                              <span className="text-gray-600 dark:text-gray-400 text-sm">2 min ago</span>
+                    </div>
+
+                            <h4 className="text-gray-800 dark:text-white font-bold text-2xl mb-3 leading-tight">
+                              Federal Reserve Rate Decision
+                            </h4>
+                            
+                            <p className="text-gray-700 dark:text-gray-300 text-lg mb-4 leading-relaxed">
+                              Fed maintains rates at 5.25-5.50%, signals potential cuts in Q2 2024. Market sentiment turns bullish on USD pairs.
+                            </p>
+                            
+                            <div className="flex items-center space-x-6">
+                              <div className="text-center">
+                                <div className="text-red-400 font-bold text-xl">9.2/10</div>
+                                <div className="text-gray-400 text-sm">Impact Score</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-gray-800 dark:text-white font-bold text-xl">USD/JPY</div>
+                                <div className="text-gray-600 dark:text-gray-400 text-sm">Primary Pair</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-green-400 font-bold text-xl">Bullish</div>
+                                <div className="text-gray-400 text-sm">Sentiment</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slide 2 - ECB Report */}
+                    <div className="w-full flex-shrink-0">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-yellow-500/30 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5"></div>
+                        
+                        <div className="relative z-10 flex items-center space-x-6">
+                          {/* News Image/Icon */}
+                          <div className="w-24 h-24 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30">
+                            <TrendingUp className="w-12 h-12 text-yellow-400" />
+                          </div>
+                          
+                          {/* News Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-3">
+                              <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">MEDIUM IMPACT</span>
+                              <span className="text-gray-600 dark:text-gray-400 text-sm">15 min ago</span>
+                            </div>
+                            
+                            <h4 className="text-gray-800 dark:text-white font-bold text-2xl mb-3 leading-tight">
+                              ECB Economic Outlook
+                            </h4>
+                            
+                            <p className="text-gray-700 dark:text-gray-300 text-lg mb-4 leading-relaxed">
+                              European Central Bank revises growth forecasts upward, hints at continued hawkish stance on inflation.
+                            </p>
+                            
+                            <div className="flex items-center space-x-6">
+                              <div className="text-center">
+                                <div className="text-yellow-400 font-bold text-xl">6.8/10</div>
+                                <div className="text-gray-400 text-sm">Impact Score</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-gray-800 dark:text-white font-bold text-xl">EUR/USD</div>
+                                <div className="text-gray-600 dark:text-gray-400 text-sm">Primary Pair</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-yellow-400 font-bold text-xl">Neutral</div>
+                                <div className="text-gray-400 text-sm">Sentiment</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slide 3 - UK PMI */}
+                    <div className="w-full flex-shrink-0">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-green-500/30 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+                        
+                        <div className="relative z-10 flex items-center space-x-6">
+                          {/* News Image/Icon */}
+                          <div className="w-24 h-24 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30">
+                            <CheckCircle className="w-12 h-12 text-green-400" />
+                          </div>
+                          
+                          {/* News Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-3">
+                              <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">LOW IMPACT</span>
+                              <span className="text-gray-600 dark:text-gray-400 text-sm">1 hour ago</span>
+                            </div>
+                            
+                            <h4 className="text-gray-800 dark:text-white font-bold text-2xl mb-3 leading-tight">
+                              UK Manufacturing PMI
+                            </h4>
+                            
+                            <p className="text-gray-700 dark:text-gray-300 text-lg mb-4 leading-relaxed">
+                              Manufacturing PMI shows slight improvement to 48.2, still in contraction but better than expected.
+                            </p>
+                            
+                            <div className="flex items-center space-x-6">
+                              <div className="text-center">
+                                <div className="text-green-400 font-bold text-xl">4.1/10</div>
+                                <div className="text-gray-400 text-sm">Impact Score</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-gray-800 dark:text-white font-bold text-xl">GBP/USD</div>
+                                <div className="text-gray-600 dark:text-gray-400 text-sm">Primary Pair</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-green-400 font-bold text-xl">Bullish GBP</div>
+                                <div className="text-gray-400 text-sm">Sentiment</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Carousel Navigation */}
+                  <div className="flex items-center justify-center space-x-3 mt-6">
+                    {[0, 1, 2].map((index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentNewsSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          currentNewsSlide === index 
+                            ? 'bg-blue-400 w-8' 
+                            : 'bg-gray-600 hover:bg-gray-500'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+             
+
+              {/* Email & Telegram Alert Flow Section */}
+              <div className="mt-6 relative z-10">
+             
+             {/* Flow Steps */}
+             <div className="relative z-10">
+               <div className="flex flex-col lg:flex-row items-center justify-between space-y-8 lg:space-y-0 lg:space-x-8">
+                 
+                 {/* Step 1: Market Condition */}
+                 <div className="flex flex-col items-center text-center group">
+                   <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-green-500/25">
+                     <TrendingUp className="w-10 h-10 text-green-400 group-hover:animate-pulse" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-green-500/50">
+                       <span className="text-white text-xs font-bold">1</span>
+                     </div>
+                     {/* Real-time pulse effect */}
+                     <div className="absolute inset-0 rounded-2xl border-2 border-green-400/30 animate-ping"></div>
+                   </div>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 font-poppins">Market Condition</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">RSI &gt; 70 on EUR/USD</p>
+                 </div>
+
+                 {/* Arrow 1 */}
+                 <div className="hidden lg:block">
+                   <div className="flex items-center space-x-2 group">
+                     <div className="w-8 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 group-hover:w-12 transition-all duration-500"></div>
+                     <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 group-hover:text-blue-500 transition-all duration-300" />
+                   </div>
+                 </div>
+
+                 {/* Step 2: Alert Triggered */}
+                 <div className="flex flex-col items-center text-center group">
+                   <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-yellow-500/25">
+                     <Bell className="w-10 h-10 text-yellow-400 group-hover:animate-bounce" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-yellow-500/50">
+                       <span className="text-white text-xs font-bold">2</span>
+                     </div>
+                     {/* Alert pulse effect */}
+                     <div className="absolute inset-0 rounded-2xl border-2 border-yellow-400/30 animate-ping"></div>
+                     {/* Alert notification dot */}
+                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+                   </div>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300 font-poppins">Alert Triggered</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Condition met instantly</p>
+                 </div>
+
+                 {/* Arrow 2 */}
+                 <div className="hidden lg:block">
+                   <div className="flex items-center space-x-2 group">
+                     <div className="w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-purple-500 group-hover:w-12 transition-all duration-500"></div>
+                     <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 group-hover:text-purple-500 transition-all duration-300" />
+                   </div>
+                 </div>
+
+                 {/* Step 3: Notifications Sent */}
+                 <div className="flex flex-col items-center text-center group">
+                   <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-purple-500/25">
+                     <Zap className="w-10 h-10 text-purple-400 group-hover:animate-pulse" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
+                       <span className="text-white text-xs font-bold">3</span>
+                     </div>
+                     {/* Notification pulse effect */}
+                     <div className="absolute inset-0 rounded-2xl border-2 border-purple-400/30 animate-ping"></div>
+                     {/* Success checkmark */}
+                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+                       <CheckCircle className="w-2.5 h-2.5 text-white" />
+                     </div>
+                   </div>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 font-poppins">Notifications Sent</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Email + Telegram</p>
+                 </div>
+               </div>
+
+               {/* Notification Channels */}
+               <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                 
+                 {/* Email Notification */}
+                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/25">
+                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
+                   
+                   <div className="relative z-10">
+                     <div className="flex items-center space-x-4 mb-4">
+                       <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/50">
+                         <Mail className="w-6 h-6 text-white group-hover:animate-bounce" />
+                       </div>
+                       <div>
+                         <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 font-poppins">Email Alert</h4>
+                         <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Instant delivery</p>
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-3">
+                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
+                         <div className="text-blue-600 dark:text-blue-400 text-sm font-semibold group-hover:animate-pulse">Subject: 🚨 EUR/USD RSI Alert</div>
+                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 (Above 70 threshold)</div>
+                       </div>
+                       <div className="flex items-center space-x-2 text-green-400 text-sm">
+                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                         <span className="group-hover:text-green-500 transition-colors duration-300">Delivered instantly</span>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Telegram Notification */}
+                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-cyan-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/25">
+                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
+                   
+                   <div className="relative z-10">
+                     <div className="flex items-center space-x-4 mb-4">
+                       <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/50">
+                         <svg className="w-6 h-6 text-white group-hover:animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                         </svg>
+                       </div>
+                       <div>
+                         <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300 font-poppins">Telegram Bot</h4>
+                         <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Push notification</p>
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-3">
+                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
+                         <div className="text-cyan-600 dark:text-cyan-400 text-sm font-semibold group-hover:animate-pulse">📊 EUR/USD Alert</div>
+                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 ⚠️ Overbought</div>
+                       </div>
+                       <div className="flex items-center space-x-2 text-green-400 text-sm">
+                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                         <span className="group-hover:text-green-500 transition-colors duration-300">Sent to your device</span>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+           </div>
+
+               {/* CTA */}
+               <div className="text-center mt-8">
+                 <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-6 py-3">
+                   <Shield className="w-5 h-5 text-green-400" />
+                   <span className="text-green-400 font-semibold">Free Setup • 24/7 Monitoring</span>
+                   <ArrowRight className="w-4 h-4 text-green-400" />
+                 </div>
+               </div>
+             </div>
+           </div>
           </div>
         </div>
+        </div>
+
+        
 
       </div>
-
-      {/* Custom CSS Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-          }
-          
-          @keyframes floatData {
-            0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-            25% { transform: translateY(-10px) translateX(5px) rotate(90deg); }
-            50% { transform: translateY(-5px) translateX(-5px) rotate(180deg); }
-            75% { transform: translateY(-15px) translateX(3px) rotate(270deg); }
-          }
-          
-          @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg) scale(1); }
-            25% { transform: translateY(-8px) translateX(3px) rotate(90deg) scale(1.05); }
-            50% { transform: translateY(-4px) translateX(-3px) rotate(180deg) scale(0.95); }
-            75% { transform: translateY(-12px) translateX(2px) rotate(270deg) scale(1.02); }
-          }
-          
-          @keyframes drift {
-            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
-            33% { transform: translateX(15px) translateY(-5px) rotate(120deg); }
-            66% { transform: translateX(-10px) translateY(8px) rotate(240deg); }
-          }
-          
-          @keyframes sway {
-            0%, 100% { transform: translateX(0px) rotate(0deg); }
-            50% { transform: translateX(20px) rotate(5deg); }
-          }
-          
-          @keyframes bob {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-15px) scale(1.1); }
-          }
-          
-          @keyframes glide {
-            0%, 100% { transform: translateX(0px) translateY(0px) rotate(0deg); }
-            25% { transform: translateX(12px) translateY(-8px) rotate(90deg); }
-            50% { transform: translateX(-8px) translateY(-12px) rotate(180deg); }
-            75% { transform: translateX(-12px) translateY(8px) rotate(270deg); }
-          }
-          
-          @keyframes hover {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-10px) scale(1.05); }
-          }
-          
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-          }
-          
-          @keyframes wave {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-6px) rotate(2deg); }
-            50% { transform: translateY(-12px) rotate(0deg); }
-            75% { transform: translateY(-6px) rotate(-2deg); }
-          }
-          
-          @keyframes glow {
-            0% { opacity: 0.1; transform: scale(1); }
-            100% { opacity: 0.3; transform: scale(1.1); }
-          }
-          
-          @keyframes trailFade {
-            0% { 
-              opacity: 0.8; 
-              transform: scale(1); 
-            }
-            100% { 
-              opacity: 0; 
-              transform: scale(0.3); 
-            }
-          }
-          
-          @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
-          }
-          
-          @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-          }
-          
-          @keyframes ping {
-            0% { transform: scale(1); opacity: 1; }
-            75%, 100% { transform: scale(2); opacity: 0; }
-          }
-          
-          .animate-float {
-            animation: float 3s ease-in-out infinite;
-          }
-          
-          .animate-floatData {
-            animation: floatData 5s ease-in-out infinite;
-          }
-          
-          .animate-gridMove {
-            animation: gridMove 20s linear infinite;
-          }
-        `
-      }} />
+      </div>
     </section>
   )
 }

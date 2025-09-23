@@ -13,6 +13,7 @@
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @layer base {
@@ -29,12 +30,25 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #f8fafc;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark mode styles */
+  .dark body {
+    background-color: #0f172a;
+    color: #f1f5f9;
   }
 
   /* Apply Inter Medium to all text elements */
   * {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 500;
+  }
+
+  /* Poppins for headings and special elements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 600;
   }
 
   code {
@@ -45,24 +59,24 @@
 
 @layer components {
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6 transition-colors duration-300;
   }
   
   .card-tight-top {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 px-6 pb-6 pt-1;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 px-6 pb-6 pt-1 transition-colors duration-300;
   }
   
   .card-tight-bottom {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 px-6 pt-6 pb-1;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 px-6 pt-6 pb-1 transition-colors duration-300;
   }
   
   .card-compact {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 py-3 px-2;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 py-3 px-2 transition-colors duration-300;
   }
 
   /* Unified widget card styling across all dashboard widgets */
   .widget-card {
-    @apply bg-white rounded-xl shadow-md border border-gray-200;
+    @apply bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 transition-colors duration-300;
   }
   
   .btn-primary {
@@ -90,12 +104,12 @@
   }
   
   .data-row {
-    @apply py-2 px-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50;
+    @apply py-2 px-3 border-b border-gray-100 dark:border-slate-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-300;
   }
 
   /* Unified subtitle styling for all widget headers */
   .widget-subtitle {
-    @apply text-xs text-slate-600 font-medium mt-1 leading-snug;
+    @apply text-xs text-slate-600 dark:text-slate-400 font-medium mt-1 leading-snug transition-colors duration-300;
   }
 
   /* Standardized top spacing for widget icon-title headers */
@@ -113,13 +127,25 @@
   background: #f1f5f9;
 }
 
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
 
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Animation classes */

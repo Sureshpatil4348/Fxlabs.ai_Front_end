@@ -47,7 +47,7 @@
     }, [loadTabState]);
 
     return (
-      <div className="relative h-screen bg-gray-100 overflow-hidden flex flex-col">
+      <div className="relative h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 overflow-hidden flex flex-col transition-colors duration-300">
         {/* Loading Overlay - Render at root level to avoid layout constraints */}
         {showLoader && (
           <LoadingOverlay

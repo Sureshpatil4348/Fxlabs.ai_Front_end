@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { useAuth } from './auth/AuthProvider';
 import { ProtectedRoute } from './auth/ProtectedRoute';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgotPassword';
@@ -24,27 +25,29 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/forgot" element={<ForgotPassword />} />
-      <Route path="/reset" element={<Reset />} />
-      
-      {/* Protected routes */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/change-password" element={
-        <ProtectedRoute>
-          <ChangePassword />
-        </ProtectedRoute>
-      } />
-      
-      {/* Catch all - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ThemeProvider>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/reset" element={<Reset />} />
+        
+        {/* Protected routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/change-password" element={
+          <ProtectedRoute>
+            <ChangePassword />
+          </ProtectedRoute>
+        } />
+        
+        {/* Catch all - redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ThemeProvider>
   );
 }
 

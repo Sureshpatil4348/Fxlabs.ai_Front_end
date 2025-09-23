@@ -1,65 +1,161 @@
-import { LogIn, BarChart3 } from 'lucide-react'
+import { LogIn, BarChart3, Sun, Moon, Cpu, Users, DollarSign, TrendingUp, Activity } from 'lucide-react'
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import LoginModal from './LoginModal'
 import UserProfileDropdown from './UserProfileDropdown'
 import { useAuth } from '../auth/AuthProvider'
+import { useTheme } from '../contexts/ThemeContext'
 
 const Navbar = () => {
   const { user } = useAuth()
+  const { isDarkMode, toggleTheme } = useTheme()
+  const location = useLocation()
+  const isOnDashboard = location.pathname === '/dashboard'
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [liveMarketData, _setLiveMarketData] = useState({
+    eurUsd: { price: '1.0850', change: '+0.12%', trend: 'up' },
+    gbpUsd: { price: '1.2650', change: '-0.08%', trend: 'down' },
+    usdJpy: { price: '149.25', change: '+0.15%', trend: 'up' }
+  })
 
   const handleLoginClick = () => {
     setIsLoginModalOpen(true)
   }
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
 
   return (
     <>
-      <header className="bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-600/50 sticky top-0 z-50">
+      <header className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-16">
             {/* Logo Section - Raw Logo */}
             <div className="flex items-center -ml-10 sm:-ml-16 lg:-ml-28 xl:-ml-36 2xl:-ml-36">
-              <Link to="/" className="group">
+              <a 
+                href="/" 
+                className="group" 
+                onClick={() => window.scrollTo(0, 0)}
+              >
                 <img 
-                  src={require('../assets/logo1.png')} 
+                  src={isDarkMode ? require('../assets/logo1.png') : require('../assets/logo2.png')} 
                   alt="FXLabs Logo" 
                   className="w-48 h-48 object-contain filter brightness-110 contrast-110 transition-all duration-300 group-hover:scale-105"
                 />
-              </Link>
+              </a>
             </div>
             
-            {/* Center Section - Dashboard */}
-            <div className="flex-1 flex justify-center">
-              {user && (
+            {/* Center Section - Navigation Links */}
+            <div className="flex-1 flex justify-center items-center space-x-8">
+              {/* Only show these navigation items when NOT on dashboard */}
+              {!isOnDashboard && (
+                <>
+                  {/* Technology */}
+                  <button
+                    onClick={() => scrollToSection('trading-dashboard')}
+                    className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-300 group"
+                  >
+                    <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                    <span className="font-medium text-sm">Technology</span>
+                  </button>
+
+                  {/* About Us */}
+                  <button
+                    onClick={() => scrollToSection('video-explanation')}
+                    className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-300 group"
+                  >
+                    <Users className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                    <span className="font-medium text-sm">About Us</span>
+                  </button>
+
+                  {/* Pricing */}
+                  <button
+                    onClick={() => scrollToSection('subscription')}
+                    className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-300 group"
+                  >
+                    <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                    <span className="font-medium text-sm">Pricing</span>
+                  </button>
+                </>
+              )}
+
+              {/* Dashboard (for logged in users) - only show when NOT on dashboard */}
+              {user && !isOnDashboard && (
                 <Link
                   to="/dashboard"
-                  className="flex items-center space-x-2 text-gray-300 hover:text-green-400 transition-colors duration-300 group"
+                  className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-300 group"
                 >
-                  <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-medium text-base">Dashboard</span>
+                  <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                  <span className="font-medium text-sm">Dashboard</span>
                 </Link>
               )}
             </div>
             
-            {/* Right Section - Subtle Extreme Right - Account */}
+            {/* Right Section - Live Market & Controls */}
             <div className="flex items-center space-x-4 -mr-8 sm:-mr-16 lg:-mr-20 xl:-mr-28 2xl:-mr-36">
-            {user ? (
-              <div className="flex items-center space-x-2">
-                {/* Account Button */}
-                <UserProfileDropdown />
+              {/* Live Market Analysis */}
+              <div className="hidden lg:flex items-center space-x-4 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-200/30 dark:border-gray-600/30">
+                <div className="flex items-center space-x-1">
+                  <Activity className="w-3 h-3 text-emerald-500 animate-pulse" />
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-300">LIVE</span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  {/* EUR/USD */}
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs font-bold text-gray-700 dark:text-gray-200">EUR/USD</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">{liveMarketData.eurUsd.price}</span>
+                    <span className={`text-xs font-medium ${liveMarketData.eurUsd.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                      {liveMarketData.eurUsd.change}
+                    </span>
+                    <TrendingUp className={`w-3 h-3 ${liveMarketData.eurUsd.trend === 'up' ? 'text-green-600' : 'text-red-600 rotate-180'}`} />
+                  </div>
+                  
+                  {/* GBP/USD */}
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs font-bold text-gray-700 dark:text-gray-200">GBP/USD</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">{liveMarketData.gbpUsd.price}</span>
+                    <span className={`text-xs font-medium ${liveMarketData.gbpUsd.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                      {liveMarketData.gbpUsd.change}
+                    </span>
+                    <TrendingUp className={`w-3 h-3 ${liveMarketData.gbpUsd.trend === 'up' ? 'text-green-600' : 'text-red-600 rotate-180'}`} />
+                  </div>
+                </div>
               </div>
-              ) : (
-                <button
-                  onClick={handleLoginClick}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Login</span>
-                </button>
-              )}
+
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 hover:bg-gray-300/70 dark:hover:bg-gray-600/70 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 border border-gray-300/30 dark:border-gray-600/30"
+                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDarkMode ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </button>
+
+              {user ? (
+                <div className="flex items-center space-x-2">
+                  {/* Account Button */}
+                  <UserProfileDropdown />
+                </div>
+                ) : (
+                  <button
+                    onClick={handleLoginClick}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Login</span>
+                  </button>
+                )}
             </div>
           </div>
         </div>
