@@ -327,6 +327,19 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   
   // Add this state
 const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
+const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Detect touch device
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+    
+    checkTouchDevice();
+    window.addEventListener('resize', checkTouchDevice);
+    
+    return () => window.removeEventListener('resize', checkTouchDevice);
+  }, []);
 
   // Load settings from database on component mount
   useEffect(() => {
@@ -803,7 +816,7 @@ useEffect(() => {
   
   return (
     <>
-    <div className="widget-card" style={{height: '100%', position: 'relative'}} key={`heatmap-${tradingStyle}`}>
+    <div className="widget-card h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
       <div className="mb-2 px-4">
         {/* Top Row - Title, Trading Signals, and Controls */}
@@ -839,8 +852,18 @@ useEffect(() => {
           <div className="flex items-center space-x-1">
             <div className="relative">
               <div 
-                onMouseEnter={() => setIsSymbolDropdownOpen(true)}
-                onMouseLeave={() => setIsSymbolDropdownOpen(false)}
+                onMouseEnter={() => {
+                  // Only use hover on non-touch devices (desktop)
+                  if (!isTouchDevice) {
+                    setIsSymbolDropdownOpen(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  // Only use hover on non-touch devices (desktop)
+                  if (!isTouchDevice) {
+                    setIsSymbolDropdownOpen(false);
+                  }
+                }}
                 className="relative"
               >
                 <button
@@ -1061,8 +1084,8 @@ useEffect(() => {
           )}
       
       {/* Heatmap Table - Full Height */}
-      <div className="overflow-x-auto flex-1">
-        <table className="w-full border-collapse h-full">
+      <div className="overflow-x-auto overflow-y-auto flex-1 min-w-0 min-h-0">
+        <table className="w-full border-collapse min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-200 dark:border-slate-600">
               <th className="text-left py-0.5 px-1 font-bold text-gray-700 dark:text-slate-300 text-sm w-20"></th>
@@ -1073,9 +1096,9 @@ useEffect(() => {
               ))}
             </tr>
           </thead>
-          <tbody className="h-full">
+          <tbody>
             {[...new Set(timeframes)].filter(tf => tf !== '1W').map((timeframe) => (
-              <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
+              <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
                 <td className="py-0.5 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
                   <div className="flex items-center space-x-1 ml-2">
                     <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>

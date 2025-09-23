@@ -460,42 +460,42 @@ const TradingDashboardSection = () => {
                     
                     {/* Slide 1 - Fed Rate Decision */}
                     <div className="w-full flex-shrink-0">
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-red-500/30 shadow-xl relative overflow-hidden">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 sm:p-6 md:p-8 border border-red-500/30 shadow-xl relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5"></div>
                         
-                        <div className="relative z-10 flex items-center space-x-6">
+                        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                           {/* News Image/Icon */}
-                          <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-red-500/30">
-                            <AlertTriangle className="w-12 h-12 text-red-400" />
-                      </div>
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-red-500/30 flex-shrink-0">
+                            <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-red-400" />
+                          </div>
                           
                           {/* News Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-3">
-                              <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-semibold">HIGH IMPACT</span>
-                              <span className="text-gray-600 dark:text-gray-400 text-sm">2 min ago</span>
-                    </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
+                              <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold w-fit">HIGH IMPACT</span>
+                              <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">2 min ago</span>
+                            </div>
 
-                            <h4 className="text-gray-800 dark:text-white font-bold text-2xl mb-3 leading-tight">
+                            <h4 className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl md:text-2xl mb-3 leading-tight">
                               Federal Reserve Rate Decision
                             </h4>
                             
-                            <p className="text-gray-700 dark:text-gray-300 text-lg mb-4 leading-relaxed">
+                            <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base md:text-lg mb-4 leading-relaxed">
                               Fed maintains rates at 5.25-5.50%, signals potential cuts in Q2 2024. Market sentiment turns bullish on USD pairs.
                             </p>
                             
-                            <div className="flex items-center space-x-6">
-                              <div className="text-center">
-                                <div className="text-red-400 font-bold text-xl">9.2/10</div>
-                                <div className="text-gray-400 text-sm">Impact Score</div>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                              <div className="text-center sm:text-left">
+                                <div className="text-red-400 font-bold text-lg sm:text-xl">9.2/10</div>
+                                <div className="text-gray-400 text-xs sm:text-sm">Impact Score</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-gray-800 dark:text-white font-bold text-xl">USD/JPY</div>
-                                <div className="text-gray-600 dark:text-gray-400 text-sm">Primary Pair</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">USD/JPY</div>
+                                <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Primary Pair</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-green-400 font-bold text-xl">Bullish</div>
-                                <div className="text-gray-400 text-sm">Sentiment</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-green-400 font-bold text-lg sm:text-xl">Bullish</div>
+                                <div className="text-gray-400 text-xs sm:text-sm">Sentiment</div>
                               </div>
                             </div>
                           </div>
@@ -505,42 +505,42 @@ const TradingDashboardSection = () => {
 
                     {/* Slide 2 - ECB Report */}
                     <div className="w-full flex-shrink-0">
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-yellow-500/30 shadow-xl relative overflow-hidden">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 sm:p-6 md:p-8 border border-yellow-500/30 shadow-xl relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5"></div>
                         
-                        <div className="relative z-10 flex items-center space-x-6">
+                        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                           {/* News Image/Icon */}
-                          <div className="w-24 h-24 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30">
-                            <TrendingUp className="w-12 h-12 text-yellow-400" />
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 flex-shrink-0">
+                            <TrendingUp className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-yellow-400" />
                           </div>
                           
                           {/* News Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-3">
-                              <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">MEDIUM IMPACT</span>
-                              <span className="text-gray-600 dark:text-gray-400 text-sm">15 min ago</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
+                              <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold w-fit">MEDIUM IMPACT</span>
+                              <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">15 min ago</span>
                             </div>
                             
-                            <h4 className="text-gray-800 dark:text-white font-bold text-2xl mb-3 leading-tight">
+                            <h4 className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl md:text-2xl mb-3 leading-tight">
                               ECB Economic Outlook
                             </h4>
                             
-                            <p className="text-gray-700 dark:text-gray-300 text-lg mb-4 leading-relaxed">
+                            <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base md:text-lg mb-4 leading-relaxed">
                               European Central Bank revises growth forecasts upward, hints at continued hawkish stance on inflation.
                             </p>
                             
-                            <div className="flex items-center space-x-6">
-                              <div className="text-center">
-                                <div className="text-yellow-400 font-bold text-xl">6.8/10</div>
-                                <div className="text-gray-400 text-sm">Impact Score</div>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                              <div className="text-center sm:text-left">
+                                <div className="text-yellow-400 font-bold text-lg sm:text-xl">6.8/10</div>
+                                <div className="text-gray-400 text-xs sm:text-sm">Impact Score</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-gray-800 dark:text-white font-bold text-xl">EUR/USD</div>
-                                <div className="text-gray-600 dark:text-gray-400 text-sm">Primary Pair</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">EUR/USD</div>
+                                <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Primary Pair</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-yellow-400 font-bold text-xl">Neutral</div>
-                                <div className="text-gray-400 text-sm">Sentiment</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-yellow-400 font-bold text-lg sm:text-xl">Neutral</div>
+                                <div className="text-gray-400 text-xs sm:text-sm">Sentiment</div>
                               </div>
                             </div>
                           </div>
@@ -550,42 +550,42 @@ const TradingDashboardSection = () => {
 
                     {/* Slide 3 - UK PMI */}
                     <div className="w-full flex-shrink-0">
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 border border-green-500/30 shadow-xl relative overflow-hidden">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 sm:p-6 md:p-8 border border-green-500/30 shadow-xl relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
                         
-                        <div className="relative z-10 flex items-center space-x-6">
+                        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                           {/* News Image/Icon */}
-                          <div className="w-24 h-24 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30">
-                            <CheckCircle className="w-12 h-12 text-green-400" />
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30 flex-shrink-0">
+                            <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-green-400" />
                           </div>
                           
                           {/* News Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-3">
-                              <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">LOW IMPACT</span>
-                              <span className="text-gray-600 dark:text-gray-400 text-sm">1 hour ago</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
+                              <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold w-fit">LOW IMPACT</span>
+                              <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">1 hour ago</span>
                             </div>
                             
-                            <h4 className="text-gray-800 dark:text-white font-bold text-2xl mb-3 leading-tight">
+                            <h4 className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl md:text-2xl mb-3 leading-tight">
                               UK Manufacturing PMI
                             </h4>
                             
-                            <p className="text-gray-700 dark:text-gray-300 text-lg mb-4 leading-relaxed">
+                            <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base md:text-lg mb-4 leading-relaxed">
                               Manufacturing PMI shows slight improvement to 48.2, still in contraction but better than expected.
                             </p>
                             
-                            <div className="flex items-center space-x-6">
-                              <div className="text-center">
-                                <div className="text-green-400 font-bold text-xl">4.1/10</div>
-                                <div className="text-gray-400 text-sm">Impact Score</div>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                              <div className="text-center sm:text-left">
+                                <div className="text-green-400 font-bold text-lg sm:text-xl">4.1/10</div>
+                                <div className="text-gray-400 text-xs sm:text-sm">Impact Score</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-gray-800 dark:text-white font-bold text-xl">GBP/USD</div>
-                                <div className="text-gray-600 dark:text-gray-400 text-sm">Primary Pair</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">GBP/USD</div>
+                                <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Primary Pair</div>
                               </div>
-                              <div className="text-center">
-                                <div className="text-green-400 font-bold text-xl">Bullish GBP</div>
-                                <div className="text-gray-400 text-sm">Sentiment</div>
+                              <div className="text-center sm:text-left">
+                                <div className="text-green-400 font-bold text-lg sm:text-xl">Bullish GBP</div>
+                                <div className="text-gray-400 text-xs sm:text-sm">Sentiment</div>
                               </div>
                             </div>
                           </div>
