@@ -321,7 +321,7 @@ const TradingDashboardSection = () => {
         
        
 
-        {/* Master Trader AI Dashboard Section */}
+        {/* Unified Master Trader AI & Premium Intelligence Section */}
         <div className="relative mb-16 ml-4" style={{ width: 'calc(100vw - 2rem)', marginLeft: 'calc(-50vw + 50% + 1rem)' }}>
           <div className="w-full">
             <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-lg p-6 border border-green-500/20 shadow-2xl relative overflow-hidden"
@@ -346,7 +346,7 @@ const TradingDashboardSection = () => {
                       Master Trader AI
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 text-xs">
-                      Advanced multi-timeframe analysis
+                      Advanced multi-timeframe analysis & AI Intelligence
                     </p>
                   </div>
                 </div>
@@ -443,43 +443,29 @@ const TradingDashboardSection = () => {
                   )
                 })}
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Premium  Showcase */}
-        <div className="relative mb-16 ml-4" style={{ width: 'calc(100vw - 2rem)', marginLeft: 'calc(-50vw + 50% + 1rem)' }}>
-          <div className="w-full">
-            <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-lg p-6 border border-blue-500/20 shadow-2xl relative overflow-hidden"
-                 style={{
-                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.2)'
-                 }}>
-              
-              {/* Premium Background Effects */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5"></div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
-              
-              {/* Premium AI Intelligence Header */}
-              <div className="flex items-center justify-between mb-6 relative z-10">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-blue-600/30 rounded-lg flex items-center justify-center border border-blue-500/30 shadow-lg">
-                    <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              {/* Premium AI Intelligence Section */}
+              <div className="mt-8 relative z-10">
+                {/* Premium AI Intelligence Sub-Header */}
+                <div className="flex flex-col items-center justify-center mb-6">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500/30 to-blue-600/30 rounded-lg flex items-center justify-center border border-blue-500/30 shadow-lg">
+                      <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-gray-800 dark:text-white text-xl font-bold font-poppins">
+                        Premium AI Intelligence
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">
+                        Real-time market sentiment analysis
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-gray-800 dark:text-white text-2xl font-bold font-poppins">
-                      Premium AI Intelligence
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-xs">
-                      Real-time market sentiment analysis
-                    </p>
+                  <div className="flex items-center space-x-2 bg-blue-500/20 backdrop-blur-md rounded-full px-4 py-2 border border-blue-500/30 shadow-lg">
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                    <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Live Analysis</span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 bg-blue-500/20 backdrop-blur-md rounded-full px-4 py-2 border border-blue-500/30 shadow-lg">
-                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                  <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Live Analysis</span>
-                </div>
-              </div>
 
               {/* Premium News Analysis Image Carousel */}
               <div className="relative z-10 mb-6">
@@ -824,6 +810,7 @@ const TradingDashboardSection = () => {
 
         
 
+      </div>
       </div>
     </section>
   )
