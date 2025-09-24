@@ -134,7 +134,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 pt-20"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] p-4 pt-20"
       style={{ paddingTop: `max(5rem, env(safe-area-inset-top) + 1rem)` }}
       role="dialog"
       aria-modal="true"
@@ -535,7 +535,7 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="widget-card px-4 pb-2 z-10 relative h-full flex flex-col">
+    <div className="widget-card px-4 pb-2 z-1 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}

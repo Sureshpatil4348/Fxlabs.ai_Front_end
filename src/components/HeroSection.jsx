@@ -188,8 +188,8 @@ const HeroSection = () => {
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-left font-poppins">
-                <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent animate-pulse ml-10">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-left font-poppins">
+                <span className="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 dark:from-green-400 dark:via-emerald-300 dark:to-teal-400 bg-clip-text text-transparent animate-pulse ml-2 sm:ml-4 md:ml-6 lg:ml-8 xl:ml-10">
                   Decode the
                 </span>
                 <br />
@@ -198,7 +198,7 @@ const HeroSection = () => {
                 </span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl text-left transition-colors duration-300">
+              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl text-left transition-colors duration-300">
                 Professional-grade AI tools for <span className="text-green-600 dark:text-green-400 font-semibold">market analysis</span>, 
                 <span className="text-blue-600 dark:text-blue-400 font-semibold"> real-time insights</span>, and 
                 <span className="text-emerald-600 dark:text-emerald-400 font-semibold"> precision trading</span>
@@ -209,19 +209,19 @@ const HeroSection = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-lg font-medium">AI Chart Analysis</span>
+                <span className="text-base sm:text-lg font-medium">AI Chart Analysis</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-lg font-medium">AI News Analysis</span>
+                <span className="text-base sm:text-lg font-medium">AI News Analysis</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-lg font-medium">Real-time RSI Updates</span>
+                <span className="text-base sm:text-lg font-medium">Real-time RSI Updates</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-lg font-medium">Daily Market Overview</span>
+                <span className="text-base sm:text-lg font-medium">Daily Market Overview</span>
               </div>
             </div>
 
@@ -286,7 +286,7 @@ const HeroSection = () => {
                   <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
                     <Settings className="w-4 h-4 text-green-600 dark:text-green-400" />
                   </div>
-                  <span className="text-gray-800 dark:text-white text-lg font-bold font-poppins">Master Trader AI</span>
+                  <span className="text-gray-800 dark:text-white text-base sm:text-lg font-bold font-poppins">Master Trader AI</span>
                 </div>
                 <div className="flex items-center space-x-2 bg-green-500/20 backdrop-blur-md rounded-xl px-4 py-2 border border-green-500/30">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>

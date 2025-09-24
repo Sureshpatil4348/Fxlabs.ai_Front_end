@@ -344,7 +344,7 @@ const RSIOverboughtOversoldTracker = () => {
 
   return (
     <>
-    <div className="widget-card px-4 pb-4 h-full flex flex-col z-10 relative">
+    <div className="widget-card px-4 pb-4 h-full flex flex-col z-1 relative">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
@@ -603,7 +603,7 @@ const RSIOverboughtOversoldTracker = () => {
     
     {/* Settings Modal - Outside widget for proper z-index */}
     {showSettings && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[5000]">
         <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">RSI Tracker Settings</h3>
           

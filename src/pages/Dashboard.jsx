@@ -62,9 +62,32 @@
         <Navbar />
 
         {/* Main Content - Takes remaining screen height */}
-        <main className="flex-1 min-h-0 overflow-y-auto p-3">
-          {/* Dashboard Grid - Original layout restored */}
-          <div className="h-full grid grid-cols-12 grid-rows-12 gap-2">
+        <main className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-3">
+          {/* Mobile Layout - Stack vertically */}
+          <div className="block lg:hidden space-y-3">
+            {/* Section 1 - Multi Indicator Heatmap */}
+            <div className="h-96 overflow-hidden">
+              <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
+            </div>
+
+            {/* Section 2 - AI News Analysis */}
+            <div className="h-80">
+              <AINewsAnalysis />
+            </div>
+
+            {/* Section 3 - RSI Correlation Dashboard */}
+            <div className="h-80">
+              <RSICorrelationDashboard />
+            </div>
+
+            {/* Section 4 - RSI Tracker */}
+            <div className="h-64">
+              <RSIOverboughtOversoldTracker />
+            </div>
+          </div>
+
+          {/* Desktop Layout - Original 12x12 grid preserved exactly */}
+          <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-2">
             
             {/* Section 1 - Multi Indicator Heatmap (largest area - top left) */}
             <div className="col-span-7 row-span-7 min-h-0">
