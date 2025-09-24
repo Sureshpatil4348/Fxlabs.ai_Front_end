@@ -43,16 +43,20 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-16">
             {/* Logo Section - Raw Logo */}
-            <div className="flex items-center -ml-3 sm:-ml-16 lg:-ml-28 xl:-ml-36 2xl:-ml-36   ">
+            <div className="flex items-center -ml-2 sm:-ml-4 md:-ml-6 lg:-ml-8 xl:-ml-10 2xl:-ml-12">
               <a 
                 href="/" 
                 className="group" 
                 onClick={() => window.scrollTo(0, 0)}
               >
                 <img 
-                  src={isDarkMode ? require('../assets/logo1.png') : require('../assets/logo2.png')} 
+                  src={require('../assets/logo1.png')} 
                   alt="FXLabs Logo" 
-                  className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-48 lg:h-48 object-contain filter brightness-110 contrast-110 transition-all duration-300 group-hover:scale-105"
+                  className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-48 lg:h-48 object-contain transition-all duration-300 group-hover:scale-105 ${
+                    isDarkMode 
+                      ? 'filter brightness-110 contrast-110' 
+                      : 'filter brightness-0 contrast-100'
+                  }`}
                 />
               </a>
             </div>
@@ -104,12 +108,12 @@ const Navbar = () => {
             </div>
             
             {/* Right Section - Live Market & Controls */}
-            <div className="flex items-center space-x-2 sm:space-x-4 -mr-8 sm:-mr-16 lg:-mr-20 xl:-mr-28 2xl:-mr-36 mr-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 -mr-2 sm:-mr-4 md:-mr-6 lg:-mr-8 xl:-mr-10 2xl:-mr-12 mr-2">
               
               {/* Market is Live Pill - Only show on landing page */}
               {!isOnDashboard && (
                 <div className="hidden sm:flex items-center space-x-2">
-                  <div className="flex items-center space-x-2 bg-slate-800 text-green-300 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
+                  <div className="flex items-center space-x-2 bg-green-100 dark:bg-slate-800 text-green-800 dark:text-green-300 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-green-200 dark:border-green-700">
                     <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
                     <span className="text-xs sm:text-sm font-normal">Market is Live</span>
                   </div>
@@ -139,7 +143,7 @@ const Navbar = () => {
                   ) : (
                     <button
                       onClick={handleLoginClick}
-                      className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                      className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 text-sm sm:text-base"
                     >
                       <LogIn className="w-4 h-4" />
                       <span>Login</span>
@@ -150,7 +154,7 @@ const Navbar = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={toggleMobileMenu}
-                className="lg:hidden p-2 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 hover:bg-gray-300/70 dark:hover:bg-gray-600/70 text-gray-700 dark:text-gray-300 transition-all duration-300"
+                className="lg:hidden p-2 mr-2 sm:mr-4 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 hover:bg-gray-300/70 dark:hover:bg-gray-600/70 text-gray-700 dark:text-gray-300 transition-all duration-300"
                 aria-label="Toggle mobile menu"
               >
                 {isMobileMenuOpen ? (
@@ -220,9 +224,9 @@ const Navbar = () => {
                         handleLoginClick()
                         setIsMobileMenuOpen(false)
                       }}
-                      className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-300 py-2"
+                      className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-300 py-2 text-sm sm:text-base"
                     >
-                      <LogIn className="w-5 h-5" />
+                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span className="font-medium">Login</span>
                     </button>
                   )}

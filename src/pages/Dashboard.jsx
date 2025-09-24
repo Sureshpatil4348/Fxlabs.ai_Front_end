@@ -64,7 +64,7 @@
         {/* Main Content - Takes remaining screen height */}
         <main className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-3">
           {/* Mobile Layout - Stack vertically */}
-          <div className="block xl:hidden space-y-3">
+          <div className="block lg:hidden space-y-3">
             {/* Section 1 - Multi Indicator Heatmap */}
             <div className="h-96 overflow-hidden">
               <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
@@ -87,7 +87,7 @@
           </div>
 
           {/* Desktop Layout - Original 12x12 grid preserved exactly */}
-          <div className="hidden xl:grid h-full grid-cols-12 grid-rows-12 gap-2">
+          <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-2">
             
             {/* Section 1 - Multi Indicator Heatmap (largest area - top left) */}
             <div className="col-span-7 row-span-7 min-h-0">
