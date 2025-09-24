@@ -4,6 +4,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### RSI Correlation Dashboard: Real Correlation Stabilization (Latest)
+- Fixed issue where Real Correlation initially showed many mismatches with very low percentages that corrected after a few seconds or refresh.
+- Root cause: correlation was computed on unaligned OHLC series immediately after subscribe, leading to spurious low values.
+- Change: rolling correlation now aligns candles by timestamp across both symbols and uses only overlapping, time-aligned candles for log-return correlation.
+- Result: stable, accurate correlation percentages on first render; mismatch highlighting now reflects true relationships without needing a refresh.
+
 ### Navbar Mobile Menu Spacing Fix (Latest)
 - **MOBILE MENU SPACING**: Added responsive right margin to mobile menu icon for better spacing from screen edge
 - **RESPONSIVE MARGINS**: Applied `mr-2 sm:mr-4` to mobile menu button for consistent spacing across screen sizes

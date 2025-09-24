@@ -469,59 +469,80 @@ const useRSICorrelationStore = create(
       return rsi;
     },
 
-    // Real Rolling Correlation Calculation
+    // Real Rolling Correlation Calculation (time-aligned, stable)
+    // Aligns candles by timestamp across both symbols and uses the last
+    // `window + 1` overlapping candles to compute log-return correlation.
+    // This avoids spurious low percentages caused by misaligned OHLC series
+    // that can happen right after subscriptions initialize.
     calculateRollingCorrelation: (symbol1, symbol2, window = 50) => {
-      const bars1 = get().getOhlcForSymbol(symbol1);
-      const bars2 = get().getOhlcForSymbol(symbol2);
-      
-      if (bars1.length < window + 1 || bars2.length < window + 1) {
-        return null;
-      }
-      
-      // Calculate log returns for both symbols
+      const raw1 = get().getOhlcForSymbol(symbol1);
+      const raw2 = get().getOhlcForSymbol(symbol2);
+
+      if (!raw1?.length || !raw2?.length) return null;
+
+      // Ensure ascending order by time
+      const toTime = (t) => {
+        // Normalize time key for comparison and Map keys
+        // Handles numeric epoch or ISO-like strings
+        const n = Number(t);
+        return Number.isFinite(n) ? n : Date.parse(t);
+      };
+
+      const bars1 = [...raw1].sort((a, b) => toTime(a.time) - toTime(b.time));
+      const bars2 = [...raw2].sort((a, b) => toTime(a.time) - toTime(b.time));
+
+      // Build quick lookup for close by time
+      const map1 = new Map(bars1.map(b => [toTime(b.time), Number(b.close)]));
+      const map2 = new Map(bars2.map(b => [toTime(b.time), Number(b.close)]));
+
+      // Intersect timestamps present in both series
+      const times1 = Array.from(map1.keys());
+      const times2 = new Set(map2.keys());
+      const intersectTimes = times1.filter(t => times2.has(t)).sort((a, b) => a - b);
+
+      // Need at least `window + 1` aligned candles to produce `window` returns
+      if (intersectTimes.length < window + 1) return null;
+
+      // Take the last `window + 1` aligned timestamps (closed candles only)
+      const alignedTimes = intersectTimes.slice(-1 * (window + 1));
+
+      // Compute log returns for both symbols using aligned times
       const returns1 = [];
       const returns2 = [];
-      
-      for (let i = 1; i <= window; i++) {
-        const price1 = bars1[bars1.length - i].close;
-        const prevPrice1 = bars1[bars1.length - i - 1].close;
-        const price2 = bars2[bars2.length - i].close;
-        const prevPrice2 = bars2[bars2.length - i - 1].close;
-        
-        if (prevPrice1 > 0 && prevPrice2 > 0) {
-          returns1.push(Math.log(price1 / prevPrice1));
-          returns2.push(Math.log(price2 / prevPrice2));
+      for (let i = 1; i < alignedTimes.length; i++) {
+        const t = alignedTimes[i];
+        const prevT = alignedTimes[i - 1];
+
+        const p1 = map1.get(t);
+        const p1Prev = map1.get(prevT);
+        const p2 = map2.get(t);
+        const p2Prev = map2.get(prevT);
+
+        if (p1Prev > 0 && p2Prev > 0 && p1 > 0 && p2 > 0) {
+          returns1.push(Math.log(p1 / p1Prev));
+          returns2.push(Math.log(p2 / p2Prev));
         }
       }
-      
-      if (returns1.length < window) {
-        return null;
-      }
-      
-      // Calculate means
-      const mean1 = returns1.reduce((sum, val) => sum + val, 0) / returns1.length;
-      const mean2 = returns2.reduce((sum, val) => sum + val, 0) / returns2.length;
-      
-      // Calculate correlation coefficient
-      let numerator = 0;
+
+      if (returns1.length < window) return null;
+
+      // Calculate Pearson correlation
+      const mean1 = returns1.reduce((s, v) => s + v, 0) / returns1.length;
+      const mean2 = returns2.reduce((s, v) => s + v, 0) / returns2.length;
+
+      let num = 0;
       let sumSq1 = 0;
       let sumSq2 = 0;
-      
       for (let i = 0; i < returns1.length; i++) {
-        const diff1 = returns1[i] - mean1;
-        const diff2 = returns2[i] - mean2;
-        
-        numerator += diff1 * diff2;
-        sumSq1 += diff1 * diff1;
-        sumSq2 += diff2 * diff2;
+        const d1 = returns1[i] - mean1;
+        const d2 = returns2[i] - mean2;
+        num += d1 * d2;
+        sumSq1 += d1 * d1;
+        sumSq2 += d2 * d2;
       }
-      
-      if (sumSq1 === 0 || sumSq2 === 0) {
-        return 0;
-      }
-      
-      const correlation = numerator / Math.sqrt(sumSq1 * sumSq2);
-      return correlation;
+
+      if (sumSq1 === 0 || sumSq2 === 0) return 0;
+      return num / Math.sqrt(sumSq1 * sumSq2);
     },
     
       // Calculate all correlations
