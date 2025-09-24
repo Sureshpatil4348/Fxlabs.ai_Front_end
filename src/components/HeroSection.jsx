@@ -217,7 +217,7 @@ const HeroSection = () => {
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-base sm:text-lg font-medium">Real-time RSI Updates</span>
+                <span className="text-base sm:text-lg font-medium">Closed-Candle RSI Updates</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-300">
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0" />
