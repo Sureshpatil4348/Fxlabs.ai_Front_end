@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { calculateRSI } from '../utils/calculations';
 
 // WebSocket URL configuration
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
@@ -435,38 +436,17 @@ const useRSICorrelationStore = create(
     },
     
     // RSI Calculation Actions
+    // Use Wilder's RSI on closed candles to align with MT5 (via utils.calculateRSI)
     calculateRsi: (symbol, period = 14) => {
       const bars = get().getOhlcForSymbol(symbol);
-      
-      if (bars.length < period + 1) {
-        return null;
-      }
+      if (!bars || bars.length < period + 1) return null;
 
-      const closes = bars.slice(-period - 1).map(bar => bar.close);
-      
-      let gains = 0;
-      let losses = 0;
+      // Prefer closed candles: drop the last bar if we have enough history
+      const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
+      const closes = effectiveBars.map(bar => Number(bar.close)).filter(v => Number.isFinite(v));
+      if (closes.length < period + 1) return null;
 
-      for (let i = 1; i < closes.length; i++) {
-        const change = closes[i] - closes[i - 1];
-        if (change > 0) {
-          gains += change;
-        } else {
-          losses -= change;
-        }
-      }
-
-      const avgGain = gains / period;
-      const avgLoss = losses / period;
-      
-      if (avgLoss === 0) {
-        return 100;
-      }
-      
-      const rs = avgGain / avgLoss;
-      const rsi = 100 - (100 / (1 + rs));
-      
-      return rsi;
+      return calculateRSI(closes, period);
     },
 
     // Real Rolling Correlation Calculation (time-aligned, stable)

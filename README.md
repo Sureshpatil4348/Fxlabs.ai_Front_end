@@ -4,6 +4,16 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### RSI Calculation: MT5 Parity (Latest)
+- RSI in both RSI Tracker and RSI Correlation now matches MetaTrader 5 more closely.
+- We use Wilder's RSI (RMA smoothing) computed on CLOSED candles only, mirroring typical MT5 display values.
+- Previously we used a simple-average (Cutler's) approach over the last N bars, which could diverge; we also included the forming candle which further skewed values.
+- Implementation details:
+  - `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` now call `src/utils/calculations.js` `calculateRSI`.
+  - We drop the last (potentially forming) bar when we have enough history to ensure closed-candle RSI.
+  - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
+- Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
+
 ### RSI Tracker: Toggle Shows Current Mode (Latest)
 - Fixed the RSI Tracker vs Watchlist toggle button to display the current mode rather than the target mode
 - Tooltip now mirrors RSI Correlation Dashboard style: "Switch to … mode"
