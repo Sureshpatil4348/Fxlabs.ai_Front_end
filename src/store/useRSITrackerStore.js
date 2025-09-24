@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
-import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 import { calculateRSI } from '../utils/calculations';
+import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 
 // WebSocket URL configuration
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';

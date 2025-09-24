@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+
 import { calculateRSI } from '../utils/calculations';
 
 // WebSocket URL configuration
