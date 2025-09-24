@@ -833,7 +833,7 @@ The RSI Tracker Alerts system allows users to create intelligent trading alerts 
 - **Alert History**: View all triggered alerts with RSI data at trigger time
 
 #### Trigger Tracking
-- **Real-time Monitoring**: Alerts are checked against live RSI data
+- **Real-time Monitoring**: Alerts are checked against closed-candle RSI data
 - **Trigger History**: Complete record of when alerts fired
 - **RSI Data Snapshot**: Store actual RSI values, RFI scores, and price data at trigger time
 - **Event Tracking**: Track RSI crossup/crossdown events with detailed data
@@ -958,7 +958,7 @@ The alert system integrates seamlessly with the existing RSI Tracker:
 
 1. **Shared Data Source**: Uses the same RSI calculations and RFI analysis
 2. **Consistent Logic**: Applies the same RSI period and threshold logic
-3. **Real-time Updates**: Monitors live RSI data for trigger conditions
+3. **Real-time Updates**: Monitors closed-candle RSI data for trigger conditions
 4. **Unified Interface**: Alert management integrated into the navbar with orange TrendingUp icon
 5. **Visual Indicators**: TrendingUp icon shows active RSI alert count as a badge
 6. **Modal Interface**: Clean, user-friendly RSI alert configuration modal
@@ -1020,7 +1020,7 @@ The RSI Correlation Alerts system allows users to create intelligent trading ale
 - **Alert History**: View all triggered alerts with correlation data at trigger time
 
 #### Trigger Tracking
-- **Real-time Monitoring**: Alerts are checked against live RSI correlation data
+- **Real-time Monitoring**: Alerts are checked against closed-candle RSI correlation data
 - **Trigger History**: Complete record of when alerts fired
 - **Correlation Data Snapshot**: Store actual RSI values, correlation coefficients, and market data at trigger time
 - **Mode-specific Tracking**: Different data captured for RSI Threshold vs Real Correlation modes
@@ -1152,7 +1152,7 @@ The alert system integrates seamlessly with the existing RSI Correlation Dashboa
 
 1. **Shared Data Source**: Uses the same RSI calculations and correlation analysis
 2. **Consistent Logic**: Applies the same RSI period, thresholds, and correlation windows
-3. **Real-time Updates**: Monitors live RSI correlation data for trigger conditions
+3. **Real-time Updates**: Monitors closed-candle RSI correlation data for trigger conditions
 4. **Unified Interface**: Alert management integrated into the navbar with purple BarChart3 icon
 5. **Visual Indicators**: BarChart3 icon shows active RSI correlation alert count as a badge
 6. **Modal Interface**: Clean, user-friendly RSI correlation alert configuration modal

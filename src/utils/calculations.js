@@ -358,7 +358,9 @@ export const calculateRSISignals = (closes, period = 14, kLookback = SIGNAL_PARA
   }
   
   // Check for valid price data and clean it
-  const validCloses = closes.filter(price => price != null && !isNaN(price) && price > 0);
+  const validClosesRaw = closes.filter(price => price != null && !isNaN(price) && price > 0);
+  // Use CLOSED candles only: drop the last (potentially forming) candle when we have enough data
+  const validCloses = validClosesRaw.length > period + 1 ? validClosesRaw.slice(0, -1) : validClosesRaw;
   if (validCloses.length < period + 1) {
     console.warn(`❌ RSI needs ${period + 1} valid prices, have ${validCloses.length} valid out of ${closes.length} total`);
     console.warn('Sample invalid data:', closes.filter(price => price == null || isNaN(price) || price <= 0).slice(0, 3));

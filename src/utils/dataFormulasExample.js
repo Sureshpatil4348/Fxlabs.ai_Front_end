@@ -30,12 +30,14 @@ export const performCompleteAnalysis = (bars, volumes = null) => {
 
   // Extract data arrays
   const closes = bars.map(bar => bar.close);
+  // Use closed candles only for RSI-based metrics
+  const closesClosed = closes.length > 15 ? closes.slice(0, -1) : closes;
   const highs = bars.map(bar => bar.high);
   const lows = bars.map(bar => bar.low);
   const currentPrice = closes[closes.length - 1];
 
   // 1. Wilder's RSI Analysis
-  const rsi = calculateRSI(closes, 14);
+  const rsi = calculateRSI(closesClosed, 14);
   const rsiAnalysis = {
     value: rsi,
     interpretation: rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral',
@@ -43,7 +45,7 @@ export const performCompleteAnalysis = (bars, volumes = null) => {
   };
 
   // 2. Centered RSI (cRSI) Analysis
-  const cRSI = calculateCenteredRSI(closes, 14);
+  const cRSI = calculateCenteredRSI(closesClosed, 14);
   const cRSIAnalysis = {
     value: cRSI,
     interpretation: cRSI > 20 ? 'Strong Bullish' : cRSI < -20 ? 'Strong Bearish' : 'Neutral',
@@ -51,7 +53,7 @@ export const performCompleteAnalysis = (bars, volumes = null) => {
   };
 
   // 3. RFI (RSI-Flow Imbalance) Analysis
-  const rfi = calculateRFI(closes, volumes, highs, lows);
+  const rfi = calculateRFI(closesClosed, volumes, highs, lows);
   const rfiAnalysis = {
     score: rfi?.rfiScore || 0,
     interpretation: rfi?.interpretation || 'No Data',

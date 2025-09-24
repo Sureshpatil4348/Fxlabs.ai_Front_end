@@ -22,7 +22,7 @@ const TradingCarousel = () => {
     {
       id: 1,
       title: "EUR/USD Analysis",
-      subtitle: "Real-time RSI Correlation",
+      subtitle: "Closed-candle RSI Correlation",
       type: "line",
       data: [
         { x: 0, y: 1.0850 },
