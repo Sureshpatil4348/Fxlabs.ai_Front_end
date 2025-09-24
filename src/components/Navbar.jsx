@@ -43,7 +43,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center h-16">
             {/* Logo Section - Raw Logo */}
-            <div className="flex items-center -ml-2 sm:-ml-4 md:-ml-6 lg:-ml-8 xl:-ml-10 2xl:-ml-12">
+            <div className="flex items-center -ml-2 sm:-ml-4 md:-ml-6 lg:-ml-6 xl:-ml-28 2xl:-ml-30">
               <a 
                 href="/" 
                 className="group" 
@@ -108,7 +108,7 @@ const Navbar = () => {
             </div>
             
             {/* Right Section - Live Market & Controls */}
-            <div className="flex items-center space-x-2 sm:space-x-4 -mr-2 sm:-mr-4 md:-mr-6 lg:-mr-8 xl:-mr-10 2xl:-mr-12 mr-2">
+            <div className="flex items-center space-x-2 sm:space-x-4 -mr-2 sm:-mr-4 md:-mr-6 lg:-mr-6 xl:-mr-28 2xl:-mr-30 mr-2">
               
               {/* Market is Live Pill - Only show on landing page */}
               {!isOnDashboard && (
