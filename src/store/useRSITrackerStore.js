@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
+import { calculateRSI } from '../utils/calculations';
 import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 
 // WebSocket URL configuration
@@ -465,38 +466,17 @@ const useRSITrackerStore = create(
     },
     
     // RSI Calculation Actions
+    // Use Wilder's RSI on closed candles to match MT5 (via utils.calculateRSI)
     calculateRsi: (symbol, period = 14) => {
       const bars = get().getOhlcForSymbol(symbol);
-      
-      if (bars.length < period + 1) {
-        return null;
-      }
+      if (!bars || bars.length < period + 1) return null;
 
-      const closes = bars.slice(-period - 1).map(bar => bar.close);
-      
-      let gains = 0;
-      let losses = 0;
+      // Prefer closed candles: drop the last bar if we have enough history
+      const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
+      const closes = effectiveBars.map(bar => Number(bar.close)).filter(v => Number.isFinite(v));
+      if (closes.length < period + 1) return null;
 
-      for (let i = 1; i < closes.length; i++) {
-        const change = closes[i] - closes[i - 1];
-        if (change > 0) {
-          gains += change;
-        } else {
-          losses -= change;
-        }
-      }
-
-      const avgGain = gains / period;
-      const avgLoss = losses / period;
-      
-      if (avgLoss === 0) {
-        return 100;
-      }
-      
-      const rs = avgGain / avgLoss;
-      const rsi = 100 - (100 / (1 + rs));
-      
-      return rsi;
+      return calculateRSI(closes, period);
     },
 
     recalculateAllRsi: () => {
@@ -738,6 +718,60 @@ const useRSITrackerStore = create(
       return bars.length > 0 ? bars[bars.length - 1] : null;
     },
 
+    // Daily Change helpers
+    // Try to obtain today's open from daily timeframe (preferred),
+    // then fall back to the first bar of the current day from the active timeframe,
+    // and finally to the latest bar open as a last resort.
+    getDailyOpenForSymbol: (symbol) => {
+      // Preferred: explicit daily timeframe data ('1D' or 'D1')
+      const dailyBars1D = get().getOhlcForSymbolAndTimeframe(symbol, '1D');
+      const dailyBarsD1 = dailyBars1D && dailyBars1D.length > 0
+        ? dailyBars1D
+        : get().getOhlcForSymbolAndTimeframe(symbol, 'D1');
+      const dailyBars = dailyBarsD1;
+      if (dailyBars && dailyBars.length > 0) {
+        const latestDaily = dailyBars[dailyBars.length - 1];
+        if (latestDaily && typeof latestDaily.open === 'number') return latestDaily.open;
+      }
+
+      // Fallback: derive from current timeframe bars by finding first bar of "today".
+      const bars = get().getOhlcForSymbol(symbol);
+      if (!bars || bars.length === 0) return null;
+
+      const latest = bars[bars.length - 1];
+      const latestTime = latest?.time || latest?.timestamp;
+      if (latestTime) {
+        try {
+          const d = new Date(latestTime);
+          const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+          // Find the first bar whose time is on/after start of day
+          for (let i = 0; i < bars.length; i++) {
+            const bt = bars[i]?.time || bars[i]?.timestamp;
+            if (bt && new Date(bt).getTime() >= startOfDay) {
+              if (typeof bars[i].open === 'number') return bars[i].open;
+            }
+          }
+        } catch (_e) {
+          // ignore and fall through
+        }
+      }
+
+      // Last resort: use latest bar open (intrabar), which approximates change
+      return typeof latest?.open === 'number' ? latest.open : null;
+    },
+
+    getDailyChangePercent: (symbol) => {
+      const latestTick = get().getLatestTickForSymbol(symbol);
+      const latestBar = get().getLatestOhlcForSymbol(symbol);
+      const currentPrice = latestTick?.bid || latestBar?.close;
+      if (typeof currentPrice !== 'number') return 0;
+
+      const dayOpen = get().getDailyOpenForSymbol(symbol);
+      if (typeof dayOpen !== 'number' || dayOpen === 0) return 0;
+
+      return ((currentPrice - dayOpen) / dayOpen) * 100;
+    },
+
     // RSI Analysis Functions
     getOversoldPairs: () => {
       const state = get();
@@ -754,7 +788,8 @@ const useRSITrackerStore = create(
             rsi: rsiInfo.value,
             rfiData,
             price: latestTick?.bid || latestBar?.close || 0,
-            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+            // Daily % based on start-of-day open when available
+            change: get().getDailyChangePercent(symbol),
             volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0 // Simulated volume
           });
         }
@@ -778,7 +813,8 @@ const useRSITrackerStore = create(
             rsi: rsiInfo.value,
             rfiData,
             price: latestTick?.bid || latestBar?.close || 0,
-            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+            // Daily % based on start-of-day open when available
+            change: get().getDailyChangePercent(symbol),
             volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0 // Simulated volume
           });
         }
@@ -802,7 +838,8 @@ const useRSITrackerStore = create(
           rsi: rsiInfo.value,
           rfiData,
           price: latestTick?.bid || latestBar?.close || 0,
-          change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+          // Daily % based on start-of-day open when available
+          change: get().getDailyChangePercent(symbol),
           volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0
         });
       });

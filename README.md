@@ -4,6 +4,33 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### RSI Calculation: MT5 Parity (Latest)
+- RSI in both RSI Tracker and RSI Correlation now matches MetaTrader 5 more closely.
+- We use Wilder's RSI (RMA smoothing) computed on CLOSED candles only, mirroring typical MT5 display values.
+- Previously we used a simple-average (Cutler's) approach over the last N bars, which could diverge; we also included the forming candle which further skewed values.
+- Implementation details:
+  - `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` now call `src/utils/calculations.js` `calculateRSI`.
+  - We drop the last (potentially forming) bar when we have enough history to ensure closed-candle RSI.
+  - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
+- Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
+
+### RSI Tracker: Toggle Shows Current Mode (Latest)
+- Fixed the RSI Tracker vs Watchlist toggle button to display the current mode rather than the target mode
+- Tooltip now mirrors RSI Correlation Dashboard style: "Switch to … mode"
+- Visual styling remains consistent with active state highlighting
+
+### RSI Tracker: Watchlist Manual Add Button (Latest)
+- Added a plus button in RSI Tracker header, visible only in Watchlist mode (before the alert bell)
+- Clicking it opens an Add Currency Pair modal with search and filtered list
+- Uses existing watchlist store for persistence and auto-subscription
+- Keeps UI consistent with existing modals and dark mode styling
+
+### RSI Correlation Dashboard: Real Correlation Stabilization (Latest)
+- Fixed issue where Real Correlation initially showed many mismatches with very low percentages that corrected after a few seconds or refresh.
+- Root cause: correlation was computed on unaligned OHLC series immediately after subscribe, leading to spurious low values.
+- Change: rolling correlation now aligns candles by timestamp across both symbols and uses only overlapping, time-aligned candles for log-return correlation.
+- Result: stable, accurate correlation percentages on first render; mismatch highlighting now reflects true relationships without needing a refresh.
+
 ### Navbar Mobile Menu Spacing Fix (Latest)
 - **MOBILE MENU SPACING**: Added responsive right margin to mobile menu icon for better spacing from screen edge
 - **RESPONSIVE MARGINS**: Applied `mr-2 sm:mr-4` to mobile menu button for consistent spacing across screen sizes
@@ -157,6 +184,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Remove Functionality**: Users can remove symbols from watchlist with trash icon and loading feedback
 - **Empty State**: Clean empty state message when no watchlist items exist with helpful instructions
 - **Seamless Integration**: Leverages existing watchlist service and base market store for consistent data management
+
+### RSI Tracker Daily % Calculation
+- The RSI Tracker previously showed intrabar change: `(latest close - latest open) / latest open` of the active timeframe. This did not match MT5 Market Watch “Daily Change”.
+- Updated mechanism: Daily % is now computed from the start-of-day price when available: `(current bid − daily open) / daily open * 100`.
+- Data source priority:
+  - Use daily timeframe bars (`1D`/`D1`) for the current day’s open when present.
+  - If daily bars are unavailable, fall back to the first bar of the current day from the active timeframe.
+  - As a last resort, fall back to the latest bar’s open (approximates change when time data is limited).
+- Why it may still differ slightly from MT5: brokers define “day” using server time. If only non-daily bars are available, the fallback uses the bar timestamps to infer the day boundary, which can differ from MT5 server time in edge cases. Subscribing to the daily timeframe eliminates this variance.
 
 ### Symbol Formatting Fix: Alert Creation and Updates
 - **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
