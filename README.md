@@ -4,6 +4,17 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### RSI Tracker: Toggle Shows Current Mode (Latest)
+- Fixed the RSI Tracker vs Watchlist toggle button to display the current mode rather than the target mode
+- Tooltip now mirrors RSI Correlation Dashboard style: "Switch to … mode"
+- Visual styling remains consistent with active state highlighting
+
+### RSI Tracker: Watchlist Manual Add Button (Latest)
+- Added a plus button in RSI Tracker header, visible only in Watchlist mode (before the alert bell)
+- Clicking it opens an Add Currency Pair modal with search and filtered list
+- Uses existing watchlist store for persistence and auto-subscription
+- Keeps UI consistent with existing modals and dark mode styling
+
 ### RSI Correlation Dashboard: Real Correlation Stabilization (Latest)
 - Fixed issue where Real Correlation initially showed many mismatches with very low percentages that corrected after a few seconds or refresh.
 - Root cause: correlation was computed on unaligned OHLC series immediately after subscribe, leading to spurious low values.

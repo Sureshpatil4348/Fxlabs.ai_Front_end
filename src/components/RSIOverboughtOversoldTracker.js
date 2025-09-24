@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, Settings, Activity, Bell, Star, List, Trash2, Loader2 } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings, Activity, Bell, Star, List, Trash2, Loader2, Plus, Search, X } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
@@ -136,6 +136,10 @@ const RSIOverboughtOversoldTracker = () => {
     rsiOverbought: settings.rsiOverbought,
     rsiOversold: settings.rsiOversold
   });
+  // Manual add-to-watchlist modal state (Watchlist mode)
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [addingSymbol, setAddingSymbol] = useState(null);
 
   // Load tab state on component mount
   useEffect(() => {
@@ -269,6 +273,43 @@ const RSIOverboughtOversoldTracker = () => {
   // Get watchlist symbols
   const watchlistSymbols = getWishlistArray();
 
+  // Derive available pairs from RSI Tracker store's autoSubscribeSymbols (convert 'EURUSDm' -> 'EURUSD')
+  const availablePairs = React.useMemo(() => {
+    const symbols = settings?.autoSubscribeSymbols || [];
+    return symbols
+      .map((s) => (s?.toUpperCase().endsWith('M') ? s.toUpperCase().slice(0, -1) : s.toUpperCase()))
+      .filter(Boolean);
+  }, [settings?.autoSubscribeSymbols]);
+
+  // Filter available pairs based on search term and existing wishlist
+  const filteredPairs = React.useMemo(() => {
+    const wl = watchlistSymbols || [];
+    const term = (searchTerm || '').toLowerCase();
+    return availablePairs.filter((pair) => {
+      const notInList = !wl.includes(pair);
+      const matches = pair.toLowerCase().includes(term) ||
+        formatSymbolDisplay(pair).toLowerCase().includes(term);
+      return notInList && matches;
+    });
+  }, [availablePairs, watchlistSymbols, searchTerm]);
+
+  const handleAddPair = async (symbol) => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+    setAddingSymbol(symbol);
+    try {
+      await addToWishlist(symbol);
+      setShowAddModal(false);
+      setSearchTerm('');
+    } catch (error) {
+      console.error('Failed to add to watchlist:', error);
+    } finally {
+      setAddingSymbol(null);
+    }
+  };
+
   const handleSaveSettings = async () => {
     try {
       // Validate and enforce oversold < overbought constraint
@@ -369,11 +410,24 @@ const RSIOverboughtOversoldTracker = () => {
                   ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200' 
                   : 'text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-gray-200'
               }`}
-              title={showWatchlist ? "Show RSI Tracker" : "Show Watchlist"}
+              title={showWatchlist ? "Switch to RSI Tracker mode" : "Switch to Watchlist mode"}
             >
               {showWatchlist ? <List className="w-4 h-4" /> : <Star className="w-4 h-4" />}
-              <span className="text-xs font-medium">{showWatchlist ? 'RSI Tracker' : 'Watchlist'}</span>
+              <span className="text-xs font-medium">{showWatchlist ? 'Watchlist' : 'RSI Tracker'}</span>
             </button>
+
+            {/* Add Pair (visible in Watchlist mode) */}
+            {showWatchlist && user && (
+              <button
+                type="button"
+                aria-label="Add currency pair to watchlist"
+                onClick={() => setShowAddModal(true)}
+                className="p-1 text-gray-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md transition-colors"
+                title="Add currency pair"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            )}
             
             {/* RSI Alert Bell Icon */}
             {user && (
@@ -732,6 +786,78 @@ const RSIOverboughtOversoldTracker = () => {
             >
               Save
             </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Add Currency Pair Modal (Watchlist mode) */}
+    {showAddModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[5000]">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Add Currency Pair</h3>
+            <button
+              onClick={() => { setShowAddModal(false); setSearchTerm(''); }}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
+              aria-label="Close add pair modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="p-4 border-b border-gray-200 dark:border-slate-700">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search currency pairs..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Currency Pairs List */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {filteredPairs.length > 0 ? (
+              <div className="space-y-2">
+                {filteredPairs.map((pair) => (
+                  <button
+                    key={pair}
+                    onClick={() => handleAddPair(pair)}
+                    disabled={addingSymbol === pair}
+                    className="w-full flex items-center justify-between p-3 text-left border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-slate-100">{formatSymbolDisplay(pair)}</div>
+                      <div className="text-sm text-gray-500 dark:text-slate-400">{pair}</div>
+                    </div>
+                    {addingSymbol === pair ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-green-600" />
+                    ) : (
+                      <Plus className="w-4 h-4 text-green-600" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-slate-400">
+                  {searchTerm ? 'No matching pairs found' : 'All available pairs are already in your watchlist'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Modal Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-slate-700">
+            <div className="text-xs text-gray-500 dark:text-slate-400 text-center">
+              {filteredPairs.length} of {availablePairs.length} pairs available
+            </div>
           </div>
         </div>
       </div>
