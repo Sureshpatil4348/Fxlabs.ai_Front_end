@@ -50,12 +50,12 @@ const Navbar = () => {
                 onClick={() => window.scrollTo(0, 0)}
               >
                 <img 
-                  src={require('../assets/logo1.png')} 
+                  src={isDarkMode ? require('../assets/logo1.png') : require('../assets/blacklogo.png')} 
                   alt="FXLabs Logo" 
-                  className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-48 lg:h-48 object-contain transition-all duration-300 group-hover:scale-105 ${
+                  className={`object-contain transition-all duration-300 group-hover:scale-105 ${
                     isDarkMode 
-                      ? 'filter brightness-110 contrast-110' 
-                      : 'filter brightness-0 contrast-100'
+                      ? 'w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-48 lg:h-48' 
+                      : 'w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32'
                   }`}
                 />
               </a>
