@@ -158,6 +158,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Empty State**: Clean empty state message when no watchlist items exist with helpful instructions
 - **Seamless Integration**: Leverages existing watchlist service and base market store for consistent data management
 
+### RSI Tracker Daily % Calculation
+- The RSI Tracker previously showed intrabar change: `(latest close - latest open) / latest open` of the active timeframe. This did not match MT5 Market Watch “Daily Change”.
+- Updated mechanism: Daily % is now computed from the start-of-day price when available: `(current bid − daily open) / daily open * 100`.
+- Data source priority:
+  - Use daily timeframe bars (`1D`/`D1`) for the current day’s open when present.
+  - If daily bars are unavailable, fall back to the first bar of the current day from the active timeframe.
+  - As a last resort, fall back to the latest bar’s open (approximates change when time data is limited).
+- Why it may still differ slightly from MT5: brokers define “day” using server time. If only non-daily bars are available, the fallback uses the bar timestamps to infer the day boundary, which can differ from MT5 server time in edge cases. Subscribing to the daily timeframe eliminates this variance.
+
 ### Symbol Formatting Fix: Alert Creation and Updates
 - **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
 - Updated all three alert services to apply symbol mapping in both `createAlert` and `updateAlert` methods

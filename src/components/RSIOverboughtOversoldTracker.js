@@ -35,7 +35,7 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   );
 };
 
-const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLatestTickForSymbol, getLatestOhlcForSymbol, isRemoving }) => {
+const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLatestTickForSymbol, getLatestOhlcForSymbol, getDailyChangePercent, isRemoving }) => {
   // Convert watchlist symbol (base format) to RSI Tracker format (with 'm' suffix)
   const rsiSymbol = symbol + 'm';
   
@@ -44,7 +44,7 @@ const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLate
   const rsiValue = rsiData.get(rsiSymbol)?.value ?? null;
   
   const price = latestTick?.bid || latestBar?.close || null;
-  const change = latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : null;
+  const change = getDailyChangePercent ? getDailyChangePercent(rsiSymbol) : (latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : null);
   const priceText = price != null
     ? (symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5))
     : '--';
@@ -105,7 +105,8 @@ const RSIOverboughtOversoldTracker = () => {
     updateSettings,
     timeframes,
     getLatestTickForSymbol,
-    getLatestOhlcForSymbol
+    getLatestOhlcForSymbol,
+    getDailyChangePercent
   } = useRSITrackerStore();
   
   // Get tab state from base market store
@@ -465,6 +466,7 @@ const RSIOverboughtOversoldTracker = () => {
                         rsiData={rsiData}
                         getLatestTickForSymbol={getLatestTickForSymbol}
                         getLatestOhlcForSymbol={getLatestOhlcForSymbol}
+                        getDailyChangePercent={getDailyChangePercent}
                         isRemoving={isRemoving}
                       />
                     );
