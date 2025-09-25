@@ -1,8 +1,8 @@
 import { Bell, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
-import heatmapAlertService from '../services/heatmapAlertService';
 import { SUPPORTED_PAIRS } from '../constants/pairs';
+import heatmapAlertService from '../services/heatmapAlertService';
 
 const HeatmapAlertConfig = ({ isOpen, onClose }) => {
   const [alerts, setAlerts] = useState([]);

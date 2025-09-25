@@ -1,8 +1,8 @@
 import { TrendingUp, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
-import rsiAlertService from '../services/rsiAlertService';
 import { SUPPORTED_PAIRS } from '../constants/pairs';
+import rsiAlertService from '../services/rsiAlertService';
 
 const RSIAlertConfig = ({ isOpen, onClose }) => {
   const [alerts, setAlerts] = useState([]);

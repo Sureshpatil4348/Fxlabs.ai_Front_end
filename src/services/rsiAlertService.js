@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabaseClient';
 import { toBrokerSymbol } from '../constants/pairs';
+import { supabase } from '../lib/supabaseClient';
 
 class RSIAlertService {
   /**
