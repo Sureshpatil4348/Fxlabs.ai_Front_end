@@ -661,7 +661,28 @@ const useRSICorrelationStore = create(
     // Data Getters
     getOhlcForSymbol: (symbol) => {
       const ohlcData = get().ohlcData.get(symbol);
-      return ohlcData ? ohlcData.bars : [];
+      if (!ohlcData) return [];
+
+      // Ensure bars match the active timeframe; avoid stale bars after timeframe changes
+      const tf = get().settings?.timeframe;
+      const tfAliases = (t) => {
+        switch (t) {
+          case '1M': return ['1M', 'M1'];
+          case '5M': return ['5M', 'M5'];
+          case '15M': return ['15M', 'M15'];
+          case '30M': return ['30M', 'M30'];
+          case '1H': return ['1H', 'H1'];
+          case '4H': return ['4H', 'H4'];
+          case '1D': return ['1D', 'D1'];
+          case '1W': return ['1W', 'W1'];
+          default: return [t];
+        }
+      };
+      if (tf) {
+        const aliases = tfAliases(tf);
+        if (!aliases.includes(ohlcData.timeframe)) return [];
+      }
+      return ohlcData.bars || [];
     },
 
     getTicksForSymbol: (symbol) => {

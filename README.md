@@ -13,9 +13,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - We drop the last (potentially forming) bar when we have enough history to ensure closed-candle RSI.
   - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
 
- - Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.
-   - Change: `src/store/useRSITrackerStore.js: getOhlcForSymbol` returns bars from `ohlcByTimeframe` for the active timeframe.
-   - Handled aliasing: UI labels like `5M/4H/1D/1W` are now matched to server keys `M5/H4/D1/W1` during lookup to avoid mismatches that caused wrong RSI on 5M. Subscriptions continue using the UI timeframe labels for compatibility.
+- Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.
+  - Change: `src/store/useRSITrackerStore.js: getOhlcForSymbol` returns bars from `ohlcByTimeframe` for the active timeframe.
+  - Handled aliasing: UI labels like `5M/4H/1D/1W` are now matched to server keys `M5/H4/D1/W1` during lookup to avoid mismatches that caused wrong RSI on 5M. Subscriptions continue using the UI timeframe labels for compatibility.
+  - Added timeframe sanity checks in all stores so RSI never uses stale bars from a previous timeframe after switching. If the active timeframe’s bars aren’t available yet, the view avoids using mismatched buffers and updates as soon as new bars arrive.
 
  - Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. When there is sufficient history, the latest (forming) candle is dropped; when there isn't, the RSI uses available bars so the UI doesn't go blank right after subscribing.
    - Changes: `calculateRsi` in `src/store/useRSITrackerStore.js`, `src/store/useRSICorrelationStore.js`, and `src/store/useMarketStore.js` drop the last bar only when there are more than `period + 1` bars.
@@ -228,6 +229,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Ensures `_validateAlertConfig` receives normalized camelCase config for proper validation
 - Prevents validation bypass when updating configuration fields
 - Added comprehensive field coverage for alert configuration validation
+
+### UI Warning Fixes (Latest)
+- Resolved React warning about mixing border shorthand and non-shorthand properties during rerender.
+- MultiIndicator Heatmap buttons no longer toggle between `border` and `borderStyle`; instead use consistent longhand properties: `borderWidth`, `borderStyle`, `borderColor`.
+- Affects: `src/components/MultiIndicatorHeatmap.js`
 
 ### Previous Heatmap Alert Service Fixes
 - Fixed snake_case to camelCase field mapping issue in `updateAlert` method

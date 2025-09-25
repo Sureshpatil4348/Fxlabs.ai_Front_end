@@ -1117,7 +1117,10 @@ useEffect(() => {
                           style={hasData ? {
                             backgroundColor: score > 0 ? '#03c05d' : score < 0 ? '#e03f4c' : '#9ca3af',
                             borderRadius: '4px',
-                            borderStyle: 'none',
+                            // Avoid mixing shorthand/non-shorthand border props across renders
+                            borderWidth: '0px',
+                            borderStyle: 'solid',
+                            borderColor: 'transparent',
                             boxSizing: 'border-box',
                             color: '#fff',
                             cursor: 'pointer',
@@ -1145,9 +1148,10 @@ useEffect(() => {
                           } : {
                             backgroundColor: '#f3f4f6',
                             color: '#9ca3af',
-                            border: '2px dashed #d1d5db',
+                            borderWidth: '2px',
+                            borderStyle: 'dashed',
+                            borderColor: '#d1d5db',
                             borderRadius: '4px',
-                            borderStyle: 'none',
                             boxSizing: 'border-box',
                             cursor: 'not-allowed',
                             display: 'inline-block',

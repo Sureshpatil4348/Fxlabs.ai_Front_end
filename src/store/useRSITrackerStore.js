@@ -723,9 +723,17 @@ const useRSITrackerStore = create(
         }
       }
 
-      // Fallback: legacy top-level OHLC for symbol
+      // Fallback: only if legacy top-level timeframe matches active timeframe
       const ohlcData = get().ohlcData.get(symbol);
-      return ohlcData ? ohlcData.bars : [];
+      if (ohlcData && tf) {
+        const aliases = tfAliases(tf);
+        if (aliases.includes(ohlcData.timeframe)) {
+          return ohlcData.bars || [];
+        }
+        // Timeframe mismatch: avoid using stale bars from another timeframe
+        return [];
+      }
+      return ohlcData ? (ohlcData.bars || []) : [];
     },
 
     getOhlcForSymbolAndTimeframe: (symbol, timeframe) => {
