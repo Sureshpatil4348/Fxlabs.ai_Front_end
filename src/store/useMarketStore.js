@@ -483,7 +483,7 @@ const useMarketStore = create(
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles: drop the last bar if we have enough history
+      // Prefer closed candles: drop the last bar only when we have enough history
       const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
       const closes = effectiveBars
         .map(bar => Number(bar.close))

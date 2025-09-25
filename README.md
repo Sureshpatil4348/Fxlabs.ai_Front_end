@@ -12,6 +12,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` now call `src/utils/calculations.js` `calculateRSI`.
   - We drop the last (potentially forming) bar when we have enough history to ensure closed-candle RSI.
   - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
+
+ - Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.
+   - Change: `src/store/useRSITrackerStore.js: getOhlcForSymbol` returns bars from `ohlcByTimeframe` for the active timeframe.
+   - Handled aliasing: UI labels like `5M/4H/1D/1W` are now matched to server keys `M5/H4/D1/W1` during lookup to avoid mismatches that caused wrong RSI on 5M. Subscriptions continue using the UI timeframe labels for compatibility.
+
+ - Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. When there is sufficient history, the latest (forming) candle is dropped; when there isn't, the RSI uses available bars so the UI doesn't go blank right after subscribing.
+   - Changes: `calculateRsi` in `src/store/useRSITrackerStore.js`, `src/store/useRSICorrelationStore.js`, and `src/store/useMarketStore.js` drop the last bar only when there are more than `period + 1` bars.
 - Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
 
 ### RSI Tracker: Toggle Shows Current Mode (Latest)

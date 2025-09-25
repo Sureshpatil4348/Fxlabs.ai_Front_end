@@ -466,14 +466,16 @@ const useRSITrackerStore = create(
     },
     
     // RSI Calculation Actions
-    // Use Wilder's RSI on closed candles to match MT5 (via utils.calculateRSI)
+    // Use Wilder's RSI on closed candles when possible (via utils.calculateRSI)
     calculateRsi: (symbol, period = 14) => {
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles: drop the last bar if we have enough history
+      // Prefer closed candles: drop the last bar only when we have enough history
       const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
-      const closes = effectiveBars.map(bar => Number(bar.close)).filter(v => Number.isFinite(v));
+      const closes = effectiveBars
+        .map(bar => Number(bar.close))
+        .filter(v => Number.isFinite(v));
       if (closes.length < period + 1) return null;
 
       return calculateRSI(closes, period);
@@ -692,6 +694,36 @@ const useRSITrackerStore = create(
 
     // Data Getters
     getOhlcForSymbol: (symbol) => {
+      // Prefer the active timeframe's bars when available
+      const tf = get().settings?.timeframe;
+      const byTf = get().ohlcByTimeframe.get(symbol);
+
+      // Normalize timeframe aliases between UI ('5M','4H','1D','1W') and server ('M5','H4','D1','W1')
+      const tfAliases = (t) => {
+        switch (t) {
+          case '1M': return ['1M', 'M1'];
+          case '5M': return ['5M', 'M5'];
+          case '15M': return ['15M', 'M15'];
+          case '30M': return ['30M', 'M30'];
+          case '1H': return ['1H', 'H1'];
+          case '4H': return ['4H', 'H4'];
+          case '1D': return ['1D', 'D1'];
+          case '1W': return ['1W', 'W1'];
+          default: return [t];
+        }
+      };
+
+      if (tf && byTf) {
+        const keys = tfAliases(tf);
+        for (const key of keys) {
+          const tfData = byTf.get(key);
+          if (tfData && Array.isArray(tfData.bars) && tfData.bars.length > 0) {
+            return tfData.bars;
+          }
+        }
+      }
+
+      // Fallback: legacy top-level OHLC for symbol
       const ohlcData = get().ohlcData.get(symbol);
       return ohlcData ? ohlcData.bars : [];
     },
@@ -699,8 +731,26 @@ const useRSITrackerStore = create(
     getOhlcForSymbolAndTimeframe: (symbol, timeframe) => {
       const byTf = get().ohlcByTimeframe.get(symbol);
       if (!byTf) return [];
-      const tfData = byTf.get(timeframe);
-      return tfData ? tfData.bars : [];
+      const tfAliases = (t) => {
+        switch (t) {
+          case '1M': return ['1M', 'M1'];
+          case '5M': return ['5M', 'M5'];
+          case '15M': return ['15M', 'M15'];
+          case '30M': return ['30M', 'M30'];
+          case '1H': return ['1H', 'H1'];
+          case '4H': return ['4H', 'H4'];
+          case '1D': return ['1D', 'D1'];
+          case '1W': return ['1W', 'W1'];
+          default: return [t];
+        }
+      };
+      for (const key of tfAliases(timeframe)) {
+        const tfData = byTf.get(key);
+        if (tfData && Array.isArray(tfData.bars) && tfData.bars.length > 0) {
+          return tfData.bars;
+        }
+      }
+      return [];
     },
 
     getTicksForSymbol: (symbol) => {

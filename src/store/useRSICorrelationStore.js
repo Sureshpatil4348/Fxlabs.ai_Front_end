@@ -437,14 +437,16 @@ const useRSICorrelationStore = create(
     },
     
     // RSI Calculation Actions
-    // Use Wilder's RSI on closed candles to align with MT5 (via utils.calculateRSI)
+    // Use Wilder's RSI on closed candles when possible (via utils.calculateRSI)
     calculateRsi: (symbol, period = 14) => {
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles: drop the last bar if we have enough history
+      // Prefer closed candles: drop the last bar only when we have enough history
       const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
-      const closes = effectiveBars.map(bar => Number(bar.close)).filter(v => Number.isFinite(v));
+      const closes = effectiveBars
+        .map(bar => Number(bar.close))
+        .filter(v => Number.isFinite(v));
       if (closes.length < period + 1) return null;
 
       return calculateRSI(closes, period);
