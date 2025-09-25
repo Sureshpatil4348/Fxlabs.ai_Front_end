@@ -57,6 +57,8 @@ const useBaseMarketStore = create(
         // eslint-disable-next-line no-console
         console.log('Store: Fetching news from API...');
         const news = await newsService.fetchForexFactoryNews();
+        // eslint-disable-next-line no-console
+        console.log('Store: News fetched from API', { count: news?.length ?? 0, items: news });
         
         // eslint-disable-next-line no-console
         console.log('Store: News fetched, analyzing with AI...');

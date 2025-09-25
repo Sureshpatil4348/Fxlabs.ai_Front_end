@@ -2,6 +2,15 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Debug Logging (AI News)
+- Browser console now logs AI News data for easier verification:
+  - Raw fetched news: total count and items
+  - Today (all impacts): count and items
+  - Today (HIGH impact): count and items
+  - Today (HIGH impact) Upcoming: count and items
+  - Today (HIGH impact) Released: count and items
+- Open the browser DevTools Console to view these logs as the news feed updates.
+
 ## Recent Updates
 
 ### RSI Calculation: MT5 Parity (Latest)

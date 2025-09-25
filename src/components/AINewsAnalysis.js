@@ -456,6 +456,39 @@ const AINewsAnalysis = () => {
     .filter(isNewsTodayLocal)
     .filter((n) => (typeof n.impact === 'string' ? n.impact.toLowerCase() === 'high' : false));
 
+  // Log fetched + filtered news breakdowns in browser console
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.log('AI News: raw fetched news', { count: newsData?.length ?? 0, items: newsData });
+
+      const todays = (newsData || []).filter(isNewsTodayLocal);
+      const highImpactToday = todays.filter(n => (typeof n.impact === 'string' ? n.impact.toLowerCase() === 'high' : false));
+
+      // eslint-disable-next-line no-console
+      console.log('AI News: today (all impacts)', { count: todays.length, items: todays });
+      // eslint-disable-next-line no-console
+      console.log('AI News: today (HIGH impact)', { count: highImpactToday.length, items: highImpactToday });
+
+      // Further split by timing for clarity
+      const nowTs = Date.now();
+      const toTs = (n) => {
+        const { dateObj } = formatNewsLocalDateTime({ dateIso: n.date, originalTime: n.originalTime });
+        return dateObj.getTime();
+      };
+      const upcoming = highImpactToday.filter(n => toTs(n) > nowTs);
+      const released = highImpactToday.filter(n => toTs(n) <= nowTs);
+
+      // eslint-disable-next-line no-console
+      console.log('AI News: filtered.upcoming (today HIGH)', { count: upcoming.length, items: upcoming });
+      // eslint-disable-next-line no-console
+      console.log('AI News: filtered.released (today HIGH)', { count: released.length, items: released });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('AI News: logging breakdown failed', e);
+    }
+  }, [newsData]);
+
 
   // Trigger periodic re-render so items move from Upcoming -> Released as time passes
   useEffect(() => {
