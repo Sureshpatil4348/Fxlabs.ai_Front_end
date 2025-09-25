@@ -189,3 +189,32 @@ COMMENT ON COLUMN heatmap_alert_triggers.previous_indicators_data IS 'Previous i
 COMMENT ON COLUMN heatmap_alert_triggers.crossing_direction IS 'Direction of crossing: cross_up, cross_down, cross_into_buy, cross_into_sell';
 COMMENT ON COLUMN heatmap_alert_triggers.previous_score IS 'Previous score before crossing occurred';
 COMMENT ON COLUMN heatmap_alert_triggers.crossing_threshold IS 'The threshold that was crossed to trigger the alert';
+
+-- Consolidated Alerts Spec (Backend parity) — one-time additive migration helpers
+-- These ALTERs make the table compatible with the unified backend behavior.
+-- Safe to run multiple times.
+DO $$ BEGIN
+  -- Add consolidated feature columns if missing
+  ALTER TABLE public.heatmap_alerts
+    ADD COLUMN IF NOT EXISTS min_alignment integer DEFAULT 0 CHECK (min_alignment BETWEEN 0 AND 5),
+    ADD COLUMN IF NOT EXISTS cooldown_minutes integer DEFAULT 30 CHECK (cooldown_minutes BETWEEN 1 AND 1440),
+    ADD COLUMN IF NOT EXISTS gate_by_buy_now boolean NOT NULL DEFAULT false,
+    ADD COLUMN IF NOT EXISTS gate_buy_min numeric(5,2) DEFAULT 60.00,
+    ADD COLUMN IF NOT EXISTS gate_sell_max numeric(5,2) DEFAULT 40.00,
+    ADD COLUMN IF NOT EXISTS style_weights_override jsonb;
+EXCEPTION WHEN others THEN NULL; END $$;
+
+-- Normalize trading_style to spec values ('scalper'|'day'|'swing')
+-- Drop old constraint if present, widen type to text, and set new default/constraint
+DO $$ BEGIN
+  ALTER TABLE public.heatmap_alerts DROP CONSTRAINT IF EXISTS valid_trading_style;
+  -- Ensure column is text and set modern default/value domain
+  ALTER TABLE public.heatmap_alerts
+    ALTER COLUMN trading_style TYPE text USING trading_style::text,
+    ALTER COLUMN trading_style SET DEFAULT 'day';
+  ALTER TABLE public.heatmap_alerts
+    ADD CONSTRAINT valid_trading_style CHECK (trading_style IN ('scalper','day','swing'));
+EXCEPTION WHEN others THEN NULL; END $$;
+
+-- Helpful additional index (simple boolean index as recommended)
+CREATE INDEX IF NOT EXISTS idx_heatmap_alerts_is_active ON public.heatmap_alerts (is_active);

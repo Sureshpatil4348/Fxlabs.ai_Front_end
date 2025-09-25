@@ -22,11 +22,11 @@ class RSIAlertService {
     const errors = [];
     const warnings = [];
 
-    // Validate pairs (1-5 pairs)
+    // Validate pairs (1-3 pairs global per alert; global per-user limit enforced separately)
     if (!config.pairs || !Array.isArray(config.pairs) || config.pairs.length === 0) {
       errors.push("At least one trading pair is required");
-    } else if (config.pairs.length > 5) {
-      errors.push("Maximum 5 trading pairs allowed for RSI alerts");
+    } else if (config.pairs.length > 3) {
+      errors.push("Maximum 3 trading pairs allowed for RSI alerts");
     } else {
       // Validate pair format (basic validation)
       config.pairs.forEach((pair, index) => {
@@ -84,12 +84,12 @@ class RSIAlertService {
       }
     }
 
-    // Validate alert conditions (1-6 conditions)
-    const validConditions = ['overbought', 'oversold', 'rfi_strong', 'rfi_moderate', 'crossup', 'crossdown'];
+    // Validate alert conditions (focused on OB/OS crossing policy)
+    const validConditions = ['overbought', 'oversold'];
     if (!config.alertConditions || !Array.isArray(config.alertConditions) || config.alertConditions.length === 0) {
       errors.push("At least one alert condition is required");
-    } else if (config.alertConditions.length > 6) {
-      errors.push("Maximum 6 alert conditions allowed");
+    } else if (config.alertConditions.length > 2) {
+      errors.push("Maximum 2 alert conditions allowed");
     } else {
       config.alertConditions.forEach((condition, index) => {
         if (!validConditions.includes(condition)) {
@@ -98,29 +98,33 @@ class RSIAlertService {
       });
     }
 
-    // Validate RFI thresholds
-    if (config.rfiStrongThreshold !== undefined) {
-      if (!Number.isFinite(config.rfiStrongThreshold)) {
-        errors.push("RFI strong threshold must be a valid number");
-      } else if (config.rfiStrongThreshold < 0.50 || config.rfiStrongThreshold > 1.00) {
-        errors.push("RFI strong threshold must be between 0.50 and 1.00");
+    // New consolidated knobs
+    if (config.cooldownMinutes !== undefined) {
+      if (!Number.isFinite(config.cooldownMinutes) || config.cooldownMinutes < 1 || config.cooldownMinutes > 1440) {
+        errors.push("Cooldown minutes must be between 1 and 1440");
       }
     }
-    if (config.rfiModerateThreshold !== undefined) {
-      if (!Number.isFinite(config.rfiModerateThreshold)) {
-        errors.push("RFI moderate threshold must be a valid number");
-      } else if (config.rfiModerateThreshold < 0.30 || config.rfiModerateThreshold > 0.80) {
-        errors.push("RFI moderate threshold must be between 0.30 and 0.80");
-      }
+    if (config.barPolicy && !['close','intrabar'].includes(config.barPolicy)) {
+      errors.push("barPolicy must be 'close' or 'intrabar'");
     }
-
-    // Validate RFI threshold order
-    if (config.rfiStrongThreshold !== undefined && config.rfiModerateThreshold !== undefined) {
-      if (Number.isFinite(config.rfiStrongThreshold) && Number.isFinite(config.rfiModerateThreshold)) {
-        if (config.rfiStrongThreshold < config.rfiModerateThreshold) {
-          errors.push("RFI strong threshold must be greater than or equal to moderate threshold");
-        }
-      }
+    if (config.triggerPolicy && !['crossing','in_zone'].includes(config.triggerPolicy)) {
+      errors.push("triggerPolicy must be 'crossing' or 'in_zone'");
+    }
+    if (config.onlyNewBars !== undefined && (!Number.isInteger(config.onlyNewBars) || config.onlyNewBars < 0 || config.onlyNewBars > 10)) {
+      errors.push("onlyNewBars must be an integer between 0 and 10");
+    }
+    if (config.confirmationBars !== undefined && (!Number.isInteger(config.confirmationBars) || config.confirmationBars < 0 || config.confirmationBars > 5)) {
+      errors.push("confirmationBars must be an integer between 0 and 5");
+    }
+    if (config.timezone && typeof config.timezone !== 'string') {
+      errors.push("timezone must be a valid IANA string");
+    }
+    const hhmm = /^\d{2}:\d{2}$/;
+    if (config.quietStartLocal && !hhmm.test(config.quietStartLocal)) {
+      errors.push("quietStartLocal must be in HH:MM format");
+    }
+    if (config.quietEndLocal && !hhmm.test(config.quietEndLocal)) {
+      errors.push("quietEndLocal must be in HH:MM format");
     }
 
     // Validate alert frequency
@@ -131,7 +135,7 @@ class RSIAlertService {
 
     // Validate notification methods
     if (config.notificationMethods && Array.isArray(config.notificationMethods)) {
-      const validMethods = ['browser', 'email', 'push'];
+      const validMethods = ['email'];
       config.notificationMethods.forEach((method, index) => {
         if (!validMethods.includes(method)) {
           errors.push(`Invalid notification method at index ${index}: ${method}`);
@@ -166,8 +170,14 @@ class RSIAlertService {
       rsiPeriod: dbAlert.rsi_period,
       rsiOverboughtThreshold: dbAlert.rsi_overbought_threshold,
       rsiOversoldThreshold: dbAlert.rsi_oversold_threshold,
-      rfiStrongThreshold: dbAlert.rfi_strong_threshold,
-      rfiModerateThreshold: dbAlert.rfi_moderate_threshold,
+      barPolicy: dbAlert.bar_policy,
+      triggerPolicy: dbAlert.trigger_policy,
+      onlyNewBars: dbAlert.only_new_bars,
+      confirmationBars: dbAlert.confirmation_bars,
+      cooldownMinutes: dbAlert.cooldown_minutes,
+      timezone: dbAlert.timezone,
+      quietStartLocal: dbAlert.quiet_start_local,
+      quietEndLocal: dbAlert.quiet_end_local,
       notificationMethods: dbAlert.notification_methods,
       alertFrequency: dbAlert.alert_frequency,
       createdAt: dbAlert.created_at,
@@ -195,8 +205,14 @@ class RSIAlertService {
       rsiPeriod: 'rsi_period',
       rsiOverboughtThreshold: 'rsi_overbought_threshold',
       rsiOversoldThreshold: 'rsi_oversold_threshold',
-      rfiStrongThreshold: 'rfi_strong_threshold',
-      rfiModerateThreshold: 'rfi_moderate_threshold',
+      barPolicy: 'bar_policy',
+      triggerPolicy: 'trigger_policy',
+      onlyNewBars: 'only_new_bars',
+      confirmationBars: 'confirmation_bars',
+      cooldownMinutes: 'cooldown_minutes',
+      timezone: 'timezone',
+      quietStartLocal: 'quiet_start_local',
+      quietEndLocal: 'quiet_end_local',
       notificationMethods: 'notification_methods',
       alertFrequency: 'alert_frequency'
     };
@@ -225,6 +241,15 @@ class RSIAlertService {
     const validation = this._validateRSIAlertConfig(alertConfig);
     if (!validation.isValid) {
       throw new Error(`Invalid alert configuration: ${validation.errors.join(', ')}`);
+    }
+
+    // Enforce global max tracked unique symbols (3) across all alert types
+    const existingSymbols = await this._collectUserTrackedSymbols(user.id);
+    const proposed = new Set(existingSymbols);
+    (alertConfig.pairs || []).forEach(s => proposed.add(s));
+    if (proposed.size > 3) {
+      const remaining = Math.max(0, 3 - existingSymbols.size);
+      throw new Error(`Adding these pairs exceeds the global limit of 3 unique symbols per user. Remaining slots: ${remaining}`);
     }
 
     // Map UI symbols to broker-specific symbols
@@ -256,9 +281,15 @@ class RSIAlertService {
       rsi_overbought_threshold: alertConfig.rsiOverboughtThreshold || 70,
       rsi_oversold_threshold: alertConfig.rsiOversoldThreshold || 30,
       alert_conditions: alertConfig.alertConditions,
-      rfi_strong_threshold: alertConfig.rfiStrongThreshold || 0.80,
-      rfi_moderate_threshold: alertConfig.rfiModerateThreshold || 0.60,
-      notification_methods: alertConfig.notificationMethods || ['browser'],
+      bar_policy: alertConfig.barPolicy || 'close',
+      trigger_policy: alertConfig.triggerPolicy || 'crossing',
+      only_new_bars: alertConfig.onlyNewBars ?? 3,
+      confirmation_bars: alertConfig.confirmationBars ?? 1,
+      cooldown_minutes: alertConfig.cooldownMinutes ?? 30,
+      timezone: alertConfig.timezone || 'Asia/Kolkata',
+      quiet_start_local: alertConfig.quietStartLocal || null,
+      quiet_end_local: alertConfig.quietEndLocal || null,
+      notification_methods: alertConfig.notificationMethods || ['email'],
       alert_frequency: alertConfig.alertFrequency || 'once'
     };
 
@@ -370,8 +401,8 @@ class RSIAlertService {
     // Validate updates if they include configuration changes
     const configFields = [
       'pairs', 'timeframes', 'alertConditions', 'rsiPeriod', 
-      'rsiOverboughtThreshold', 'rsiOversoldThreshold', 'rfiStrongThreshold', 
-      'rfiModerateThreshold', 'notificationMethods', 'alertFrequency', 'isActive'
+      'rsiOverboughtThreshold', 'rsiOversoldThreshold', 'notificationMethods', 'alertFrequency', 'isActive',
+      'barPolicy','triggerPolicy','onlyNewBars','confirmationBars','cooldownMinutes','timezone','quietStartLocal','quietEndLocal'
     ];
     
     const hasConfigChanges = configFields.some(field => updates.hasOwnProperty(field));
@@ -652,9 +683,15 @@ class RSIAlertService {
       rsiOverboughtThreshold: 70,
       rsiOversoldThreshold: 30,
       alertConditions: ['overbought', 'oversold'],
-      rfiStrongThreshold: 0.80,
-      rfiModerateThreshold: 0.60,
-      notificationMethods: ['browser'],
+      barPolicy: 'close',
+      triggerPolicy: 'crossing',
+      onlyNewBars: 3,
+      confirmationBars: 1,
+      cooldownMinutes: 30,
+      timezone: 'Asia/Kolkata',
+      quietStartLocal: '',
+      quietEndLocal: '',
+      notificationMethods: ['email'],
       alertFrequency: 'once'
     };
   }
@@ -676,12 +713,8 @@ class RSIAlertService {
         { value: '1W', label: '1 Week' }
       ],
       alertConditions: [
-        { value: 'overbought', label: 'RSI Overbought', description: 'RSI above overbought threshold' },
-        { value: 'oversold', label: 'RSI Oversold', description: 'RSI below oversold threshold' },
-        { value: 'rfi_strong', label: 'Strong RFI', description: 'RFI score above strong threshold' },
-        { value: 'rfi_moderate', label: 'Moderate RFI', description: 'RFI score above moderate threshold' },
-        { value: 'crossup', label: 'RSI Cross Up', description: 'RSI crosses above oversold threshold' },
-        { value: 'crossdown', label: 'RSI Cross Down', description: 'RSI crosses below overbought threshold' }
+        { value: 'overbought', label: 'RSI Overbought (crossing)', description: 'Fires on crossing into ≥ overbought with 1-bar confirmation' },
+        { value: 'oversold', label: 'RSI Oversold (crossing)', description: 'Fires on crossing into ≤ oversold with 1-bar confirmation' }
       ],
       alertFrequencies: [
         { value: 'once', label: 'Once Only' },
@@ -691,11 +724,46 @@ class RSIAlertService {
         { value: 'every_hour', label: 'Every Hour' }
       ],
       notificationMethods: [
-        { value: 'browser', label: 'Browser Notification' },
-        { value: 'email', label: 'Email' },
-        { value: 'push', label: 'Push Notification' }
+        { value: 'email', label: 'Email' }
       ]
     };
+  }
+
+  /**
+   * Collect currently tracked unique symbols across all alert types for the user
+   * Used to enforce the global max-3 unique pairs rule.
+   */
+  async _collectUserTrackedSymbols(userId) {
+    const symbols = new Set();
+    // Heatmap alerts
+    const { data: heatmap, error: e1 } = await supabase
+      .from('heatmap_alerts')
+      .select('pairs')
+      .eq('user_id', userId);
+    if (!e1 && Array.isArray(heatmap)) {
+      heatmap.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
+    }
+    // RSI alerts
+    const { data: rsi, error: e2 } = await supabase
+      .from('rsi_alerts')
+      .select('pairs')
+      .eq('user_id', userId);
+    if (!e2 && Array.isArray(rsi)) {
+      rsi.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
+    }
+    // Correlation alerts: count both symbols in each pair
+    const { data: corr, error: e3 } = await supabase
+      .from('rsi_correlation_alerts')
+      .select('correlation_pairs')
+      .eq('user_id', userId);
+    if (!e3 && Array.isArray(corr)) {
+      corr.forEach(r => (r.correlation_pairs || []).forEach(pair => {
+        if (Array.isArray(pair)) {
+          pair.forEach(s => symbols.add(s));
+        }
+      }));
+    }
+    return Array.from(symbols);
   }
 }
 

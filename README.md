@@ -397,7 +397,7 @@ The application now includes comprehensive dashboard settings persistence:
    Edit `.env.local` with your Supabase credentials.
 
 4. **Set up Supabase database**:
-   - Create a new Supabase project
+- Create a new Supabase project
    - Run the SQL script in `supabase_watchlist_table.sql` to create the `watchlist` table with proper RLS and unique constraints
    - Run the SQL script in `supabase_user_state_table.sql` to create the `user_state` table
    - Run the SQL script in `user_settings_table.sql` to create the `user_settings` table
@@ -1244,6 +1244,14 @@ The RSI Correlation Alerts support all 17 correlation pairs available in the RSI
 - **Mobile Notifications**: Push notification support
 - **Alert Templates**: Pre-configured RSI correlation alert templates for common strategies
 - **Cross-timeframe Correlation**: Multi-timeframe correlation analysis alerts
+
+## Alerts: Consolidated Spec Parity (Frontend + Supabase)
+
+- Heatmap (Type A + gating): normalized `trading_style` to `scalper|day|swing`; added `min_alignment` (0–5), `cooldown_minutes` (1–1440), `gate_by_buy_now` (bool), `gate_buy_min` (default 60), `gate_sell_max` (default 40). UI now shows single Buy ≥ and Sell ≤ thresholds and advanced controls for alignment, cooldown, and Buy Now % gate. Notification method limited to `email`.
+- RSI OB/OS: conditions limited to `overbought`/`oversold` (crossing + 1‑bar confirmation). Added `bar_policy` (default `close`), `trigger_policy` (default `crossing`), `only_new_bars` (3), `confirmation_bars` (1), `cooldown_minutes` (30), `timezone` (default `Asia/Kolkata`), `quiet_start_local`, `quiet_end_local`. UI adds Bar Timing, Cooldown, Quiet Hours, Timezone. Notification method limited to `email`.
+- RSI Correlation: no schema change required; notification method limited to `email`.
+- Global safeguard: services enforce max 3 unique tracked symbols/user across Heatmap, RSI, and RSI Correlation (correlation counts both symbols in each pair). Creation blocked with a friendly remaining‑slots message.
+- Supabase schema files: additive ALTERs included in `supabase_heatmap_alerts_schema.sql` and `supabase_rsi_alerts_schema.sql` to match backend spec; added helpful indexes.
 
 ## Accessibility
 

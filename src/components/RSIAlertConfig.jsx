@@ -158,7 +158,7 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                 <div>
                   <fieldset>
                     <legend className="block text-sm font-medium text-gray-700 mb-1">
-                      Trading Pairs (1-5 pairs)
+                      Trading Pairs (1-3 pairs)
                     </legend>
                     <div className="flex flex-wrap gap-2">
                       {['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'NZDUSD', 'USDCHF', 'XAUUSD', 'XAGUSD', 'BTCUSD', 'ETHUSD'].map(pair => (
@@ -167,7 +167,7 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                           onClick={() => {
                             const pairs = newAlert.pairs.includes(pair)
                               ? newAlert.pairs.filter(p => p !== pair)
-                              : newAlert.pairs.length < 5 ? [...newAlert.pairs, pair] : newAlert.pairs;
+                              : newAlert.pairs.length < 3 ? [...newAlert.pairs, pair] : newAlert.pairs;
                             setNewAlert({ ...newAlert, pairs });
                           }}
                           className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
@@ -263,7 +263,7 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                 <div>
                   <fieldset>
                     <legend className="block text-sm font-medium text-gray-700 mb-1">
-                      Alert Conditions (1-6 conditions)
+                      Alert Conditions (overbought/oversold)
                     </legend>
                     <div className="grid grid-cols-2 gap-2">
                       {getAlertOptions().alertConditions.map(condition => (
@@ -272,7 +272,7 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                           onClick={() => {
                             const conditions = newAlert.alertConditions.includes(condition.value)
                               ? newAlert.alertConditions.filter(c => c !== condition.value)
-                              : newAlert.alertConditions.length < 6 ? [...newAlert.alertConditions, condition.value] : newAlert.alertConditions;
+                              : newAlert.alertConditions.length < 2 ? [...newAlert.alertConditions, condition.value] : newAlert.alertConditions;
                             setNewAlert({ ...newAlert, alertConditions: conditions });
                           }}
                           className={`p-3 rounded-lg text-sm font-medium transition-all text-left ${
@@ -289,41 +289,70 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                   </fieldset>
                 </div>
 
-                {/* RFI Thresholds (only show if RFI conditions are selected) */}
-                {(newAlert.alertConditions.includes('rfi_strong') || newAlert.alertConditions.includes('rfi_moderate')) && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="rfiStrong" className="block text-sm font-medium text-gray-700 mb-1">
-                        Strong RFI Threshold (0.50-1.00)
-                      </label>
-                      <input
-                        id="rfiStrong"
-                        type="number"
-                        min="0.50"
-                        max="1.00"
-                        step="0.01"
-                        value={newAlert.rfiStrongThreshold}
-                        onChange={(e) => setNewAlert({ ...newAlert, rfiStrongThreshold: parseFloat(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="rfiModerate" className="block text-sm font-medium text-gray-700 mb-1">
-                        Moderate RFI Threshold (0.30-0.80)
-                      </label>
-                      <input
-                        id="rfiModerate"
-                        type="number"
-                        min="0.30"
-                        max="0.80"
-                        step="0.01"
-                        value={newAlert.rfiModerateThreshold}
-                        onChange={(e) => setNewAlert({ ...newAlert, rfiModerateThreshold: parseFloat(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                      />
-                    </div>
+                {/* Timing & Cooldown */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="barPolicy" className="block text-sm font-medium text-gray-700 mb-1">Bar Timing</label>
+                    <select
+                      id="barPolicy"
+                      value={newAlert.barPolicy}
+                      onChange={(e) => setNewAlert({ ...newAlert, barPolicy: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    >
+                      <option value="close">Close (recommended)</option>
+                      <option value="intrabar" disabled>Intrabar (disabled)</option>
+                    </select>
                   </div>
-                )}
+                  <div>
+                    <label htmlFor="cooldownMinutes" className="block text-sm font-medium text-gray-700 mb-1">Cooldown (minutes)</label>
+                    <input
+                      id="cooldownMinutes"
+                      type="number"
+                      min="1"
+                      max="1440"
+                      value={newAlert.cooldownMinutes}
+                      onChange={(e) => setNewAlert({ ...newAlert, cooldownMinutes: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+                    <input
+                      id="timezone"
+                      type="text"
+                      value={newAlert.timezone}
+                      onChange={(e) => setNewAlert({ ...newAlert, timezone: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      placeholder="Asia/Kolkata"
+                    />
+                  </div>
+                </div>
+
+                {/* Quiet Hours */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="quietStart" className="block text-sm font-medium text-gray-700 mb-1">Quiet start (HH:MM)</label>
+                    <input
+                      id="quietStart"
+                      type="text"
+                      value={newAlert.quietStartLocal}
+                      onChange={(e) => setNewAlert({ ...newAlert, quietStartLocal: e.target.value })}
+                      placeholder="22:30"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="quietEnd" className="block text-sm font-medium text-gray-700 mb-1">Quiet end (HH:MM)</label>
+                    <input
+                      id="quietEnd"
+                      type="text"
+                      value={newAlert.quietEndLocal}
+                      onChange={(e) => setNewAlert({ ...newAlert, quietEndLocal: e.target.value })}
+                      placeholder="06:30"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
 
                 {/* Alert Frequency */}
                 <div>
@@ -404,9 +433,7 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                           <p><span className="font-medium">RSI Period:</span> {alert.rsiPeriod || 'N/A'}</p>
                           <p><span className="font-medium">Thresholds:</span> Overbought {alert.rsiOverboughtThreshold || 'N/A'}, Oversold {alert.rsiOversoldThreshold || 'N/A'}</p>
                           <p><span className="font-medium">Conditions:</span> {alert.alertConditions?.join(', ') || 'N/A'}</p>
-                          {alert.alertConditions?.some(c => c.includes('rfi')) && (
-                            <p><span className="font-medium">RFI Thresholds:</span> Strong {alert.rfiStrongThreshold || 'N/A'}, Moderate {alert.rfiModerateThreshold || 'N/A'}</p>
-                          )}
+                          {/* RFI thresholds removed in consolidated spec */}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">

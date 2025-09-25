@@ -37,14 +37,18 @@ class HeatmapAlertService {
       selectedIndicators: dbAlert.selected_indicators,
       tradingStyle: dbAlert.trading_style,
       buyThresholdMin: dbAlert.buy_threshold_min,
-      buyThresholdMax: dbAlert.buy_threshold_max,
-      sellThresholdMin: dbAlert.sell_threshold_min,
       sellThresholdMax: dbAlert.sell_threshold_max,
+      minAlignment: dbAlert.min_alignment,
+      cooldownMinutes: dbAlert.cooldown_minutes,
+      gateByBuyNow: dbAlert.gate_by_buy_now,
+      gateBuyMin: dbAlert.gate_buy_min,
+      gateSellMax: dbAlert.gate_sell_max,
       notificationMethods: dbAlert.notification_methods,
       alertFrequency: dbAlert.alert_frequency,
       createdAt: dbAlert.created_at,
       updatedAt: dbAlert.updated_at,
-      previousValues: dbAlert.previous_values
+      previousValues: dbAlert.previous_values,
+      styleWeightsOverride: dbAlert.style_weights_override
     };
   }
 
@@ -67,11 +71,15 @@ class HeatmapAlertService {
       selectedIndicators: 'selected_indicators',
       tradingStyle: 'trading_style',
       buyThresholdMin: 'buy_threshold_min',
-      buyThresholdMax: 'buy_threshold_max',
-      sellThresholdMin: 'sell_threshold_min',
       sellThresholdMax: 'sell_threshold_max',
+      minAlignment: 'min_alignment',
+      cooldownMinutes: 'cooldown_minutes',
+      gateByBuyNow: 'gate_by_buy_now',
+      gateBuyMin: 'gate_buy_min',
+      gateSellMax: 'gate_sell_max',
       notificationMethods: 'notification_methods',
-      alertFrequency: 'alert_frequency'
+      alertFrequency: 'alert_frequency',
+      styleWeightsOverride: 'style_weights_override'
     };
     
     // Convert only whitelisted fields
@@ -155,9 +163,9 @@ class HeatmapAlertService {
     }
 
     // Validate trading style
-    const validTradingStyles = ['scalper', 'dayTrader', 'swingTrader'];
+    const validTradingStyles = ['scalper', 'day', 'swing'];
     if (!config.tradingStyle || !validTradingStyles.includes(config.tradingStyle)) {
-      errors.push("Valid trading style is required (scalper, dayTrader, swingTrader)");
+      errors.push("Valid trading style is required (scalper, day, swing)");
     }
 
     // Validate thresholds
@@ -166,31 +174,30 @@ class HeatmapAlertService {
         errors.push("Buy threshold minimum must be between 70-100");
       }
     }
-    if (config.buyThresholdMax !== undefined) {
-      if (config.buyThresholdMax < 70 || config.buyThresholdMax > 100) {
-        errors.push("Buy threshold maximum must be between 70-100");
-      }
-    }
-    if (config.sellThresholdMin !== undefined) {
-      if (config.sellThresholdMin < 0 || config.sellThresholdMin > 30) {
-        errors.push("Sell threshold minimum must be between 0-30");
-      }
-    }
     if (config.sellThresholdMax !== undefined) {
       if (config.sellThresholdMax < 0 || config.sellThresholdMax > 30) {
         errors.push("Sell threshold maximum must be between 0-30");
       }
     }
-
-    // Validate threshold ranges
-    if (config.buyThresholdMin !== undefined && config.buyThresholdMax !== undefined) {
-      if (config.buyThresholdMin > config.buyThresholdMax) {
-        errors.push("Buy threshold minimum cannot be greater than maximum");
+    // Min alignment (0..5) optional
+    if (config.minAlignment !== undefined) {
+      if (!Number.isInteger(config.minAlignment) || config.minAlignment < 0 || config.minAlignment > 5) {
+        errors.push("Minimum alignment must be an integer between 0 and 5");
       }
     }
-    if (config.sellThresholdMin !== undefined && config.sellThresholdMax !== undefined) {
-      if (config.sellThresholdMin > config.sellThresholdMax) {
-        errors.push("Sell threshold minimum cannot be greater than maximum");
+    // Cooldown (1..1440)
+    if (config.cooldownMinutes !== undefined) {
+      if (!Number.isFinite(config.cooldownMinutes) || config.cooldownMinutes < 1 || config.cooldownMinutes > 1440) {
+        errors.push("Cooldown minutes must be between 1 and 1440");
+      }
+    }
+    // Gate by Buy Now %
+    if (config.gateByBuyNow) {
+      if (config.gateBuyMin !== undefined && (config.gateBuyMin < 0 || config.gateBuyMin > 100)) {
+        errors.push("Gate Buy min must be between 0 and 100");
+      }
+      if (config.gateSellMax !== undefined && (config.gateSellMax < 0 || config.gateSellMax > 100)) {
+        errors.push("Gate Sell max must be between 0 and 100");
       }
     }
 
@@ -202,7 +209,7 @@ class HeatmapAlertService {
 
     // Validate notification methods
     if (config.notificationMethods && Array.isArray(config.notificationMethods)) {
-      const validMethods = ['browser', 'email', 'push'];
+      const validMethods = ['email'];
       config.notificationMethods.forEach((method, index) => {
         if (!validMethods.includes(method)) {
           errors.push(`Invalid notification method at index ${index}: ${method}`);
@@ -232,6 +239,15 @@ class HeatmapAlertService {
       throw new Error(`Invalid alert configuration: ${validation.errors.join(', ')}`);
     }
 
+    // Enforce global max tracked unique symbols (3) across all alert types
+    const existingSymbols = await this._collectUserTrackedSymbols(user.id);
+    const proposed = new Set(existingSymbols);
+    (alertConfig.pairs || []).forEach(s => proposed.add(s));
+    if (proposed.size > 3) {
+      const remaining = Math.max(0, 3 - existingSymbols.size);
+      throw new Error(`Adding these pairs exceeds the global limit of 3 unique symbols per user. Remaining slots: ${remaining}`);
+    }
+
     // Map UI symbols to broker-specific symbols
     const mapSymbolsToBroker = (symbols) => {
       const symbolMapping = {
@@ -249,6 +265,14 @@ class HeatmapAlertService {
       return symbols.map(symbol => symbolMapping[symbol] || symbol);
     };
 
+    // Normalize trading style to consolidated spec
+    const normalizeTradingStyle = (style) => {
+      if (style === 'dayTrader') return 'day';
+      if (style === 'swingTrader') return 'swing';
+      if (style === 'scalper') return 'scalper';
+      return 'day';
+    };
+
     // Prepare data for insertion
     const alertData = {
       user_id: user.id,
@@ -258,12 +282,15 @@ class HeatmapAlertService {
       pairs: mapSymbolsToBroker(alertConfig.pairs),
       timeframes: alertConfig.timeframes,
       selected_indicators: alertConfig.selectedIndicators,
-      trading_style: alertConfig.tradingStyle || 'dayTrader',
+      trading_style: normalizeTradingStyle(alertConfig.tradingStyle || 'day'),
       buy_threshold_min: alertConfig.buyThresholdMin || 70,
-      buy_threshold_max: alertConfig.buyThresholdMax || 100,
-      sell_threshold_min: alertConfig.sellThresholdMin || 0,
       sell_threshold_max: alertConfig.sellThresholdMax || 30,
-      notification_methods: alertConfig.notificationMethods || ['browser'],
+      min_alignment: alertConfig.minAlignment ?? 0,
+      cooldown_minutes: alertConfig.cooldownMinutes ?? 30,
+      gate_by_buy_now: alertConfig.gateByBuyNow ?? false,
+      gate_buy_min: alertConfig.gateBuyMin ?? 60,
+      gate_sell_max: alertConfig.gateSellMax ?? 40,
+      notification_methods: alertConfig.notificationMethods || ['email'],
       alert_frequency: alertConfig.alertFrequency || 'once'
     };
 
@@ -630,6 +657,43 @@ class HeatmapAlertService {
   }
 
   /**
+   * Collect currently tracked unique symbols across all alert types for the user
+   * Used to enforce the global max-3 unique pairs rule.
+   */
+  async _collectUserTrackedSymbols(userId) {
+    const symbols = new Set();
+    // Heatmap alerts
+    const { data: heatmap, error: e1 } = await supabase
+      .from('heatmap_alerts')
+      .select('pairs')
+      .eq('user_id', userId);
+    if (!e1 && Array.isArray(heatmap)) {
+      heatmap.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
+    }
+    // RSI alerts
+    const { data: rsi, error: e2 } = await supabase
+      .from('rsi_alerts')
+      .select('pairs')
+      .eq('user_id', userId);
+    if (!e2 && Array.isArray(rsi)) {
+      rsi.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
+    }
+    // Correlation alerts: count both symbols in each pair
+    const { data: corr, error: e3 } = await supabase
+      .from('rsi_correlation_alerts')
+      .select('correlation_pairs')
+      .eq('user_id', userId);
+    if (!e3 && Array.isArray(corr)) {
+      corr.forEach(r => (r.correlation_pairs || []).forEach(pair => {
+        if (Array.isArray(pair)) {
+          pair.forEach(s => symbols.add(s));
+        }
+      }));
+    }
+    return Array.from(symbols);
+  }
+
+  /**
    * Check if alert should trigger based on current market data
    * This method would typically be called by the backend system
    * @param {string} alertId - Alert ID
@@ -894,12 +958,15 @@ class HeatmapAlertService {
       pairs: ['EURUSD'],
       timeframes: ['1H'],
       selectedIndicators: ['RSI'],
-      tradingStyle: 'dayTrader',
+      tradingStyle: 'day',
       buyThresholdMin: 70,
-      buyThresholdMax: 100,
-      sellThresholdMin: 0,
       sellThresholdMax: 30,
-      notificationMethods: ['browser'],
+      minAlignment: 0,
+      cooldownMinutes: 30,
+      gateByBuyNow: false,
+      gateBuyMin: 60,
+      gateSellMax: 40,
+      notificationMethods: ['email'],
       alertFrequency: 'once'
     };
   }
@@ -912,8 +979,8 @@ class HeatmapAlertService {
     return {
       tradingStyles: [
         { value: 'scalper', label: '⚡ Scalper' },
-        { value: 'dayTrader', label: '📈 Day Trader' },
-        { value: 'swingTrader', label: '📊 Swing Trader' }
+        { value: 'day', label: '📈 Day' },
+        { value: 'swing', label: '📊 Swing' }
       ],
       timeframes: [
         { value: '1M', label: '1 Minute' },
@@ -942,9 +1009,7 @@ class HeatmapAlertService {
         { value: 'every_hour', label: 'Every Hour' }
       ],
       notificationMethods: [
-        { value: 'browser', label: 'Browser Notification' },
-        { value: 'email', label: 'Email' },
-        { value: 'push', label: 'Push Notification' }
+        { value: 'email', label: 'Email' }
       ]
     };
   }

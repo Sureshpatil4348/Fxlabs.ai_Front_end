@@ -276,6 +276,15 @@ class RSICorrelationAlertService {
       throw new Error(`Invalid alert configuration: ${validation.errors.join(', ')}`);
     }
 
+    // Enforce global max tracked unique symbols (3) across all alert types
+    const existingSymbols = await this._collectUserTrackedSymbols(user.id);
+    const proposed = new Set(existingSymbols);
+    (alertConfig.correlationPairs || []).forEach(pair => Array.isArray(pair) && pair.forEach(s => proposed.add(s)));
+    if (proposed.size > 3) {
+      const remaining = Math.max(0, 3 - existingSymbols.size);
+      throw new Error(`Adding these symbols exceeds the global limit of 3 unique symbols per user. Remaining slots: ${remaining}`);
+    }
+
     // Map UI symbols to broker-specific symbols
     const mapSymbolsToBroker = (symbols) => {
       const symbolMapping = {
@@ -315,7 +324,7 @@ class RSICorrelationAlertService {
       strong_correlation_threshold: alertConfig.strongCorrelationThreshold || 0.70,
       moderate_correlation_threshold: alertConfig.moderateCorrelationThreshold || 0.30,
       weak_correlation_threshold: alertConfig.weakCorrelationThreshold || 0.15,
-      notification_methods: alertConfig.notificationMethods || ['browser'],
+      notification_methods: alertConfig.notificationMethods || ['email'],
       alert_frequency: alertConfig.alertFrequency || 'once'
     };
 
@@ -680,6 +689,43 @@ class RSICorrelationAlertService {
   }
 
   /**
+   * Collect currently tracked unique symbols across all alert types for the user
+   * Used to enforce the global max-3 unique pairs rule.
+   */
+  async _collectUserTrackedSymbols(userId) {
+    const symbols = new Set();
+    // Heatmap alerts
+    const { data: heatmap, error: e1 } = await supabase
+      .from('heatmap_alerts')
+      .select('pairs')
+      .eq('user_id', userId);
+    if (!e1 && Array.isArray(heatmap)) {
+      heatmap.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
+    }
+    // RSI alerts
+    const { data: rsi, error: e2 } = await supabase
+      .from('rsi_alerts')
+      .select('pairs')
+      .eq('user_id', userId);
+    if (!e2 && Array.isArray(rsi)) {
+      rsi.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
+    }
+    // Correlation alerts: count both symbols in each pair
+    const { data: corr, error: e3 } = await supabase
+      .from('rsi_correlation_alerts')
+      .select('correlation_pairs')
+      .eq('user_id', userId);
+    if (!e3 && Array.isArray(corr)) {
+      corr.forEach(r => (r.correlation_pairs || []).forEach(pair => {
+        if (Array.isArray(pair)) {
+          pair.forEach(s => symbols.add(s));
+        }
+      }));
+    }
+    return Array.from(symbols);
+  }
+
+  /**
    * Check if RSI correlation alert should trigger based on current market data
    * This method would typically be called by the backend system
    * @param {string} alertId - Alert ID
@@ -726,7 +772,7 @@ class RSICorrelationAlertService {
       strongCorrelationThreshold: 0.70,
       moderateCorrelationThreshold: 0.30,
       weakCorrelationThreshold: 0.15,
-      notificationMethods: ['browser'],
+      notificationMethods: ['email'],
       alertFrequency: 'once'
     };
   }
@@ -776,9 +822,7 @@ class RSICorrelationAlertService {
         { value: 'every_hour', label: 'Every Hour' }
       ],
       notificationMethods: [
-        { value: 'browser', label: 'Browser Notification' },
-        { value: 'email', label: 'Email' },
-        { value: 'push', label: 'Push Notification' }
+        { value: 'email', label: 'Email' }
       ],
       correlationPairs: [
         // Positive correlations

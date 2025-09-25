@@ -249,58 +249,110 @@ const HeatmapAlertConfig = ({ isOpen, onClose }) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="buyThresholdMin" className="block text-sm font-medium text-gray-700 mb-1">
-                      Buy Threshold (70-100)
+                      Buy ≥ Threshold (70-100)
                     </label>
-                    <div className="flex space-x-2">
-                      <input
-                        id="buyThresholdMin"
-                        type="number"
-                        min="70"
-                        max="100"
-                        value={newAlert.buyThresholdMin}
-                        onChange={(e) => setNewAlert({ ...newAlert, buyThresholdMin: parseInt(e.target.value) })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Min"
-                      />
-                      <input
-                        id="buyThresholdMax"
-                        type="number"
-                        min="70"
-                        max="100"
-                        value={newAlert.buyThresholdMax}
-                        onChange={(e) => setNewAlert({ ...newAlert, buyThresholdMax: parseInt(e.target.value) })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Max"
-                      />
-                    </div>
+                    <input
+                      id="buyThresholdMin"
+                      type="number"
+                      min="70"
+                      max="100"
+                      value={newAlert.buyThresholdMin}
+                      onChange={(e) => setNewAlert({ ...newAlert, buyThresholdMin: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="70"
+                    />
                   </div>
                   <div>
-                    <label htmlFor="sellThresholdMin" className="block text-sm font-medium text-gray-700 mb-1">
-                      Sell Threshold (0-30)
+                    <label htmlFor="sellThresholdMax" className="block text-sm font-medium text-gray-700 mb-1">
+                      Sell ≤ Threshold (0-30)
                     </label>
-                    <div className="flex space-x-2">
-                      <input
-                        id="sellThresholdMin"
-                        type="number"
-                        min="0"
-                        max="30"
-                        value={newAlert.sellThresholdMin}
-                        onChange={(e) => setNewAlert({ ...newAlert, sellThresholdMin: parseInt(e.target.value) })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Min"
-                      />
-                      <input
-                        id="sellThresholdMax"
-                        type="number"
-                        min="0"
-                        max="30"
-                        value={newAlert.sellThresholdMax}
-                        onChange={(e) => setNewAlert({ ...newAlert, sellThresholdMax: parseInt(e.target.value) })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Max"
-                      />
-                    </div>
+                    <input
+                      id="sellThresholdMax"
+                      type="number"
+                      min="0"
+                      max="30"
+                      value={newAlert.sellThresholdMax}
+                      onChange={(e) => setNewAlert({ ...newAlert, sellThresholdMax: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="30"
+                    />
                   </div>
+                </div>
+
+                {/* Advanced Controls */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="minAlignment" className="block text-sm font-medium text-gray-700 mb-1">
+                      Minimum Aligned TF Cells (0-5)
+                    </label>
+                    <input
+                      id="minAlignment"
+                      type="number"
+                      min="0"
+                      max="5"
+                      value={newAlert.minAlignment}
+                      onChange={(e) => setNewAlert({ ...newAlert, minAlignment: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="cooldownMinutes" className="block text-sm font-medium text-gray-700 mb-1">
+                      Cooldown (minutes)
+                    </label>
+                    <input
+                      id="cooldownMinutes"
+                      type="number"
+                      min="1"
+                      max="1440"
+                      value={newAlert.cooldownMinutes}
+                      onChange={(e) => setNewAlert({ ...newAlert, cooldownMinutes: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Gate by Buy Now % */}
+                <div className="p-3 border border-gray-200 rounded-lg bg-white">
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={newAlert.gateByBuyNow}
+                      onChange={(e) => setNewAlert({ ...newAlert, gateByBuyNow: e.target.checked })}
+                    />
+                    <span className="text-sm font-medium text-gray-700">Gate by Buy Now %</span>
+                  </label>
+                  {newAlert.gateByBuyNow && (
+                    <div className="grid grid-cols-2 gap-4 mt-3">
+                      <div>
+                        <label htmlFor="gateBuyMin" className="block text-sm font-medium text-gray-700 mb-1">
+                          Buy gate ≥ (%)
+                        </label>
+                        <input
+                          id="gateBuyMin"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={newAlert.gateBuyMin}
+                          onChange={(e) => setNewAlert({ ...newAlert, gateBuyMin: parseFloat(e.target.value) })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="gateSellMax" className="block text-sm font-medium text-gray-700 mb-1">
+                          Sell gate ≤ (%)
+                        </label>
+                        <input
+                          id="gateSellMax"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={newAlert.gateSellMax}
+                          onChange={(e) => setNewAlert({ ...newAlert, gateSellMax: parseFloat(e.target.value) })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Alert Frequency */}
@@ -381,7 +433,11 @@ const HeatmapAlertConfig = ({ isOpen, onClose }) => {
                           <p><span className="font-medium">Timeframes:</span> {alert.timeframes?.join(', ') || 'N/A'}</p>
                           <p><span className="font-medium">Indicators:</span> {alert.selectedIndicators?.join(', ') || 'N/A'}</p>
                           <p><span className="font-medium">Style:</span> {alert.tradingStyle || 'N/A'}</p>
-                          <p><span className="font-medium">Buy:</span> {alert.buyThresholdMin || 'N/A'}-{alert.buyThresholdMax || 'N/A'} | <span className="font-medium">Sell:</span> {alert.sellThresholdMin || 'N/A'}-{alert.sellThresholdMax || 'N/A'}</p>
+                          <p><span className="font-medium">Buy ≥</span> {alert.buyThresholdMin ?? 'N/A'}% | <span className="font-medium">Sell ≤</span> {alert.sellThresholdMax ?? 'N/A'}%</p>
+                          <p><span className="font-medium">Min Align:</span> {alert.minAlignment ?? 0} · <span className="font-medium">Cooldown:</span> {alert.cooldownMinutes ?? 30}m</p>
+                          {alert.gateByBuyNow && (
+                            <p><span className="font-medium">Gate:</span> Buy ≥ {alert.gateBuyMin ?? 60}% · Sell ≤ {alert.gateSellMax ?? 40}%</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">

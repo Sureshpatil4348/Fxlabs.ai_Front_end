@@ -188,3 +188,24 @@ COMMENT ON COLUMN rsi_alert_triggers.trigger_condition IS 'The specific conditio
 COMMENT ON COLUMN rsi_alert_triggers.rsi_value IS 'Actual RSI value when alert was triggered';
 COMMENT ON COLUMN rsi_alert_triggers.rfi_score IS 'RFI score when alert was triggered (if applicable)';
 COMMENT ON COLUMN rsi_alert_triggers.rsi_event_data IS 'Additional data for RSI crossup/crossdown events';
+
+-- Consolidated Alerts Spec (Backend parity) — one-time additive migration helpers
+-- These ALTERs add columns used by consolidated RSI alert features.
+-- Safe to run multiple times.
+DO $$ BEGIN
+  ALTER TABLE public.rsi_alerts
+    ADD COLUMN IF NOT EXISTS bar_policy text NOT NULL DEFAULT 'close' CHECK (bar_policy IN ('close','intrabar')),
+    ADD COLUMN IF NOT EXISTS cooldown_minutes integer DEFAULT 30 CHECK (cooldown_minutes BETWEEN 1 AND 1440),
+    ADD COLUMN IF NOT EXISTS trigger_policy text NOT NULL DEFAULT 'crossing' CHECK (trigger_policy IN ('crossing','in_zone')),
+    ADD COLUMN IF NOT EXISTS only_new_bars smallint NOT NULL DEFAULT 3 CHECK (only_new_bars BETWEEN 0 AND 10),
+    ADD COLUMN IF NOT EXISTS confirmation_bars smallint NOT NULL DEFAULT 1 CHECK (confirmation_bars BETWEEN 0 AND 5),
+    ADD COLUMN IF NOT EXISTS hysteresis_rearm_ob smallint NOT NULL DEFAULT 65 CHECK (hysteresis_rearm_ob BETWEEN 0 AND 100),
+    ADD COLUMN IF NOT EXISTS hysteresis_rearm_os smallint NOT NULL DEFAULT 35 CHECK (hysteresis_rearm_os BETWEEN 0 AND 100),
+    ADD COLUMN IF NOT EXISTS timezone text NOT NULL DEFAULT 'Asia/Kolkata',
+    ADD COLUMN IF NOT EXISTS quiet_start_local text,
+    ADD COLUMN IF NOT EXISTS quiet_end_local text;
+EXCEPTION WHEN others THEN NULL; END $$;
+
+-- Helpful indexes
+CREATE INDEX IF NOT EXISTS idx_rsi_alerts_user_email ON public.rsi_alerts (user_email);
+CREATE INDEX IF NOT EXISTS idx_rsi_alerts_bar_policy ON public.rsi_alerts (bar_policy);
