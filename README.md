@@ -13,6 +13,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### AI News: USD Events Pair Filtering (Latest)
+- For USD-impact news, the "Suggested Pairs to Watch" now excludes crypto pairs BTCUSD and ETHUSD.
+- Change implemented in `src/services/newsService.js` within `analyzeNewsWithAI` to filter these pairs when `impactedCurrency === 'USD'`.
+
 ### Alerts Config: Full Pair Support (Latest)
 - Pair selectors in Heatmap Alerts and RSI Alerts now include all 32 supported pairs (majors, crosses, metals, crypto).
 - Services now map UI symbols to broker symbols generically (adds 'm' suffix), enabling any supported pair without hardcoded mappings.

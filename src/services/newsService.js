@@ -189,11 +189,16 @@ export const analyzeNewsWithAI = async (newsItem) => {
         const cleaned = systemPairs
           .map((sym) => sym.replace(/m$/i, '').toUpperCase())
           .filter((sym) => sym.length >= 6);
-        const filtered = cleaned.filter((sym) => {
+        let filtered = cleaned.filter((sym) => {
           const base = sym.slice(0, 3);
           const quote = sym.slice(3, 6);
           return base === impactedCurrency || quote === impactedCurrency;
         });
+        // Exclude crypto pairs for USD-impact news as per requirement
+        if (impactedCurrency === 'USD') {
+          const EXCLUDE_USD_PAIRS = new Set(['BTCUSD', 'ETHUSD']);
+          filtered = filtered.filter((sym) => !EXCLUDE_USD_PAIRS.has(sym));
+        }
         suggestedPairs = [...new Set(filtered)];
       } catch (e) {
         // eslint-disable-next-line no-console
