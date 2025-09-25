@@ -2,6 +2,7 @@ import { TrendingUp, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import rsiAlertService from '../services/rsiAlertService';
+import { SUPPORTED_PAIRS } from '../constants/pairs';
 
 const RSIAlertConfig = ({ isOpen, onClose }) => {
   const [alerts, setAlerts] = useState([]);
@@ -161,7 +162,7 @@ const RSIAlertConfig = ({ isOpen, onClose }) => {
                       Trading Pairs (1-3 pairs)
                     </legend>
                     <div className="flex flex-wrap gap-2">
-                      {['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'NZDUSD', 'USDCHF', 'XAUUSD', 'XAGUSD', 'BTCUSD', 'ETHUSD'].map(pair => (
+                      {SUPPORTED_PAIRS.map(pair => (
                         <button
                           key={pair}
                           onClick={() => {

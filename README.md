@@ -13,6 +13,17 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### Alerts Config: Full Pair Support (Latest)
+- Pair selectors in Heatmap Alerts and RSI Alerts now include all 32 supported pairs (majors, crosses, metals, crypto).
+- Services now map UI symbols to broker symbols generically (adds 'm' suffix), enabling any supported pair without hardcoded mappings.
+- Affected files:
+  - `src/components/HeatmapAlertConfig.jsx`
+  - `src/components/RSIAlertConfig.jsx`
+  - `src/services/heatmapAlertService.js`
+  - `src/services/rsiAlertService.js`
+  - `src/services/rsiCorrelationAlertService.js` (mapping generalized for correlation pairs)
+  - `src/constants/pairs.js` (new shared constants and helpers)
+
 ### RSI Calculation: MT5 Parity (Latest)
 - RSI in both RSI Tracker and RSI Correlation now matches MetaTrader 5 more closely.
 - We use Wilder's RSI (RMA smoothing) computed on CLOSED candles only, mirroring typical MT5 display values.

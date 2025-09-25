@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { toBrokerSymbol } from '../constants/pairs';
 
 class RSICorrelationAlertService {
   /**
@@ -285,27 +286,11 @@ class RSICorrelationAlertService {
       throw new Error(`Adding these symbols exceeds the global limit of 3 unique symbols per user. Remaining slots: ${remaining}`);
     }
 
-    // Map UI symbols to broker-specific symbols
-    const mapSymbolsToBroker = (symbols) => {
-      const symbolMapping = {
-        "EURUSD": "EURUSDm",
-        "GBPUSD": "GBPUSDm", 
-        "USDJPY": "USDJPYm",
-        "USDCHF": "USDCHFm",
-        "AUDUSD": "AUDUSDm",
-        "USDCAD": "USDCADm",
-        "NZDUSD": "NZDUSDm",
-        "XAUUSD": "XAUUSDm",
-        "BTCUSD": "BTCUSDm",
-        "ETHUSD": "ETHUSDm"
-      };
-      return symbols.map(symbol => symbolMapping[symbol] || symbol);
-    };
+    // Map UI symbols to broker-specific symbols generically
+    const mapSymbolsToBroker = (symbols) => symbols.map(s => toBrokerSymbol(s));
 
     // Map correlation pairs (each pair is [symbol1, symbol2])
-    const mapCorrelationPairs = (pairs) => {
-      return pairs.map(pair => mapSymbolsToBroker(pair));
-    };
+    const mapCorrelationPairs = (pairs) => pairs.map(pair => mapSymbolsToBroker(pair));
 
     // Prepare data for insertion
     const alertData = {

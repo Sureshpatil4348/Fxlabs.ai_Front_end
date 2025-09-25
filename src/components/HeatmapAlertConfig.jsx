@@ -2,6 +2,7 @@ import { Bell, Plus, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import heatmapAlertService from '../services/heatmapAlertService';
+import { SUPPORTED_PAIRS } from '../constants/pairs';
 
 const HeatmapAlertConfig = ({ isOpen, onClose }) => {
   const [alerts, setAlerts] = useState([]);
@@ -146,7 +147,7 @@ const HeatmapAlertConfig = ({ isOpen, onClose }) => {
                       Trading Pairs (1-3 pairs)
                     </legend>
                     <div className="flex flex-wrap gap-2">
-                      {['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'NZDUSD', 'USDCHF'].map(pair => (
+                      {SUPPORTED_PAIRS.map(pair => (
                         <button
                           key={pair}
                           onClick={() => {

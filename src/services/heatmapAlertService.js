@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { toBrokerSymbol } from '../constants/pairs';
 
 class HeatmapAlertService {
   /**
@@ -248,22 +249,8 @@ class HeatmapAlertService {
       throw new Error(`Adding these pairs exceeds the global limit of 3 unique symbols per user. Remaining slots: ${remaining}`);
     }
 
-    // Map UI symbols to broker-specific symbols
-    const mapSymbolsToBroker = (symbols) => {
-      const symbolMapping = {
-        "EURUSD": "EURUSDm",
-        "GBPUSD": "GBPUSDm", 
-        "USDJPY": "USDJPYm",
-        "USDCHF": "USDCHFm",
-        "AUDUSD": "AUDUSDm",
-        "USDCAD": "USDCADm",
-        "NZDUSD": "NZDUSDm",
-        "XAUUSD": "XAUUSDm",
-        "BTCUSD": "BTCUSDm",
-        "ETHUSD": "ETHUSDm"
-      };
-      return symbols.map(symbol => symbolMapping[symbol] || symbol);
-    };
+    // Map UI symbols to broker-specific symbols generically
+    const mapSymbolsToBroker = (symbols) => symbols.map(s => toBrokerSymbol(s));
 
     // Normalize trading style to consolidated spec
     const normalizeTradingStyle = (style) => {
@@ -381,22 +368,7 @@ class HeatmapAlertService {
 
     // Map UI symbols to broker-specific symbols if pairs are being updated
     if (updates.pairs) {
-      const mapSymbolsToBroker = (symbols) => {
-        const symbolMapping = {
-          "EURUSD": "EURUSDm",
-          "GBPUSD": "GBPUSDm", 
-          "USDJPY": "USDJPYm",
-          "USDCHF": "USDCHFm",
-          "AUDUSD": "AUDUSDm",
-          "USDCAD": "USDCADm",
-          "NZDUSD": "NZDUSDm",
-          "XAUUSD": "XAUUSDm",
-          "BTCUSD": "BTCUSDm",
-          "ETHUSD": "ETHUSDm"
-        };
-        return symbols.map(symbol => symbolMapping[symbol] || symbol);
-      };
-      updates.pairs = mapSymbolsToBroker(updates.pairs);
+      updates.pairs = updates.pairs.map(s => toBrokerSymbol(s));
     }
 
     // Validate updates if they include configuration changes
