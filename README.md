@@ -389,8 +389,9 @@ The application now includes comprehensive dashboard settings persistence:
 
 4. **Set up Supabase database**:
    - Create a new Supabase project
-   - Run the SQL script in `supabase_user_state_table.sql` to create the user_state table
-   - Run the SQL script in `user_settings_table.sql` to create the user_settings table
+   - Run the SQL script in `supabase_watchlist_table.sql` to create the `watchlist` table with proper RLS and unique constraints
+   - Run the SQL script in `supabase_user_state_table.sql` to create the `user_state` table
+   - Run the SQL script in `user_settings_table.sql` to create the `user_settings` table
    - Enable authentication in your Supabase project
 
 5. **Start the development server**:
@@ -413,11 +414,32 @@ The application now includes comprehensive dashboard settings persistence:
 9. **rsi_correlation_alert_triggers**: Tracks when RSI correlation alerts are triggered
 
 Run the SQL scripts provided:
+- `supabase_watchlist_table.sql` to create the watchlist table with proper security policies and `(user_id, symbol)` unique index for upsert
 - `supabase_user_state_table.sql` to create the user_state table with proper security policies
 - `user_settings_table.sql` to create the user_settings table with proper security policies
 - `supabase_heatmap_alerts_schema.sql` to create the heatmap alerts tables with proper security policies
 - `supabase_rsi_alerts_schema.sql` to create the RSI alerts tables with proper security policies
 - `supabase_rsi_correlation_alerts_schema.sql` to create the RSI correlation alerts tables with proper security policies
+
+## Watchlist Persistence
+
+The app persists the watchlist to Supabase via the `watchlist` table:
+
+- Insert/Upsert: `src/services/watchlistService.js:57` uses `upsert([{ user_id, symbol }], { onConflict: "user_id,symbol" })` to avoid duplicates
+- Load: `src/services/watchlistService.js:39` selects rows for the authenticated user, and `src/store/useBaseMarketStore.js:191` loads symbols into the in-memory set
+- UI: The RSI Tracker’s Watchlist mode reads from the store; on component mount, it now calls `loadWatchlist()` when a user is present
+
+If “watchlist items are not getting stored in Supabase,” most often the `watchlist` table or its unique constraint/policies are missing.
+
+### Quick Fix Checklist
+- Ensure `supabase_watchlist_table.sql` has been executed in your project
+- Verify a unique index exists on `(user_id, symbol)` (required by `onConflict` upsert)
+- Confirm RLS policies allow the authenticated user to select/insert/delete their own rows
+- Make sure your Supabase URL and anon key are valid in `src/lib/supabaseClient.js`
+
+### Troubleshooting
+- If upsert fails with “no unique or exclusion constraint matching the ON CONFLICT specification,” create the index: `create unique index on public.watchlist(user_id, symbol);`
+- If you don’t see items in the RSI Tracker Watchlist view after login, confirm that `loadWatchlist()` runs. It is invoked on mount in `src/components/RSIOverboughtOversoldTracker.js` when a user is available.
 
 ## Architecture
 

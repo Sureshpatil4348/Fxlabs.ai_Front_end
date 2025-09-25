@@ -115,6 +115,7 @@ const RSIOverboughtOversoldTracker = () => {
     updateRSITrackerTab, 
     loadTabState,
     getWishlistArray,
+    loadWatchlist,
     removeFromWishlist,
     isInWishlist: _isInWishlistBase
   } = useBaseMarketStore();
@@ -145,6 +146,15 @@ const RSIOverboughtOversoldTracker = () => {
   useEffect(() => {
     loadTabState();
   }, [loadTabState]);
+
+  // Ensure watchlist is loaded once user is available
+  useEffect(() => {
+    if (user) {
+      loadWatchlist().catch((err) => {
+        console.error('Failed to load watchlist:', err);
+      });
+    }
+  }, [user, loadWatchlist]);
 
   // Update activeTab when tabState changes
   useEffect(() => {
