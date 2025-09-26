@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
-import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
 import { calculateRSI } from '../utils/calculations';
 import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 
@@ -579,8 +578,6 @@ const useRSITrackerStore = create(
           timestamp: currentTime,
           description: `RSI crossed below oversold (${rsiOversold})`
         });
-        // Fire simplified RSI tracker alert trigger if enabled
-        get().triggerRsiTrackerAlert(symbol, 'crossdown', currentRsi).catch(() => {});
       }
       
       // Detect crossup events (RSI crossing above overbought threshold)
@@ -592,8 +589,6 @@ const useRSITrackerStore = create(
           timestamp: currentTime,
           description: `RSI crossed above overbought (${rsiOverbought})`
         });
-        // Fire simplified RSI tracker alert trigger if enabled
-        get().triggerRsiTrackerAlert(symbol, 'crossup', currentRsi).catch(() => {});
       }
       
       // Detect exit from oversold (RSI crossing above oversold threshold)
@@ -624,25 +619,7 @@ const useRSITrackerStore = create(
       }
     },
 
-    // Simplified RSI Tracker Alert trigger
-    triggerRsiTrackerAlert: async (symbol, eventType, rsiValue) => {
-      try {
-        const alert = await rsiTrackerAlertService.getActiveAlert();
-        if (!alert || !alert.isActive) return;
-        const tf = get().settings?.timeframe || alert.timeframe;
-        const triggerCondition = eventType === 'crossup' ? 'overbought' : 'oversold';
-        await rsiTrackerAlertService.createTrigger({
-          alertId: alert.id,
-          symbol,
-          timeframe: tf,
-          rsiValue,
-          triggerCondition
-        });
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to create RSI tracker alert trigger:', e);
-      }
-    },
+    
 
     // Get recent RSI events for a symbol
     getRsiEvents: (symbol, limit = 5) => {

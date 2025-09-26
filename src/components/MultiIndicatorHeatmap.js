@@ -289,7 +289,6 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const [showAlertConfig, setShowAlertConfig] = useState(false);
   const [activeAlertsCount, setActiveAlertsCount] = useState(0);
   const [showIndicatorAlertConfig, setShowIndicatorAlertConfig] = useState(false);
-  const prevPercentsRef = React.useRef(new Map());
   
   // Local settings state for persistence
   const [localSettings, setLocalSettings] = useState({
@@ -458,88 +457,7 @@ const [isTouchDevice, setIsTouchDevice] = useState(false);
     }
   }, [user]);
 
-  // Evaluate thresholds for selected pairs periodically
-  useEffect(() => {
-    let timer;
-    const evaluate = async () => {
-      try {
-        const alert = await heatmapTrackerAlertService.getActiveAlert();
-        if (!alert || !alert.isActive) return;
-        const pairs = (alert.pairs || []).map(p => (p.endsWith('m') ? p : p + 'm'));
-        const style = alert.tradingStyle || 'dayTrader';
-
-        const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D'];
-        const supported = Array.isArray(timeframes) && timeframes.length > 0 ? timeframes : desiredTimeframes;
-        const tfs = desiredTimeframes.filter(tf => supported.includes(tf));
-
-        for (const symbol of pairs) {
-          const perSymbolMap = ohlcByTimeframe.get(symbol);
-          if (!perSymbolMap) continue;
-
-          // Build minimal scores object for this symbol using same scoring logic
-          const s = {};
-          let hasAny = false;
-          for (const tf of tfs) {
-            const tfDataObj = perSymbolMap.get(tf);
-            const tfBars = tfDataObj?.bars || [];
-            const tfCloses = tfBars.map(b => b.close);
-            if (!tfCloses.length) continue;
-            hasAny = true;
-            // For evaluation, approximate with RSI-only signal as proxy when data is thin
-            const rsi = tfCloses.length >= 15 ? calculateRSISignals(tfCloses, 14) : { analysis: { signal: 'neutral', new: false } };
-            const macd = tfCloses.length >= 26 ? calculateMACDSignals(tfCloses) : { analysis: { signal: 'neutral', new: false } };
-            const ema = tfCloses.length >= 21 ? calculateEMASignals(tfCloses) : { ema21: { signal: 'neutral', new: false }, ema50: { signal: 'neutral', new: false }, ema200: { signal: 'neutral', new: false } };
-            const ut = tfBars.length >= 20 ? generateUTBotSignal(tfBars, tfCloses[tfCloses.length - 1]) : { signal: 'neutral', new: false };
-            const ichi = tfBars.length >= 26 ? calculateIchimokuCloneSignals(tfBars) : { analysis: { signal: 'neutral', new: false } };
-            const quiet = isQuietMarket(tfBars, 14) || { isQuiet: false };
-
-            const tfScores = {
-              EMA21: getIndicatorScore('EMA21', ema.ema21?.value, ema.ema21?.signal, ema.ema21?.new, false),
-              EMA50: getIndicatorScore('EMA50', ema.ema50?.value, ema.ema50?.signal, ema.ema50?.new, false),
-              EMA200: getIndicatorScore('EMA200', ema.ema200?.value, ema.ema200?.signal, ema.ema200?.new, false),
-              MACD: getIndicatorScore('MACD', macd.macd, macd.analysis?.signal, macd.analysis?.new, quiet.isQuiet),
-              RSI: getIndicatorScore('RSI', rsi.rsi, rsi.analysis?.signal, rsi.analysis?.new, false),
-              UTBOT: getIndicatorScore('UTBOT', ut.confidence, ut.signal, ut.new, quiet.isQuiet),
-              IchimokuClone: getIndicatorScore('IchimokuClone', ichi.cloudTop, ichi.analysis?.signal, ichi.analysis?.new, false)
-            };
-            s[tf] = tfScores;
-          }
-          if (!hasAny) continue;
-          const { finalScore, buyNowPercent, sellNowPercent } = calculateFinalScore(s, style, 'equal');
-
-          const key = symbol;
-          const prev = prevPercentsRef.current.get(key) || { buy: 0, sell: 0 };
-          const crossedBuy = prev.buy < alert.buyThreshold && buyNowPercent >= alert.buyThreshold;
-          const crossedSell = prev.sell < alert.sellThreshold && sellNowPercent >= alert.sellThreshold;
-          if (crossedBuy) {
-            await heatmapTrackerAlertService.createTrigger({
-              alertId: alert.id,
-              symbol: symbol.replace(/m$/,''),
-              triggerType: 'buy',
-              buyPercent: Math.round(buyNowPercent * 100) / 100,
-              sellPercent: Math.round(sellNowPercent * 100) / 100,
-              finalScore: Math.round(finalScore * 100) / 100
-            });
-          }
-          if (crossedSell) {
-            await heatmapTrackerAlertService.createTrigger({
-              alertId: alert.id,
-              symbol: symbol.replace(/m$/,''),
-              triggerType: 'sell',
-              buyPercent: Math.round(buyNowPercent * 100) / 100,
-              sellPercent: Math.round(sellNowPercent * 100) / 100,
-              finalScore: Math.round(finalScore * 100) / 100
-            });
-          }
-          prevPercentsRef.current.set(key, { buy: buyNowPercent, sell: sellNowPercent });
-        }
-      } catch (e) {
-        // console.error('Heatmap alert evaluation error:', e);
-      }
-    };
-    timer = setInterval(evaluate, 20000);
-    return () => clearInterval(timer);
-  }, [timeframes, ohlcByTimeframe]);
+  // Frontend no longer evaluates or creates triggers; backend handles evaluation
 
 // Enhanced connection and auto-subscription with better logging
 useEffect(() => {

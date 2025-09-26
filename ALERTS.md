@@ -1,14 +1,18 @@
 ## RSI Tracker Alert (Simplified)
 
-This alert is a simplified, single-alert configuration for the RSI Tracker. Users can configure exactly one alert per account with:
+Frontend config only. Backend evaluates and sends notifications.
 
-- Timeframe: choose exactly one (e.g., `1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`)
-- RSI Settings: `RSI Period`, `Overbought`, `Oversold`
-- Behavior: If any subscribed pair in the RSI Tracker crosses into overbought (>= threshold) or oversold (<= threshold), an alert trigger is recorded.
+Users can configure exactly one alert per account with:
+
+- Timeframe: choose exactly one (e.g., `1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
+- RSI Settings: `RSI Period`, `Overbought`, `Oversold`.
+- Backend behavior: If any watched pair crosses into overbought (>= threshold) or oversold (<= threshold) on closed candles at the selected timeframe, a trigger is recorded and notification is delivered by the backend.
 
 Notes:
-- Only one alert can be active for the RSI Tracker. This keeps UX simple and avoids duplicate spam.
-- Evaluation happens on closed candles based on the tracker’s timeframe selection for consistency with the UI view.
+- Only one alert can be active for the RSI Tracker (unique per user).
+- Frontend must not create triggers or evaluate thresholds.
+
+Notification template: “RSI alert”
 
 ### UI Configuration
 
@@ -21,24 +25,16 @@ Notes:
   - `rsiOversold` (10–40)
   - The alert can be deleted; saving creates or updates the single alert
 
-### Client Evaluation Logic
-
-- Store: `src/store/useRSITrackerStore.js`
-- On RSI recalculation, we detect threshold crossing events:
-  - `crossup`: previous RSI < overbought AND current RSI >= overbought → trigger overbought
-  - `crossdown`: previous RSI > oversold AND current RSI <= oversold → trigger oversold
-- For each crossing event, if the RSI Tracker alert is active, we insert a trigger record using the new service.
-
-### Service
+### Service (Frontend)
 
 - File: `src/services/rsiTrackerAlertService.js`
 - Responsibilities:
-  - Enforce a single alert per user (upsert by `user_id`)
-  - Validate timeframe and RSI bounds
-  - Provide default config and CRUD (save, get, delete, toggle)
-  - Insert alert triggers (`createTrigger`)
+  - Enforce a single alert per user (upsert by `user_id`).
+  - Validate timeframe and RSI bounds.
+  - Provide default config and CRUD (save, get, delete, toggle).
+  - Do not evaluate or insert triggers on the client.
 
-### Supabase Schema
+### Supabase Schema (reference)
 
 File: `supabase_rsi_tracker_alerts_schema.sql`
 
@@ -71,10 +67,7 @@ RLS Policies:
 
 ### How Alerts Are Evaluated
 
-1. The tracker subscribes to pairs and computes RSI per the selected timeframe and period on closed candles.
-2. On each update, the store checks for threshold crossings (overbought/oversold) compared to the prior RSI value.
-3. If an active RSI Tracker alert exists, a trigger row is inserted with `symbol`, `timeframe`, `rsi_value`, and `trigger_condition`.
-4. Notification delivery can be handled by a backend process listening to `rsi_tracker_alert_triggers` (not included here).
+Evaluation and trigger insertion are performed by the backend only. The frontend solely manages alert configuration state.
 
 ### Migration & Deployment
 
@@ -86,13 +79,17 @@ RLS Policies:
 
 ## RSI Correlation Tracker Alert (Simplified)
 
+Frontend config only. Backend evaluates and sends notifications.
+
 Single per-user alert for the RSI Correlation dashboard. User can select either RSI Threshold mode or Real Correlation mode, and one timeframe.
 
-- Mode: `RSI Threshold` or `Real Correlation`
-- Timeframe: choose exactly one (`1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`)
-- RSI Threshold mode: `RSI Period`, `Overbought`, `Oversold`
-- Real Correlation mode: `Correlation Window` (20, 50, 90, 120)
-- Behavior: If any correlation pair transitions into a mismatch, insert an alert trigger.
+- Mode: `RSI Threshold` or `Real Correlation`.
+- Timeframe: choose exactly one (`1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
+- RSI Threshold mode: `RSI Period`, `Overbought`, `Oversold`.
+- Real Correlation mode: `Correlation Window` (20, 50, 90, 120).
+- Backend behavior: When a pair transitions into a mismatch based on the chosen mode, a trigger is recorded and notification is sent.
+
+Notification template: “RSI correlation alert”
 
 ### UI Configuration
 
@@ -104,27 +101,14 @@ Single per-user alert for the RSI Correlation dashboard. User can select either 
   - RSI mode fields: `rsiPeriod` (5–50), `rsiOverbought` (60–90), `rsiOversold` (10–40)
   - Real mode fields: `correlationWindow` (20, 50, 90, 120)
 
-### Client Evaluation Logic
-
-- Store: `src/store/useRSICorrelationStore.js`
-- RSI Threshold mode mismatch rule:
-  - Positive pairs: mismatch if one RSI > overbought and the other < oversold
-  - Negative pairs: mismatch if both > overbought or both < oversold
-  - We trigger only on transitions into mismatch (prev != 'mismatch' and next == 'mismatch')
-- Real Correlation mode mismatch rule:
-  - Positive pairs: correlation < +0.25 -> mismatch
-  - Negative pairs: correlation > -0.15 -> mismatch
-  - We trigger only on transitions into mismatch (prev != true and next == true)
-- For each transition, if the alert is active, we insert a trigger row.
-
-### Service
+### Service (Frontend)
 
 - File: `src/services/rsiCorrelationTrackerAlertService.js`
 - Responsibilities:
-  - Single alert per user (upsert by `user_id`)
-  - Validate timeframe, mode, RSI bounds, correlation window
-  - CRUD: save/get/getActive/toggle/delete
-  - `createTrigger({ alertId, pairKey, timeframe, mode, triggerType, value })`
+  - Single alert per user (upsert by `user_id`).
+  - Validate timeframe, mode, RSI bounds, correlation window.
+  - CRUD: save/get/getActive/toggle/delete.
+  - Do not evaluate or insert triggers on the client.
 
 ### Supabase Schema
 
@@ -151,12 +135,16 @@ RLS Policies: Same pattern as RSI tracker alert; only owners can manage and read
 
 ## Quantum Analysis (Heatmap) Tracker Alert (Simplified)
 
-Single per-user alert for the All-in-One/Quantum Analysis heatmap. Users select up to 3 currency pairs, a mode (trading style), and thresholds. When any selected pair’s Buy% or Sell% crosses its threshold, a trigger is recorded.
+Frontend config only. Backend evaluates and sends notifications.
 
-- Pairs: up to 3 (base symbols, e.g., `EURUSD`, `GBPUSD`)
-- Mode: `scalper`, `dayTrader`, or `swingTrader` (timeframe weights)
-- Thresholds: `Buy Threshold %`, `Sell Threshold %` (0–100)
-- Behavior: Triggers on upward crossings into threshold for either Buy% or Sell% for any selected pair.
+Single per-user alert for the All-in-One/Quantum Analysis heatmap. Users select up to 3 currency pairs, a mode (trading style), and thresholds.
+
+- Pairs: up to 3 (base symbols, e.g., `EURUSD`, `GBPUSD`).
+- Mode: `scalper`, `dayTrader`, or `swingTrader` (timeframe weights).
+- Thresholds: `Buy Threshold %`, `Sell Threshold %` (0–100).
+- Backend behavior: When Buy% or Sell% crosses its threshold for any selected pair, a trigger is recorded and notification is sent.
+
+Notification template: “all in one”
 
 ### UI Configuration
 
@@ -164,23 +152,14 @@ Single per-user alert for the All-in-One/Quantum Analysis heatmap. Users select 
 - Open from bell icon in `src/components/MultiIndicatorHeatmap.js`
 - Fields: pairs (max 3), trading style, buy/sell thresholds
 
-### Client Evaluation Logic
-
-- Component: `src/components/MultiIndicatorHeatmap.js`
-- Every ~20s, for each selected pair:
-  - Compute per-timeframe indicator scores (EMA, MACD, RSI, UTBOT, Ichimoku)
-  - Aggregate using trading-style weights to determine `finalScore`, `Buy%`, `Sell%`
-  - If Buy% crosses above `buyThreshold` (prev < T and now ≥ T) → create `buy` trigger
-  - If Sell% crosses above `sellThreshold` → create `sell` trigger
-
-### Service
+### Service (Frontend)
 
 - File: `src/services/heatmapTrackerAlertService.js`
 - Responsibilities:
-  - Single alert per user (upsert by `user_id`)
-  - Validate pairs (≤3), style, and thresholds
-  - CRUD: save/get/getActive/toggle/delete
-  - `createTrigger({ alertId, symbol, triggerType, buyPercent, sellPercent, finalScore })`
+  - Single alert per user (upsert by `user_id`).
+  - Validate pairs (≤3), style, and thresholds.
+  - CRUD: save/get/getActive/toggle/delete.
+  - Do not evaluate or insert triggers on the client.
 
 ### Supabase Schema
 
@@ -206,12 +185,15 @@ RLS Policies: Only owners can manage the alert and read/insert triggers for thei
 
 ## Quantum Analysis: Custom Indicator Tracker Alert (Simplified)
 
-Single per-user alert targeting one indicator on one timeframe across up to 3 pairs. Triggers when the selected indicator flips its signal (Buy/Sell).
+Frontend config only. Backend evaluates and sends notifications.
+
+Single per-user alert targeting one indicator on one timeframe across up to 3 pairs. Notifications are sent when the selected indicator flips its signal (Buy/Sell).
 
 - Pairs: up to 3
 - Timeframe: single select (`1M`…`1W`)
 - Indicator: one of `EMA21`, `EMA50`, `EMA200`, `MACD`, `RSI`, `UTBOT`, `IchimokuClone`
-- Behavior: Trigger on signal change to `buy` or `sell` for any selected pair.
+
+Notification template: “Custom indicator”
 
 ### UI Configuration
 
@@ -219,21 +201,14 @@ Single per-user alert targeting one indicator on one timeframe across up to 3 pa
 - Open from the sliders icon in `src/components/MultiIndicatorHeatmap.js`
 - Fields: pairs (max 3), timeframe, indicator
 
-### Client Evaluation Logic
-
-- Component: `src/components/MultiIndicatorHeatmap.js`
-- On periodic evaluation or bar updates:
-  - For each selected pair, compute the indicator’s current signal on the chosen timeframe
-  - If the current signal differs from the last observed signal and is `buy` or `sell`, create a trigger
-
-### Service
+### Service (Frontend)
 
 - File: `src/services/heatmapIndicatorTrackerAlertService.js`
 - Responsibilities:
-  - Single alert per user (upsert by `user_id`)
-  - Validate pairs, timeframe, indicator
-  - CRUD: save/get/getActive/toggle/delete
-  - `createTrigger({ alertId, symbol, timeframe, indicator, signal })`
+  - Single alert per user (upsert by `user_id`).
+  - Validate pairs, timeframe, indicator.
+  - CRUD: save/get/getActive/toggle/delete.
+  - Do not evaluate or insert triggers on the client.
 
 ### Supabase Schema
 
@@ -252,7 +227,7 @@ Tables:
 - `triggered_at timestamptz`, `symbol text`, `timeframe text`, `indicator text`, `signal text` ('buy'|'sell')
 - `created_at timestamptz`
 
-RLS Policies: Only owners can manage their alert and read/insert triggers.
+RLS Policies: Only owners can manage their alert and read triggers. Trigger insertion is performed by backend service accounts or edge functions.
 
 
 

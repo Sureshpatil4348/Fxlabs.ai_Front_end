@@ -2,6 +2,13 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Alerts Architecture
+
+Frontend config only; backend evaluates and sends notifications.
+- Frontend: create/update/delete alerts; no client-side trigger insertion or evaluation.
+- Backend: evaluates conditions and inserts trigger rows, then handles delivery.
+- See `ALERTS.md` for alert types, fields, and schema.
+
 ## Debug Logging (AI News)
 - Browser console now logs AI News data for easier verification:
   - Raw fetched news: total count and items
@@ -542,10 +549,10 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **UserStateService**: Manages user tab state persistence
 - **WatchlistService**: Handles watchlist database operations
 - **NewsService**: Fetches and analyzes forex news with AI
-- **HeatmapAlertService**: Manages multi-indicator heatmap alerts and notifications
-- **RSITrackerAlertService**: Manages simplified RSI Tracker alert and triggers
-- **RSICorrelationTrackerAlertService**: Manages simplified RSI Correlation alert and triggers
-- **HeatmapTrackerAlertService**: Manages simplified heatmap tracker alert and triggers
+- **RSITrackerAlertService**: Manages single RSI Tracker alert configuration (CRUD only)
+- **RSICorrelationTrackerAlertService**: Manages single RSI Correlation alert configuration (CRUD only)
+- **HeatmapTrackerAlertService**: Manages All-in-One heatmap alert configuration (CRUD only)
+- **HeatmapIndicatorTrackerAlertService**: Manages custom indicator alert configuration (CRUD only)
 
 ### Components
 - **Dashboard**: Main trading interface with responsive grid layout
