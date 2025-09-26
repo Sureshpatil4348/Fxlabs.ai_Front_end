@@ -204,5 +204,55 @@ Tables:
 
 RLS Policies: Only owners can manage the alert and read/insert triggers for their alert.
 
+## Quantum Analysis: Custom Indicator Tracker Alert (Simplified)
+
+Single per-user alert targeting one indicator on one timeframe across up to 3 pairs. Triggers when the selected indicator flips its signal (Buy/Sell).
+
+- Pairs: up to 3
+- Timeframe: single select (`1M`…`1W`)
+- Indicator: one of `EMA21`, `EMA50`, `EMA200`, `MACD`, `RSI`, `UTBOT`, `IchimokuClone`
+- Behavior: Trigger on signal change to `buy` or `sell` for any selected pair.
+
+### UI Configuration
+
+- Component: `src/components/HeatmapIndicatorTrackerAlertConfig.jsx`
+- Open from the sliders icon in `src/components/MultiIndicatorHeatmap.js`
+- Fields: pairs (max 3), timeframe, indicator
+
+### Client Evaluation Logic
+
+- Component: `src/components/MultiIndicatorHeatmap.js`
+- On periodic evaluation or bar updates:
+  - For each selected pair, compute the indicator’s current signal on the chosen timeframe
+  - If the current signal differs from the last observed signal and is `buy` or `sell`, create a trigger
+
+### Service
+
+- File: `src/services/heatmapIndicatorTrackerAlertService.js`
+- Responsibilities:
+  - Single alert per user (upsert by `user_id`)
+  - Validate pairs, timeframe, indicator
+  - CRUD: save/get/getActive/toggle/delete
+  - `createTrigger({ alertId, symbol, timeframe, indicator, signal })`
+
+### Supabase Schema
+
+File: `supabase_heatmap_indicator_tracker_alerts_schema.sql`
+
+Tables:
+
+1) `public.heatmap_indicator_tracker_alerts`
+- `id uuid PK`, `user_id uuid` FK, `user_email text`
+- `pairs jsonb` (1–3 symbols), `timeframe text`, `indicator text`
+- `is_active boolean`, timestamps
+- Unique `user_id` (one alert per user)
+
+2) `public.heatmap_indicator_tracker_alert_triggers`
+- `id uuid PK`, `alert_id uuid` FK → `heatmap_indicator_tracker_alerts(id)`
+- `triggered_at timestamptz`, `symbol text`, `timeframe text`, `indicator text`, `signal text` ('buy'|'sell')
+- `created_at timestamptz`
+
+RLS Policies: Only owners can manage their alert and read/insert triggers.
+
 
 

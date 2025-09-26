@@ -88,6 +88,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - `src/components/RSITrackerAlertConfig.jsx` (simple single-alert config for RSI Tracker)
   - `src/services/heatmapAlertService.js`
   - `src/services/heatmapTrackerAlertService.js`
+  - `src/services/heatmapIndicatorTrackerAlertService.js`
+- `supabase_heatmap_indicator_tracker_alerts_schema.sql` to create the simplified heatmap indicator tracker alert tables
   - `src/services/rsiTrackerAlertService.js`
   - `src/services/rsiCorrelationTrackerAlertService.js` (mapping generalized for correlation pairs)
   - `src/constants/pairs.js` (new shared constants and helpers)

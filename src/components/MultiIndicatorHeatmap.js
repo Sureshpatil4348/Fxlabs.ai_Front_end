@@ -1,10 +1,12 @@
 import { 
   Activity,
-  Bell
+  Bell,
+  Sliders
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
 
+import HeatmapIndicatorTrackerAlertConfig from './HeatmapIndicatorTrackerAlertConfig';
 import HeatmapTrackerAlertConfig from './HeatmapTrackerAlertConfig';
 import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
@@ -286,6 +288,7 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const { user } = useAuth();
   const [showAlertConfig, setShowAlertConfig] = useState(false);
   const [activeAlertsCount, setActiveAlertsCount] = useState(0);
+  const [showIndicatorAlertConfig, setShowIndicatorAlertConfig] = useState(false);
   const prevPercentsRef = React.useRef(new Map());
   
   // Local settings state for persistence
@@ -421,6 +424,8 @@ const [isTouchDevice, setIsTouchDevice] = useState(false);
   const handleBellClick = () => {
     setShowAlertConfig(true);
   };
+  const handleIndicatorConfigOpen = () => setShowIndicatorAlertConfig(true);
+  const handleIndicatorConfigClose = () => setShowIndicatorAlertConfig(false);
 
   const handleAlertConfigClose = () => {
     setShowAlertConfig(false);
@@ -929,6 +934,14 @@ useEffect(() => {
                   </span>
                 )}
               </button>
+              <button 
+                type="button"
+                aria-label="Configure custom indicator alert"
+                onClick={handleIndicatorConfigOpen}
+                className="relative p-1 text-gray-400 hover:text-indigo-500 transition-colors duration-300 group ml-1"
+              >
+                <Sliders className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+              </button>
             </div>
           )}
           
@@ -1334,6 +1347,10 @@ useEffect(() => {
     <HeatmapTrackerAlertConfig 
       isOpen={showAlertConfig} 
       onClose={handleAlertConfigClose} 
+    />
+    <HeatmapIndicatorTrackerAlertConfig
+      isOpen={showIndicatorAlertConfig}
+      onClose={handleIndicatorConfigClose}
     />
     </>
   );
