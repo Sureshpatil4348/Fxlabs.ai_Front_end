@@ -19,7 +19,6 @@ const TradingDashboardSection = () => {
   const connectionInitiated = useRef(false)
   const [showAlertDemo, setShowAlertDemo] = useState(false)
   const [_currentAlertStep, _setCurrentAlertStep] = useState(0)
-  const [_particles, _setParticles] = useState([])
   const [_isHovered] = useState(false)
   const [_mousePosition, _setMousePosition] = useState({ x: 0, y: 0 })
   const [_cursorTrail, _setCursorTrail] = useState([])
@@ -259,27 +258,6 @@ const TradingDashboardSection = () => {
     return () => clearInterval(carouselTimer)
   }, [])
 
-  // Particle System
-  useEffect(() => {
-    const generateParticles = () => {
-      const newParticles = []
-      for (let i = 0; i < 50; i++) {
-        newParticles.push({
-          id: i,
-          x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
-          vx: (Math.random() - 0.5) * 2,
-          vy: (Math.random() - 0.5) * 2,
-          size: Math.random() * 4 + 1,
-          color: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'][Math.floor(Math.random() * 4)],
-          opacity: Math.random() * 0.5 + 0.2
-        })
-      }
-      _setParticles(newParticles)
-    }
-
-    generateParticles()
-  }, [])
 
   // Premium Cursor Trail Animation
   useEffect(() => {
@@ -324,22 +302,22 @@ const TradingDashboardSection = () => {
         {/* Unified Master Trader AI & Premium Intelligence Section */}
         <div className="relative mb-16 w-full">
           <div className="w-full">
-            <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl rounded-lg p-6 border border-green-500/20 shadow-2xl relative overflow-hidden"
+            <div className="bg-white dark:bg-slate-900 backdrop-blur-xl rounded-lg p-6 border border-[#03c05d]/20 shadow-2xl relative overflow-hidden"
                  style={{
                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(16, 185, 129, 0.2)'
                  }}>
               
-              {/* Premium Background Effects */}
-              <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-emerald-500/5"></div>
+              {/* Clean Background Effects */}
+              <div className="absolute inset-0 bg-[#03c05d]/5"></div>
              
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-500/10 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#03c05d]/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-[#03c05d]/10 rounded-full blur-2xl"></div>
               
               {/* Master Trader AI Header */}
               <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500/30 to-purple-600/30 rounded-lg flex items-center justify-center border border-purple-500/30 shadow-lg">
-                    <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <div className="w-10 h-10 bg-[#03c05d]/20 rounded-lg flex items-center justify-center border border-[#03c05d]/30 shadow-lg">
+                    <BarChart3 className="w-5 h-5 text-[#03c05d]" />
                   </div>
                   <div>
                     <h2 className="text-gray-800 dark:text-white text-2xl font-bold font-poppins">
@@ -350,9 +328,9 @@ const TradingDashboardSection = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 bg-green-500/20 backdrop-blur-md rounded-full px-4 py-2 border border-green-500/30 shadow-lg">
-                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                  <span className="text-green-600 dark:text-green-400 text-xs font-semibold">Live Analysis</span>
+                <div className="flex items-center space-x-2 bg-[#03c05d]/20 backdrop-blur-md rounded-full px-4 py-2 border border-[#03c05d]/30 shadow-lg">
+                  <div className="w-1.5 h-1.5 bg-[#03c05d] rounded-full"></div>
+                  <span className="text-[#03c05d] text-xs font-semibold">Live Analysis</span>
                 </div>
               </div>
 
@@ -364,7 +342,7 @@ const TradingDashboardSection = () => {
                     onClick={() => setActiveFilter(filter)}
                     className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 ${
                       activeFilter === filter
-                        ? 'bg-purple-500 text-white shadow-lg'
+                        ? 'bg-[#03c05d] text-white shadow-lg'
                         : 'bg-gray-200 dark:bg-slate-700/80 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-slate-600/80'
                     }`}
                   >
@@ -382,24 +360,24 @@ const TradingDashboardSection = () => {
                   return (
                     <div 
                       key={pair.symbol}
-                      className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-4 border border-purple-500/50 dark:border-purple-400/50 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group min-h-[180px]"
+                      className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 border border-[#03c05d]/50 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group min-h-[100px]"
                     >
                       {/* Card Background Effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-[#03c05d]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       
                       <div className="relative z-10 h-full flex flex-col">
                         {/* Top Section - Icon, Symbol, Trend */}
-                        <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start justify-between ">
                           {/* Left Side - Icon and Symbol */}
                           <div className="flex items-center space-x-3">
                             <div 
-                              className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 border border-blue-400/30 dark:border-blue-500/30"
+                              className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg bg-[#03c05d]/20 border border-[#03c05d]/30"
                             >
                               <span className="text-gray-800 dark:text-white font-bold text-sm">{pair.icon}</span>
                             </div>
                             <div>
                               <div className="text-gray-800 dark:text-white font-bold text-sm leading-tight">{pair.symbol}</div>
-                              <div className="text-red-400 text-xs font-medium leading-tight">{pair.trend}</div>
+                              <div className="text-[#03c05d] text-xs font-medium leading-tight">{pair.trend}</div>
                             </div>
                           </div>
                           
@@ -407,7 +385,7 @@ const TradingDashboardSection = () => {
                           <div className="text-right">
                             <div className="text-gray-800 dark:text-white font-bold text-lg leading-tight">{pair.price}</div>
                             <div className={`text-xs flex items-center justify-end ${
-                              isPositive ? 'text-green-400' : 'text-red-400'
+                              isPositive ? 'text-[#03c05d]' : 'text-red-400'
                             }`}>
                               {pair.change}
                               {isPositive ? (
@@ -420,7 +398,7 @@ const TradingDashboardSection = () => {
                         </div>
                         
                         {/* Bottom Section - Success Probability */}
-                        <div className="mt-auto">
+                        <div className="mt-4">
                           <div className="flex items-center justify-between mb-2">
                             <div className="text-gray-600 dark:text-gray-400 text-xs font-medium">Success Probability</div>
                             <div className="text-gray-800 dark:text-white text-xs font-medium">{pair.probability}%</div>
@@ -430,7 +408,7 @@ const TradingDashboardSection = () => {
                           >
                             <div 
                               className={`h-1.5 rounded-full transition-all duration-500 ${
-                                pair.probability <= 35 ? 'bg-red-500' : 'bg-yellow-500'
+                                pair.probability <= 35 ? 'bg-red-500' : 'bg-[#03c05d]'
                               }`}
                               style={{
                                 width: `${pair.probability}%`
@@ -460,12 +438,12 @@ const TradingDashboardSection = () => {
                     
                     {/* Slide 1 - Fed Rate Decision */}
                     <div className="w-full flex-shrink-0">
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 sm:p-6 md:p-8 border border-red-500/30 shadow-xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5"></div>
+                      <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 border border-red-500/30 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-red-500/5"></div>
                         
                         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                           {/* News Image/Icon */}
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-red-500/30 flex-shrink-0">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-red-500/20 rounded-2xl flex items-center justify-center border border-red-500/30 flex-shrink-0">
                             <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-red-400" />
                           </div>
                           
@@ -505,12 +483,12 @@ const TradingDashboardSection = () => {
 
                     {/* Slide 2 - ECB Report */}
                     <div className="w-full flex-shrink-0">
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 sm:p-6 md:p-8 border border-yellow-500/30 shadow-xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5"></div>
+                      <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 border border-yellow-500/30 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-yellow-500/5"></div>
                         
                         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                           {/* News Image/Icon */}
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 flex-shrink-0">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-yellow-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 flex-shrink-0">
                             <TrendingUp className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-yellow-400" />
                           </div>
                           
@@ -550,19 +528,19 @@ const TradingDashboardSection = () => {
 
                     {/* Slide 3 - UK PMI */}
                     <div className="w-full flex-shrink-0">
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 sm:p-6 md:p-8 border border-green-500/30 shadow-xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+                      <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-6 md:p-8 border border-[#03c05d]/30 shadow-xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[#03c05d]/5"></div>
                         
                         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                           {/* News Image/Icon */}
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30 flex-shrink-0">
-                            <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-green-400" />
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-[#03c05d]/20 rounded-2xl flex items-center justify-center border border-[#03c05d]/30 flex-shrink-0">
+                            <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-[#03c05d]" />
                           </div>
                           
                           {/* News Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-3">
-                              <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold w-fit">LOW IMPACT</span>
+                              <span className="bg-[#03c05d]/20 text-[#03c05d] px-3 py-1 rounded-full text-xs sm:text-sm font-semibold w-fit">LOW IMPACT</span>
                               <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">1 hour ago</span>
                             </div>
                             
@@ -576,7 +554,7 @@ const TradingDashboardSection = () => {
                             
                             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
                               <div className="text-center sm:text-left">
-                                <div className="text-green-400 font-bold text-lg sm:text-xl">4.1/10</div>
+                                <div className="text-[#03c05d] font-bold text-lg sm:text-xl">4.1/10</div>
                                 <div className="text-gray-400 text-xs sm:text-sm">Impact Score</div>
                               </div>
                               <div className="text-center sm:text-left">
@@ -584,7 +562,7 @@ const TradingDashboardSection = () => {
                                 <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Primary Pair</div>
                               </div>
                               <div className="text-center sm:text-left">
-                                <div className="text-green-400 font-bold text-lg sm:text-xl">Bullish GBP</div>
+                                <div className="text-[#03c05d] font-bold text-lg sm:text-xl">Bullish GBP</div>
                                 <div className="text-gray-400 text-xs sm:text-sm">Sentiment</div>
                               </div>
                             </div>
@@ -602,7 +580,7 @@ const TradingDashboardSection = () => {
                         onClick={() => setCurrentNewsSlide(index)}
                         className={`w-3 h-3 rounded-full transition-all duration-300 ${
                           currentNewsSlide === index 
-                            ? 'bg-blue-400 w-8' 
+                            ? 'bg-[#03c05d] w-8' 
                             : 'bg-gray-600 hover:bg-gray-500'
                         }`}
                       />
@@ -622,66 +600,58 @@ const TradingDashboardSection = () => {
                  
                  {/* Step 1: Market Condition */}
                  <div className="flex flex-col items-center text-center group">
-                   <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl flex items-center justify-center border border-green-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-green-500/25">
-                     <TrendingUp className="w-10 h-10 text-green-400 group-hover:animate-pulse" />
-                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-green-500/50">
+                   <div className="w-20 h-20 bg-[#03c05d]/20 rounded-2xl flex items-center justify-center border border-[#03c05d]/30 mb-4 relative">
+                     <TrendingUp className="w-10 h-10 text-[#03c05d]" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
                        <span className="text-white text-xs font-bold">1</span>
                      </div>
-                     {/* Real-time pulse effect */}
-                     <div className="absolute inset-0 rounded-2xl border-2 border-green-400/30 animate-ping"></div>
                    </div>
-                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 font-poppins">Market Condition</h3>
-                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">RSI &gt; 70 on EUR/USD</p>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 font-poppins">Market Condition</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm">RSI &gt; 70 on EUR/USD</p>
                  </div>
 
                  {/* Arrow 1 */}
                  <div className="hidden lg:block">
                    <div className="flex items-center space-x-2 group">
-                     <div className="w-8 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 group-hover:w-12 transition-all duration-500"></div>
-                     <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 group-hover:text-blue-500 transition-all duration-300" />
+                     <div className="w-8 h-0.5 bg-[#03c05d]"></div>
+                     <ArrowRight className="w-5 h-5 text-[#03c05d]" />
                    </div>
                  </div>
 
                  {/* Step 2: Alert Triggered */}
                  <div className="flex flex-col items-center text-center group">
-                   <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-yellow-500/25">
-                     <Bell className="w-10 h-10 text-yellow-400 group-hover:animate-bounce" />
-                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-yellow-500/50">
+                   <div className="w-20 h-20 bg-yellow-500/20 rounded-2xl flex items-center justify-center border border-yellow-500/30 mb-4 relative">
+                     <Bell className="w-10 h-10 text-yellow-400" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
                        <span className="text-white text-xs font-bold">2</span>
                      </div>
-                     {/* Alert pulse effect */}
-                     <div className="absolute inset-0 rounded-2xl border-2 border-yellow-400/30 animate-ping"></div>
-                     {/* Alert notification dot */}
-                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
                    </div>
-                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300 font-poppins">Alert Triggered</h3>
-                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Condition met instantly</p>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 font-poppins">Alert Triggered</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm">Condition met instantly</p>
                  </div>
 
                  {/* Arrow 2 */}
                  <div className="hidden lg:block">
                    <div className="flex items-center space-x-2 group">
-                     <div className="w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-purple-500 group-hover:w-12 transition-all duration-500"></div>
-                     <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 group-hover:text-purple-500 transition-all duration-300" />
+                     <div className="w-8 h-0.5 bg-yellow-500"></div>
+                     <ArrowRight className="w-5 h-5 text-yellow-500" />
                    </div>
                  </div>
 
                  {/* Step 3: Notifications Sent */}
                  <div className="flex flex-col items-center text-center group">
-                   <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 mb-4 relative group-hover:scale-110 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-purple-500/25">
-                     <Zap className="w-10 h-10 text-purple-400 group-hover:animate-pulse" />
-                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
+                   <div className="w-20 h-20 bg-purple-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 mb-4 relative">
+                     <Zap className="w-10 h-10 text-purple-400" />
+                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
                        <span className="text-white text-xs font-bold">3</span>
                      </div>
-                     {/* Notification pulse effect */}
-                     <div className="absolute inset-0 rounded-2xl border-2 border-purple-400/30 animate-ping"></div>
                      {/* Success checkmark */}
-                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#03c05d] rounded-full flex items-center justify-center">
                        <CheckCircle className="w-2.5 h-2.5 text-white" />
                      </div>
                    </div>
-                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 font-poppins">Notifications Sent</h3>
-                   <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Email + Telegram</p>
+                   <h3 className="text-gray-800 dark:text-white font-semibold text-lg mb-2 font-poppins">Notifications Sent</h3>
+                   <p className="text-gray-600 dark:text-gray-400 text-sm">Email + Telegram</p>
                  </div>
                </div>
 
@@ -689,58 +659,58 @@ const TradingDashboardSection = () => {
                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
                  
                  {/* Email Notification */}
-                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-blue-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/25">
-                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 group-hover:from-blue-500/10 group-hover:to-cyan-500/10 transition-all duration-500"></div>
+                 <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-6 border border-blue-500/30 relative overflow-hidden">
+                   <div className="absolute inset-0 bg-blue-500/5"></div>
                    
                    <div className="relative z-10">
                      <div className="flex items-center space-x-4 mb-4">
-                       <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/50">
-                         <Mail className="w-6 h-6 text-white group-hover:animate-bounce" />
+                       <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                         <Mail className="w-6 h-6 text-white" />
                        </div>
                        <div>
-                         <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 font-poppins">Email Alert</h4>
-                         <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Instant delivery</p>
+                         <h4 className="text-gray-800 dark:text-white font-bold text-lg font-poppins">Email Alert</h4>
+                         <p className="text-gray-600 dark:text-gray-400 text-sm">Instant delivery</p>
                        </div>
                      </div>
                      
                      <div className="space-y-3">
-                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
-                         <div className="text-blue-600 dark:text-blue-400 text-sm font-semibold group-hover:animate-pulse">Subject: 🚨 EUR/USD RSI Alert</div>
-                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 (Above 70 threshold)</div>
+                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3">
+                         <div className="text-blue-600 text-sm font-semibold">Subject: 🚨 EUR/USD RSI Alert</div>
+                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1">RSI: 72.5 (Above 70 threshold)</div>
                        </div>
-                       <div className="flex items-center space-x-2 text-green-400 text-sm">
-                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                         <span className="group-hover:text-green-500 transition-colors duration-300">Delivered instantly</span>
+                       <div className="flex items-center space-x-2 text-[#03c05d] text-sm">
+                         <div className="w-2 h-2 bg-[#03c05d] rounded-full"></div>
+                         <span>Delivered instantly</span>
                        </div>
                      </div>
                    </div>
                  </div>
 
                  {/* Telegram Notification */}
-                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-cyan-500/30 relative overflow-hidden group hover:scale-105 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/25">
-                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 transition-all duration-500"></div>
+                 <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-6 border border-cyan-500/30 relative overflow-hidden">
+                   <div className="absolute inset-0 bg-cyan-500/5"></div>
                    
                    <div className="relative z-10">
                      <div className="flex items-center space-x-4 mb-4">
-                       <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/50">
-                         <svg className="w-6 h-6 text-white group-hover:animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                       <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center">
+                         <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                          </svg>
                        </div>
                        <div>
-                         <h4 className="text-gray-800 dark:text-white font-bold text-lg group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300 font-poppins">Telegram Bot</h4>
-                         <p className="text-gray-600 dark:text-gray-400 text-sm group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-300">Push notification</p>
+                         <h4 className="text-gray-800 dark:text-white font-bold text-lg font-poppins">Telegram Bot</h4>
+                         <p className="text-gray-600 dark:text-gray-400 text-sm">Push notification</p>
                        </div>
                      </div>
                      
                      <div className="space-y-3">
-                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3 group-hover:bg-gray-300 dark:group-hover:bg-slate-600/50 transition-all duration-300">
-                         <div className="text-cyan-600 dark:text-cyan-400 text-sm font-semibold group-hover:animate-pulse">📊 EUR/USD Alert</div>
-                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors duration-300">RSI: 72.5 ⚠️ Overbought</div>
+                       <div className="bg-gray-200 dark:bg-slate-700/50 rounded-lg p-3">
+                         <div className="text-cyan-600 text-sm font-semibold">📊 EUR/USD Alert</div>
+                         <div className="text-gray-700 dark:text-gray-300 text-sm mt-1">RSI: 72.5 ⚠️ Overbought</div>
                        </div>
-                       <div className="flex items-center space-x-2 text-green-400 text-sm">
-                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                         <span className="group-hover:text-green-500 transition-colors duration-300">Sent to your device</span>
+                       <div className="flex items-center space-x-2 text-[#03c05d] text-sm">
+                         <div className="w-2 h-2 bg-[#03c05d] rounded-full"></div>
+                         <span>Sent to your device</span>
                        </div>
                      </div>
                    </div>
@@ -749,10 +719,10 @@ const TradingDashboardSection = () => {
 
                {/* CTA */}
                <div className="text-center mt-8">
-                 <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-full px-6 py-3">
-                   <Shield className="w-5 h-5 text-green-400" />
-                   <span className="text-green-400 font-semibold">Free Setup • 24/7 Monitoring</span>
-                   <ArrowRight className="w-4 h-4 text-green-400" />
+                 <div className="inline-flex items-center space-x-3 bg-[#03c05d]/10 border border-[#03c05d]/20 rounded-full px-6 py-3">
+                   <Shield className="w-5 h-5 text-[#03c05d]" />
+                   <span className="text-[#03c05d] font-semibold">Free Setup • 24/7 Monitoring</span>
+                   <ArrowRight className="w-4 h-4 text-[#03c05d]" />
                  </div>
                </div>
              </div>
