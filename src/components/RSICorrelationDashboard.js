@@ -2,9 +2,9 @@ import { RefreshCw, Plus, Minus, Settings, BarChart3, Activity, Bell } from 'luc
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import RSICorrelationAlertConfig from './RSICorrelationAlertConfig';
+import RSICorrelationTrackerAlertConfig from './RSICorrelationTrackerAlertConfig';
 import { useAuth } from '../auth/AuthProvider';
-import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
+import rsiCorrelationTrackerAlertService from '../services/rsiCorrelationTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
@@ -265,8 +265,8 @@ const RSICorrelationDashboard = () => {
     if (user) {
       const loadActiveRSICorrelationAlertsCount = async () => {
         try {
-          const activeRSICorrelationAlerts = await rsiCorrelationAlertService.getActiveAlerts();
-          setActiveRSICorrelationAlertsCount(activeRSICorrelationAlerts.length);
+          const alert = await rsiCorrelationTrackerAlertService.getActiveAlert();
+          setActiveRSICorrelationAlertsCount(alert ? 1 : 0);
         } catch (error) {
           console.error('Failed to load active RSI correlation alerts count:', error);
         }
@@ -283,8 +283,8 @@ const RSICorrelationDashboard = () => {
     if (user) {
       const loadActiveRSICorrelationAlertsCount = async () => {
         try {
-          const activeRSICorrelationAlerts = await rsiCorrelationAlertService.getActiveAlerts();
-          setActiveRSICorrelationAlertsCount(activeRSICorrelationAlerts.length);
+          const alert = await rsiCorrelationTrackerAlertService.getActiveAlert();
+          setActiveRSICorrelationAlertsCount(alert ? 1 : 0);
         } catch (error) {
           console.error('Failed to load active RSI correlation alerts count:', error);
         }
@@ -697,7 +697,7 @@ const RSICorrelationDashboard = () => {
     </div>
     
     {/* RSI Correlation Alert Configuration Modal - Outside widget for proper z-index */}
-    <RSICorrelationAlertConfig 
+    <RSICorrelationTrackerAlertConfig 
       isOpen={showRSICorrelationAlertConfig} 
       onClose={handleRSICorrelationAlertConfigClose} 
     />

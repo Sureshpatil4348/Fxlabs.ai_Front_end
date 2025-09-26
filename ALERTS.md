@@ -79,7 +79,75 @@ RLS Policies:
 ### Migration & Deployment
 
 1. Run `supabase_rsi_tracker_alerts_schema.sql` in your Supabase project.
-2. Remove reliance on multi-alert RSI UI (`src/components/RSIAlertConfig.jsx`) for the tracker entry point; the tracker uses `RSITrackerAlertConfig.jsx` instead. Existing `rsi_alerts` remains untouched for backward compatibility but the tracker does not use it.
+2. Remove reliance on legacy multi-alert UIs:
+   - RSI Tracker: use `RSITrackerAlertConfig.jsx` (old `RSIAlertConfig.jsx` removed)
+   - RSI Correlation: use `RSICorrelationTrackerAlertConfig.jsx` (old `RSICorrelationAlertConfig.jsx` removed)
 3. Ensure env vars for Supabase are configured (see `README_SUPABASE_SETUP.md`).
+
+## RSI Correlation Tracker Alert (Simplified)
+
+Single per-user alert for the RSI Correlation dashboard. User can select either RSI Threshold mode or Real Correlation mode, and one timeframe.
+
+- Mode: `RSI Threshold` or `Real Correlation`
+- Timeframe: choose exactly one (`1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`)
+- RSI Threshold mode: `RSI Period`, `Overbought`, `Oversold`
+- Real Correlation mode: `Correlation Window` (20, 50, 90, 120)
+- Behavior: If any correlation pair transitions into a mismatch, insert an alert trigger.
+
+### UI Configuration
+
+- Component: `src/components/RSICorrelationTrackerAlertConfig.jsx`
+- Opened from bell icon in `src/components/RSICorrelationDashboard.js`
+- Fields:
+  - `timeframe`: single select
+  - `mode`: `rsi_threshold` or `real_correlation`
+  - RSI mode fields: `rsiPeriod` (5–50), `rsiOverbought` (60–90), `rsiOversold` (10–40)
+  - Real mode fields: `correlationWindow` (20, 50, 90, 120)
+
+### Client Evaluation Logic
+
+- Store: `src/store/useRSICorrelationStore.js`
+- RSI Threshold mode mismatch rule:
+  - Positive pairs: mismatch if one RSI > overbought and the other < oversold
+  - Negative pairs: mismatch if both > overbought or both < oversold
+  - We trigger only on transitions into mismatch (prev != 'mismatch' and next == 'mismatch')
+- Real Correlation mode mismatch rule:
+  - Positive pairs: correlation < +0.25 -> mismatch
+  - Negative pairs: correlation > -0.15 -> mismatch
+  - We trigger only on transitions into mismatch (prev != true and next == true)
+- For each transition, if the alert is active, we insert a trigger row.
+
+### Service
+
+- File: `src/services/rsiCorrelationTrackerAlertService.js`
+- Responsibilities:
+  - Single alert per user (upsert by `user_id`)
+  - Validate timeframe, mode, RSI bounds, correlation window
+  - CRUD: save/get/getActive/toggle/delete
+  - `createTrigger({ alertId, pairKey, timeframe, mode, triggerType, value })`
+
+### Supabase Schema
+
+File: `supabase_rsi_correlation_tracker_alerts_schema.sql`
+
+Tables:
+
+1) `public.rsi_correlation_tracker_alerts`
+- `id uuid PK`, `user_id uuid` FK, `user_email text`
+- `timeframe text` in (`1M`,`5M`,`15M`,`30M`,`1H`,`4H`,`1D`,`1W`)
+- `mode text` in (`rsi_threshold`,`real_correlation`)
+- `rsi_period int` 5–50, `rsi_overbought int` 60–90, `rsi_oversold int` 10–40
+- `correlation_window int` in (20, 50, 90, 120)
+- `is_active boolean`, timestamps, constraint `rsi_overbought > rsi_oversold`
+- Unique `user_id` (one alert per user)
+
+2) `public.rsi_correlation_tracker_alert_triggers`
+- `id uuid PK`, `alert_id uuid` FK → `rsi_correlation_tracker_alerts(id)`
+- `triggered_at timestamptz`, `mode text`, `trigger_type text` ('rsi_mismatch'|'real_mismatch')
+- `pair_key text` (e.g., `EURUSD_GBPUSD`), `timeframe text`, `value numeric(6,3)`
+- `created_at timestamptz`
+
+RLS Policies: Same pattern as RSI tracker alert; only owners can manage and read triggers for their alerts.
+
 
 

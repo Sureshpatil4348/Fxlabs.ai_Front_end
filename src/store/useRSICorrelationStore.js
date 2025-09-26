@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import { calculateRSI } from '../utils/calculations';
+import rsiCorrelationTrackerAlertService from '../services/rsiCorrelationTrackerAlertService';
 
 // WebSocket URL configuration
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
@@ -570,14 +571,20 @@ const useRSICorrelationStore = create(
               (pairType === 'negative' && correlation > -0.15)
             );
 
-          newCorrelationData.set(pairKey, {
+          const next = {
             correlation: correlation,
             strength: strength,
             trend: trend,
               type: pairType,
               isMismatch,
             timestamp: new Date()
-          });
+          };
+          // Fire alert on transition to mismatch in Real Correlation mode
+          const prev = state.realCorrelationData.get(pairKey)?.isMismatch;
+          if (state.settings.calculationMode === 'real_correlation' && prev !== true && isMismatch === true) {
+            get().triggerCorrelationAlert(pairKey, 'real_mismatch', Math.round(correlation * 1000) / 1000);
+          }
+          newCorrelationData.set(pairKey, next);
         }
       });
       
@@ -629,6 +636,12 @@ const useRSICorrelationStore = create(
             status = mismatch ? 'mismatch' : 'neutral';
           }
 
+          // Fire alert on transition to mismatch in RSI Threshold mode
+          const prev = state.correlationStatus.get(pairKey)?.status;
+          if (state.settings.calculationMode === 'rsi_threshold' && prev !== 'mismatch' && status === 'mismatch') {
+            get().triggerCorrelationAlert(pairKey, 'rsi_mismatch', Math.abs((rsi1 ?? 0) - (rsi2 ?? 0)));
+          }
+
           newCorrelationStatus.set(pairKey, {
             status,
             rsi1,
@@ -640,6 +653,27 @@ const useRSICorrelationStore = create(
       });
 
       set({ rsiData: newRsiData, correlationStatus: newCorrelationStatus });
+    },
+
+    // Simplified correlation alert trigger
+    triggerCorrelationAlert: async (pairKey, triggerType, value) => {
+      try {
+        const alert = await rsiCorrelationTrackerAlertService.getActiveAlert();
+        if (!alert || !alert.isActive) return;
+        const tf = get().settings?.timeframe || alert.timeframe;
+        const mode = alert.mode;
+        await rsiCorrelationTrackerAlertService.createTrigger({
+          alertId: alert.id,
+          pairKey,
+          timeframe: tf,
+          mode,
+          triggerType,
+          value
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to create RSI correlation tracker alert trigger:', e);
+      }
     },
     
     // Utility Actions

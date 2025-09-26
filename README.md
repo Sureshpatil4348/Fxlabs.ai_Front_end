@@ -83,7 +83,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - `src/components/RSITrackerAlertConfig.jsx` (simple single-alert config for RSI Tracker)
   - `src/services/heatmapAlertService.js`
   - `src/services/rsiTrackerAlertService.js`
-  - `src/services/rsiCorrelationAlertService.js` (mapping generalized for correlation pairs)
+  - `src/services/rsiCorrelationTrackerAlertService.js` (mapping generalized for correlation pairs)
   - `src/constants/pairs.js` (new shared constants and helpers)
 
 ### RSI Calculation: MT5 Parity (Latest)
@@ -287,7 +287,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ### Symbol Formatting Fix: Alert Creation and Updates
 - **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
 - Updated all three alert services to apply symbol mapping in both `createAlert` and `updateAlert` methods
-- **Affected Services**: HeatmapAlertService, RSIAlertService, RSICorrelationAlertService
+- **Affected Services**: HeatmapAlertService, RSIAlertService, RSICorrelationTrackerAlertService
 - **Implementation**: Added symbol mapping logic to `updateAlert` methods to ensure consistency between creation and updates
 - **Symbol Mapping**: EURUSD → EURUSDm, GBPUSD → GBPUSDm, USDJPY → USDJPYm, etc.
 - **Impact**: Ensures alerts work correctly with backend MT5 data regardless of whether they're created or updated
@@ -345,12 +345,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Updated all public methods to return consistent camelCase format
 - Ensures validation and business logic always work with camelCase
 - Prevents database field name mismatches in RSI alert operations
-- Fixed numeric validation security issue in `rsiCorrelationAlertService.js`
+- Fixed numeric validation security issue in `rsiCorrelationTrackerAlertService.js`
 - Added Number.isFinite guards to prevent NaN/Infinity bypassing validation
 - Protected RSI period, overbought/oversold thresholds, and correlation thresholds
 - Ensures proper validation of all numeric range and ordering comparisons
 - Prevents silent failures from non-finite numeric values
-- Fixed snake_case to camelCase field mapping issue in `rsiCorrelationAlertService.js`
+- Fixed snake_case to camelCase field mapping issue in `rsiCorrelationTrackerAlertService.js`
 - Added bidirectional field conversion utilities for RSI correlation alert service
 - Implemented proper field normalization before validation
 - Updated all public methods to return consistent camelCase format
@@ -491,8 +491,8 @@ The application now includes comprehensive dashboard settings persistence:
 4. **heatmap_alerts**: Stores multi-indicator heatmap alert configurations
 5. **heatmap_alert_triggers**: Tracks when heatmap alerts are triggered
 6. **rsi_tracker_alerts** and **rsi_tracker_alert_triggers**: Simplified RSI Tracker alert tables
-7. **rsi_correlation_alerts**: Stores RSI Correlation Dashboard alert configurations
-8. **rsi_correlation_alert_triggers**: Tracks when RSI correlation alerts are triggered
+7. **rsi_correlation_tracker_alerts**: Stores RSI Correlation Dashboard alert configurations
+8. **rsi_correlation_tracker_alert_triggers**: Tracks when RSI correlation alerts are triggered
 
 Run the SQL scripts provided:
 - `supabase_watchlist_table.sql` to create the watchlist table with proper security policies and `(user_id, symbol)` unique index for upsert
@@ -500,7 +500,7 @@ Run the SQL scripts provided:
 - `user_settings_table.sql` to create the user_settings table with proper security policies
 - `supabase_heatmap_alerts_schema.sql` to create the heatmap alerts tables with proper security policies
 - `supabase_rsi_tracker_alerts_schema.sql` to create the simplified RSI tracker alert tables with proper security policies
-- `supabase_rsi_correlation_alerts_schema.sql` to create the RSI correlation alerts tables with proper security policies
+- `supabase_rsi_correlation_tracker_alerts_schema.sql` to create the simplified RSI correlation tracker alert tables with proper security policies
 
 ## Watchlist Persistence
 
@@ -535,7 +535,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **NewsService**: Fetches and analyzes forex news with AI
 - **HeatmapAlertService**: Manages multi-indicator heatmap alerts and notifications
 - **RSITrackerAlertService**: Manages simplified RSI Tracker alert and triggers
-- **RSICorrelationAlertService**: Manages RSI Correlation Dashboard alerts and notifications
+- **RSICorrelationTrackerAlertService**: Manages simplified RSI Correlation alert and triggers
 
 ### Components
 - **Dashboard**: Main trading interface with responsive grid layout
@@ -545,7 +545,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **AI News Analysis**: Intelligent news filtering and analysis
 - **HeatmapAlertConfig**: Alert configuration modal for multi-indicator heatmap alerts
 - **RSITrackerAlertConfig**: Alert configuration modal for RSI Tracker alert (single)
-- **RSICorrelationAlertConfig**: Alert configuration modal for RSI Correlation Dashboard alerts
+- **RSICorrelationTrackerAlertConfig**: Alert configuration modal for RSI Correlation alert (single)
 
 ## Multi-Indicator Heatmap
 
@@ -1128,7 +1128,7 @@ The RSI Correlation Alerts system allows users to create intelligent trading ale
 
 ### Database Schema
 
-#### rsi_correlation_alerts Table
+#### rsi_correlation_tracker_alerts Table
 ```sql
 - id: UUID (Primary Key)
 - user_id: UUID (Foreign Key to auth.users)
@@ -1151,10 +1151,10 @@ The RSI Correlation Alerts system allows users to create intelligent trading ale
 - last_triggered_at: TIMESTAMP - Last trigger time
 ```
 
-#### rsi_correlation_alert_triggers Table
+#### rsi_correlation_tracker_alert_triggers Table
 ```sql
 - id: UUID (Primary Key)
-- alert_id: UUID (Foreign Key to rsi_correlation_alerts)
+- alert_id: UUID (Foreign Key to rsi_correlation_tracker_alerts)
 - triggered_at: TIMESTAMP - When the alert fired
 - trigger_condition: VARCHAR(30) - Specific condition that triggered
 - calculation_mode: VARCHAR(20) - Mode used when trigger occurred
@@ -1173,26 +1173,9 @@ The RSI Correlation Alerts system allows users to create intelligent trading ale
 
 ### Service API
 
-The `RSICorrelationAlertService` provides a comprehensive API for managing RSI correlation alerts:
+The `RSICorrelationTrackerAlertService` provides a minimal API for the single RSI correlation tracker alert:
 
-#### Core Methods
-- `createAlert(config)` - Create a new RSI correlation alert with validation
-- `getAlerts()` - Get all user RSI correlation alerts
-- `getActiveAlerts()` - Get only active RSI correlation alerts
-- `updateAlert(id, updates)` - Update alert configuration
-- `deleteAlert(id)` - Remove an RSI correlation alert
-- `toggleAlert(id, isActive)` - Enable/disable alerts
-
-#### Trigger Management
-- `getAlertTriggers(alertId, options)` - Get triggers for specific alert
-- `acknowledgeTrigger(triggerId)` - Mark trigger as acknowledged
-- `getRecentTriggers(options)` - Get recent triggers across all alerts
-- `getAlertStats()` - Get alert statistics and performance metrics
-
-#### Configuration Helpers
-- `getDefaultAlertConfig()` - Get default configuration template
-- `getAlertOptions()` - Get available options for dropdowns
-- `_validateRSICorrelationAlertConfig(config)` - Validate alert configuration
+`saveAlert(config)` (upsert), `getAlert()`, `getActiveAlert()`, `toggleActive(isActive)`, `deleteAlert()`, `createTrigger(payload)`
 
 ### Security Features
 
@@ -1223,7 +1206,7 @@ const alertConfig = {
   alertFrequency: "once"
 };
 
-const alert = await rsiCorrelationAlertService.createAlert(alertConfig);
+const alert = await rsiCorrelationTrackerAlertService.saveAlert(alertConfig);
 ```
 
 #### Creating a Real Correlation Alert
@@ -1242,7 +1225,7 @@ const alertConfig = {
   alertFrequency: "every_hour"
 };
 
-const alert = await rsiCorrelationAlertService.createAlert(alertConfig);
+const alert = await rsiCorrelationTrackerAlertService.saveAlert(alertConfig);
 ```
 
 ### Integration with RSI Correlation Dashboard
@@ -1306,7 +1289,7 @@ The RSI Correlation Alerts support all 17 correlation pairs available in the RSI
 - RSI OB/OS: conditions limited to `overbought`/`oversold` (crossing + 1‑bar confirmation). Added `bar_policy` (default `close`), `trigger_policy` (default `crossing`), `only_new_bars` (3), `confirmation_bars` (1), `cooldown_minutes` (30), `timezone` (default `Asia/Kolkata`), `quiet_start_local`, `quiet_end_local`. UI adds Bar Timing, Cooldown, Quiet Hours, Timezone. Notification method limited to `email`.
 - RSI Correlation: no schema change required; notification method limited to `email`.
 - Global safeguard: services enforce max 3 unique tracked symbols/user across Heatmap, RSI, and RSI Correlation (correlation counts both symbols in each pair). Creation blocked with a friendly remaining‑slots message.
-- Supabase schema files: additive ALTERs included in `supabase_heatmap_alerts_schema.sql` and `supabase_rsi_correlation_alerts_schema.sql` to match backend spec; added helpful indexes.
+- Supabase schema files: additive ALTERs included in `supabase_heatmap_alerts_schema.sql` and `supabase_rsi_correlation_tracker_alerts_schema.sql` to match backend spec; added helpful indexes.
 
 ## Accessibility
 

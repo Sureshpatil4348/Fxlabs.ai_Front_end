@@ -642,19 +642,7 @@ class HeatmapAlertService {
     if (!e1 && Array.isArray(heatmap)) {
       heatmap.forEach(r => (r.pairs || []).forEach(s => symbols.add(s)));
     }
-    // Remove old RSI alerts aggregation: RSI tracker now uses single-alert without pairs
-    // Correlation alerts: count both symbols in each pair
-    const { data: corr, error: e3 } = await supabase
-      .from('rsi_correlation_alerts')
-      .select('correlation_pairs')
-      .eq('user_id', userId);
-    if (!e3 && Array.isArray(corr)) {
-      corr.forEach(r => (r.correlation_pairs || []).forEach(pair => {
-        if (Array.isArray(pair)) {
-          pair.forEach(s => symbols.add(s));
-        }
-      }));
-    }
+    // Removed legacy correlation alerts aggregation: replaced by single-alert tracker without pair lists
     return Array.from(symbols);
   }
 
