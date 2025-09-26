@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { useAuth } from '../auth/AuthProvider'
+import GetInTouchSection from '../components/GetInTouchSection'
 import HeroSection from '../components/HeroSection'
 import InteractiveFooter from '../components/InteractiveFooter'
 import Navbar from '../components/Navbar'
@@ -19,11 +20,6 @@ const Home = () => {
     <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors duration-300">
       {/* Matrix-Style Animated Background Elements */}
       <div className="absolute inset-0">
-        {/* Floating Particles */}
-        <div className="absolute top-20 left-10 w-4 h-4 bg-green-400 rounded-full animate-pulse opacity-60"></div>
-        <div className="absolute top-40 right-20 w-6 h-6 bg-blue-400 rounded-full animate-bounce opacity-40"></div>
-        <div className="absolute bottom-40 left-20 w-3 h-3 bg-yellow-400 rounded-full animate-ping opacity-50"></div>
-        <div className="absolute top-60 right-40 w-5 h-5 bg-purple-400 rounded-full animate-pulse opacity-30"></div>
         
         {/* Matrix Grid Pattern */}
         <div className="absolute inset-0 opacity-20">
@@ -122,6 +118,11 @@ const Home = () => {
         {/* Success Stories Section */}
         <div id="success-stories">
           <SuccessStories />
+        </div>
+
+        {/* Get in Touch Section */}
+        <div id="contact">
+          <GetInTouchSection />
         </div>
 
         {/* Interactive Footer */}
