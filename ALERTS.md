@@ -149,5 +149,60 @@ Tables:
 
 RLS Policies: Same pattern as RSI tracker alert; only owners can manage and read triggers for their alerts.
 
+## Quantum Analysis (Heatmap) Tracker Alert (Simplified)
+
+Single per-user alert for the All-in-One/Quantum Analysis heatmap. Users select up to 3 currency pairs, a mode (trading style), and thresholds. When any selected pair’s Buy% or Sell% crosses its threshold, a trigger is recorded.
+
+- Pairs: up to 3 (base symbols, e.g., `EURUSD`, `GBPUSD`)
+- Mode: `scalper`, `dayTrader`, or `swingTrader` (timeframe weights)
+- Thresholds: `Buy Threshold %`, `Sell Threshold %` (0–100)
+- Behavior: Triggers on upward crossings into threshold for either Buy% or Sell% for any selected pair.
+
+### UI Configuration
+
+- Component: `src/components/HeatmapTrackerAlertConfig.jsx`
+- Open from bell icon in `src/components/MultiIndicatorHeatmap.js`
+- Fields: pairs (max 3), trading style, buy/sell thresholds
+
+### Client Evaluation Logic
+
+- Component: `src/components/MultiIndicatorHeatmap.js`
+- Every ~20s, for each selected pair:
+  - Compute per-timeframe indicator scores (EMA, MACD, RSI, UTBOT, Ichimoku)
+  - Aggregate using trading-style weights to determine `finalScore`, `Buy%`, `Sell%`
+  - If Buy% crosses above `buyThreshold` (prev < T and now ≥ T) → create `buy` trigger
+  - If Sell% crosses above `sellThreshold` → create `sell` trigger
+
+### Service
+
+- File: `src/services/heatmapTrackerAlertService.js`
+- Responsibilities:
+  - Single alert per user (upsert by `user_id`)
+  - Validate pairs (≤3), style, and thresholds
+  - CRUD: save/get/getActive/toggle/delete
+  - `createTrigger({ alertId, symbol, triggerType, buyPercent, sellPercent, finalScore })`
+
+### Supabase Schema
+
+File: `supabase_heatmap_tracker_alerts_schema.sql`
+
+Tables:
+
+1) `public.heatmap_tracker_alerts`
+- `id uuid PK`, `user_id uuid` FK, `user_email text`
+- `pairs jsonb` (1–3 symbols)
+- `trading_style text` in (`scalper`,`dayTrader`,`swingTrader`)
+- `buy_threshold int` 0–100, `sell_threshold int` 0–100
+- `is_active boolean`, timestamps
+- Unique `user_id` (one alert per user)
+
+2) `public.heatmap_tracker_alert_triggers`
+- `id uuid PK`, `alert_id uuid` FK → `heatmap_tracker_alerts(id)`
+- `triggered_at timestamptz`, `symbol text`, `trigger_type` ('buy'|'sell')
+- `buy_percent numeric(5,2)`, `sell_percent numeric(5,2)`, `final_score numeric(6,2)`
+- `created_at timestamptz`
+
+RLS Policies: Only owners can manage the alert and read/insert triggers for their alert.
+
 
 

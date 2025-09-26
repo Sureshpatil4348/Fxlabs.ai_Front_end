@@ -87,6 +87,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - `src/components/HeatmapAlertConfig.jsx`
   - `src/components/RSITrackerAlertConfig.jsx` (simple single-alert config for RSI Tracker)
   - `src/services/heatmapAlertService.js`
+  - `src/services/heatmapTrackerAlertService.js`
   - `src/services/rsiTrackerAlertService.js`
   - `src/services/rsiCorrelationTrackerAlertService.js` (mapping generalized for correlation pairs)
   - `src/constants/pairs.js` (new shared constants and helpers)
@@ -504,6 +505,7 @@ Run the SQL scripts provided:
 - `supabase_user_state_table.sql` to create the user_state table with proper security policies
 - `user_settings_table.sql` to create the user_settings table with proper security policies
 - `supabase_heatmap_alerts_schema.sql` to create the heatmap alerts tables with proper security policies
+- `supabase_heatmap_tracker_alerts_schema.sql` to create the simplified heatmap tracker alert tables with proper security policies
 - `supabase_rsi_tracker_alerts_schema.sql` to create the simplified RSI tracker alert tables with proper security policies
 - `supabase_rsi_correlation_tracker_alerts_schema.sql` to create the simplified RSI correlation tracker alert tables with proper security policies
 
@@ -541,6 +543,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **HeatmapAlertService**: Manages multi-indicator heatmap alerts and notifications
 - **RSITrackerAlertService**: Manages simplified RSI Tracker alert and triggers
 - **RSICorrelationTrackerAlertService**: Manages simplified RSI Correlation alert and triggers
+- **HeatmapTrackerAlertService**: Manages simplified heatmap tracker alert and triggers
 
 ### Components
 - **Dashboard**: Main trading interface with responsive grid layout
@@ -551,6 +554,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **HeatmapAlertConfig**: Alert configuration modal for multi-indicator heatmap alerts
 - **RSITrackerAlertConfig**: Alert configuration modal for RSI Tracker alert (single)
 - **RSICorrelationTrackerAlertConfig**: Alert configuration modal for RSI Correlation alert (single)
+- **HeatmapTrackerAlertConfig**: Alert configuration modal for heatmap tracker alert (single)
 
 ## Multi-Indicator Heatmap
 
@@ -1294,7 +1298,7 @@ The RSI Correlation Alerts support all 17 correlation pairs available in the RSI
 - RSI OB/OS: conditions limited to `overbought`/`oversold` (crossing + 1‑bar confirmation). Added `bar_policy` (default `close`), `trigger_policy` (default `crossing`), `only_new_bars` (3), `confirmation_bars` (1), `cooldown_minutes` (30), `timezone` (default `Asia/Kolkata`), `quiet_start_local`, `quiet_end_local`. UI adds Bar Timing, Cooldown, Quiet Hours, Timezone. Notification method limited to `email`.
 - RSI Correlation: no schema change required; notification method limited to `email`.
 - Global safeguard: services enforce max 3 unique tracked symbols/user across Heatmap, RSI, and RSI Correlation (correlation counts both symbols in each pair). Creation blocked with a friendly remaining‑slots message.
-- Supabase schema files: additive ALTERs included in `supabase_heatmap_alerts_schema.sql` and `supabase_rsi_correlation_tracker_alerts_schema.sql` to match backend spec; added helpful indexes.
+- Supabase schema files: additive ALTERs included in `supabase_heatmap_tracker_alerts_schema.sql` and `supabase_rsi_correlation_tracker_alerts_schema.sql` to match backend spec; added helpful indexes.
 
 ## Accessibility
 
