@@ -5,7 +5,7 @@ import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 
 const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
-  const { timeframes, settings, updateSettings } = useRSITrackerStore();
+  const { timeframes, updateSettings } = useRSITrackerStore();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -103,8 +103,9 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
               {error && <div className="text-sm text-red-600">{error}</div>}
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
+                <label htmlFor="rsi-tracker-timeframe" className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
                 <select
+                  id="rsi-tracker-timeframe"
                   value={form.timeframe}
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -117,8 +118,9 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">RSI Period</label>
+                  <label htmlFor="rsi-tracker-period" className="block text-xs font-medium text-gray-700 mb-1">RSI Period</label>
                   <input
+                    id="rsi-tracker-period"
                     type="number"
                     min="5"
                     max="50"
@@ -128,8 +130,9 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Overbought</label>
+                  <label htmlFor="rsi-tracker-overbought" className="block text-xs font-medium text-gray-700 mb-1">Overbought</label>
                   <input
+                    id="rsi-tracker-overbought"
                     type="number"
                     min="60"
                     max="90"
@@ -139,8 +142,9 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Oversold</label>
+                  <label htmlFor="rsi-tracker-oversold" className="block text-xs font-medium text-gray-700 mb-1">Oversold</label>
                   <input
+                    id="rsi-tracker-oversold"
                     type="number"
                     min="10"
                     max="40"

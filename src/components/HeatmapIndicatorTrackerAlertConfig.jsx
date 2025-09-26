@@ -105,7 +105,7 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
               {error && <div className="text-sm text-red-600">{error}</div>}
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Pairs (up to 3)</label>
+                <p className="block text-xs font-medium text-gray-700 mb-1">Pairs (up to 3)</p>
                 <div className="flex flex-wrap gap-2">
                   {availablePairs.map(pair => (
                     <button
@@ -120,8 +120,9 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
+                <label htmlFor="heatmap-indicator-timeframe" className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
                 <select
+                  id="heatmap-indicator-timeframe"
                   value={form.timeframe}
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -133,8 +134,9 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Indicator</label>
+                <label htmlFor="heatmap-indicator-select" className="block text-xs font-medium text-gray-700 mb-1">Indicator</label>
                 <select
+                  id="heatmap-indicator-select"
                   value={form.indicator}
                   onChange={(e) => setForm({ ...form, indicator: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"

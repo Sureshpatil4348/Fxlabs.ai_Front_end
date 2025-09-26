@@ -5,7 +5,7 @@ import rsiCorrelationTrackerAlertService from '../services/rsiCorrelationTracker
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
 
 const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
-  const { timeframes, correlationWindows, settings, updateSettings } = useRSICorrelationStore();
+  const { timeframes, correlationWindows, updateSettings } = useRSICorrelationStore();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -106,8 +106,9 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
               {error && <div className="text-sm text-red-600">{error}</div>}
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
+                <label htmlFor="rsi-corr-timeframe" className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
                 <select
+                  id="rsi-corr-timeframe"
                   value={form.timeframe}
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
@@ -119,8 +120,9 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Mode</label>
+                <label htmlFor="rsi-corr-mode" className="block text-xs font-medium text-gray-700 mb-1">Mode</label>
                 <select
+                  id="rsi-corr-mode"
                   value={form.mode}
                   onChange={(e) => setForm({ ...form, mode: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
@@ -133,24 +135,25 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
               {form.mode === 'rsi_threshold' && (
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">RSI Period</label>
-                    <input type="number" min="5" max="50" value={form.rsiPeriod} onChange={(e) => setForm({ ...form, rsiPeriod: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                    <label htmlFor="rsi-corr-period" className="block text-xs font-medium text-gray-700 mb-1">RSI Period</label>
+                    <input id="rsi-corr-period" type="number" min="5" max="50" value={form.rsiPeriod} onChange={(e) => setForm({ ...form, rsiPeriod: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Overbought</label>
-                    <input type="number" min="60" max="90" value={form.rsiOverbought} onChange={(e) => setForm({ ...form, rsiOverbought: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                    <label htmlFor="rsi-corr-overbought" className="block text-xs font-medium text-gray-700 mb-1">Overbought</label>
+                    <input id="rsi-corr-overbought" type="number" min="60" max="90" value={form.rsiOverbought} onChange={(e) => setForm({ ...form, rsiOverbought: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Oversold</label>
-                    <input type="number" min="10" max="40" value={form.rsiOversold} onChange={(e) => setForm({ ...form, rsiOversold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                    <label htmlFor="rsi-corr-oversold" className="block text-xs font-medium text-gray-700 mb-1">Oversold</label>
+                    <input id="rsi-corr-oversold" type="number" min="10" max="40" value={form.rsiOversold} onChange={(e) => setForm({ ...form, rsiOversold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
                   </div>
                 </div>
               )}
 
               {form.mode === 'real_correlation' && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Correlation Window</label>
+                  <label htmlFor="rsi-corr-window" className="block text-xs font-medium text-gray-700 mb-1">Correlation Window</label>
                   <select
+                    id="rsi-corr-window"
                     value={form.correlationWindow}
                     onChange={(e) => setForm({ ...form, correlationWindow: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"

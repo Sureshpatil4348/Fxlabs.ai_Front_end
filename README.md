@@ -1329,6 +1329,13 @@ The application follows web accessibility best practices to ensure an inclusive 
   - Added accessible close button with proper labeling
 - **Screen Reader Support**: All interactive elements now provide meaningful labels for assistive technologies
 
+#### Lint-driven label associations (Latest)
+- Resolved `jsx-a11y/label-has-associated-control` CI errors by:
+  - Replacing non-control section labels with `<p>` elements
+  - Adding `id` to inputs/selects and matching `label htmlFor`
+- Cleaned unused variables flagged by `no-unused-vars` where applicable
+- Affected files: `HeatmapIndicatorTrackerAlertConfig.jsx`, `HeatmapTrackerAlertConfig.jsx`, `RSICorrelationTrackerAlertConfig.jsx`, `RSITrackerAlertConfig.jsx`
+
 ## Security
 
 - **Row Level Security (RLS)**: All user data is protected with Supabase RLS policies

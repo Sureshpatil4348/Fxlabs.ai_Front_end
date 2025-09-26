@@ -104,7 +104,7 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
               {error && <div className="text-sm text-red-600">{error}</div>}
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Pairs (up to 3)</label>
+                <p className="block text-xs font-medium text-gray-700 mb-1">Pairs (up to 3)</p>
                 <div className="flex flex-wrap gap-2">
                   {availablePairs.map(pair => (
                     <button
@@ -119,8 +119,9 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Mode</label>
+                <label htmlFor="heatmap-tracker-mode" className="block text-xs font-medium text-gray-700 mb-1">Mode</label>
                 <select
+                  id="heatmap-tracker-mode"
                   value={form.tradingStyle}
                   onChange={(e) => setForm({ ...form, tradingStyle: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -133,12 +134,12 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Buy Threshold (%)</label>
-                  <input type="number" min="0" max="100" value={form.buyThreshold} onChange={(e) => setForm({ ...form, buyThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <label htmlFor="heatmap-tracker-buy-threshold" className="block text-xs font-medium text-gray-700 mb-1">Buy Threshold (%)</label>
+                  <input id="heatmap-tracker-buy-threshold" type="number" min="0" max="100" value={form.buyThreshold} onChange={(e) => setForm({ ...form, buyThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Sell Threshold (%)</label>
-                  <input type="number" min="0" max="100" value={form.sellThreshold} onChange={(e) => setForm({ ...form, sellThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <label htmlFor="heatmap-tracker-sell-threshold" className="block text-xs font-medium text-gray-700 mb-1">Sell Threshold (%)</label>
+                  <input id="heatmap-tracker-sell-threshold" type="number" min="0" max="100" value={form.sellThreshold} onChange={(e) => setForm({ ...form, sellThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
               </div>
 
