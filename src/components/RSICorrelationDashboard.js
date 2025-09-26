@@ -199,9 +199,17 @@ const RSICorrelationDashboard = () => {
     updateSettings,
     autoSubscribeToCorrelationPairs,
     timeframes,
-    correlationWindows
+    correlationWindows,
+    connect
   } = useRSICorrelationStore();
   
+  // Ensure the correlation store connects to WebSocket (mirrors RSI Tracker behavior)
+  useEffect(() => {
+    if (!isConnected) {
+      connect();
+    }
+  }, [isConnected, connect]);
+
   // Alert functionality
   const { user } = useAuth();
   const [showRSICorrelationAlertConfig, setShowRSICorrelationAlertConfig] = useState(false);

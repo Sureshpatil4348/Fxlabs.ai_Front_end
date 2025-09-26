@@ -13,6 +13,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Updates
 
+### RSI Correlation Dashboard Real-time Connection (Latest)
+- RSICorrelationDashboard now self-initializes its WebSocket connection on mount.
+- Ensures real-time updates even when the global connection initiator is not mounted.
+- Auto-subscription and on-update recalculations remain unchanged and continue to run on each `ohlc_update`.
+
 ### Success Stories Section Responsive Design (Latest)
 - **RESPONSIVE LAYOUT**: Made SuccessStories section fully responsive across all screen sizes
 - **BANNER IMPROVEMENTS**: Updated banner with responsive padding, text sizes, and icon sizes
