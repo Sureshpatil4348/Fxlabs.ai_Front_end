@@ -80,9 +80,9 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Services now map UI symbols to broker symbols generically (adds 'm' suffix), enabling any supported pair without hardcoded mappings.
 - Affected files:
   - `src/components/HeatmapAlertConfig.jsx`
-  - `src/components/RSIAlertConfig.jsx`
+  - `src/components/RSITrackerAlertConfig.jsx` (simple single-alert config for RSI Tracker)
   - `src/services/heatmapAlertService.js`
-  - `src/services/rsiAlertService.js`
+  - `src/services/rsiTrackerAlertService.js`
   - `src/services/rsiCorrelationAlertService.js` (mapping generalized for correlation pairs)
   - `src/constants/pairs.js` (new shared constants and helpers)
 
@@ -98,7 +98,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.
   - Change: `src/store/useRSITrackerStore.js: getOhlcForSymbol` returns bars from `ohlcByTimeframe` for the active timeframe.
   - Handled aliasing: UI labels like `5M/4H/1D/1W` are now matched to server keys `M5/H4/D1/W1` during lookup to avoid mismatches that caused wrong RSI on 5M. Subscriptions continue using the UI timeframe labels for compatibility.
-  - Added timeframe sanity checks in all stores so RSI never uses stale bars from a previous timeframe after switching. If the active timeframe’s bars aren’t available yet, the view avoids using mismatched buffers and updates as soon as new bars arrive.
+  - Added timeframe sanity checks in all stores so RSI never uses stale bars from a previous timeframe after switching. If the active timeframe's bars aren't available yet, the view avoids using mismatched buffers and updates as soon as new bars arrive.
 
  - Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. When there is sufficient history, the latest (forming) candle is dropped; when there isn't, the RSI uses available bars so the UI doesn't go blank right after subscribing.
    - Changes: `calculateRsi` in `src/store/useRSITrackerStore.js`, `src/store/useRSICorrelationStore.js`, and `src/store/useMarketStore.js` drop the last bar only when there are more than `period + 1` bars.
@@ -276,13 +276,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Seamless Integration**: Leverages existing watchlist service and base market store for consistent data management
 
 ### RSI Tracker Daily % Calculation
-- The RSI Tracker previously showed intrabar change: `(latest close - latest open) / latest open` of the active timeframe. This did not match MT5 Market Watch “Daily Change”.
+- The RSI Tracker previously showed intrabar change: `(latest close - latest open) / latest open` of the active timeframe. This did not match MT5 Market Watch "Daily Change".
 - Updated mechanism: Daily % is now computed from the start-of-day price when available: `(current bid − daily open) / daily open * 100`.
 - Data source priority:
-  - Use daily timeframe bars (`1D`/`D1`) for the current day’s open when present.
+  - Use daily timeframe bars (`1D`/`D1`) for the current day's open when present.
   - If daily bars are unavailable, fall back to the first bar of the current day from the active timeframe.
-  - As a last resort, fall back to the latest bar’s open (approximates change when time data is limited).
-- Why it may still differ slightly from MT5: brokers define “day” using server time. If only non-daily bars are available, the fallback uses the bar timestamps to infer the day boundary, which can differ from MT5 server time in edge cases. Subscribing to the daily timeframe eliminates this variance.
+  - As a last resort, fall back to the latest bar's open (approximates change when time data is limited).
+- Why it may still differ slightly from MT5: brokers define "day" using server time. If only non-daily bars are available, the fallback uses the bar timestamps to infer the day boundary, which can differ from MT5 server time in edge cases. Subscribing to the daily timeframe eliminates this variance.
 
 ### Symbol Formatting Fix: Alert Creation and Updates
 - **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
@@ -490,17 +490,16 @@ The application now includes comprehensive dashboard settings persistence:
 3. **user_settings**: Stores comprehensive dashboard settings and configurations
 4. **heatmap_alerts**: Stores multi-indicator heatmap alert configurations
 5. **heatmap_alert_triggers**: Tracks when heatmap alerts are triggered
-6. **rsi_alerts**: Stores RSI Tracker alert configurations
-7. **rsi_alert_triggers**: Tracks when RSI alerts are triggered
-8. **rsi_correlation_alerts**: Stores RSI Correlation Dashboard alert configurations
-9. **rsi_correlation_alert_triggers**: Tracks when RSI correlation alerts are triggered
+6. **rsi_tracker_alerts** and **rsi_tracker_alert_triggers**: Simplified RSI Tracker alert tables
+7. **rsi_correlation_alerts**: Stores RSI Correlation Dashboard alert configurations
+8. **rsi_correlation_alert_triggers**: Tracks when RSI correlation alerts are triggered
 
 Run the SQL scripts provided:
 - `supabase_watchlist_table.sql` to create the watchlist table with proper security policies and `(user_id, symbol)` unique index for upsert
 - `supabase_user_state_table.sql` to create the user_state table with proper security policies
 - `user_settings_table.sql` to create the user_settings table with proper security policies
 - `supabase_heatmap_alerts_schema.sql` to create the heatmap alerts tables with proper security policies
-- `supabase_rsi_alerts_schema.sql` to create the RSI alerts tables with proper security policies
+- `supabase_rsi_tracker_alerts_schema.sql` to create the simplified RSI tracker alert tables with proper security policies
 - `supabase_rsi_correlation_alerts_schema.sql` to create the RSI correlation alerts tables with proper security policies
 
 ## Watchlist Persistence
@@ -509,9 +508,9 @@ The app persists the watchlist to Supabase via the `watchlist` table:
 
 - Insert/Upsert: `src/services/watchlistService.js:57` uses `upsert([{ user_id, symbol }], { onConflict: "user_id,symbol" })` to avoid duplicates
 - Load: `src/services/watchlistService.js:39` selects rows for the authenticated user, and `src/store/useBaseMarketStore.js:191` loads symbols into the in-memory set
-- UI: The RSI Tracker’s Watchlist mode reads from the store; on component mount, it now calls `loadWatchlist()` when a user is present
+- UI: The RSI Tracker's Watchlist mode reads from the store; on component mount, it now calls `loadWatchlist()` when a user is present
 
-If “watchlist items are not getting stored in Supabase,” most often the `watchlist` table or its unique constraint/policies are missing.
+If "watchlist items are not getting stored in Supabase," most often the `watchlist` table or its unique constraint/policies are missing.
 
 ### Quick Fix Checklist
 - Ensure `supabase_watchlist_table.sql` has been executed in your project
@@ -520,8 +519,8 @@ If “watchlist items are not getting stored in Supabase,” most often the `wat
 - Make sure your Supabase URL and anon key are valid in `src/lib/supabaseClient.js`
 
 ### Troubleshooting
-- If upsert fails with “no unique or exclusion constraint matching the ON CONFLICT specification,” create the index: `create unique index on public.watchlist(user_id, symbol);`
-- If you don’t see items in the RSI Tracker Watchlist view after login, confirm that `loadWatchlist()` runs. It is invoked on mount in `src/components/RSIOverboughtOversoldTracker.js` when a user is available.
+- If upsert fails with "no unique or exclusion constraint matching the ON CONFLICT specification," create the index: `create unique index on public.watchlist(user_id, symbol);`
+- If you don't see items in the RSI Tracker Watchlist view after login, confirm that `loadWatchlist()` runs. It is invoked on mount in `src/components/RSIOverboughtOversoldTracker.js` when a user is available.
 
 ## Architecture
 
@@ -535,7 +534,7 @@ If “watchlist items are not getting stored in Supabase,” most often the `wat
 - **WatchlistService**: Handles watchlist database operations
 - **NewsService**: Fetches and analyzes forex news with AI
 - **HeatmapAlertService**: Manages multi-indicator heatmap alerts and notifications
-- **RSIAlertService**: Manages RSI Tracker alerts and notifications
+- **RSITrackerAlertService**: Manages simplified RSI Tracker alert and triggers
 - **RSICorrelationAlertService**: Manages RSI Correlation Dashboard alerts and notifications
 
 ### Components
@@ -545,7 +544,7 @@ If “watchlist items are not getting stored in Supabase,” most often the `wat
 - **Multi-Indicator Heatmap**: Advanced technical analysis dashboard
 - **AI News Analysis**: Intelligent news filtering and analysis
 - **HeatmapAlertConfig**: Alert configuration modal for multi-indicator heatmap alerts
-- **RSIAlertConfig**: Alert configuration modal for RSI Tracker alerts
+- **RSITrackerAlertConfig**: Alert configuration modal for RSI Tracker alert (single)
 - **RSICorrelationAlertConfig**: Alert configuration modal for RSI Correlation Dashboard alerts
 
 ## Multi-Indicator Heatmap
@@ -959,7 +958,7 @@ The RSI Tracker Alerts system allows users to create intelligent trading alerts 
 
 ### Database Schema
 
-#### rsi_alerts Table
+#### rsi_tracker_alerts Table
 ```sql
 - id: UUID (Primary Key)
 - user_id: UUID (Foreign Key to auth.users)
@@ -979,10 +978,10 @@ The RSI Tracker Alerts system allows users to create intelligent trading alerts 
 - last_triggered_at: TIMESTAMP - Last trigger time
 ```
 
-#### rsi_alert_triggers Table
+#### rsi_tracker_alert_triggers Table
 ```sql
 - id: UUID (Primary Key)
-- alert_id: UUID (Foreign Key to rsi_alerts)
+- alert_id: UUID (Foreign Key to rsi_tracker_alerts)
 - triggered_at: TIMESTAMP - When the alert fired
 - trigger_condition: VARCHAR(20) - Specific condition that triggered
 - symbol: VARCHAR(20) - Trading pair that triggered
@@ -998,26 +997,9 @@ The RSI Tracker Alerts system allows users to create intelligent trading alerts 
 
 ### Service API
 
-The `RSIAlertService` provides a comprehensive API for managing RSI alerts:
+The `RSITrackerAlertService` provides a minimal API for the single RSI tracker alert:
 
-#### Core Methods
-- `createAlert(config)` - Create a new RSI alert with validation
-- `getAlerts()` - Get all user RSI alerts
-- `getActiveAlerts()` - Get only active RSI alerts
-- `updateAlert(id, updates)` - Update alert configuration
-- `deleteAlert(id)` - Remove an RSI alert
-- `toggleAlert(id, isActive)` - Enable/disable alerts
-
-#### Trigger Management
-- `getAlertTriggers(alertId, options)` - Get triggers for specific alert
-- `acknowledgeTrigger(triggerId)` - Mark trigger as acknowledged
-- `getRecentTriggers(options)` - Get recent triggers across all alerts
-- `getAlertStats()` - Get alert statistics and performance metrics
-
-#### Configuration Helpers
-- `getDefaultAlertConfig()` - Get default configuration template
-- `getAlertOptions()` - Get available options for dropdowns
-- `_validateRSIAlertConfig(config)` - Validate alert configuration
+`saveAlert(config)` (upsert), `getAlert()`, `getActiveAlert()`, `toggleActive(isActive)`, `deleteAlert()`, `createTrigger(payload)`
 
 ### Security Features
 
@@ -1047,7 +1029,7 @@ const alertConfig = {
   alertFrequency: "once"
 };
 
-const alert = await rsiAlertService.createAlert(alertConfig);
+const alert = await rsiTrackerAlertService.saveAlert(alertConfig);
 ```
 
 #### Creating a Multi-Pair Multi-Timeframe RFI Alert
@@ -1066,7 +1048,7 @@ const alertConfig = {
   alertFrequency: "every_hour"
 };
 
-const alert = await rsiAlertService.createAlert(alertConfig);
+const alert = await rsiTrackerAlertService.saveAlert(alertConfig);
 ```
 
 ### Integration with RSI Tracker
@@ -1324,7 +1306,7 @@ The RSI Correlation Alerts support all 17 correlation pairs available in the RSI
 - RSI OB/OS: conditions limited to `overbought`/`oversold` (crossing + 1‑bar confirmation). Added `bar_policy` (default `close`), `trigger_policy` (default `crossing`), `only_new_bars` (3), `confirmation_bars` (1), `cooldown_minutes` (30), `timezone` (default `Asia/Kolkata`), `quiet_start_local`, `quiet_end_local`. UI adds Bar Timing, Cooldown, Quiet Hours, Timezone. Notification method limited to `email`.
 - RSI Correlation: no schema change required; notification method limited to `email`.
 - Global safeguard: services enforce max 3 unique tracked symbols/user across Heatmap, RSI, and RSI Correlation (correlation counts both symbols in each pair). Creation blocked with a friendly remaining‑slots message.
-- Supabase schema files: additive ALTERs included in `supabase_heatmap_alerts_schema.sql` and `supabase_rsi_alerts_schema.sql` to match backend spec; added helpful indexes.
+- Supabase schema files: additive ALTERs included in `supabase_heatmap_alerts_schema.sql` and `supabase_rsi_correlation_alerts_schema.sql` to match backend spec; added helpful indexes.
 
 ## Accessibility
 

@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
 import RFIScoreCard from './RFIScoreCard';
-import RSIAlertConfig from './RSIAlertConfig';
+import RSITrackerAlertConfig from './RSITrackerAlertConfig';
 import { useAuth } from '../auth/AuthProvider';
-import rsiAlertService from '../services/rsiAlertService';
+import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
@@ -174,8 +174,8 @@ const RSIOverboughtOversoldTracker = () => {
     if (user) {
       const loadActiveRSIAlertsCount = async () => {
         try {
-          const activeRSIAlerts = await rsiAlertService.getActiveAlerts();
-          setActiveRSIAlertsCount(activeRSIAlerts.length);
+          const alert = await rsiTrackerAlertService.getActiveAlert();
+          setActiveRSIAlertsCount(alert ? 1 : 0);
         } catch (error) {
           console.error('Failed to load active RSI alerts count:', error);
         }
@@ -189,8 +189,8 @@ const RSIOverboughtOversoldTracker = () => {
     if (user) {
       const loadActiveRSIAlertsCount = async () => {
         try {
-          const activeRSIAlerts = await rsiAlertService.getActiveAlerts();
-          setActiveRSIAlertsCount(activeRSIAlerts.length);
+          const alert = await rsiTrackerAlertService.getActiveAlert();
+          setActiveRSIAlertsCount(alert ? 1 : 0);
         } catch (error) {
           console.error('Failed to load active RSI alerts count:', error);
         }
@@ -662,7 +662,7 @@ const RSIOverboughtOversoldTracker = () => {
     </div>
     
     {/* RSI Alert Configuration Modal - Outside widget for proper z-index */}
-    <RSIAlertConfig 
+    <RSITrackerAlertConfig 
       isOpen={showRSIAlertConfig} 
       onClose={handleRSIAlertConfigClose} 
     />
