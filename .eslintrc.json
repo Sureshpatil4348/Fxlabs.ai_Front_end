@@ -35,6 +35,8 @@
         "alphabetize": { "order": "asc", "caseInsensitive": true }
       }
     ],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": ["error", { "additionalHooks": "" }],
     "no-empty-pattern": "off"
   },
   "overrides": [

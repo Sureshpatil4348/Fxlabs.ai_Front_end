@@ -8,6 +8,9 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Run linting locally:
   - `npm run lint` (enforces `--max-warnings=0`)
 - Key rules like `no-unused-vars`, `no-console` (except `warn`/`error`), and `import/order` are enforced as errors in `.eslintrc.json`.
+  - React Hooks rules are enforced as errors:
+    - `react-hooks/rules-of-hooks`: Error
+    - `react-hooks/exhaustive-deps`: Error
 
 ## Alerts Architecture
 
