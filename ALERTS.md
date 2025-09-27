@@ -4,7 +4,7 @@ Frontend config only. Backend evaluates and sends notifications.
 
 Users can configure exactly one alert per account with:
 
-- Timeframe: choose exactly one (e.g., `1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
+- Timeframe: choose exactly one (e.g., `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
 - RSI Settings: `RSI Period`, `Overbought`, `Oversold`.
 - Backend behavior: No pair selection is required; the system checks all pairs. If any pair crosses into overbought (>= threshold) or oversold (<= threshold) on closed candles at the selected timeframe, a trigger is recorded and notification is delivered by the backend.
 
@@ -44,7 +44,7 @@ Tables:
 - `id uuid PK`
 - `user_id uuid` FK to `auth.users`
 - `user_email text`
-- `timeframe text` in (`1M`,`5M`,`15M`,`30M`,`1H`,`4H`,`1D`,`1W`)
+- `timeframe text` in (`5M`,`15M`,`30M`,`1H`,`4H`,`1D`,`1W`)
 - `rsi_period int` 5–50
 - `rsi_overbought int` 60–90
 - `rsi_oversold int` 10–40
@@ -84,7 +84,7 @@ Frontend config only. Backend evaluates and sends notifications.
 Single per-user alert for the RSI Correlation dashboard. User can select either RSI Threshold mode or Real Correlation mode, and one timeframe.
 
 - Mode: `RSI Threshold` or `Real Correlation`.
-- Timeframe: choose exactly one (`1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
+- Timeframe: choose exactly one (`5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
 - RSI Threshold mode: `RSI Period`, `Overbought`, `Oversold`.
 - Real Correlation mode: `Correlation Window` (20, 50, 90, 120).
 - Backend behavior: No pair selection is required; the system checks all correlation pairs. When any pair transitions into a mismatch based on the chosen mode, a trigger is recorded and notification is sent.

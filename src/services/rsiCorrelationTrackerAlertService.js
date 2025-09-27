@@ -21,7 +21,7 @@ class RSICorrelationTrackerAlertService {
 
   _validate(cfg) {
     const errors = [];
-    const validTimeframes = ['1M','5M','15M','30M','1H','4H','1D','1W'];
+    const validTimeframes = ['5M','15M','30M','1H','4H','1D','1W'];
     if (!validTimeframes.includes(cfg.timeframe)) errors.push('Invalid timeframe');
     if (!['rsi_threshold','real_correlation'].includes(cfg.mode)) errors.push('Invalid mode');
     if (cfg.mode === 'rsi_threshold') {

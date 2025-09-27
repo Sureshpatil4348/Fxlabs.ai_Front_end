@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.heatmap_indicator_tracker_alerts (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_email text NOT NULL,
   pairs jsonb NOT NULL DEFAULT '[]', -- up to 3 base symbols
-  timeframe text NOT NULL DEFAULT '1H' CHECK (timeframe IN ('1M','5M','15M','30M','1H','4H','1D','1W')),
+  timeframe text NOT NULL DEFAULT '1H' CHECK (timeframe IN ('5M','15M','30M','1H','4H','1D','1W')),
   indicator text NOT NULL CHECK (indicator IN ('EMA21','EMA50','EMA200','MACD','RSI','UTBOT','IchimokuClone')),
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),

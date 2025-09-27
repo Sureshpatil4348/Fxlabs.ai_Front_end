@@ -71,7 +71,7 @@ const useRSITrackerStore = create(
     
     // UI state
     logs: [],
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'],
+    timeframes: ['5M', '15M', '30M', '1H', '4H', '1D', '1W'],
     
     // Connection Actions
     connect: () => {
@@ -703,7 +703,7 @@ const useRSITrackerStore = create(
       // Normalize timeframe aliases between UI ('5M','4H','1D','1W') and server ('M5','H4','D1','W1')
       const tfAliases = (t) => {
         switch (t) {
-          case '1M': return ['1M', 'M1'];
+          // '1M' is no longer supported for alerts/UI
           case '5M': return ['5M', 'M5'];
           case '15M': return ['15M', 'M15'];
           case '30M': return ['30M', 'M30'];

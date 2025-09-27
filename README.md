@@ -896,7 +896,7 @@ The Multi-Indicator Heatmap Alerts system allows users to create intelligent tra
 
 #### Alert Configuration
 - **Trading Pairs**: Select up to 3 currency pairs for monitoring
-- **Timeframes**: Choose up to 3 timeframes from 1M to 1W
+- **Timeframes**: Choose up to 3 timeframes from 5M to 1W
 - **Indicators**: Select 1-2 indicators from the 7 available (EMA21, EMA50, EMA200, MACD, RSI, UTBOT, IchimokuClone)
 - **Trading Style**: Choose from Scalper, Day Trader, or Swing Trader approaches
 - **Thresholds**: Set custom buy (70-100) and sell (0-30) thresholds
@@ -1054,7 +1054,7 @@ The RSI Tracker Alert is simplified to a single per-user alert. Users choose exa
 ### Key Features
 
 #### Alert Configuration
-- **Timeframe**: Choose exactly one timeframe (1M to 1W)
+- **Timeframe**: Choose exactly one timeframe (5M to 1W)
 - **RSI Settings**: RSI period (5-50), overbought (60-90), oversold (10-40)
 - **Pairs**: Not required; all pairs are evaluated by the backend
 
@@ -1197,7 +1197,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 ### Key Features
 
 #### Alert Configuration
-- **Timeframe**: Choose exactly one timeframe (1M to 1W)
+- **Timeframe**: Choose exactly one timeframe (5M to 1W)
 - **Mode**: `rsi_threshold` or `real_correlation`
 - **RSI Settings** (RSI mode): RSI period (5-50), overbought (60-90), oversold (10-40)
 - **Correlation Settings** (Real mode): Rolling correlation window (20, 50, 90, 120)

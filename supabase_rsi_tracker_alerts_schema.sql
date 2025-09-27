@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.rsi_tracker_alerts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_email text NOT NULL,
-  timeframe text NOT NULL DEFAULT '1H' CHECK (timeframe IN ('1M','5M','15M','30M','1H','4H','1D','1W')),
+  timeframe text NOT NULL DEFAULT '1H' CHECK (timeframe IN ('5M','15M','30M','1H','4H','1D','1W')),
   rsi_period int NOT NULL DEFAULT 14 CHECK (rsi_period BETWEEN 5 AND 50),
   rsi_overbought int NOT NULL DEFAULT 70 CHECK (rsi_overbought BETWEEN 60 AND 90),
   rsi_oversold int NOT NULL DEFAULT 30 CHECK (rsi_oversold BETWEEN 10 AND 40),

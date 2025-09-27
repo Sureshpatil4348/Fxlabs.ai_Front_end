@@ -78,7 +78,7 @@ const useRSICorrelationStore = create(
     
     // UI state
     logs: [],
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D'],
+    timeframes: ['5M', '15M', '30M', '1H', '4H', '1D'],
     correlationWindows: CORRELATION_WINDOWS,
     
     // Connection Actions
