@@ -200,7 +200,8 @@ const RSICorrelationDashboard = () => {
     autoSubscribeToCorrelationPairs,
     timeframes,
     correlationWindows,
-    connect
+    connect,
+    correlationPairs
   } = useRSICorrelationStore();
   
   // Ensure the correlation store connects to WebSocket (mirrors RSI Tracker behavior)
@@ -400,18 +401,48 @@ const RSICorrelationDashboard = () => {
     setLocalSettings(prev => ({ ...prev, calculationMode: newMode }));
   };
 
-  // Get sorted pairs based on calculation mode
+  // Build a complete list of pairs from configuration so UI always renders all pairs
+  const allPairsList = React.useMemo(() => {
+    const positive = (correlationPairs?.positive || []).map(([s1, s2]) => ({ pairKey: `${s1}_${s2}`, pair: [s1, s2], type: 'positive' }));
+    const negative = (correlationPairs?.negative || []).map(([s1, s2]) => ({ pairKey: `${s1}_${s2}`, pair: [s1, s2], type: 'negative' }));
+    return [...positive, ...negative];
+  }, [correlationPairs]);
+
+  // Get sorted pairs based on calculation mode, ensuring placeholders for missing data
   let sortedPairs;
   if (localSettings.calculationMode === 'real_correlation') {
-    sortedPairs = Array.from(realCorrelationData.entries()).sort(([, a], [, b]) => {
-      const aMismatch = (a.isMismatch !== undefined) ? a.isMismatch : ((a.type === 'positive' && a.correlation < 0.25) || (a.type === 'negative' && a.correlation > -0.15));
-      const bMismatch = (b.isMismatch !== undefined) ? b.isMismatch : ((b.type === 'positive' && b.correlation < 0.25) || (b.type === 'negative' && b.correlation > -0.15));
-      if (aMismatch && !bMismatch) return -1;
-      if (!aMismatch && bMismatch) return 1;
+    const entries = allPairsList.map(({ pairKey, type }) => {
+      const data = realCorrelationData.get(pairKey);
+      // Do not fabricate correlation values; leave undefined to show "Calculating..."
+      return [pairKey, data ? data : { type, correlation: undefined, isPlaceholder: true }];
+    });
+
+    sortedPairs = entries.sort(([, a], [, b]) => {
+      const aHas = typeof a?.correlation === 'number' && Number.isFinite(a.correlation);
+      const bHas = typeof b?.correlation === 'number' && Number.isFinite(b.correlation);
+      if (aHas && !bHas) return -1;
+      if (!aHas && bHas) return 1;
+
+      // Among those with data, prioritize mismatches
+      if (aHas && bHas) {
+        const aMismatch = (a.isMismatch !== undefined)
+          ? a.isMismatch
+          : ((a.type === 'positive' && a.correlation < 0.25) || (a.type === 'negative' && a.correlation > -0.15));
+        const bMismatch = (b.isMismatch !== undefined)
+          ? b.isMismatch
+          : ((b.type === 'positive' && b.correlation < 0.25) || (b.type === 'negative' && b.correlation > -0.15));
+        if (aMismatch && !bMismatch) return -1;
+        if (!aMismatch && bMismatch) return 1;
+      }
       return 0;
     });
   } else {
-    sortedPairs = sortCorrelationPairs(correlationStatus);
+    const presentSorted = sortCorrelationPairs(correlationStatus);
+    const presentKeys = new Set(presentSorted.map(([key]) => key));
+    const missingEntries = allPairsList
+      .filter(({ pairKey }) => !presentKeys.has(pairKey))
+      .map(({ pairKey, type }) => [pairKey, { status: 'neutral', rsi1: NaN, rsi2: NaN, type, isPlaceholder: true }]);
+    sortedPairs = [...presentSorted, ...missingEntries];
   }
   
   // Prepare data for grid display (expand to accommodate all pairs)

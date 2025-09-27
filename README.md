@@ -20,6 +20,11 @@ Frontend config only; backend evaluates and sends notifications.
 
 ## Recent Updates
 
+### RSI Correlation Dashboard Pair Rendering Reliability (Latest)
+- Fixed an issue where some correlation pairs intermittently disappeared a second after load.
+- The dashboard now always renders the full configured pair list and shows placeholders (e.g., "Calculating…" or "--") until data arrives.
+- Root cause: UI previously derived the grid from computed data only, so pairs without immediate data would vanish during early recalculations or timeframe switches. The grid is now based on the configured pair list with data merged in.
+
 ### Pair Display Formatting (Latest)
 - All user-facing pair symbols now display as ABC/DEF (e.g., EUR/USD) for clarity
 - Non-breaking UI-only change; internal symbols/storage remain unchanged (e.g., EURUSD, EURUSDm)
