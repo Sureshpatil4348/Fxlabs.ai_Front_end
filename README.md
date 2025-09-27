@@ -589,6 +589,13 @@ The application now includes comprehensive dashboard settings persistence:
 - **Currency Strength Settings**: Timeframe, calculation mode (closed/live), enhanced calculation toggle, auto-subscribe symbols
 - **Multi-Indicator Heatmap Settings**: Symbol selection, trading style, indicator weights, new signal display toggle
 
+### Robustness And Partial Updates (Latest)
+- Settings upserts now support partial updates safely. When calling `updateUserDashboardSettings`, you may pass only the sections you intend to update (e.g., `{ rsiTracker: { rsiPeriod: 12 } }`). The service merges with existing settings and sensible defaults.
+- Defensive defaults added for tab state loading. If `user_state.tab_state` is missing/null, the app falls back to default tab state to prevent undefined reads.
+- Affected code:
+  - `src/services/userStateService.js`: partial merge handling in `updateUserDashboardSettings`; safer defaults in `getUserTabState`.
+  - Components already call `updateUserDashboardSettings` with section-scoped payloads (e.g., RSI Tracker, Currency Strength, Global Settings, Multi-Indicator Heatmap).
+
 ### Database Tables
 - `user_state`: Basic tab states and UI preferences
 - `user_settings`: Comprehensive dashboard settings and configurations

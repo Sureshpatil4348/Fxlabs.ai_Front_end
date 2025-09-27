@@ -28,17 +28,19 @@ class UserStateService {
 
     if (error) throw error;
     
-    // Return default tab state if no data exists
-    if (!data) {
-      return {
-        rsiThreshold: { overbought: 70, oversold: 30 },
-        rsiTracker: { activeTab: 'oversold' },
-        currencyStrength: { viewMode: 'bars' },
-        news: { filter: 'upcoming' }
-      };
+    // Return default tab state if no data exists OR tab_state is null/invalid
+    const defaultTabState = {
+      rsiThreshold: { overbought: 70, oversold: 30 },
+      rsiTracker: { activeTab: 'oversold' },
+      currencyStrength: { viewMode: 'bars' },
+      news: { filter: 'upcoming' }
+    };
+
+    if (!data || !data.tab_state || typeof data.tab_state !== 'object') {
+      return defaultTabState;
     }
 
-    return data.tab_state || {};
+    return data.tab_state || defaultTabState;
   }
 
   /**
@@ -214,12 +216,13 @@ class UserStateService {
 
     // Get current settings and merge with new settings
     const currentSettings = await this.getUserDashboardSettings();
+    // Allow partial updates: each section may be omitted in `settings`
     const mergedSettings = {
-      global: { ...currentSettings.global, ...settings.global },
-      rsiCorrelation: { ...currentSettings.rsiCorrelation, ...settings.rsiCorrelation },
-      rsiTracker: { ...currentSettings.rsiTracker, ...settings.rsiTracker },
-      currencyStrength: { ...currentSettings.currencyStrength, ...settings.currencyStrength },
-      multiIndicatorHeatmap: { ...currentSettings.multiIndicatorHeatmap, ...settings.multiIndicatorHeatmap }
+      global: { ...currentSettings.global, ...(settings?.global || {}) },
+      rsiCorrelation: { ...currentSettings.rsiCorrelation, ...(settings?.rsiCorrelation || {}) },
+      rsiTracker: { ...currentSettings.rsiTracker, ...(settings?.rsiTracker || {}) },
+      currencyStrength: { ...currentSettings.currencyStrength, ...(settings?.currencyStrength || {}) },
+      multiIndicatorHeatmap: { ...currentSettings.multiIndicatorHeatmap, ...(settings?.multiIndicatorHeatmap || {}) }
     };
 
     const { data, error } = await supabase
