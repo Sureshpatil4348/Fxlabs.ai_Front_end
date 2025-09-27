@@ -184,7 +184,7 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           
           {/* Left Side - Text Content */}
-          <div className="space-y-3 sm:space-y-4 md:space-y-6">
+          <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:-mt-20">
             {/* Premium Badge */}
            
 
@@ -279,7 +279,7 @@ const HeroSection = () => {
           {/* Right Side - Supreme Professional Visual */}
           <div className="relative group mt-8 lg:mt-0">
             {/* Master Trader AI Dashboard Container */}
-            <div className="relative w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] xl:w-[650px] mx-auto min-h-[400px] sm:min-h-[450px] md:min-h-[520px] lg:min-h-[590px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-2 sm:p-3 md:p-4 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
+            <div className="relative w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] xl:w-[650px] mx-auto min-h-[500px] sm:min-h-[450px] md:min-h-[520px] lg:min-h-[590px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-2 sm:p-3 md:p-4 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
                  style={{
                    transformStyle: 'preserve-3d',
                    perspective: '1000px',
