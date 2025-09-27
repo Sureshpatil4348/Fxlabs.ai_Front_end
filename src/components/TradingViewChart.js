@@ -3,6 +3,7 @@ import { TrendingUp, Maximize2, Minimize2, ZoomIn, ZoomOut, RotateCcw } from 'lu
 import React, { useEffect, useRef, useState } from 'react';
 
 import useMarketStore from '../store/useMarketStore';
+import { formatSymbolDisplay } from '../utils/formatters';
 
 
 const TradingViewChart = ({ symbol }) => {
@@ -79,7 +80,7 @@ const TradingViewChart = ({ symbol }) => {
         horzAlign: 'center',
         vertAlign: 'center',
         color: 'rgba(171, 71, 188, 0.1)',
-        text: symbol || 'TradingView',
+        text: (symbol ? formatSymbolDisplay(symbol.replace(/m$/,'')) : 'TradingView'),
       },
       handleScroll: {
         mouseWheel: true,
@@ -451,7 +452,7 @@ const TradingViewChart = ({ symbol }) => {
             {/* Line 1: Symbol and Timeframe */}
             <div className={`${isFullscreen ? '' : 'w-full sm:w-auto'}`}>
               <h3 className={`${isFullscreen ? 'text-2xl' : 'text-xl'} font-bold text-gray-900 flex items-center ${isFullscreen ? '' : 'justify-center sm:justify-start'}`}>
-                {symbol}
+                {formatSymbolDisplay(symbol.replace(/m$/,''))}
                 <span className="mx-2">{" "}</span>
                 <TrendingUp className={`${isFullscreen ? 'w-6 h-6' : 'w-5 h-5'} text-blue-600`} />
               </h3>

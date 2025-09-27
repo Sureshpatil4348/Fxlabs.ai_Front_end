@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
+import { formatSymbolDisplay } from '../utils/formatters';
 
 const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
   const { settings } = useRSITrackerStore();
@@ -112,7 +113,7 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
                       onClick={() => togglePair(pair)}
                       className={`px-2 py-1 rounded-full text-xs font-medium ${form.pairs.includes(pair) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                     >
-                      {pair}
+                      {formatSymbolDisplay(pair)}
                     </button>
                   ))}
                 </div>

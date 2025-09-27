@@ -2,6 +2,7 @@ import { Clock, TrendingUp, TrendingDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import useMarketStore from '../store/useMarketStore';
+import { formatSymbolDisplay } from '../utils/formatters';
 
 const TickDataView = ({ symbol }) => {
   const { getTicksForSymbol, getLatestTickForSymbol, tickData } = useMarketStore();
@@ -45,7 +46,7 @@ const TickDataView = ({ symbol }) => {
       <div className="text-center py-8">
         <Clock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
         <p className="text-gray-500">Waiting for tick data...</p>
-        <p className="text-sm text-gray-400 mt-1">Symbol: {symbol}</p>
+        <p className="text-sm text-gray-400 mt-1">Symbol: {formatSymbolDisplay(symbol.replace(/m$/,''))}</p>
       </div>
     );
   }
@@ -56,7 +57,7 @@ const TickDataView = ({ symbol }) => {
       {latestTick && (
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{symbol}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{formatSymbolDisplay(symbol.replace(/m$/,''))}</h3>
             <span className="text-sm text-gray-500">
               {formatTime(latestTick.time)}
             </span>

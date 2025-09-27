@@ -317,7 +317,9 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const dropdownOptions = useMemo(() => {
     return availableSymbols.map((sym) => {
       const clean = sym.replace(/m$/, '').toUpperCase();
-      return { value: sym, label: clean };
+      // Display as ABC/DEF for user clarity
+      const pretty = clean.length === 6 ? `${clean.slice(0, 3)}/${clean.slice(3)}` : clean;
+      return { value: sym, label: pretty };
     });
   }, [availableSymbols]);
 

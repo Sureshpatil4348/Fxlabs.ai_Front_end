@@ -2,6 +2,7 @@ import { BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import useMarketStore from '../store/useMarketStore';
+import { formatSymbolDisplay } from '../utils/formatters';
 
 const OHLCDataView = ({ symbol }) => {
   const { getOhlcForSymbol, getLatestOhlcForSymbol, subscriptions, ohlcData } = useMarketStore();
@@ -53,7 +54,7 @@ const OHLCDataView = ({ symbol }) => {
         <BarChart3 className="w-8 h-8 text-gray-400 mx-auto mb-2" />
         <p className="text-gray-500">Waiting for OHLC data...</p>
         <p className="text-sm text-gray-400 mt-1">
-          Symbol: {symbol} • Timeframe: {timeframe}
+          Symbol: {formatSymbolDisplay(symbol.replace(/m$/,''))} • Timeframe: {timeframe}
         </p>
       </div>
     );
@@ -66,7 +67,7 @@ const OHLCDataView = ({ symbol }) => {
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-gray-900">
-              {symbol} - {timeframe}
+              {formatSymbolDisplay(symbol.replace(/m$/,''))} - {timeframe}
             </h3>
             <span className="text-sm text-gray-500">
               {formatTime(latestBar.time)}

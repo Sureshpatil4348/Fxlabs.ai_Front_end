@@ -844,7 +844,7 @@ const RSIOverboughtOversoldTracker = () => {
                   >
                     <div>
                       <div className="font-medium text-gray-900 dark:text-slate-100">{formatSymbolDisplay(pair)}</div>
-                      <div className="text-sm text-gray-500 dark:text-slate-400">{pair}</div>
+                      <div className="text-sm text-gray-500 dark:text-slate-400">{formatSymbolDisplay(pair)}</div>
                     </div>
                     {addingSymbol === pair ? (
                       <Loader2 className="w-4 h-4 animate-spin text-green-600" />

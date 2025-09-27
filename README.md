@@ -20,6 +20,11 @@ Frontend config only; backend evaluates and sends notifications.
 
 ## Recent Updates
 
+### Pair Display Formatting (Latest)
+- All user-facing pair symbols now display as ABC/DEF (e.g., EUR/USD) for clarity
+- Non-breaking UI-only change; internal symbols/storage remain unchanged (e.g., EURUSD, EURUSDm)
+- Affected UI: heatmap symbol dropdown, alert pair chips, watchlist/RSI add modals, OHLC/Tick views, TradingView chart watermark/header
+
 ### RSI Correlation Dashboard Real-time Connection (Latest)
 - RSICorrelationDashboard now self-initializes its WebSocket connection on mount.
 - Ensures real-time updates even when the global connection initiator is not mounted.
