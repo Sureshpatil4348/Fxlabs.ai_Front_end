@@ -19,7 +19,7 @@ class HeatmapIndicatorTrackerAlertService {
   _validate(cfg) {
     const errors = [];
     if (!Array.isArray(cfg.pairs) || cfg.pairs.length === 0 || cfg.pairs.length > 3) errors.push('Select 1-3 pairs');
-    const validTimeframes = ['5M','15M','30M','1H','4H','1D','1W'];
+    const validTimeframes = ['1M','5M','15M','30M','1H','4H','1D','1W'];
     if (!validTimeframes.includes(cfg.timeframe)) errors.push('Invalid timeframe');
     const validIndicators = ['EMA21','EMA50','EMA200','MACD','RSI','UTBOT','IchimokuClone'];
     if (!validIndicators.includes(cfg.indicator)) errors.push('Invalid indicator');

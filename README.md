@@ -910,7 +910,7 @@ The Multi-Indicator Heatmap Alerts system allows users to create intelligent tra
 
 #### Alert Configuration
 - **Trading Pairs**: Select up to 3 currency pairs for monitoring
-- **Timeframes**: Choose up to 3 timeframes from 5M to 1W
+- **Timeframes**: Choose up to 3 timeframes from 1M to 1W
 - **Indicators**: Select 1-2 indicators from the 7 available (EMA21, EMA50, EMA200, MACD, RSI, UTBOT, IchimokuClone)
 - **Trading Style**: Choose from Scalper, Day Trader, or Swing Trader approaches
 - **Thresholds**: Set custom buy (70-100) and sell (0-30) thresholds
