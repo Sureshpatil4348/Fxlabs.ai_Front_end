@@ -4,7 +4,7 @@ import React from "react";
 
 const SuccessStories = () => {
   return (
-    <section className="relative py-6 sm:py-8">
+    <section className="relative py-6 sm:py-8 -mb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Success Stories Banner */}
@@ -94,10 +94,10 @@ const SuccessStories = () => {
                 className="bg-blue-800/50 dark:bg-blue-700/50 backdrop-blur-sm rounded-2xl p-3 sm:p-4 text-center border border-blue-600/30 dark:border-blue-500/30"
               >
                 <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#03c05d] mb-2">
-                  6-months
+                  AI Powered
                 </div>
                 <div className="text-white text-sm sm:text-base font-medium">
-                  Track Record
+                  Market Analysis
                 </div>
               </motion.div>
 

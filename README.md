@@ -159,6 +159,15 @@ Frontend config only; backend evaluates and sends notifications.
 - **CONSISTENT DESIGN**: Follows the same responsive margin pattern used throughout the navbar
 - **TOUCH FRIENDLY**: Better spacing makes the menu button easier to tap on mobile devices
 
+### Hero Section Responsive Layout Fix (Latest)
+- **NAVBAR OVERLAP FIX**: Fixed critical issue where hero section content was going behind navbar on small devices
+- **PROPER SPACING**: Replaced negative top margins (`-mt-32 sm:-mt-24`) with positive padding (`pt-16 sm:pt-20 md:pt-24`)
+- **MOBILE OPTIMIZATION**: Added proper top padding to account for navbar height on all screen sizes
+- **CONTENT VISIBILITY**: Ensured all hero section content is fully visible and accessible on mobile devices
+- **RESPONSIVE BREAKPOINTS**: Maintained responsive design while fixing layout issues
+- **VISUAL CONSISTENCY**: Hero section now displays properly across all device sizes without content overlap
+- **USER EXPERIENCE**: Mobile users can now see the complete hero section content without scrolling issues
+
 ### Hero Section Responsive Text Fix
 - **RESPONSIVE TEXT SIZING**: Fixed "Market with AI" heading to display properly on medium and small devices
 - **IMPROVED BREAKPOINTS**: Updated text sizes from `text-5xl md:text-6xl lg:text-7xl` to `text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl`

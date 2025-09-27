@@ -179,12 +179,12 @@ const HeroSection = () => {
   }, [dataInitialized])
 
   return (
-    <section className="relative min-h-screen flex items-center">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8 sm:py-12 ">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center ">
+    <section className="relative min-h-screen flex items-center pt-16 sm:pt-20 md:pt-24 lg:pt-16 pb-8 sm:pb-12 lg:pb-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           
           {/* Left Side - Text Content */}
-          <div className="space-y-4 sm:space-y-6 -ml-2 sm:-ml-4 lg:-ml-8">
+          <div className="space-y-3 sm:space-y-4 md:space-y-6">
             {/* Premium Badge */}
            
 
@@ -228,11 +228,11 @@ const HeroSection = () => {
             </div>
 
             {/* Premium CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4">
               {user ? (
                 <Link
                   to="/dashboard"
-                  className="group relative inline-flex items-center justify-center px-6 py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
                   <BarChart3 className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Go to Dashboard</span>
@@ -241,7 +241,7 @@ const HeroSection = () => {
               ) : (
                 <Link
                   to="/login"
-                  className="group relative inline-flex items-center justify-center px-6 py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
                   <Shield className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Get Started Now</span>
@@ -249,7 +249,7 @@ const HeroSection = () => {
                 </Link>
               )}
               
-              <button className={`group inline-flex items-center justify-center px-6 py-3 border-2 font-semibold text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
+              <button className={`group inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 border-2 font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
                 isDarkMode 
                   ? 'border-white hover:border-[#03c05d] text-white hover:text-[#03c05d]' 
                   : 'border-gray-700 hover:border-[#03c05d] text-gray-700 hover:text-[#03c05d]'
@@ -260,7 +260,7 @@ const HeroSection = () => {
             </div>
 
             {/* Premium Trust Indicators */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 md:gap-4 pt-3 sm:pt-4">
               <div className="inline-flex items-center space-x-3 bg-white/10 border border-[#03c05d]/30 rounded-md px-4 py-3 text-[#03c05d] text-sm font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
                 <CheckCircle className="w-5 h-5" />
                 <span>80% Accuracy</span>
@@ -277,9 +277,9 @@ const HeroSection = () => {
           </div>
 
           {/* Right Side - Supreme Professional Visual */}
-          <div className="relative group">
+          <div className="relative group mt-8 lg:mt-0">
             {/* Master Trader AI Dashboard Container */}
-            <div className="relative w-full max-w-[650px] mx-auto lg:w-[650px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-3xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
+            <div className="relative w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] xl:w-[650px] mx-auto min-h-[400px] sm:min-h-[450px] md:min-h-[520px] lg:min-h-[590px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-2 sm:p-3 md:p-4 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
                  style={{
                    transformStyle: 'preserve-3d',
                    perspective: '1000px',

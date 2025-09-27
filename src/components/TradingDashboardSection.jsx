@@ -1,4 +1,4 @@
-import { BarChart3, Bell, Mail, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ArrowRight, Zap, Shield } from 'lucide-react'
+import { BarChart3, Bell, Mail, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ArrowRight, Zap } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '../auth/AuthProvider'
@@ -294,7 +294,7 @@ const TradingDashboardSection = () => {
 
 
   return (
-    <section className="relative py-16">
+    <section className="relative -mt-4 sm:-mt-6 lg:-mt-8 -mb-4 sm:-mb-6 lg:-mb-8">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
        
@@ -717,14 +717,7 @@ const TradingDashboardSection = () => {
                  </div>
            </div>
 
-               {/* CTA */}
-               <div className="text-center mt-8">
-                 <div className="inline-flex items-center space-x-3 bg-[#03c05d]/10 border border-[#03c05d]/20 rounded-full px-6 py-3">
-                   <Shield className="w-5 h-5 text-[#03c05d]" />
-                   <span className="text-[#03c05d] font-semibold">Free Setup • 24/7 Monitoring</span>
-                   <ArrowRight className="w-4 h-4 text-[#03c05d]" />
-                 </div>
-               </div>
+               
              </div>
            </div>
           </div>

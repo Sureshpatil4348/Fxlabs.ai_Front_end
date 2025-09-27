@@ -41,7 +41,7 @@ const Navbar = () => {
     <>
       <header className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-16 gap-4 sm:gap-6 lg:gap-8">
             {/* Logo Section - Raw Logo */}
             <div className="flex items-center -ml-2 sm:-ml-4 md:-ml-6 lg:-ml-6 xl:-ml-28 2xl:-ml-30">
               <a 
