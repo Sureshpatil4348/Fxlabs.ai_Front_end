@@ -383,6 +383,104 @@ Frontend config only; backend evaluates and sends notifications.
 - Ensures validation and business logic always work with camelCase
 - Prevents database field name mismatches in RSI correlation alert operations
 
+## Supported Trading Pairs
+
+The FX Labs Trading Dashboard supports **32 trading pairs** across multiple asset classes. All pairs use the broker-specific suffix 'm' (e.g., EURUSDm) for MT5 compatibility.
+
+### Major Currency Pairs (7 pairs)
+- **EURUSD** - Euro/US Dollar
+- **GBPUSD** - British Pound/US Dollar  
+- **USDJPY** - US Dollar/Japanese Yen
+- **USDCHF** - US Dollar/Swiss Franc
+- **AUDUSD** - Australian Dollar/US Dollar
+- **USDCAD** - US Dollar/Canadian Dollar
+- **NZDUSD** - New Zealand Dollar/US Dollar
+
+### Cross Currency Pairs (21 pairs)
+
+#### EUR Crosses (6 pairs)
+- **EURGBP** - Euro/British Pound
+- **EURJPY** - Euro/Japanese Yen
+- **EURCHF** - Euro/Swiss Franc
+- **EURAUD** - Euro/Australian Dollar
+- **EURCAD** - Euro/Canadian Dollar
+- **EURNZD** - Euro/New Zealand Dollar
+
+#### GBP Crosses (5 pairs)
+- **GBPJPY** - British Pound/Japanese Yen
+- **GBPCHF** - British Pound/Swiss Franc
+- **GBPAUD** - British Pound/Australian Dollar
+- **GBPCAD** - British Pound/Canadian Dollar
+- **GBPNZD** - British Pound/New Zealand Dollar
+
+#### AUD Crosses (4 pairs)
+- **AUDJPY** - Australian Dollar/Japanese Yen
+- **AUDCHF** - Australian Dollar/Swiss Franc
+- **AUDCAD** - Australian Dollar/Canadian Dollar
+- **AUDNZD** - Australian Dollar/New Zealand Dollar
+
+#### NZD Crosses (3 pairs)
+- **NZDJPY** - New Zealand Dollar/Japanese Yen
+- **NZDCHF** - New Zealand Dollar/Swiss Franc
+- **NZDCAD** - New Zealand Dollar/Canadian Dollar
+
+#### CAD Crosses (2 pairs)
+- **CADJPY** - Canadian Dollar/Japanese Yen
+- **CADCHF** - Canadian Dollar/Swiss Franc
+
+#### CHF Crosses (1 pair)
+- **CHFJPY** - Swiss Franc/Japanese Yen
+
+### Precious Metals (2 pairs)
+- **XAUUSD** - Gold/US Dollar
+- **XAGUSD** - Silver/US Dollar
+
+### Cryptocurrencies (2 pairs)
+- **BTCUSD** - Bitcoin/US Dollar
+- **ETHUSD** - Ethereum/US Dollar
+
+### RSI Correlation Pairs
+
+The RSI Correlation Dashboard monitors **17 specific correlation pairs** for mismatch detection:
+
+#### Positive Correlations (10 pairs)
+- **EURUSD ↔ GBPUSD** - Major European currencies
+- **EURUSD ↔ AUDUSD** - EUR vs commodity currencies
+- **EURUSD ↔ NZDUSD** - EUR vs commodity currencies
+- **GBPUSD ↔ AUDUSD** - GBP vs commodity currencies
+- **AUDUSD ↔ NZDUSD** - Commodity currencies
+- **USDCHF ↔ USDJPY** - Safe haven currencies
+- **XAUUSD ↔ XAGUSD** - Precious metals correlation
+- **XAUUSD ↔ EURUSD** - Gold vs EUR safe haven
+- **BTCUSD ↔ ETHUSD** - Cryptocurrency correlation
+- **BTCUSD ↔ XAUUSD** - Bitcoin vs Gold correlation
+
+#### Negative Correlations (7 pairs)
+- **EURUSD ↔ USDCHF** - EUR vs USD safe haven
+- **GBPUSD ↔ USDCHF** - GBP vs USD safe haven
+- **USDJPY ↔ EURUSD** - USD vs EUR inverse
+- **USDJPY ↔ GBPUSD** - USD vs GBP inverse
+- **USDCAD ↔ AUDUSD** - USD vs commodity currencies
+- **USDCHF ↔ AUDUSD** - USD safe haven vs commodity
+- **XAUUSD ↔ USDJPY** - Gold vs USDJPY inverse
+
+### Pair Usage Across Components
+
+- **RSI Tracker**: All 32 pairs supported for RSI analysis and alerts
+- **Multi-Indicator Heatmap**: All 32 pairs available for technical analysis
+- **Currency Strength Meter**: All 28 forex pairs (excludes crypto)
+- **RSI Correlation Dashboard**: 17 specific correlation pairs
+- **AI News Analysis**: All 32 pairs for suggested pair recommendations
+- **Watchlist Management**: All 32 pairs available for personal tracking
+- **Alert Systems**: All 32 pairs supported across all alert types
+
+### Symbol Format Conversion
+
+The system automatically handles symbol format conversion:
+- **UI Display**: EURUSD, GBPUSD, etc. (without suffix)
+- **Broker Format**: EURUSDm, GBPUSDm, etc. (with 'm' suffix)
+- **Conversion Functions**: `toBrokerSymbol()` and `fromBrokerSymbol()` utilities
+
 ## Features
 
 ### Core Trading Features
@@ -1079,20 +1177,7 @@ The alert system integrates seamlessly with the existing RSI Tracker:
 
 ### Supported Trading Pairs
 
-The RSI Tracker Alerts support all trading pairs available in the RSI Tracker:
-
-#### Major Currency Pairs
-- EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD
-- EURGBP, EURJPY, EURCHF, EURAUD, EURCAD, EURNZD
-- GBPJPY, GBPCHF, GBPAUD, GBPCAD, GBPNZD
-- AUDJPY, AUDCHF, AUDCAD, AUDNZD
-- CADJPY, CADCHF, CHFJPY, NZDJPY, NZDCHF, NZDCAD
-
-#### Precious Metals
-- XAUUSD (Gold), XAGUSD (Silver)
-
-#### Cryptocurrencies
-- BTCUSD (Bitcoin), ETHUSD (Ethereum)
+The RSI Tracker Alerts support all **32 trading pairs** available in the system. See the [Supported Trading Pairs](#supported-trading-pairs) section above for the complete list of major currency pairs, cross pairs, precious metals, and cryptocurrencies.
 
 ### Future Enhancements
 
@@ -1245,19 +1330,7 @@ The alert system integrates seamlessly with the existing RSI Correlation Dashboa
 
 ### Supported Correlation Pairs
 
-The RSI Correlation Alerts support all 17 correlation pairs available in the RSI Correlation Dashboard:
-
-#### Positive Correlations (10 pairs)
-- EURUSD ↔ GBPUSD, EURUSD ↔ AUDUSD, EURUSD ↔ NZDUSD
-- GBPUSD ↔ AUDUSD, AUDUSD ↔ NZDUSD, USDCHF ↔ USDJPY
-- XAUUSD ↔ XAGUSD (Gold-Silver), XAUUSD ↔ EURUSD (Gold-EUR)
-- BTCUSD ↔ ETHUSD (Crypto), BTCUSD ↔ XAUUSD (Bitcoin-Gold)
-
-#### Negative Correlations (7 pairs)
-- EURUSD ↔ USDCHF, GBPUSD ↔ USDCHF
-- USDJPY ↔ EURUSD, USDJPY ↔ GBPUSD
-- USDCAD ↔ AUDUSD, USDCHF ↔ AUDUSD
-- XAUUSD ↔ USDJPY (Gold-USDJPY)
+The RSI Correlation Alerts support all **17 correlation pairs** available in the RSI Correlation Dashboard. See the [RSI Correlation Pairs](#rsi-correlation-pairs) section above for the complete list of positive and negative correlation pairs.
 
 ### Calculation Modes
 
