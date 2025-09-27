@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthProvider';
 import rsiCorrelationTrackerAlertService from '../services/rsiCorrelationTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
+import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {
@@ -228,6 +229,24 @@ const RSICorrelationDashboard = () => {
     calculationMode: settings.calculationMode
   });
 
+  // Persist calculation mode toggle (RSI Threshold vs Real Correlation)
+  const { updateTabState, tabState, loadTabState } = useBaseMarketStore();
+
+  // Load tab state to initialize persisted mode (if present)
+  useEffect(() => {
+    loadTabState();
+  }, [loadTabState]);
+
+  // Apply persisted calculation mode from tab state when available
+  useEffect(() => {
+    const mode = tabState?.rsiCorrelation?.calculationMode;
+    if (mode && (mode === 'rsi_threshold' || mode === 'real_correlation')) {
+      setLocalSettings(prev => ({ ...prev, calculationMode: mode }));
+      // also reflect to store settings immediately
+      updateSettings({ calculationMode: mode });
+    }
+  }, [tabState?.rsiCorrelation?.calculationMode, updateSettings]);
+
   // Auto-subscribe to correlation pairs when connection is established (only once)
   useEffect(() => {
     if (!isConnected || hasAutoSubscribed) {
@@ -396,9 +415,18 @@ const RSICorrelationDashboard = () => {
     });
   };
 
-  const handleCalculationModeToggle = () => {
+  const handleCalculationModeToggle = async () => {
     const newMode = localSettings.calculationMode === 'rsi_threshold' ? 'real_correlation' : 'rsi_threshold';
     setLocalSettings(prev => ({ ...prev, calculationMode: newMode }));
+    try {
+      // Update local store immediately
+      updateSettings({ calculationMode: newMode });
+      // Persist lightweight tab state for quick restore
+      await updateTabState('rsiCorrelation', { calculationMode: newMode });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to persist RSI Correlation mode toggle:', e);
+    }
   };
 
   // Build a complete list of pairs from configuration so UI always renders all pairs

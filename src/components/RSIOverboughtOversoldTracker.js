@@ -129,7 +129,9 @@ const RSIOverboughtOversoldTracker = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [viewMode] = useState('table'); // 'table', 'cards', or 'expandable'
-  const [showWatchlist, setShowWatchlist] = useState(false); // New state for watchlist view
+  const [showWatchlist, setShowWatchlist] = useState(
+    tabState.rsiTracker?.showWatchlist === true
+  ); // persisted toggle
   const [removingSymbol, setRemovingSymbol] = useState(null); // State for tracking which symbol is being removed
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
@@ -156,12 +158,15 @@ const RSIOverboughtOversoldTracker = () => {
     }
   }, [user, loadWatchlist]);
 
-  // Update activeTab when tabState changes
+  // Update activeTab and watchlist toggle when tabState changes
   useEffect(() => {
     if (tabState.rsiTracker?.activeTab) {
       setActiveTab(tabState.rsiTracker.activeTab);
     }
-  }, [tabState.rsiTracker?.activeTab]);
+    if (typeof tabState.rsiTracker?.showWatchlist === 'boolean') {
+      setShowWatchlist(tabState.rsiTracker.showWatchlist);
+    }
+  }, [tabState.rsiTracker?.activeTab, tabState.rsiTracker?.showWatchlist]);
 
   // Alert handlers
   const handleRSIBellClick = () => {
@@ -414,7 +419,17 @@ const RSIOverboughtOversoldTracker = () => {
           <div className="flex items-center space-x-1">
             {/* Watchlist Toggle Button */}
             <button
-              onClick={() => setShowWatchlist(!showWatchlist)}
+              onClick={async () => {
+                const next = !showWatchlist;
+                setShowWatchlist(next);
+                try {
+                  await updateRSITrackerTab(activeTab);
+                  await useBaseMarketStore.getState().updateRSITrackerShowWatchlist(next);
+                } catch (e) {
+                  // eslint-disable-next-line no-console
+                  console.error('Failed to persist watchlist toggle:', e);
+                }
+              }}
               className={`px-3 py-1.5 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1.5 ${
                 showWatchlist 
                   ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200' 

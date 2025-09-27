@@ -2,6 +2,13 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Code Quality & Linting
+
+- All ESLint warnings are treated as errors. The project is configured to fail on any warning.
+- Run linting locally:
+  - `npm run lint` (enforces `--max-warnings=0`)
+- Key rules like `no-unused-vars`, `no-console` (except `warn`/`error`), and `import/order` are enforced as errors in `.eslintrc.json`.
+
 ## Alerts Architecture
 
 Frontend config only; backend evaluates and sends notifications.
@@ -567,8 +574,10 @@ The application automatically saves and restores your dashboard preferences:
 ### Persisted States
 1. **RSI Threshold Settings**: Your custom overbought/oversold values (default: 70/30)
 2. **RSI Tracker Tab**: Which tab is active (Oversold or Overbought)
-3. **Currency Strength View**: Your preferred visualization mode (Bar Chart, Line Chart, or Heatmap)
-4. **News Filter**: Your news preference (Upcoming, Released, or All)
+3. **RSI Tracker View Mode**: Watchlist vs RSI Tracker view toggle
+4. **RSI Correlation Mode**: RSI Threshold vs Real Correlation toggle
+5. **Currency Strength View**: Your preferred visualization mode (Bar Chart, Line Chart, or Heatmap)
+6. **News Filter**: Your news preference (Upcoming, Released, or All)
    - Default: Upcoming
 
 ### How It Works

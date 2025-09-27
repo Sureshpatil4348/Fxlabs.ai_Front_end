@@ -137,10 +137,12 @@ const useBaseMarketStore = create(
         set((state) => {
           const updatedSections = new Set(state.tabStateLocalUpdatedSections);
           updatedSections.add(tabType);
+          const previousSection = state.tabState && state.tabState[tabType] ? state.tabState[tabType] : {};
+          const mergedSection = { ...previousSection, ...tabValue };
           return {
             tabState: {
               ...state.tabState,
-              [tabType]: tabValue
+              [tabType]: mergedSection
             },
             tabStateError: null,
             tabStateLocalUpdatedSections: updatedSections
@@ -162,6 +164,10 @@ const useBaseMarketStore = create(
 
     updateRSITrackerTab: async (activeTab) => {
       return await get().updateTabState('rsiTracker', { activeTab });
+    },
+
+    updateRSITrackerShowWatchlist: async (showWatchlist) => {
+      return await get().updateTabState('rsiTracker', { showWatchlist });
     },
 
     updateCurrencyStrengthView: async (viewMode) => {

@@ -23,12 +23,12 @@
   "plugins": ["react", "react-hooks", "jsx-a11y", "import"],
   "settings": { "react": { "version": "detect" } },
   "rules": {
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
     "import/order": [
-      "warn",
+      "error",
       {
         "groups": [["builtin", "external"], ["internal", "parent", "sibling", "index"]],
         "newlines-between": "always",
