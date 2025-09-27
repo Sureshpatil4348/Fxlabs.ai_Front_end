@@ -6,8 +6,8 @@ import RSICorrelationTrackerAlertConfig from './RSICorrelationTrackerAlertConfig
 import { useAuth } from '../auth/AuthProvider';
 import rsiCorrelationTrackerAlertService from '../services/rsiCorrelationTrackerAlertService';
 import userStateService from '../services/userStateService';
-import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import useBaseMarketStore from '../store/useBaseMarketStore';
+import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, formatRsi, sortCorrelationPairs } from '../utils/formatters';
 
 const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCorrelationData, isMobile = false }) => {
@@ -324,35 +324,35 @@ const RSICorrelationDashboard = () => {
     }
   }, [user]);
 
-  // Load settings from database on component mount
+  // Load settings from database on mount (or when user changes) only
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        if (user) {
-          const savedSettings = await userStateService.getUserDashboardSettings();
-          if (savedSettings.rsiCorrelation) {
-            const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
-            
-            // Update local settings state
-            setLocalSettings({
-              timeframe: timeframe || settings.timeframe,
-              rsiPeriod: rsiPeriod || settings.rsiPeriod,
-              rsiOverbought: rsiOverbought || settings.rsiOverbought,
-              rsiOversold: rsiOversold || settings.rsiOversold,
-              correlationWindow: correlationWindow || settings.correlationWindow,
-              calculationMode: calculationMode || settings.calculationMode
-            });
+        if (!user) return;
+        const savedSettings = await userStateService.getUserDashboardSettings();
+        if (savedSettings.rsiCorrelation) {
+          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
+          
+          // Update local settings state
+          setLocalSettings(prev => ({
+            ...prev,
+            timeframe: timeframe || settings.timeframe,
+            rsiPeriod: rsiPeriod || settings.rsiPeriod,
+            rsiOverbought: rsiOverbought || settings.rsiOverbought,
+            rsiOversold: rsiOversold || settings.rsiOversold,
+            correlationWindow: correlationWindow || settings.correlationWindow,
+            calculationMode: calculationMode || settings.calculationMode
+          }));
 
-            // Update store settings
-            updateSettings({
-              timeframe: timeframe || settings.timeframe,
-              rsiPeriod: rsiPeriod || settings.rsiPeriod,
-              rsiOverbought: rsiOverbought || settings.rsiOverbought,
-              rsiOversold: rsiOversold || settings.rsiOversold,
-              correlationWindow: correlationWindow || settings.correlationWindow,
-              calculationMode: calculationMode || settings.calculationMode
-            });
-          }
+          // Update store settings
+          updateSettings({
+            timeframe: timeframe || settings.timeframe,
+            rsiPeriod: rsiPeriod || settings.rsiPeriod,
+            rsiOverbought: rsiOverbought || settings.rsiOverbought,
+            rsiOversold: rsiOversold || settings.rsiOversold,
+            correlationWindow: correlationWindow || settings.correlationWindow,
+            calculationMode: calculationMode || settings.calculationMode
+          });
         }
       } catch (error) {
         console.error('❌ Failed to load RSI Correlation settings:', error);
@@ -360,7 +360,7 @@ const RSICorrelationDashboard = () => {
     };
 
     loadSettings();
-  }, [settings.calculationMode, settings.correlationWindow, settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings, user]);
+  }, [user, updateSettings]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -423,6 +423,12 @@ const RSICorrelationDashboard = () => {
       updateSettings({ calculationMode: newMode });
       // Persist lightweight tab state for quick restore
       await updateTabState('rsiCorrelation', { calculationMode: newMode });
+      // Persist to comprehensive settings if user is logged in
+      if (user) {
+        await userStateService.updateUserDashboardSettings({
+          rsiCorrelation: { calculationMode: newMode }
+        });
+      }
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error('Failed to persist RSI Correlation mode toggle:', e);
