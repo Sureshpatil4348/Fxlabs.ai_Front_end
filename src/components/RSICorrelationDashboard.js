@@ -332,27 +332,29 @@ const RSICorrelationDashboard = () => {
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.rsiCorrelation) {
           const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
-          
-          // Update local settings state
+
+          // Update local settings state using only fetched values; keep previous values for missing keys
           setLocalSettings(prev => ({
             ...prev,
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold,
-            correlationWindow: correlationWindow || settings.correlationWindow,
-            calculationMode: calculationMode || settings.calculationMode
+            ...(timeframe != null ? { timeframe } : {}),
+            ...(rsiPeriod != null ? { rsiPeriod } : {}),
+            ...(rsiOverbought != null ? { rsiOverbought } : {}),
+            ...(rsiOversold != null ? { rsiOversold } : {}),
+            ...(correlationWindow != null ? { correlationWindow } : {}),
+            ...(calculationMode != null ? { calculationMode } : {})
           }));
 
-          // Update store settings
-          updateSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold,
-            correlationWindow: correlationWindow || settings.correlationWindow,
-            calculationMode: calculationMode || settings.calculationMode
-          });
+          // Update store settings only for provided keys (avoid referencing external settings defaults)
+          const partialUpdate = {};
+          if (timeframe != null) partialUpdate.timeframe = timeframe;
+          if (rsiPeriod != null) partialUpdate.rsiPeriod = rsiPeriod;
+          if (rsiOverbought != null) partialUpdate.rsiOverbought = rsiOverbought;
+          if (rsiOversold != null) partialUpdate.rsiOversold = rsiOversold;
+          if (correlationWindow != null) partialUpdate.correlationWindow = correlationWindow;
+          if (calculationMode != null) partialUpdate.calculationMode = calculationMode;
+          if (Object.keys(partialUpdate).length > 0) {
+            updateSettings(partialUpdate);
+          }
         }
       } catch (error) {
         console.error('❌ Failed to load RSI Correlation settings:', error);
