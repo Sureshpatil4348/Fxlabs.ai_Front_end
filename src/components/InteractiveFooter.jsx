@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Hexagon } from 'lucide-react'
+import { Mail, Phone, MapPin, Hexagon, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -22,6 +22,75 @@ const InteractiveFooter = () => {
             <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Empowering traders with cutting-edge AI technology for smarter market decisions.
             </p>
+            
+            {/* Social Media Icons */}
+            <div className="flex items-center space-x-3 pt-2">
+              <a 
+                href="https://facebook.com/fxlabs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-blue-600 text-gray-600 hover:text-white'
+                }`}
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://twitter.com/fxlabs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-blue-400 text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-blue-400 text-gray-600 hover:text-white'
+                }`}
+                aria-label="Twitter"
+              >
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://instagram.com/fxlabs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-pink-600 text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-pink-600 text-gray-600 hover:text-white'
+                }`}
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://linkedin.com/company/fxlabs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-blue-700 text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-blue-700 text-gray-600 hover:text-white'
+                }`}
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://youtube.com/@fxlabs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-red-600 text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-red-600 text-gray-600 hover:text-white'
+                }`}
+                aria-label="YouTube"
+              >
+                <Youtube className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           {/* Quick Links Column */}
