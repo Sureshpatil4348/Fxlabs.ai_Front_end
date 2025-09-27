@@ -166,7 +166,7 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
               )}
 
               <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500">Only one correlation alert per user. Triggers on mismatches.</div>
+                <div className="text-xs text-gray-500">Only one alert per user. Checks all correlation pairs; triggers on mismatches.</div>
                 <div className="flex items-center space-x-2">
                   {alert && (
                     <button onClick={handleDelete} className="px-3 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Delete</button>

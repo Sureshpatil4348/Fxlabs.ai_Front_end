@@ -157,7 +157,7 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
 
               <div className="flex items-center justify-between">
                 <div className="text-xs text-gray-500">
-                  Only one alert per user. Triggers on threshold cross for any subscribed pair.
+                  Only one alert per user. Checks all pairs and triggers on threshold cross.
                 </div>
                 <div className="flex items-center space-x-2">
                   {alert && (

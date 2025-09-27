@@ -6,7 +6,7 @@ Users can configure exactly one alert per account with:
 
 - Timeframe: choose exactly one (e.g., `1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
 - RSI Settings: `RSI Period`, `Overbought`, `Oversold`.
-- Backend behavior: If any watched pair crosses into overbought (>= threshold) or oversold (<= threshold) on closed candles at the selected timeframe, a trigger is recorded and notification is delivered by the backend.
+- Backend behavior: No pair selection is required; the system checks all pairs. If any pair crosses into overbought (>= threshold) or oversold (<= threshold) on closed candles at the selected timeframe, a trigger is recorded and notification is delivered by the backend.
 
 Notes:
 - Only one alert can be active for the RSI Tracker (unique per user).
@@ -87,7 +87,7 @@ Single per-user alert for the RSI Correlation dashboard. User can select either 
 - Timeframe: choose exactly one (`1M`, `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
 - RSI Threshold mode: `RSI Period`, `Overbought`, `Oversold`.
 - Real Correlation mode: `Correlation Window` (20, 50, 90, 120).
-- Backend behavior: When a pair transitions into a mismatch based on the chosen mode, a trigger is recorded and notification is sent.
+- Backend behavior: No pair selection is required; the system checks all correlation pairs. When any pair transitions into a mismatch based on the chosen mode, a trigger is recorded and notification is sent.
 
 Notification template: “RSI correlation alert”
 

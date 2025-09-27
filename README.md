@@ -119,6 +119,17 @@ Frontend config only; backend evaluates and sends notifications.
    - Changes: `calculateRsi` in `src/store/useRSITrackerStore.js`, `src/store/useRSICorrelationStore.js`, and `src/store/useMarketStore.js` drop the last bar only when there are more than `period + 1` bars.
 - Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
 
+### RSI Tracker Display Rules (Oversold/Overbought)
+- Default thresholds: Overbought = 70, Oversold = 30. These are user-configurable per dashboard settings.
+- Pair classification in lists:
+  - Oversold tab shows symbols with RSI ≤ Oversold threshold; sorted by RSI ascending (most oversold first).
+  - Overbought tab shows symbols with RSI ≥ Overbought threshold; sorted by RSI descending (most overbought first).
+- Cell coloring: RSI values render as green when ≤ Oversold, red when ≥ Overbought, gray otherwise.
+- Persistence: On load, saved values from `user_settings` are applied to the tracker; on Save, settings are validated and written back to the database.
+- Validation bounds in UI: Overbought is clamped to 50–90; Oversold is clamped to 10–50, with enforced Oversold < Overbought.
+- Alert config ranges: RSI Tracker Alerts validate Overbought 60–90 and Oversold 10–40 (alerts use their own stricter ranges).
+- Event tracking: The tracker records threshold crossings (crossdown/crossup) and exits from zones for recent RSI points per symbol.
+
 ### RSI Tracker: Toggle Shows Current Mode (Latest)
 - Fixed the RSI Tracker vs Watchlist toggle button to display the current mode rather than the target mode
 - Tooltip now mirrors RSI Correlation Dashboard style: "Switch to … mode"
@@ -940,24 +951,14 @@ The alert system integrates seamlessly with the existing Multi-Indicator Heatmap
 
 ### Overview
 
-The RSI Tracker Alerts system allows users to create intelligent trading alerts based on RSI (Relative Strength Index) analysis, RFI (RSI-Flow Imbalance) scores, and RSI crossup/crossdown events. Users can configure alerts for specific trading pairs with customizable RSI thresholds and conditions.
+The RSI Tracker Alert is simplified to a single per-user alert. Users choose exactly one timeframe and RSI thresholds; no pair selection is required as the backend checks all pairs and triggers when any crosses the thresholds.
 
 ### Key Features
 
 #### Alert Configuration
-- **Trading Pairs**: Select up to 5 currency pairs for monitoring (including precious metals and cryptocurrencies)
-- **Timeframes**: Choose 1-3 timeframes from 1M to 1W for comprehensive analysis
-- **RSI Settings**: Customizable RSI period (5-50), overbought threshold (60-90), oversold threshold (10-40)
-- **Alert Conditions**: Select from 6 different conditions:
-  - **Overbought**: RSI above overbought threshold
-  - **Oversold**: RSI below oversold threshold
-  - **Strong RFI**: RFI score above strong threshold (0.50-1.00)
-  - **Moderate RFI**: RFI score above moderate threshold (0.30-0.80)
-  - **Cross Up**: RSI crosses above oversold threshold
-  - **Cross Down**: RSI crosses below overbought threshold
-- **RFI Thresholds**: Customizable strong and moderate RFI thresholds
-- **Notification Methods**: Browser notifications, email, or push notifications
-- **Alert Frequency**: Once only, every 5/15/30 minutes, or hourly
+- **Timeframe**: Choose exactly one timeframe (1M to 1W)
+- **RSI Settings**: RSI period (5-50), overbought (60-90), oversold (10-40)
+- **Pairs**: Not required; all pairs are evaluated by the backend
 
 #### Alert Management
 - **Create Alerts**: Easy-to-use interface for setting up new RSI alerts
@@ -1033,18 +1034,14 @@ The `RSITrackerAlertService` provides a minimal API for the single RSI tracker a
 
 ### Usage Examples
 
-#### Creating a Basic RSI Overbought/Oversold Alert
+#### Creating an RSI Tracker Alert
 ```javascript
 const alertConfig = {
-  alertName: "EURUSD RSI Alert",
-  pairs: ["EURUSD"],
-  timeframes: ["1H"],
+  timeframe: '1H',
   rsiPeriod: 14,
-  rsiOverboughtThreshold: 70,
-  rsiOversoldThreshold: 30,
-  alertConditions: ["overbought", "oversold"],
-  notificationMethods: ["browser"],
-  alertFrequency: "once"
+  rsiOverbought: 70,
+  rsiOversold: 30,
+  isActive: true
 };
 
 const alert = await rsiTrackerAlertService.saveAlert(alertConfig);
@@ -1110,24 +1107,16 @@ The RSI Tracker Alerts support all trading pairs available in the RSI Tracker:
 
 ### Overview
 
-The RSI Correlation Alerts system allows users to create intelligent trading alerts based on RSI Correlation Dashboard analysis. It supports both RSI Threshold mode (traditional overbought/oversold mismatches) and Real Correlation mode (actual correlation coefficient analysis) with comprehensive correlation pair monitoring across multiple timeframes.
+The RSI Correlation Alert is simplified to a single per-user alert. Users choose one timeframe and a mode: RSI Threshold or Real Correlation. No pair selection is required; the backend checks all correlation pairs and triggers on mismatches based on the chosen mode.
 
 ### Key Features
 
 #### Alert Configuration
-- **Correlation Pairs**: Select up to 5 correlation pairs from 17 available pairs (positive and negative correlations)
-- **Timeframes**: Choose 1-3 timeframes from 1M to 1W for comprehensive analysis
-- **Calculation Modes**: 
-  - **RSI Threshold Mode**: Alert based on RSI overbought/oversold mismatches
-  - **Real Correlation Mode**: Alert based on actual correlation coefficients
-- **RSI Settings** (RSI Threshold mode): Customizable RSI period (5-50), overbought threshold (60-90), oversold threshold (10-40)
-- **Correlation Settings** (Real Correlation mode): Rolling correlation window (20, 50, 90, 120 periods)
-- **Alert Conditions**: Mode-specific conditions:
-  - **RSI Threshold Mode**: Positive mismatch, negative mismatch, neutral break
-  - **Real Correlation Mode**: Strong positive, strong negative, weak correlation, correlation break
-- **Correlation Thresholds** (Real Correlation mode): Customizable strong (0.50-1.00), moderate (0.20-0.80), weak (0.05-0.50)
-- **Notification Methods**: Browser notifications, email, or push notifications
-- **Alert Frequency**: Once only, every 5/15/30 minutes, or hourly
+- **Timeframe**: Choose exactly one timeframe (1M to 1W)
+- **Mode**: `rsi_threshold` or `real_correlation`
+- **RSI Settings** (RSI mode): RSI period (5-50), overbought (60-90), oversold (10-40)
+- **Correlation Settings** (Real mode): Rolling correlation window (20, 50, 90, 120)
+- **Pairs**: Not required; all correlation pairs are evaluated by the backend
 
 #### Alert Management
 - **Create Alerts**: Easy-to-use interface for setting up new RSI correlation alerts
@@ -1209,19 +1198,16 @@ The `RSICorrelationTrackerAlertService` provides a minimal API for the single RS
 
 ### Usage Examples
 
-#### Creating a Basic RSI Threshold Alert
+#### Creating an RSI Correlation Alert
 ```javascript
 const alertConfig = {
-  alertName: "EUR-GBP RSI Mismatch Alert",
-  correlationPairs: [["EURUSD", "GBPUSD"]],
-  timeframes: ["1H"],
-  calculationMode: "rsi_threshold",
+  timeframe: '1H',
+  mode: 'rsi_threshold', // or 'real_correlation'
   rsiPeriod: 14,
-  rsiOverboughtThreshold: 70,
-  rsiOversoldThreshold: 30,
-  alertConditions: ["positive_mismatch", "negative_mismatch"],
-  notificationMethods: ["browser"],
-  alertFrequency: "once"
+  rsiOverbought: 70,
+  rsiOversold: 30,
+  correlationWindow: 50,
+  isActive: true
 };
 
 const alert = await rsiCorrelationTrackerAlertService.saveAlert(alertConfig);
