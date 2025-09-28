@@ -25,7 +25,7 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
           setAlert(existing);
           setForm({
             pairs: (existing.pairs || []).map(p => p.toUpperCase()),
-            tradingStyle: existing.tradingStyle,
+            tradingStyle: ['scalper','swingTrader'].includes(existing.tradingStyle) ? existing.tradingStyle : 'swingTrader',
             buyThreshold: existing.buyThreshold,
             sellThreshold: existing.sellThreshold,
             isActive: existing.isActive
@@ -128,7 +128,6 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="scalper">Scalper</option>
-                  <option value="dayTrader">Day Trader</option>
                   <option value="swingTrader">Swing Trader</option>
                 </select>
               </div>

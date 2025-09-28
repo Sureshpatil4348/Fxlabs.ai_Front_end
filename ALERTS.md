@@ -140,7 +140,7 @@ Frontend config only. Backend evaluates and sends notifications.
 Single per-user alert for the All-in-One/Quantum Analysis heatmap. Users select up to 3 currency pairs, a mode (trading style), and thresholds.
 
 - Pairs: up to 3 (base symbols, e.g., `EURUSD`, `GBPUSD`).
-- Mode: `scalper`, `dayTrader`, or `swingTrader` (timeframe weights).
+- Mode: `scalper` or `swingTrader` (timeframe weights).
 - Thresholds: `Buy Threshold %`, `Sell Threshold %` (0–100).
 - Backend behavior: When Buy% or Sell% crosses its threshold for any selected pair, a trigger is recorded and notification is sent.
 
@@ -170,7 +170,7 @@ Tables:
 1) `public.heatmap_tracker_alerts`
 - `id uuid PK`, `user_id uuid` FK, `user_email text`
 - `pairs jsonb` (1–3 symbols)
-- `trading_style text` in (`scalper`,`dayTrader`,`swingTrader`)
+- `trading_style text` in (`scalper`,`swingTrader`)
 - `buy_threshold int` 0–100, `sell_threshold int` 0–100
 - `is_active boolean`, timestamps
 - Unique `user_id` (one alert per user)

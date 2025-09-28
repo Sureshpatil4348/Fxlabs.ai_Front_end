@@ -773,12 +773,12 @@ The Multi-Indicator Heatmap provides a comprehensive view of technical analysis 
 - **New Signal Detection**: Highlights fresh signals with orange dots (K=3 lookback)
 - **Enhanced Dropdowns**: Professional dropdown interface with:
   - **Symbol Selection**: Major currency pairs with flag emojis (EUR/USD, GBP/USD, USD/JPY, etc.)
-  - **Trading Style**: Scalper, Day Trader, Swing Trader with visual icons
+  - **Trading Style**: Scalper, Swing Trader with visual icons
   - **Weight Configuration**: Equal or Trend-Tilted indicator weights
   - **New Signal Toggle**: ON/OFF switch for new signal highlighting
 - **Settings Persistence**: All user preferences are automatically saved and restored:
   - **Symbol Selection**: Remembers your preferred currency pair
-  - **Trading Style**: Saves your trading approach (Scalper/Day Trader/Swing Trader)
+  - **Trading Style**: Saves your trading approach (Scalper/Swing Trader)
   - **Indicator Weights**: Remembers your weight preference (Equal/Trend-Tilted)
   - **New Signal Display**: Saves your preference for showing new signal indicators
 
@@ -804,13 +804,13 @@ The Multi-Indicator Heatmap provides a comprehensive view of technical analysis 
 3. **Signal Detection**: Determines buy/sell/neutral signals based on standardized logic
 4. **New Signal Detection**: Identifies fresh signals within last K bars (default K=3)
 5. **Per-Cell Scoring**: Each indicator gets a score (-1.25 to +1.25) with new-signal boost
-6. **Trading Style Selection**: Choose from Scalper, Day Trader, or Swing Trader styles via enhanced dropdown
+6. **Trading Style Selection**: Choose from Scalper or Swing Trader styles via enhanced dropdown
 7. **Timeframe Weighting**: Weights vary by trading style (sum to 1.0 for each style)
 8. **Final Aggregation**: Weighted average creates final score and probabilities
 
 ### Enhanced User Interface
 - **Professional Dropdowns**: All controls use consistent styling with hover effects and focus states
-- **Visual Indicators**: Icons and emojis for better user experience (⚡ for Scalper, 📈 for Day Trader, etc.)
+- **Visual Indicators**: Icons and emojis for better user experience (⚡ for Scalper, 📈 for Swing, etc.)
 - **Responsive Design**: Dropdowns adapt to different screen sizes with proper spacing
 - **State Management**: All dropdown selections are properly managed and persist during session
 - **Accessibility**: Proper ARIA labels and keyboard navigation support
@@ -847,9 +847,9 @@ All scores are clamped to the range **[-1.25, +1.25]**
 
 Weights per style sum to 1.0 and determine which timeframes are most important for each trading approach:
 
-| Timeframe | Scalper | Day Trader | Swing Trader |
-|-----------|---------|------------|--------------|
-| 5M        | 0.30    | 0.10       | 0.00         |
+| Timeframe | Scalper | Swing Trader |
+|-----------|---------|--------------|
+| 5M        | 0.30    | 0.00         |
 | 15M       | 0.30    | 0.25       | 0.00         |
 | 30M       | 0.20    | 0.25       | 0.10         |
 | 1H        | 0.15    | 0.25       | 0.25         |
@@ -858,7 +858,6 @@ Weights per style sum to 1.0 and determine which timeframes are most important f
 
 #### Trading Style Focus Areas:
 - **Scalper**: Focus on 5M-30M timeframes (80% weight on short-term)
-- **Day Trader**: Balanced across 15M-1H timeframes (75% weight on medium-term)
 - **Swing Trader**: Focus on 1H-1D timeframes (90% weight on long-term)
 
 ### Indicator Weights
@@ -936,7 +935,7 @@ The Multi-Indicator Heatmap Alerts system allows users to create intelligent tra
 - **Trading Pairs**: Select up to 3 currency pairs for monitoring
 - **Timeframes**: Choose up to 3 timeframes from 1M to 1W
 - **Indicators**: Select 1-2 indicators from the 7 available (EMA21, EMA50, EMA200, MACD, RSI, UTBOT, IchimokuClone)
-- **Trading Style**: Choose from Scalper, Day Trader, or Swing Trader approaches
+- **Trading Style**: Choose from Scalper or Swing Trader approaches
 - **Thresholds**: Set custom buy (70-100) and sell (0-30) thresholds
 - **Notification Methods**: Browser notifications, email, or push notifications
 - **Alert Frequency**: Once only, every 5/15/30 minutes, or hourly
@@ -966,7 +965,7 @@ The Multi-Indicator Heatmap Alerts system allows users to create intelligent tra
 - pairs: JSONB - Array of up to 3 trading pairs
 - timeframes: JSONB - Array of up to 3 timeframes
 - selected_indicators: JSONB - Array of 1-2 selected indicators
-- trading_style: VARCHAR(20) - Trading approach (scalper/dayTrader/swingTrader)
+- trading_style: VARCHAR(20) - Trading approach (scalper/swingTrader)
 - buy_threshold_min/max: INTEGER - Buy alert thresholds (70-100)
 - sell_threshold_min/max: INTEGER - Sell alert thresholds (0-30)
 - notification_methods: JSONB - Array of notification types
@@ -1033,7 +1032,7 @@ const alertConfig = {
   pairs: ["EURUSD"],
   timeframes: ["1H"],
   selectedIndicators: ["RSI"],
-  tradingStyle: "dayTrader",
+  tradingStyle: "swingTrader",
   buyThresholdMin: 70,
   buyThresholdMax: 100,
   sellThresholdMin: 0,

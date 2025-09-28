@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.heatmap_tracker_alerts (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_email text NOT NULL,
   pairs jsonb NOT NULL DEFAULT '[]', -- up to 3 base symbols (e.g., ["EURUSD","GBPUSD"])
-  trading_style text NOT NULL DEFAULT 'dayTrader' CHECK (trading_style IN ('scalper','dayTrader','swingTrader')),
+  trading_style text NOT NULL DEFAULT 'swingTrader' CHECK (trading_style IN ('scalper','swingTrader')),
   buy_threshold int NOT NULL DEFAULT 70 CHECK (buy_threshold BETWEEN 0 AND 100),
   sell_threshold int NOT NULL DEFAULT 70 CHECK (sell_threshold BETWEEN 0 AND 100),
   is_active boolean NOT NULL DEFAULT true,

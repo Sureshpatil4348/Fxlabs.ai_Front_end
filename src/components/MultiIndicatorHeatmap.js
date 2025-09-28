@@ -107,14 +107,6 @@ const TRADING_STYLE_WEIGHTS = {
     '4H': 0.05,
     '1D': 0.00
   },
-  dayTrader: {
-    '5M': 0.10,
-    '15M': 0.25,
-    '30M': 0.25,
-    '1H': 0.25,
-    '4H': 0.10,
-    '1D': 0.05
-  },
   swingTrader: {
     '5M': 0.00,
     '15M': 0.00,
@@ -126,7 +118,7 @@ const TRADING_STYLE_WEIGHTS = {
 };
 
 // Default trading style
-const DEFAULT_TRADING_STYLE = 'dayTrader';
+const DEFAULT_TRADING_STYLE = 'swingTrader';
 
 // Indicator Weights (sum to 1.0 for each option)
 const INDICATOR_WEIGHTS = {
@@ -353,18 +345,20 @@ const [isTouchDevice, setIsTouchDevice] = useState(false);
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.multiIndicatorHeatmap) {
           const { symbol, tradingStyle, indicatorWeight, showNewSignals } = savedSettings.multiIndicatorHeatmap;
+          const allowedStyles = ['scalper','swingTrader'];
+          const normalizedStyle = allowedStyles.includes(tradingStyle) ? tradingStyle : 'swingTrader';
           
           // Update local settings state
           setLocalSettings({
             symbol: symbol || selectedSymbol,
-            tradingStyle: tradingStyle || DEFAULT_TRADING_STYLE,
+            tradingStyle: normalizedStyle || DEFAULT_TRADING_STYLE,
             indicatorWeight: indicatorWeight || 'equal',
             showNewSignals: showNewSignals !== undefined ? showNewSignals : true
           });
 
           // Update component state
           setCurrentSymbol(symbol || selectedSymbol);
-          setTradingStyle(tradingStyle || DEFAULT_TRADING_STYLE);
+          setTradingStyle(normalizedStyle || DEFAULT_TRADING_STYLE);
           setIndicatorWeight(indicatorWeight || 'equal');
           setShowNewSignals(showNewSignals !== undefined ? showNewSignals : true);
         }
@@ -761,11 +755,10 @@ useEffect(() => {
   };
 
   // Get actionable zone based on final score
-  const getActionableZone = (finalScore, tradingStyle = 'dayTrader') => {
+  const getActionableZone = (finalScore, tradingStyle = 'swingTrader') => {
     // Style-specific sensitivity thresholds
     const thresholds = {
       'scalper': 25,
-      'dayTrader': 20,
       'swingTrader': 15
     };
     
@@ -933,7 +926,6 @@ useEffect(() => {
                   className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                 <option value="scalper">Scalper</option>
-                <option value="dayTrader">Day Trader</option>
                 <option value="swingTrader">Swing Trader</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
@@ -1035,7 +1027,6 @@ useEffect(() => {
         const _styling = getZoneStyling(zone);
         const thresholds = {
           'scalper': 25,
-          'day-trader': 20,
           'swing-trader': 15
         };
         const _threshold = thresholds[tradingStyle] || 20;

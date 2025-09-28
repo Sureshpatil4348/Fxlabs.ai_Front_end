@@ -167,7 +167,7 @@ class UserStateService {
       // Multi-Indicator Heatmap Settings
       multiIndicatorHeatmap: {
         symbol: 'EURUSDm',
-        tradingStyle: 'dayTrader',
+        tradingStyle: 'swingTrader',
         indicatorWeight: 'equal',
         showNewSignals: true
       }

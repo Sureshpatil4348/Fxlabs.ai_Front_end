@@ -10,7 +10,7 @@ class HeatmapTrackerAlertService {
   getDefaultAlertConfig() {
     return {
       pairs: [], // up to 3 base symbols like 'EURUSD'
-      tradingStyle: 'dayTrader', // 'scalper' | 'dayTrader' | 'swingTrader'
+      tradingStyle: 'swingTrader', // 'scalper' | 'swingTrader'
       buyThreshold: 70,
       sellThreshold: 70,
       isActive: true
@@ -20,7 +20,7 @@ class HeatmapTrackerAlertService {
   _validate(cfg) {
     const errors = [];
     if (!Array.isArray(cfg.pairs) || cfg.pairs.length === 0 || cfg.pairs.length > 3) errors.push('Select 1-3 pairs');
-    const styleOk = ['scalper','dayTrader','swingTrader'].includes(cfg.tradingStyle);
+    const styleOk = ['scalper','swingTrader'].includes(cfg.tradingStyle);
     if (!styleOk) errors.push('Invalid trading style');
     if (!Number.isFinite(cfg.buyThreshold) || cfg.buyThreshold < 0 || cfg.buyThreshold > 100) errors.push('Buy threshold 0-100');
     if (!Number.isFinite(cfg.sellThreshold) || cfg.sellThreshold < 0 || cfg.sellThreshold > 100) errors.push('Sell threshold 0-100');
