@@ -8,8 +8,8 @@ import { useAuth } from '../auth/AuthProvider';
 import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
-import useRSITrackerStore from '../store/useRSITrackerStore';
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
+import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
 // Utility function to clamp values within min/max bounds
