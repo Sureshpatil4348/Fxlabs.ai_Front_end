@@ -55,7 +55,8 @@ const useRSICorrelationStore = create(
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
     tickData: new Map(),      // symbol -> latest ticks
-    ohlcData: new Map(),      // symbol -> OHLC bars
+    ohlcData: new Map(),      // symbol -> OHLC bars (default timeframe)
+    ohlcByTimeframe: new Map(), // symbol -> Map(timeframe -> { symbol, timeframe, bars, lastUpdate })
     initialOhlcReceived: new Set(), // symbols that received initial OHLC
     
     // RSI Data
@@ -161,6 +162,7 @@ const useRSICorrelationStore = create(
             subscriptions: new Map(),
             tickData: new Map(),
             ohlcData: new Map(),
+            ohlcByTimeframe: new Map(),
             initialOhlcReceived: new Set()
           });
           get().addLog('Disconnected from MT5 server (RSI Correlation)', 'warning');
@@ -213,6 +215,7 @@ const useRSICorrelationStore = create(
         subscriptions: new Map(),
         tickData: new Map(),
         ohlcData: new Map(),
+        ohlcByTimeframe: new Map(),
         initialOhlcReceived: new Set()
       });
     },
@@ -313,17 +316,32 @@ const useRSICorrelationStore = create(
           
         case 'initial_ohlc':
           const ohlcData = new Map(state.ohlcData);
+          const initialReceived = new Set(state.initialOhlcReceived);
+          const ohlcByTimeframe_init = new Map(state.ohlcByTimeframe || new Map());
+
+          // Top-level default timeframe buffer (kept for backward compatibility)
           ohlcData.set(message.symbol, {
             symbol: message.symbol,
             timeframe: message.timeframe,
             bars: message.data,
             lastUpdate: new Date()
           });
-          const initialReceived = new Set(state.initialOhlcReceived);
+
+          // Populate multi-timeframe buffer
+          const perSymbol_init = new Map(ohlcByTimeframe_init.get(message.symbol) || new Map());
+          perSymbol_init.set(message.timeframe, {
+            symbol: message.symbol,
+            timeframe: message.timeframe,
+            bars: message.data,
+            lastUpdate: new Date()
+          });
+          ohlcByTimeframe_init.set(message.symbol, perSymbol_init);
+
           initialReceived.add(message.symbol);
-          
+
           set({ 
             ohlcData,
+            ohlcByTimeframe: ohlcByTimeframe_init,
             initialOhlcReceived: initialReceived
           });
           get().addLog(`Received ${message.data.length} initial OHLC bars for ${message.symbol}`, 'info');
@@ -350,37 +368,70 @@ const useRSICorrelationStore = create(
           
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);
-          const symbolData = currentOhlcData.get(message.data.symbol);
-          if (symbolData) {
-            // Update the most recent bar or add new one
-            const bars = [...symbolData.bars];
+          const currentByTf = new Map(state.ohlcByTimeframe || new Map());
+
+          // Ensure top-level buffer exists and update
+          let symbolData = currentOhlcData.get(message.data.symbol);
+          if (!symbolData) {
+            symbolData = {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              bars: [],
+              lastUpdate: new Date()
+            };
+          }
+
+          // Update the most recent bar or add new one for top-level buffer
+          {
+            const bars = Array.isArray(symbolData.bars) ? [...symbolData.bars] : [];
             const lastBar = bars[bars.length - 1];
-            
             if (lastBar && lastBar.time === message.data.time) {
-              // Update existing bar - don't log
               bars[bars.length - 1] = message.data;
             } else {
-              // Add new bar and keep only last 100 - log this as it's a new candle
               bars.push(message.data);
               if (bars.length > 100) {
                 bars.shift();
               }
               get().addLog(`New candle: ${message.data.symbol} - ${message.data.close}`, 'info');
             }
-            
             symbolData.bars = bars;
+            symbolData.timeframe = message.data.timeframe;
             symbolData.lastUpdate = new Date();
             currentOhlcData.set(message.data.symbol, symbolData);
-            set({ ohlcData: currentOhlcData });
-            
-            // Trigger RSI recalculation when new data arrives
-            setTimeout(() => {
-              get().recalculateAllRsi();
-              if (state.settings.calculationMode === 'real_correlation') {
-                get().calculateAllCorrelations();
-              }
-            }, 100);
           }
+
+          // Update multi-timeframe buffer (robust even without initial_ohlc)
+          {
+            const perSymbolTf = new Map(currentByTf.get(message.data.symbol) || new Map());
+            const existingTfData = perSymbolTf.get(message.data.timeframe);
+            const tfBars = existingTfData && Array.isArray(existingTfData.bars) ? [...existingTfData.bars] : [];
+            const tfLast = tfBars[tfBars.length - 1];
+            if (tfLast && tfLast.time === message.data.time) {
+              tfBars[tfBars.length - 1] = message.data;
+            } else {
+              tfBars.push(message.data);
+              if (tfBars.length > 100) {
+                tfBars.shift();
+              }
+            }
+            perSymbolTf.set(message.data.timeframe, {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              bars: tfBars,
+              lastUpdate: new Date()
+            });
+            currentByTf.set(message.data.symbol, perSymbolTf);
+          }
+
+          set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
+
+          // Trigger RSI recalculation when new data arrives
+          setTimeout(() => {
+            get().recalculateAllRsi();
+            if (state.settings.calculationMode === 'real_correlation') {
+              get().calculateAllCorrelations();
+            }
+          }, 100);
           break;
           
         case 'pong':
@@ -688,11 +739,10 @@ const useRSICorrelationStore = create(
 
     // Data Getters
     getOhlcForSymbol: (symbol) => {
-      const ohlcData = get().ohlcData.get(symbol);
-      if (!ohlcData) return [];
-
-      // Ensure bars match the active timeframe; avoid stale bars after timeframe changes
+      // Prefer the active timeframe's bars when available (multi-timeframe buffer)
       const tf = get().settings?.timeframe;
+      const byTf = get().ohlcByTimeframe?.get(symbol);
+
       const tfAliases = (t) => {
         switch (t) {
           case '1M': return ['1M', 'M1'];
@@ -706,11 +756,27 @@ const useRSICorrelationStore = create(
           default: return [t];
         }
       };
-      if (tf) {
-        const aliases = tfAliases(tf);
-        if (!aliases.includes(ohlcData.timeframe)) return [];
+
+      if (tf && byTf) {
+        const keys = tfAliases(tf);
+        for (const key of keys) {
+          const tfData = byTf.get(key);
+          if (tfData && Array.isArray(tfData.bars) && tfData.bars.length > 0) {
+            return tfData.bars;
+          }
+        }
       }
-      return ohlcData.bars || [];
+
+      // Fallback: top-level buffer, but only if timeframe matches active timeframe
+      const ohlcData = get().ohlcData.get(symbol);
+      if (ohlcData && tf) {
+        const aliases = tfAliases(tf);
+        if (aliases.includes(ohlcData.timeframe)) {
+          return ohlcData.bars || [];
+        }
+        return [];
+      }
+      return ohlcData ? (ohlcData.bars || []) : [];
     },
 
     getTicksForSymbol: (symbol) => {

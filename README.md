@@ -31,11 +31,15 @@ Frontend config only; backend evaluates and sends notifications.
 ## Recent Updates
 
 ### RSI Correlation Live Update Reliability (Latest)
-- Fixed intermittent stalls where RSI Correlation values stopped updating after a transient disconnect.
-- Root cause: the correlation store did not force re-subscription on WebSocket reconnect, and stale in-memory subscription/data maps could persist after close.
+- Fixed intermittent stalls where RSI Correlation values stopped updating or lagged behind RSI Tracker.
+- Root causes:
+  - Store did not maintain per-timeframe OHLC buffers; RSI calculations could miss the active timeframe or use stale bars.
+  - On reconnect, stale in-memory maps could persist and subscriptions were not always re-sent.
 - Fixes:
+  - Added `ohlcByTimeframe` buffer and updated `getOhlcForSymbol` to prefer the active timeframe (with proper aliasing like H1/1H).
+  - Made `ohlc_update` robust even without a prior `initial_ohlc` by creating buffers on the fly and updating both top-level and per-timeframe maps.
   - On connect, force auto-subscribe to all correlation pairs with a brief delay to batch sends.
-  - On close, clear `subscriptions`, `tickData`, `ohlcData`, and `initialOhlcReceived` so the next connect resubscribes cleanly.
+  - On close/disconnect, clear `subscriptions`, `tickData`, `ohlcData`, `ohlcByTimeframe`, and `initialOhlcReceived` to guarantee clean resubscription.
 - Affected file: `src/store/useRSICorrelationStore.js`
 
 ### WebSocket Connection Logs (Latest)
