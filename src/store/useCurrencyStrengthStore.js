@@ -107,6 +107,8 @@ const useCurrencyStrengthStore = create(
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
           get().addLog('Connected to MT5 server (Currency Strength)', 'success');
+          // eslint-disable-next-line no-console
+          console.warn(`[WS][CurrencyStrength] Connected at ${new Date().toISOString()}`);
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -146,7 +148,9 @@ const useCurrencyStrengthStore = create(
           }
         };
         
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          // eslint-disable-next-line no-console
+          console.error(`[WS][CurrencyStrength] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           set({ 
             isConnected: false, 
             isConnecting: false, 

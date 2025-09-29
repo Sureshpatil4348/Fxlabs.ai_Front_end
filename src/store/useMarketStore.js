@@ -127,6 +127,8 @@ const useMarketStore = create(
             connectionError: null 
           });
           get().addLog('Connected to MT5 server', 'success');
+          // eslint-disable-next-line no-console
+          console.warn(`[WS][Market] Connected at ${new Date().toISOString()}`);
         };
         
         ws.onmessage = (event) => {
@@ -158,7 +160,9 @@ const useMarketStore = create(
           }
         };
         
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          // eslint-disable-next-line no-console
+          console.error(`[WS][Market] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           set({ 
             isConnected: false, 
             isConnecting: false, 

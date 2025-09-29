@@ -95,6 +95,8 @@ const useRSICorrelationStore = create(
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
           get().addLog('Connected to MT5 server (RSI Correlation)', 'success');
+          // eslint-disable-next-line no-console
+          console.warn(`[WS][RSI Correlation] Connected at ${new Date().toISOString()}`);
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -147,7 +149,9 @@ const useRSICorrelationStore = create(
           }
         };
         
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          // eslint-disable-next-line no-console
+          console.error(`[WS][RSI Correlation] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           // Reset connection flags and clear subscription/data maps so a future
           // auto-subscribe will re-send subscribe messages on a new socket
           set({ 

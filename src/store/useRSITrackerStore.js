@@ -87,6 +87,8 @@ const useRSITrackerStore = create(
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
           get().addLog('Connected to MT5 server (RSI Tracker)', 'success');
+          // eslint-disable-next-line no-console
+          console.warn(`[WS][RSI Tracker] Connected at ${new Date().toISOString()}`);
           
           // Subscribe to any pending watchlist symbols
           const { pendingWatchlistSubscriptions, settings } = get();
@@ -151,7 +153,9 @@ const useRSITrackerStore = create(
           }
         };
         
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+          // eslint-disable-next-line no-console
+          console.error(`[WS][RSI Tracker] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           set({ 
             isConnected: false, 
             isConnecting: false, 

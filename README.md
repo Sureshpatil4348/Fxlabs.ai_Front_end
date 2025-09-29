@@ -38,6 +38,19 @@ Frontend config only; backend evaluates and sends notifications.
   - On close, clear `subscriptions`, `tickData`, `ohlcData`, and `initialOhlcReceived` so the next connect resubscribes cleanly.
 - Affected file: `src/store/useRSICorrelationStore.js`
 
+### WebSocket Connection Logs (Latest)
+- Added explicit browser console logs on WebSocket connect/disconnect for faster debugging:
+  - `[WS][RSI Correlation] Connected/Disconnected ...`
+  - `[WS][RSI Tracker] Connected/Disconnected ...`
+  - `[WS][Market] Connected/Disconnected ...`
+  - `[WS][CurrencyStrength] Connected/Disconnected ...`
+- Includes timestamp, close code, and reason (when available).
+- Affected files:
+  - `src/store/useRSICorrelationStore.js`
+  - `src/store/useRSITrackerStore.js`
+  - `src/store/useMarketStore.js`
+  - `src/store/useCurrencyStrengthStore.js`
+
 ### RSI Correlation Dashboard Pair Rendering Reliability (Latest)
 - Fixed an issue where some correlation pairs intermittently disappeared a second after load.
 - The dashboard now always renders the full configured pair list and shows placeholders (e.g., "Calculating…" or "--") until data arrives.
