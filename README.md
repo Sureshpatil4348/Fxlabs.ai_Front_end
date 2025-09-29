@@ -160,6 +160,7 @@ Frontend config only; backend evaluates and sends notifications.
   - Change: `src/store/useRSITrackerStore.js: getOhlcForSymbol` returns bars from `ohlcByTimeframe` for the active timeframe.
   - Handled aliasing: UI labels like `5M/4H/1D/1W` are now matched to server keys `M5/H4/D1/W1` during lookup to avoid mismatches that caused wrong RSI on 5M. Subscriptions continue using the UI timeframe labels for compatibility.
   - Added timeframe sanity checks in all stores so RSI never uses stale bars from a previous timeframe after switching. If the active timeframe's bars aren't available yet, the view avoids using mismatched buffers and updates as soon as new bars arrive.
+  - Settings persistence load scope: RSI Tracker now loads saved settings only on user change to avoid continuous DB overwrites. This prevents unintended timeframe resets that could desync it from other widgets.
 
  - Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. When there is sufficient history, the latest (forming) candle is dropped; when there isn't, the RSI uses available bars so the UI doesn't go blank right after subscribing.
    - Changes: `calculateRsi` in `src/store/useRSITrackerStore.js`, `src/store/useRSICorrelationStore.js`, and `src/store/useMarketStore.js` drop the last bar only when there are more than `period + 1` bars.

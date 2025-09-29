@@ -232,7 +232,7 @@ const RSIOverboughtOversoldTracker = () => {
     console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
   }, [rsiData, oversoldPairs.length, overboughtPairs.length]);
 
-  // Load settings from database on component mount
+  // Load settings from database on user change (avoid continuous overwrites that can desync timeframes)
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -240,21 +240,24 @@ const RSIOverboughtOversoldTracker = () => {
         if (savedSettings.rsiTracker) {
           const { timeframe, rsiPeriod, rsiOverbought, rsiOversold } = savedSettings.rsiTracker;
           
-          // Update local settings state
-          setLocalSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold
-          });
+          // Update local settings state using only provided keys
+          setLocalSettings(prev => ({
+            ...prev,
+            ...(timeframe != null ? { timeframe } : {}),
+            ...(rsiPeriod != null ? { rsiPeriod } : {}),
+            ...(rsiOverbought != null ? { rsiOverbought } : {}),
+            ...(rsiOversold != null ? { rsiOversold } : {})
+          }));
 
-          // Update store settings
-          updateSettings({
-            timeframe: timeframe || settings.timeframe,
-            rsiPeriod: rsiPeriod || settings.rsiPeriod,
-            rsiOverbought: rsiOverbought || settings.rsiOverbought,
-            rsiOversold: rsiOversold || settings.rsiOversold
-          });
+          // Update store settings using partial update
+          const partialUpdate = {};
+          if (timeframe != null) partialUpdate.timeframe = timeframe;
+          if (rsiPeriod != null) partialUpdate.rsiPeriod = rsiPeriod;
+          if (rsiOverbought != null) partialUpdate.rsiOverbought = rsiOverbought;
+          if (rsiOversold != null) partialUpdate.rsiOversold = rsiOversold;
+          if (Object.keys(partialUpdate).length > 0) {
+            updateSettings(partialUpdate);
+          }
 
         }
       } catch (error) {
@@ -263,7 +266,7 @@ const RSIOverboughtOversoldTracker = () => {
     };
 
     loadSettings();
-  }, [settings.rsiOverbought, settings.rsiOversold, settings.rsiPeriod, settings.timeframe, updateSettings]);
+  }, [user, updateSettings]);
 
   const handleAddToWishlist = (symbol) => {
     addToWishlist(symbol);
