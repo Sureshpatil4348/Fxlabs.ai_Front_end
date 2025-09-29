@@ -157,6 +157,8 @@ Frontend config only; backend evaluates and sends notifications.
   - Require at least `period + 2` raw bars; then drop the last (forming) bar so we always compute with `period + 1` closed candles.
   - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
 
+- Timestamp normalization for candle alignment: All `ohlc_update` handlers now compare candle identity using normalized timestamps (numeric epoch or ISO) to avoid duplicate bars when the feed alternates between number and string time formats. This prevents RSI drift that previously corrected only after a page refresh.
+
 - Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.
   - Change: `src/store/useRSITrackerStore.js: getOhlcForSymbol` returns bars from `ohlcByTimeframe` for the active timeframe.
   - Handled aliasing: UI labels like `5M/4H/1D/1W` are now matched to server keys `M5/H4/D1/W1` during lookup to avoid mismatches that caused wrong RSI on 5M. Subscriptions continue using the UI timeframe labels for compatibility.

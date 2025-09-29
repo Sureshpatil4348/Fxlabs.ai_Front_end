@@ -341,8 +341,12 @@ const useMarketStore = create(
             // Update the most recent bar or add new one
             const bars = [...symbolData.bars];
             const lastBar = bars[bars.length - 1];
+            const toTime = (t) => {
+              const n = Number(t);
+              return Number.isFinite(n) ? n : Date.parse(t);
+            };
             
-            if (lastBar && lastBar.time === message.data.time) {
+            if (lastBar && toTime(lastBar.time) === toTime(message.data.time)) {
               // Update existing bar - don't log
               bars[bars.length - 1] = message.data;
             } else {

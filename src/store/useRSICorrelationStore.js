@@ -371,6 +371,12 @@ const useRSICorrelationStore = create(
           const currentByTf = new Map(state.ohlcByTimeframe || new Map());
           let appendedNew = false;
 
+          // Normalize timestamp helper to align numeric epoch and ISO strings
+          const toTime = (t) => {
+            const n = Number(t);
+            return Number.isFinite(n) ? n : Date.parse(t);
+          };
+
           // Ensure top-level buffer exists and update
           let symbolData = currentOhlcData.get(message.data.symbol);
           if (!symbolData) {
@@ -386,7 +392,7 @@ const useRSICorrelationStore = create(
           {
             const bars = Array.isArray(symbolData.bars) ? [...symbolData.bars] : [];
             const lastBar = bars[bars.length - 1];
-            if (lastBar && lastBar.time === message.data.time) {
+            if (lastBar && toTime(lastBar.time) === toTime(message.data.time)) {
               bars[bars.length - 1] = message.data;
             } else {
               bars.push(message.data);
@@ -408,7 +414,7 @@ const useRSICorrelationStore = create(
             const existingTfData = perSymbolTf.get(message.data.timeframe);
             const tfBars = existingTfData && Array.isArray(existingTfData.bars) ? [...existingTfData.bars] : [];
             const tfLast = tfBars[tfBars.length - 1];
-            if (tfLast && tfLast.time === message.data.time) {
+            if (tfLast && toTime(tfLast.time) === toTime(message.data.time)) {
               tfBars[tfBars.length - 1] = message.data;
             } else {
               tfBars.push(message.data);

@@ -363,13 +363,17 @@ const useRSITrackerStore = create(
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);
           let appendedNew = false;
+          const toTime = (t) => {
+            const n = Number(t);
+            return Number.isFinite(n) ? n : Date.parse(t);
+          };
           const topLevelSymbolData = currentOhlcData.get(message.data.symbol);
           if (topLevelSymbolData) {
             // Update the most recent bar or add new one (top-level default timeframe)
             const bars = [...topLevelSymbolData.bars];
             const lastBar = bars[bars.length - 1];
             
-            if (lastBar && lastBar.time === message.data.time) {
+            if (lastBar && toTime(lastBar.time) === toTime(message.data.time)) {
               bars[bars.length - 1] = message.data;
             } else {
               bars.push(message.data);
@@ -391,7 +395,7 @@ const useRSITrackerStore = create(
           const existingTfData = perSymbolTf.get(message.data.timeframe);
           const tfBars = existingTfData ? [...existingTfData.bars] : [];
           const tfLast = tfBars[tfBars.length - 1];
-          if (tfLast && tfLast.time === message.data.time) {
+          if (tfLast && toTime(tfLast.time) === toTime(message.data.time)) {
             tfBars[tfBars.length - 1] = message.data;
           } else {
             tfBars.push(message.data);
