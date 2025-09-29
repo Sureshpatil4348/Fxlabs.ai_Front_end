@@ -1,163 +1,97 @@
-import { 
-  Play,
-  Bell,
-  Filter,
-  Target,
-  TrendingUp,
-  Sparkles
-} from 'lucide-react'
+import { Play, Zap, Target, Compass, LineChart } from 'lucide-react'
 import React, { useState } from 'react'
+
+import { useTheme } from '../contexts/ThemeContext'
+
+const pillars = [
+  {
+    title: 'Signal clarity',
+    description: 'Multi-timeframe RSI, liquidity and sentiment fused into a single probability score for every asset.',
+    icon: Target
+  },
+  {
+    title: 'Decision intelligence',
+    description: 'Context-aware narratives give your desk the why behind the move in moments, not hours.',
+    icon: Compass
+  },
+  {
+    title: 'Execution mastery',
+    description: 'Automated playbooks, smart alerting and frictionless routing keep your team ahead of the curve.',
+    icon: LineChart
+  }
+]
 
 const VideoExplanationSection = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
-
-  const features = [
-    {
-      id: 1,
-      title: "Never Miss a Move",
-      description: "Get instant alerts the moment opportunities appear.",
-      icon: Bell,
-      highlight: "Never"
-    },
-    {
-      id: 2,
-      title: "Cut the Noise",
-      description: "Only the signals that matter, nothing extra.",
-      icon: Filter,
-      highlight: "Cut"
-    },
-    {
-      id: 3,
-      title: "Trade with Confidence",
-      description: "AI-backed insights, zero guesswork.",
-      icon: Target,
-      highlight: "Trade"
-    },
-    {
-      id: 4,
-      title: "Stay Ahead of the Herd",
-      description: "Spot moves before everyone else.",
-      icon: TrendingUp,
-      highlight: "Stay"
-    }
-  ]
+  const { isDarkMode } = useTheme()
 
   return (
-    <section className="relative -mt-8 py-4">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-6 py-2 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-8">
-            <Sparkles className="w-4 h-4" />
-            <span>HOW IT WORKS</span>
-          </div>
-          
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-8 font-poppins">
-            <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">
-              Why Choose FXLabs.AI?
-            </span>
-          </h2>
-          
-          <p className="text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            Experience the power of <span className="text-emerald-600 dark:text-emerald-400 font-semibold">AI-driven trading</span> with our proven system
-          </p>
-        </div>
+    <section className="relative py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200/70 bg-white/70 px-5 py-2 text-xs uppercase tracking-[0.5em] text-gray-500 dark:border-white/10 dark:bg-gray-900/60 dark:text-gray-300">
+              <Zap className="h-4 w-4 text-emerald-500" />
+              Live walkthrough
+            </div>
+            <h2 className={`text-3xl font-semibold leading-tight sm:text-4xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              See how FXLabs unifies intelligence, execution and performance in minutes
+            </h2>
+            <p className={`text-base leading-relaxed sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Our guided experience shows the journey from raw signal to executed trade. Every screen is designed for premium clarity, so your team focuses on conviction—not systems.
+            </p>
 
-        {/* Main Content - Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          {/* Video Section */}
+            <div className="space-y-6">
+              {pillars.map((pillar) => (
+                <div key={pillar.title} className="flex items-start gap-4">
+                  <div className="rounded-2xl bg-emerald-500/15 p-3 text-emerald-500">
+                    <pillar.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{pillar.title}</h3>
+                    <p className={`text-sm leading-relaxed sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {pillar.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="relative">
             {!isVideoPlaying ? (
-              <div 
-                className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl group cursor-pointer" 
+              <button
+                type="button"
                 onClick={() => setIsVideoPlaying(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setIsVideoPlaying(true);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label="Play FXLabs.AI Demo Video"
+                className="group relative block aspect-[16/10] w-full overflow-hidden rounded-3xl border border-gray-200/70 bg-gray-900/85 shadow-[0_30px_120px_-60px_rgba(16,185,129,0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:border-white/10"
               >
-                {/* Video Thumbnail */}
-                <div className="relative w-full h-full bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700">
-                  <img 
-                    src="https://img.youtube.com/vi/xH3vWTPYMsY/maxresdefault.jpg" 
-                    alt="FXLabs.AI Demo Video Thumbnail"
-                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-300"
-                  />
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                  
-                  {/* Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <button className="group/btn relative w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110">
-                      <Play className="w-10 h-10 text-white ml-1 group-hover/btn:scale-110 transition-transform duration-300" />
-                    </button>
-                  </div>
-                  
-                  {/* Video Title Overlay */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white font-bold text-lg mb-1 font-poppins">FXLabs.AI Trading System Demo</h3>
-                    <p className="text-white/80 text-sm">See how our AI-powered alerts work in real-time</p>
-                  </div>
+                <img
+                  src="https://img.youtube.com/vi/e9yQcDzqHTU/maxresdefault.jpg"
+                  alt="FXLabs demo"
+                  className="h-full w-full object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-transparent to-emerald-500/20" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-white/85 text-gray-900 shadow-xl transition-all duration-300 group-hover:scale-105">
+                    <Play className="h-8 w-8" />
+                  </span>
                 </div>
-              </div>
+                <div className="absolute bottom-8 left-8 right-8 space-y-2 text-left text-white">
+                  <p className="text-[11px] uppercase tracking-[0.5em] text-white/70">Platform tour</p>
+                  <p className="text-xl font-semibold">Experience the premium trading cockpit</p>
+                </div>
+              </button>
             ) : (
-              <div className="relative bg-black aspect-video overflow-hidden rounded-2xl shadow-2xl">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-3xl border border-gray-200/70 shadow-2xl dark:border-white/10">
                 <iframe
-                  src="https://www.youtube.com/embed/xH3vWTPYMsY?autoplay=1&rel=0&modestbranding=1"
-                  title="FXLabs.AI Demo Video"
-                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/e9yQcDzqHTU?autoplay=1&rel=0&modestbranding=1"
+                  title="FXLabs demo"
+                  className="h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                ></iframe>
+                />
               </div>
             )}
-          </div>
-
-          {/* Features Section - Unique Design */}
-          <div className="space-y-6">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon
-              
-              return (
-                <div key={feature.id} className="relative group">
-                  {/* Unique Progress Line */}
-                  {index < features.length - 1 && (
-                    <div className="absolute left-5 top-16 w-0.5 h-10 bg-gradient-to-b from-emerald-500 to-transparent opacity-30"></div>
-                  )}
-                  
-                  <div className="flex items-start space-x-5">
-                    {/* Unique Icon with Glow */}
-                    <div className="relative">
-                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/30 transition-all duration-300">
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                    </div>
-                    
-                    {/* Content with Unique Styling */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 leading-tight font-poppins">
-                        <span className="relative">
-                          <span className="text-emerald-600 dark:text-emerald-400">{feature.highlight}</span>
-                          <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-500/30 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                        </span>
-                        <span className="text-gray-900 dark:text-white"> {feature.title.replace(feature.highlight, '')}</span>
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
       </div>
