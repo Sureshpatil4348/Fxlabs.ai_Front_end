@@ -104,7 +104,6 @@ const RSIOverboughtOversoldTracker = () => {
     settings,
     rsiData,
     isConnected,
-    autoSubscribeToMajorPairs,
     updateSettings,
     timeframes,
     getLatestTickForSymbol,
