@@ -104,6 +104,18 @@ const useRSICorrelationStore = create(
               error: null
             });
           });
+
+          // Ensure subscriptions are restored on (re)connect
+          // Small delay to give the socket a moment before sending batch subscriptions
+          setTimeout(() => {
+            try {
+              // Force re-subscribe regardless of current in-memory map
+              get().autoSubscribeToCorrelationPairs(true);
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.error('Failed to auto-subscribe correlation pairs on connect:', e);
+            }
+          }, 300);
         };
         
         ws.onmessage = (event) => {
@@ -136,10 +148,16 @@ const useRSICorrelationStore = create(
         };
         
         ws.onclose = () => {
+          // Reset connection flags and clear subscription/data maps so a future
+          // auto-subscribe will re-send subscribe messages on a new socket
           set({ 
             isConnected: false, 
             isConnecting: false, 
-            websocket: null 
+            websocket: null,
+            subscriptions: new Map(),
+            tickData: new Map(),
+            ohlcData: new Map(),
+            initialOhlcReceived: new Set()
           });
           get().addLog('Disconnected from MT5 server (RSI Correlation)', 'warning');
           
@@ -697,7 +715,7 @@ const useRSICorrelationStore = create(
     },
 
     // Auto-subscription for correlation pairs
-    autoSubscribeToCorrelationPairs: () => {
+    autoSubscribeToCorrelationPairs: (force = false) => {
       const state = get();
       if (!state.isConnected) return;
 
@@ -708,10 +726,10 @@ const useRSICorrelationStore = create(
         const sym1 = symbol1 + 'm';
         const sym2 = symbol2 + 'm';
         
-        if (!state.subscriptions.has(sym1)) {
+        if (force || !state.subscriptions.has(sym1)) {
           subscribe(sym1, state.settings.timeframe, ['ticks', 'ohlc']);
         }
-        if (!state.subscriptions.has(sym2)) {
+        if (force || !state.subscriptions.has(sym2)) {
           subscribe(sym2, state.settings.timeframe, ['ticks', 'ohlc']);
         }
       });

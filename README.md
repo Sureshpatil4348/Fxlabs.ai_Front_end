@@ -30,6 +30,14 @@ Frontend config only; backend evaluates and sends notifications.
 
 ## Recent Updates
 
+### RSI Correlation Live Update Reliability (Latest)
+- Fixed intermittent stalls where RSI Correlation values stopped updating after a transient disconnect.
+- Root cause: the correlation store did not force re-subscription on WebSocket reconnect, and stale in-memory subscription/data maps could persist after close.
+- Fixes:
+  - On connect, force auto-subscribe to all correlation pairs with a brief delay to batch sends.
+  - On close, clear `subscriptions`, `tickData`, `ohlcData`, and `initialOhlcReceived` so the next connect resubscribes cleanly.
+- Affected file: `src/store/useRSICorrelationStore.js`
+
 ### RSI Correlation Dashboard Pair Rendering Reliability (Latest)
 - Fixed an issue where some correlation pairs intermittently disappeared a second after load.
 - The dashboard now always renders the full configured pair list and shows placeholders (e.g., "Calculating…" or "--") until data arrives.
