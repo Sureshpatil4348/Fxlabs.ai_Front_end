@@ -434,15 +434,13 @@ const useRSICorrelationStore = create(
 
           set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
 
-          // Trigger RSI recalculation only when a new bar is appended (closed-candle parity)
-          if (appendedNew) {
-            setTimeout(() => {
-              get().recalculateAllRsi();
-              if (state.settings.calculationMode === 'real_correlation') {
-                get().calculateAllCorrelations();
-              }
-            }, 100);
-          }
+          // Recalculate RSI on every update; calculation excludes forming bar based on timeframe
+          setTimeout(() => {
+            get().recalculateAllRsi();
+            if (state.settings.calculationMode === 'real_correlation') {
+              get().calculateAllCorrelations();
+            }
+          }, 100);
           break;
           
         case 'pong':
@@ -526,9 +524,44 @@ const useRSICorrelationStore = create(
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles strictly: require at least period+2 raw bars, then drop the forming bar
-      const requireRaw = period + 2;
-      const effectiveBars = bars.length >= requireRaw ? bars.slice(0, -1) : bars;
+      const toTime = (t) => {
+        const n = Number(t);
+        return Number.isFinite(n) ? n : Date.parse(t);
+      };
+      const tfToMs = (t) => {
+        switch (t) {
+          case '1M':
+          case 'M1': return 60 * 1000;
+          case '5M':
+          case 'M5': return 5 * 60 * 1000;
+          case '15M':
+          case 'M15': return 15 * 60 * 1000;
+          case '30M':
+          case 'M30': return 30 * 60 * 1000;
+          case '1H':
+          case 'H1': return 60 * 60 * 1000;
+          case '4H':
+          case 'H4': return 4 * 60 * 60 * 1000;
+          case '1D':
+          case 'D1': return 24 * 60 * 60 * 1000;
+          case '1W':
+          case 'W1': return 7 * 24 * 60 * 60 * 1000;
+          default: return null;
+        }
+      };
+
+      // Ensure chronological order (ascending by time)
+      const ordered = [...bars].sort((a, b) => toTime(a?.time) - toTime(b?.time));
+
+      const tf = get().settings?.timeframe;
+      const tfMs = tfToMs(tf);
+      const lastTime = toTime(ordered[ordered.length - 1]?.time);
+      const now = Date.now();
+      const isLastClosed = Number.isFinite(lastTime) && Number.isFinite(tfMs) && (now - lastTime) >= tfMs;
+
+      // Prefer closed candles strictly: if last is still forming, drop it; else include it
+      const hasEnoughForDrop = ordered.length >= (period + 2);
+      const effectiveBars = (!isLastClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
       const closes = effectiveBars
         .map(bar => Number(bar.close))
         .filter(v => Number.isFinite(v));
