@@ -9,6 +9,7 @@ import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
+import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
 // Utility function to clamp values within min/max bounds
@@ -108,6 +109,8 @@ const RSIOverboughtOversoldTracker = () => {
     getLatestOhlcForSymbol,
     getDailyChangePercent
   } = useRSITrackerStore();
+  // Read correlation settings to keep tracker in sync (timeframe, RSI period)
+  const { settings: corrSettings } = useRSICorrelationStore();
   
   // Get tab state from base market store
   const { 
@@ -231,6 +234,25 @@ const RSIOverboughtOversoldTracker = () => {
     // eslint-disable-next-line no-console
     console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
   }, [rsiData, oversoldPairs.length, overboughtPairs.length]);
+
+  // Keep tracker timeframe and RSI period in sync with correlation to avoid drift across widgets
+  useEffect(() => {
+    const tTf = settings?.timeframe;
+    const cTf = corrSettings?.timeframe;
+    const tPeriod = settings?.rsiPeriod;
+    const cPeriod = corrSettings?.rsiPeriod;
+    const toUpdate = {};
+    if (cTf && tTf && cTf !== tTf) {
+      toUpdate.timeframe = cTf;
+    }
+    if (Number.isFinite(cPeriod) && Number.isFinite(tPeriod) && cPeriod !== tPeriod) {
+      toUpdate.rsiPeriod = cPeriod;
+    }
+    if (Object.keys(toUpdate).length > 0) {
+      updateSettings(toUpdate);
+    }
+    // We intentionally do not sync thresholds here
+  }, [corrSettings?.timeframe, corrSettings?.rsiPeriod, settings?.timeframe, settings?.rsiPeriod, updateSettings]);
 
   // Load settings from database on user change (avoid continuous overwrites that can desync timeframes)
   useEffect(() => {
