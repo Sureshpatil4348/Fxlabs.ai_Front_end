@@ -369,7 +369,6 @@ const useRSICorrelationStore = create(
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);
           const currentByTf = new Map(state.ohlcByTimeframe || new Map());
-          let appendedNew = false;
 
           // Normalize timestamp helper to align numeric epoch and ISO strings
           const toTime = (t) => {
@@ -396,7 +395,6 @@ const useRSICorrelationStore = create(
               bars[bars.length - 1] = message.data;
             } else {
               bars.push(message.data);
-              appendedNew = true;
               if (bars.length > 100) {
                 bars.shift();
               }
@@ -418,7 +416,6 @@ const useRSICorrelationStore = create(
               tfBars[tfBars.length - 1] = message.data;
             } else {
               tfBars.push(message.data);
-              appendedNew = true;
               if (tfBars.length > 100) {
                 tfBars.shift();
               }

@@ -362,7 +362,6 @@ const useRSITrackerStore = create(
           
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);
-          let appendedNew = false;
           const toTime = (t) => {
             const n = Number(t);
             return Number.isFinite(n) ? n : Date.parse(t);
@@ -377,7 +376,6 @@ const useRSITrackerStore = create(
               bars[bars.length - 1] = message.data;
             } else {
               bars.push(message.data);
-              appendedNew = true;
               if (bars.length > 100) {
                 bars.shift();
               }
@@ -399,7 +397,6 @@ const useRSITrackerStore = create(
             tfBars[tfBars.length - 1] = message.data;
           } else {
             tfBars.push(message.data);
-            appendedNew = true;
             if (tfBars.length > 100) {
               tfBars.shift();
             }
