@@ -664,8 +664,15 @@ const useRSICorrelationStore = create(
       const newRsiData = new Map();
       const newCorrelationStatus = new Map();
 
-      // Calculate RSI for all subscribed symbols
-      state.subscriptions.forEach((sub, symbol) => {
+      // Build a superset of symbols from subscriptions and any OHLC buffers (handles reconnects and missing ACKs)
+      const candidateSymbols = new Set([
+        ...Array.from(state.subscriptions.keys()),
+        ...Array.from((state.ohlcByTimeframe || new Map()).keys()),
+        ...Array.from(state.ohlcData.keys())
+      ]);
+
+      // Calculate RSI for all candidate symbols
+      candidateSymbols.forEach((symbol) => {
         const rsi = get().calculateRsi(symbol, state.settings.rsiPeriod);
         if (rsi !== null) {
           newRsiData.set(symbol, {
@@ -676,7 +683,7 @@ const useRSICorrelationStore = create(
         }
       });
 
-      // Update correlation status
+      // Update correlation status from freshly computed RSI map
       [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
         const [symbol1, symbol2] = pair;
         const sym1 = symbol1 + 'm';
@@ -693,18 +700,13 @@ const useRSICorrelationStore = create(
           let status;
           const { rsiOverbought, rsiOversold } = state.settings;
 
-          // Strict mismatch rules use configurable thresholds
           if (isPositiveCorrelation) {
-            // Mismatch if one > overbought and the other < oversold
             const mismatch = (rsi1 > rsiOverbought && rsi2 < rsiOversold) || (rsi2 > rsiOverbought && rsi1 < rsiOversold);
             status = mismatch ? 'mismatch' : 'neutral';
           } else {
-            // Negative correlation: mismatch if both > overbought or both < oversold
             const mismatch = (rsi1 > rsiOverbought && rsi2 > rsiOverbought) || (rsi1 < rsiOversold && rsi2 < rsiOversold);
             status = mismatch ? 'mismatch' : 'neutral';
           }
-
-          // Backend will evaluate/send alerts
 
           newCorrelationStatus.set(pairKey, {
             status,
@@ -712,7 +714,6 @@ const useRSICorrelationStore = create(
             rsi2,
             type: isPositiveCorrelation ? 'positive' : 'negative'
           });
-
         }
       });
 

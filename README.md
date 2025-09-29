@@ -40,6 +40,7 @@ Frontend config only; backend evaluates and sends notifications.
   - Made `ohlc_update` robust even without a prior `initial_ohlc` by creating buffers on the fly and updating both top-level and per-timeframe maps.
   - On connect, force auto-subscribe to all correlation pairs with a brief delay to batch sends.
   - On close/disconnect, clear `subscriptions`, `tickData`, `ohlcData`, `ohlcByTimeframe`, and `initialOhlcReceived` to guarantee clean resubscription.
+- Ensured RSI recalculation does not depend on subscription ACKs: after reconnect, RSI is computed for all symbols present in OHLC buffers so cards populate immediately even if `subscribed` messages are delayed.
 - Affected file: `src/store/useRSICorrelationStore.js`
 
 ### WebSocket Connection Logs (Latest)
