@@ -153,7 +153,8 @@ Frontend config only; backend evaluates and sends notifications.
 - Previously we used a simple-average (Cutler's) approach over the last N bars, which could diverge; we also included the forming candle which further skewed values.
 - Implementation details:
   - `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` now call `src/utils/calculations.js` `calculateRSI`.
-  - We drop the last (potentially forming) bar whenever there are at least `period + 1` bars, ensuring a consistent closed-candle policy across Tracker and Correlation so they stay in sync over time.
+  - Recalc only when a NEW bar is appended (not on in-place updates), eliminating mid-candle churn and cross-widget drift.
+  - Require at least `period + 2` raw bars; then drop the last (forming) bar so we always compute with `period + 1` closed candles.
   - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
 
 - Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.
@@ -162,8 +163,11 @@ Frontend config only; backend evaluates and sends notifications.
   - Added timeframe sanity checks in all stores so RSI never uses stale bars from a previous timeframe after switching. If the active timeframe's bars aren't available yet, the view avoids using mismatched buffers and updates as soon as new bars arrive.
   - Settings persistence load scope: RSI Tracker now loads saved settings only on user change to avoid continuous DB overwrites. This prevents unintended timeframe resets that could desync it from other widgets.
 
- - Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. When there is sufficient history, the latest (forming) candle is dropped; when there isn't, the RSI uses available bars so the UI doesn't go blank right after subscribing.
-   - Changes: `calculateRsi` in `src/store/useRSITrackerStore.js`, `src/store/useRSICorrelationStore.js`, and `src/store/useMarketStore.js` drop the last bar only when there are more than `period + 1` bars.
+- Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. Now both stores wait for at least `period + 2` raw bars before dropping the last (forming) one; else they return null to avoid inconsistent intrabar values.
+
+### Subscription Scope (Updated)
+- Correlation subscribes only the configured correlation pairs for the active timeframe.
+- Tracker limits subscriptions to watchlist/user actions instead of auto-subscribing a broad major set, keeping updates scoped to what’s visible and relevant.
 - Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
 
 ### RSI Tracker Display Rules (Oversold/Overbought)

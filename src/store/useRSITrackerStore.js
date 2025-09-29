@@ -362,6 +362,7 @@ const useRSITrackerStore = create(
           
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);
+          let appendedNew = false;
           const topLevelSymbolData = currentOhlcData.get(message.data.symbol);
           if (topLevelSymbolData) {
             // Update the most recent bar or add new one (top-level default timeframe)
@@ -372,6 +373,7 @@ const useRSITrackerStore = create(
               bars[bars.length - 1] = message.data;
             } else {
               bars.push(message.data);
+              appendedNew = true;
               if (bars.length > 100) {
                 bars.shift();
               }
@@ -393,6 +395,7 @@ const useRSITrackerStore = create(
             tfBars[tfBars.length - 1] = message.data;
           } else {
             tfBars.push(message.data);
+            appendedNew = true;
             if (tfBars.length > 100) {
               tfBars.shift();
             }
@@ -407,10 +410,12 @@ const useRSITrackerStore = create(
 
           set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
           
-          // Trigger RSI recalculation when new data arrives
-          setTimeout(() => {
-            get().recalculateAllRsi();
-          }, 100);
+          // Trigger RSI recalculation only when a new bar is appended (closed-candle parity)
+          if (appendedNew) {
+            setTimeout(() => {
+              get().recalculateAllRsi();
+            }, 100);
+          }
           break;
           
         case 'pong':
@@ -475,8 +480,9 @@ const useRSITrackerStore = create(
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles: drop the last bar whenever we have at least period closed bars
-      const effectiveBars = bars.length >= period + 1 ? bars.slice(0, -1) : bars;
+      // Prefer closed candles strictly: require at least period+2 raw bars, then drop the forming bar
+      const requireRaw = period + 2;
+      const effectiveBars = bars.length >= requireRaw ? bars.slice(0, -1) : bars;
       const closes = effectiveBars
         .map(bar => Number(bar.close))
         .filter(v => Number.isFinite(v));

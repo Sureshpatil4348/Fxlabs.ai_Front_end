@@ -95,6 +95,8 @@ const RSIOverboughtOversoldTracker = () => {
     getOverboughtPairs,
     getAllPairsWithRFI,
     addToWishlist, 
+    subscribeWatchlistSymbol,
+    unsubscribe,
     isInWishlist,
     getRsiEvents,
     getRsiHistory,
@@ -207,17 +209,14 @@ const RSIOverboughtOversoldTracker = () => {
     }
   }, [user]);
   
-  // Auto-subscribe to major pairs when connection is established
+  // Limit subscriptions scope: remove auto-subscribe majors.
+  // Subscriptions will be driven by watchlist and user interactions only.
   useEffect(() => {
-    if (!isConnected || hasAutoSubscribed) return;
-
-    const timer = setTimeout(() => {
-      autoSubscribeToMajorPairs();
+    if (!isConnected) return;
+    if (!hasAutoSubscribed) {
       setHasAutoSubscribed(true);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, [isConnected, hasAutoSubscribed, autoSubscribeToMajorPairs]);
+    }
+  }, [isConnected, hasAutoSubscribed]);
 
   // Get fresh data every time RSI data updates
   const rawOversoldPairs = getOversoldPairs();
@@ -292,6 +291,12 @@ const RSIOverboughtOversoldTracker = () => {
 
   const handleAddToWishlist = (symbol) => {
     addToWishlist(symbol);
+    try {
+      subscribeWatchlistSymbol(symbol);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to subscribe newly added watchlist symbol:', symbol, e);
+    }
   };
 
   const handleRemoveFromWishlist = async (symbol) => {
@@ -302,6 +307,8 @@ const RSIOverboughtOversoldTracker = () => {
 
     setRemovingSymbol(symbol);
     try {
+      // Unsubscribe from streaming first to limit resource usage
+      try { unsubscribe(symbol + 'm'); } catch (_e) { /* ignore */ }
       await removeFromWishlist(symbol);
     } catch (error) {
       console.error('Failed to remove from watchlist:', error);
