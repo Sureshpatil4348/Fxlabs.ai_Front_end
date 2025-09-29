@@ -153,7 +153,7 @@ Frontend config only; backend evaluates and sends notifications.
 - Previously we used a simple-average (Cutler's) approach over the last N bars, which could diverge; we also included the forming candle which further skewed values.
 - Implementation details:
   - `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` now call `src/utils/calculations.js` `calculateRSI`.
-  - We drop the last (potentially forming) bar when we have enough history to ensure closed-candle RSI.
+  - We drop the last (potentially forming) bar whenever there are at least `period + 1` bars, ensuring a consistent closed-candle policy across Tracker and Correlation so they stay in sync over time.
   - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
 
 - Timeframe selection fix (RSI Tracker): The RSI Tracker now explicitly uses the OHLC series for the active timeframe when calculating RSI. Previously, the tracker could fall back to a symbol-level OHLC buffer that did not always reflect the selected timeframe, which was most visible as incorrect 5M values while 4H looked correct. The store now prefers the per-timeframe buffer when available.

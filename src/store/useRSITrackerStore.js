@@ -475,8 +475,8 @@ const useRSITrackerStore = create(
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles: drop the last bar only when we have enough history
-      const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
+      // Prefer closed candles: drop the last bar whenever we have at least period closed bars
+      const effectiveBars = bars.length >= period + 1 ? bars.slice(0, -1) : bars;
       const closes = effectiveBars
         .map(bar => Number(bar.close))
         .filter(v => Number.isFinite(v));
