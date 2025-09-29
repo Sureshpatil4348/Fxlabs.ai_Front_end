@@ -1,15 +1,17 @@
 import React from 'react'
 
 import { useAuth } from '../auth/AuthProvider'
-import GetInTouchSection from '../components/GetInTouchSection'
+import BenefitsSection from '../components/BenefitsSection'
+import FAQSection from '../components/FAQSection'
+// import GetInTouchSection from '../components/GetInTouchSection'
 import HeroSection from '../components/HeroSection'
 import InteractiveFooter from '../components/InteractiveFooter'
 import Navbar from '../components/Navbar'
+import PartnersSection from '../components/PartnerSection'
 import SubscriptionSection from '../components/SubscriptionSection'
 import SuccessStories from '../components/SuccessStories'
 import TradingDashboardSection from '../components/TradingDashboardSection'
 import VideoExplanationSection from '../components/VideoExplanationSection'
-
 
 const Home = () => {
   const { user: _user } = useAuth()
@@ -100,9 +102,16 @@ const Home = () => {
           <HeroSection />
         </div>
 
+        <div id="partner">
+          <PartnersSection />
+        </div>
         {/* Trading Dashboard Section */}
         <div id="trading-dashboard">
           <TradingDashboardSection />
+        </div>
+
+        <div id="benefits">
+          <BenefitsSection />
         </div>
 
         {/* Video Explanation Section */}
@@ -120,10 +129,15 @@ const Home = () => {
           <SuccessStories />
         </div>
 
-        {/* Get in Touch Section */}
-        <div id="contact">
-          <GetInTouchSection />
+        {/* FAQ Section */}
+        <div id="faq">
+          <FAQSection />
         </div>
+
+        {/* Get in Touch Section */}
+        {/* <div id="contact">
+          <GetInTouchSection />
+        </div> */}
 
         {/* Interactive Footer */}
         <InteractiveFooter />

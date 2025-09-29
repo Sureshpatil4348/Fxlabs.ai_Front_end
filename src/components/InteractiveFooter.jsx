@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Hexagon, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react'
+import { Mail, Phone, MapPin, Hexagon, Twitter, Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -26,33 +26,20 @@ const InteractiveFooter = () => {
             {/* Social Media Icons */}
             <div className="flex items-center space-x-3 pt-2">
               <a 
-                href="https://facebook.com/fxlabs" 
+                href="https://x.com/fxlabs_ai" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
                   isDarkMode 
-                    ? 'bg-gray-700 hover:bg-blue-600 text-gray-300 hover:text-white' 
-                    : 'bg-gray-100 hover:bg-blue-600 text-gray-600 hover:text-white'
+                    ? 'bg-gray-700 hover:bg-black text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-black text-gray-600 hover:text-white'
                 }`}
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a 
-                href="https://twitter.com/fxlabs" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-                  isDarkMode 
-                    ? 'bg-gray-700 hover:bg-blue-400 text-gray-300 hover:text-white' 
-                    : 'bg-gray-100 hover:bg-blue-400 text-gray-600 hover:text-white'
-                }`}
-                aria-label="Twitter"
+                aria-label="X (Twitter)"
               >
                 <Twitter className="w-4 h-4" />
               </a>
               <a 
-                href="https://instagram.com/fxlabs" 
+                href="https://www.instagram.com/thesureshpatil/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -65,7 +52,7 @@ const InteractiveFooter = () => {
                 <Instagram className="w-4 h-4" />
               </a>
               <a 
-                href="https://linkedin.com/company/fxlabs" 
+                href="https://www.linkedin.com/company/fxlabs-ai" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -78,7 +65,7 @@ const InteractiveFooter = () => {
                 <Linkedin className="w-4 h-4" />
               </a>
               <a 
-                href="https://youtube.com/@fxlabs" 
+                href="https://www.youtube.com/@fx-labs" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -89,6 +76,19 @@ const InteractiveFooter = () => {
                 aria-label="YouTube"
               >
                 <Youtube className="w-4 h-4" />
+              </a>
+              <a 
+                href="https://t.me/Fxlabs_ai" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-blue-500 text-gray-300 hover:text-white' 
+                    : 'bg-gray-100 hover:bg-blue-500 text-gray-600 hover:text-white'
+                }`}
+                aria-label="Telegram"
+              >
+                <MessageCircle className="w-4 h-4" />
               </a>
             </div>
           </div>
