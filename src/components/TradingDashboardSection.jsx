@@ -268,13 +268,7 @@ const TradingDashboardSection = () => {
 
 
   return (
-    <section className={`relative py-12 overflow-hidden ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900' : 'bg-gradient-to-br from-gray-50 via-white to-gray-50'}`}>
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-20 -left-20 w-96 h-96 ${isDarkMode ? 'bg-teal-500/10' : 'bg-teal-500/5'} rounded-full blur-3xl animate-pulse`}></div>
-        <div className={`absolute bottom-20 -right-20 w-96 h-96 ${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-500/5'} rounded-full blur-3xl animate-pulse`} style={{ animationDelay: '1s' }}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${isDarkMode ? 'bg-[#03c05d]/5' : 'bg-[#03c05d]/3'} rounded-full blur-3xl`}></div>
-      </div>
+    <section className="relative py-12 overflow-hidden">
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -483,11 +477,11 @@ const TradingDashboardSection = () => {
           {/* Alert Flow Section - Minimalist Premium Design */}
           <div className="relative">
             {/* Section Title */}
-            <div className="text-center mb-16">
-              <h3 className={`text-3xl sm:text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>
+            <div className="text-center mb-12 sm:mb-16">
+              <h3 className={`text-2xl sm:text-3xl md:text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>
                 How Alerts Work
               </h3>
-              <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto`}>
+              <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto px-4`}>
                 Instant notifications delivered right to your inbox and Telegram
               </p>
             </div>
@@ -495,41 +489,41 @@ const TradingDashboardSection = () => {
             {/* Flow Steps - Clean Horizontal Layout */}
             <div className="relative max-w-5xl mx-auto">
               {/* Connection Line - Desktop Only */}
-              <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 z-0">
+              <div className="hidden md:block absolute top-16 sm:top-18 md:top-20 left-0 right-0 h-0.5 z-0">
                 <div className={`h-full ${isDarkMode ? 'bg-gradient-to-r from-transparent via-gray-700 to-transparent' : 'bg-gradient-to-r from-transparent via-gray-300 to-transparent'}`}></div>
               </div>
 
               {/* Steps Grid */}
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-8">
+              <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 md:gap-8 lg:gap-8">
                 
                 {/* Step 1: Market Condition */}
                 <div className="flex flex-col items-center text-center group">
                   {/* Icon Container */}
-                  <div className="relative mb-8">
+                  <div className="relative mb-6 sm:mb-8">
                     {/* Subtle glow effect */}
                     <div className={`absolute inset-0 ${isDarkMode ? 'bg-[#03c05d]/10' : 'bg-[#03c05d]/5'} rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
                     
                     {/* Main circle */}
-                    <div className={`relative w-40 h-40 rounded-2xl flex items-center justify-center ${
+                    <div className={`relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-2xl flex items-center justify-center ${
                       isDarkMode 
                         ? 'bg-gradient-to-br from-gray-800/80 to-slate-800/80 border border-gray-700/50' 
                         : 'bg-white border border-gray-200'
                     } shadow-lg group-hover:shadow-xl transition-all duration-500`}>
-                      <TrendingUp className="w-16 h-16 text-[#03c05d]" />
+                      <TrendingUp className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-[#03c05d]" />
                       
                       {/* Step number badge */}
-                      <div className="absolute -top-3 -right-3 w-10 h-10 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold">1</span>
+                      <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 sm:w-10 sm:h-10 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-sm sm:text-base">1</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="space-y-3">
-                    <h4 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="space-y-2 sm:space-y-3">
+                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       Market Condition
                     </h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed`}>
+                    <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed px-2`}>
                       RSI exceeds 70 on EUR/USD
                     </p>
                   </div>
@@ -538,34 +532,34 @@ const TradingDashboardSection = () => {
                 {/* Step 2: Alert Triggered */}
                 <div className="flex flex-col items-center text-center group">
                   {/* Icon Container */}
-                  <div className="relative mb-8">
+                  <div className="relative mb-6 sm:mb-8">
                     {/* Subtle glow effect */}
                     <div className={`absolute inset-0 ${isDarkMode ? 'bg-[#03c05d]/10' : 'bg-[#03c05d]/5'} rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
                     
                     {/* Main circle */}
-                    <div className={`relative w-40 h-40 rounded-2xl flex items-center justify-center ${
+                    <div className={`relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-2xl flex items-center justify-center ${
                       isDarkMode 
                         ? 'bg-gradient-to-br from-gray-800/80 to-slate-800/80 border border-gray-700/50' 
                         : 'bg-white border border-gray-200'
                     } shadow-lg group-hover:shadow-xl transition-all duration-500`}>
-                      <Bell className="w-16 h-16 text-[#03c05d]" />
+                      <Bell className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-[#03c05d]" />
                       
                       {/* Step number badge */}
-                      <div className="absolute -top-3 -right-3 w-10 h-10 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold">2</span>
+                      <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 sm:w-10 sm:h-10 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-sm sm:text-base">2</span>
                       </div>
 
                       {/* Subtle pulse indicator */}
-                      <div className="absolute top-4 right-4 w-2 h-2 bg-[#03c05d] rounded-full animate-ping"></div>
+                      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-2 h-2 bg-[#03c05d] rounded-full animate-ping"></div>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="space-y-3">
-                    <h4 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="space-y-2 sm:space-y-3">
+                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       Alert Triggered
                     </h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed`}>
+                    <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed px-2`}>
                       Condition met instantly
                     </p>
                   </div>
@@ -574,36 +568,36 @@ const TradingDashboardSection = () => {
                 {/* Step 3: Notifications Sent */}
                 <div className="flex flex-col items-center text-center group">
                   {/* Icon Container */}
-                  <div className="relative mb-8">
+                  <div className="relative mb-6 sm:mb-8">
                     {/* Subtle glow effect */}
                     <div className={`absolute inset-0 ${isDarkMode ? 'bg-[#03c05d]/10' : 'bg-[#03c05d]/5'} rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
                     
                     {/* Main circle */}
-                    <div className={`relative w-40 h-40 rounded-2xl flex items-center justify-center ${
+                    <div className={`relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-2xl flex items-center justify-center ${
                       isDarkMode 
                         ? 'bg-gradient-to-br from-gray-800/80 to-slate-800/80 border border-gray-700/50' 
                         : 'bg-white border border-gray-200'
                     } shadow-lg group-hover:shadow-xl transition-all duration-500`}>
-                      <Zap className="w-16 h-16 text-[#03c05d]" />
+                      <Zap className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-[#03c05d]" />
                       
                       {/* Step number badge */}
-                      <div className="absolute -top-3 -right-3 w-10 h-10 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold">3</span>
+                      <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 sm:w-10 sm:h-10 bg-[#03c05d] rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-sm sm:text-base">3</span>
                       </div>
 
                       {/* Success indicator */}
-                      <div className="absolute bottom-4 right-4 w-6 h-6 bg-[#03c05d] rounded-full flex items-center justify-center">
-                        <CheckCircle className="w-4 h-4 text-white" />
+                      <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-5 h-5 sm:w-6 sm:h-6 bg-[#03c05d] rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                       </div>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className="space-y-3">
-                    <h4 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="space-y-2 sm:space-y-3">
+                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       Notifications Sent
                     </h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed`}>
+                    <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed px-2`}>
                       Email + Telegram
                     </p>
                   </div>

@@ -79,36 +79,36 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
           <div className="flex items-center space-x-2">
             <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
               <Bell className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">RSI Tracker Alert</h2>
-              <p className="text-xs text-gray-500">Single alert, one timeframe, RSI thresholds</p>
+              <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">RSI Tracker Alert</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Single alert, one timeframe, RSI thresholds</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="p-4">
           {loading ? (
-            <div className="text-sm text-gray-600">Loading...</div>
+            <div className="text-sm text-gray-600 dark:text-slate-400">Loading...</div>
           ) : (
             <div className="space-y-4">
-              {error && <div className="text-sm text-red-600">{error}</div>}
+              {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
               <div>
-                <label htmlFor="rsi-tracker-timeframe" className="block text-xs font-medium text-gray-700 mb-1">Timeframe</label>
+                <label htmlFor="rsi-tracker-timeframe" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Timeframe</label>
                 <select
                   id="rsi-tracker-timeframe"
                   value={form.timeframe}
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 >
                   {timeframes.filter(tf => tf !== '1M').map((tf) => (
                     <option key={tf} value={tf}>{tf}</option>
@@ -118,7 +118,7 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label htmlFor="rsi-tracker-period" className="block text-xs font-medium text-gray-700 mb-1">RSI Period</label>
+                  <label htmlFor="rsi-tracker-period" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">RSI Period</label>
                   <input
                     id="rsi-tracker-period"
                     type="number"
@@ -126,11 +126,11 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                     max="50"
                     value={form.rsiPeriod}
                     onChange={(e) => setForm({ ...form, rsiPeriod: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="rsi-tracker-overbought" className="block text-xs font-medium text-gray-700 mb-1">Overbought</label>
+                  <label htmlFor="rsi-tracker-overbought" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Overbought</label>
                   <input
                     id="rsi-tracker-overbought"
                     type="number"
@@ -138,11 +138,11 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                     max="90"
                     value={form.rsiOverbought}
                     onChange={(e) => setForm({ ...form, rsiOverbought: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="rsi-tracker-oversold" className="block text-xs font-medium text-gray-700 mb-1">Oversold</label>
+                  <label htmlFor="rsi-tracker-oversold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Oversold</label>
                   <input
                     id="rsi-tracker-oversold"
                     type="number"
@@ -150,18 +150,18 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                     max="40"
                     value={form.rsiOversold}
                     onChange={(e) => setForm({ ...form, rsiOversold: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-slate-400">
                   Only one alert per user. Checks all pairs and triggers on threshold cross.
                 </div>
                 <div className="flex items-center space-x-2">
                   {alert && (
-                    <button onClick={handleDelete} className="px-3 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">
+                    <button onClick={handleDelete} className="px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30">
                       Delete
                     </button>
                   )}
