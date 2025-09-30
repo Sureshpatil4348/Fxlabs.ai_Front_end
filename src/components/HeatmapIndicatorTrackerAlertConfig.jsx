@@ -9,6 +9,13 @@ const INDICATORS = ['EMA21','EMA50','EMA200','MACD','RSI','UTBOT','IchimokuClone
 
 const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
   const { settings, timeframes } = useRSITrackerStore();
+  const filteredTimeframes = useMemo(() => {
+    const list = Array.isArray(timeframes) ? timeframes : [];
+    return list.filter(tf => {
+      const u = String(tf).toUpperCase();
+      return u !== '1M' && u !== 'M1';
+    });
+  }, [timeframes]);
   const availablePairs = useMemo(() => (settings?.autoSubscribeSymbols || []).map(s => s.replace(/m$/,'').toUpperCase()), [settings?.autoSubscribeSymbols]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -42,6 +49,18 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
       }
     })();
   }, [isOpen]);
+
+  // Ensure the selected timeframe is valid for this alert (exclude 1M/M1)
+  useEffect(() => {
+    const current = (form?.timeframe || '').toUpperCase();
+    const isExcluded = current === '1M' || current === 'M1';
+    if (!isOpen) return;
+    if (!filteredTimeframes.length) return;
+    if (isExcluded || !filteredTimeframes.some(tf => String(tf).toUpperCase() === current)) {
+      const preferred = filteredTimeframes.find(tf => String(tf).toUpperCase() === '5M') || filteredTimeframes[0];
+      setForm(prev => ({ ...prev, timeframe: preferred }));
+    }
+  }, [isOpen, filteredTimeframes, form?.timeframe]);
 
   if (!isOpen) return null;
 
@@ -128,7 +147,7 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  {timeframes.map(tf => (
+                  {filteredTimeframes.map(tf => (
                     <option key={tf} value={tf}>{tf}</option>
                   ))}
                 </select>
@@ -168,5 +187,4 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
 };
 
 export default HeatmapIndicatorTrackerAlertConfig;
-
 

@@ -789,6 +789,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **RSICorrelationTrackerAlertService**: Manages single RSI Correlation alert configuration (CRUD only)
 - **HeatmapTrackerAlertService**: Manages All-in-One heatmap alert configuration (CRUD only)
 - **HeatmapIndicatorTrackerAlertService**: Manages custom indicator alert configuration (CRUD only)
+  - Note: Custom Indicator Alert timeframe options exclude `1M` (1 minute).
 
 ### Components
 - **Dashboard**: Main trading interface with responsive grid layout
