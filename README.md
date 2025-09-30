@@ -28,7 +28,52 @@ Frontend config only; backend evaluates and sends notifications.
   - Today (HIGH impact) Released: count and items
 - Open the browser DevTools Console to view these logs as the news feed updates.
 
+### MT5 Parity: RSI on Bid Close (System-wide)
+
+RSI(14) is now computed from Bid closes (`closeBid`) for MT5 parity across RSI Tracker and RSI Correlation. Forming candles are excluded when possible (closed-candle preference), mirroring MT5 behavior.
+
+### BTCUSD 1M Candle Logging
+
+Detailed console logs are emitted for `BTCUSDm` 1-minute candles inside `src/store/useRSITrackerStore.js` during OHLC updates.
+
+- What is logged per event:
+  - Date (UTC), Time (UTC), Open, High, Low, Close
+  - RSI(14) with the current forming bar (Bid-based)
+  - RSI(14) using closed bars only (Bid-based)
+  - Event type: OPEN on new bar; UPDATE while forming; plus a CLOSE line for the previous bar when a new bar opens
+- Toggle via feature flag:
+  - `REACT_APP_ENABLE_BTCUSD_M1_LOGS=true` to enable (default)
+  - `REACT_APP_ENABLE_BTCUSD_M1_LOGS=false` to disable
+- View in browser DevTools Console.
+
+Example:
+```
+[BTCUSDm][1M][CLOSE] 2025-09-30 12:03:00 | O:65000 H:65100 L:64920 C:65080 | RSI14(closed): 58.32
+[BTCUSDm][1M][OPEN]  2025-09-30 12:04:00 | O:65080 H:65090 L:65070 C:65085 | RSI14(curr): 57.90 | RSI14(closed): 58.32 { …payload }
+```
+
 ## Recent Updates
+
+### RSI Tracker Timeframe Switching (Latest)
+- Fixed issue where RSI values appeared stuck on the previous timeframe (e.g., showing 1M while switching to 4H).
+ - Root causes:
+   - Alias mismatch: recalc gated lookups used only UI keys (e.g., `4H`) while data arrived under server aliases (e.g., `H4`).
+   - Forced syncs: debug hard-lock and cross-store sync overwrote the user’s chosen timeframe.
+ - Fixes:
+   - All timeframe lookups now consider aliases (e.g., `4H`/`H4`, `1M`/`M1`).
+   - Per-timeframe OHLC buffers are saved under both server key and UI alias for direct keyed access.
+   - Removed debug timeframe hard-lock and cross-store timeframe overwrite; UI changes are respected.
+   - Selective unsubscribe added: you can unsubscribe a specific timeframe per symbol.
+ - Affected files: `src/store/useRSITrackerStore.js`, `src/components/RSIOverboughtOversoldTracker.js`
+
+Usage notes (WebSocket):
+- Subscribe per timeframe
+  - `{ "action": "subscribe", "symbol": "EURUSDm", "timeframe": "1M", "data_types": ["ohlc"] }`
+  - `{ "action": "subscribe", "symbol": "EURUSDm", "timeframe": "4H", "data_types": ["ohlc"] }`
+- Unsubscribe specific timeframe
+  - `{ "action": "unsubscribe", "symbol": "EURUSDm", "timeframe": "4H" }`
+- Unsubscribe all timeframes for a symbol
+  - `{ "action": "unsubscribe", "symbol": "EURUSDm" }`
 
 ### RSI Correlation Live Update Reliability (Latest)
 - Fixed intermittent stalls where RSI Correlation values stopped updating or lagged behind RSI Tracker.

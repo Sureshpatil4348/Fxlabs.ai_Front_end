@@ -230,27 +230,17 @@ const RSIOverboughtOversoldTracker = () => {
   // React to RSI data changes to ensure UI updates
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
+    //console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
   }, [rsiData, oversoldPairs.length, overboughtPairs.length]);
 
-  // Keep tracker timeframe and RSI period in sync with correlation to avoid drift across widgets
+  // Optional: keep RSI period aligned with correlation (do not override timeframe)
   useEffect(() => {
-    const tTf = settings?.timeframe;
-    const cTf = corrSettings?.timeframe;
     const tPeriod = settings?.rsiPeriod;
     const cPeriod = corrSettings?.rsiPeriod;
-    const toUpdate = {};
-    if (cTf && tTf && cTf !== tTf) {
-      toUpdate.timeframe = cTf;
-    }
     if (Number.isFinite(cPeriod) && Number.isFinite(tPeriod) && cPeriod !== tPeriod) {
-      toUpdate.rsiPeriod = cPeriod;
+      updateSettings({ rsiPeriod: cPeriod });
     }
-    if (Object.keys(toUpdate).length > 0) {
-      updateSettings(toUpdate);
-    }
-    // We intentionally do not sync thresholds here
-  }, [corrSettings?.timeframe, corrSettings?.rsiPeriod, settings?.timeframe, settings?.rsiPeriod, updateSettings]);
+  }, [corrSettings?.rsiPeriod, settings?.rsiPeriod, updateSettings]);
 
   // Load settings from database on user change (avoid continuous overwrites that can desync timeframes)
   useEffect(() => {

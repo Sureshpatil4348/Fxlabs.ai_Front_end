@@ -8,6 +8,13 @@ import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 // WebSocket URL configuration
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
 
+// OHLC debug logging configuration (symbol + timeframe)
+const ENABLE_OHLC_DEBUG_LOGS = (
+  process.env.REACT_APP_ENABLE_OHLC_DEBUG_LOGS || process.env.REACT_APP_ENABLE_BTCUSD_M1_LOGS || 'true'
+).toString().toLowerCase() === 'true';
+const OHLC_DEBUG_SYMBOL = process.env.REACT_APP_OHLC_DEBUG_SYMBOL || 'BTCUSDm';
+const OHLC_DEBUG_TF = (process.env.REACT_APP_OHLC_DEBUG_TF || 'H4').toUpperCase();
+
 // Smart symbol formatting
 const formatSymbol = (input) => {
   const trimmed = input.trim();
@@ -72,6 +79,8 @@ const useRSITrackerStore = create(
     // UI state
     logs: [],
     timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'],
+    // Internal logging memo to avoid duplicate [CLOSE] prints
+    _loggedClosedBars: new Set(), // keys: `${symbol}|${timeframe}|${timestampMs}`
     
     // Connection Actions
     connect: () => {
@@ -99,7 +108,7 @@ const useRSITrackerStore = create(
             set({ pendingWatchlistSubscriptions: new Set() });
           }
           
-          // Also subscribe to any existing watchlist symbols
+          // Also subscribe to any existing watchlist symbols (plus debug symbol/timeframe)
           setTimeout(async () => {
             try {
               const useBaseMarketStore = await import('./useBaseMarketStore');
@@ -110,6 +119,12 @@ const useRSITrackerStore = create(
                   get().subscribe(symbolWithM, settings.timeframe, ['ticks', 'ohlc']);
                 }
               });
+              if (ENABLE_OHLC_DEBUG_LOGS && OHLC_DEBUG_SYMBOL) {
+                const tf = (get().settings?.timeframe) || '4H';
+                if (!get().subscriptions.has(OHLC_DEBUG_SYMBOL)) {
+                  get().subscribe(OHLC_DEBUG_SYMBOL, tf, ['ticks', 'ohlc']);
+                }
+              }
             } catch (error) {
               console.error('Failed to subscribe to existing watchlist symbols:', error);
             }
@@ -243,7 +258,7 @@ const useRSITrackerStore = create(
       }
     },
     
-    unsubscribe: (symbol) => {
+    unsubscribe: (symbol, timeframe) => {
       const { websocket, isConnected } = get();
       if (!isConnected || !websocket) return;
       
@@ -257,7 +272,8 @@ const useRSITrackerStore = create(
       
       const message = {
         action: 'unsubscribe',
-        symbol: formattedSymbol
+        symbol: formattedSymbol,
+        ...(timeframe ? { timeframe } : {})
       };
       
       try {
@@ -292,26 +308,59 @@ const useRSITrackerStore = create(
           break;
           
         case 'unsubscribed':
-          const newSubscriptions = new Map(state.subscriptions);
-          newSubscriptions.delete(message.symbol);
-          const newTickData = new Map(state.tickData);
-          newTickData.delete(message.symbol);
-          const newOhlcData = new Map(state.ohlcData);
-          newOhlcData.delete(message.symbol);
-          const newOhlcByTimeframe = new Map(state.ohlcByTimeframe);
-          newOhlcByTimeframe.delete(message.symbol);
-          const newInitialReceived = new Set(state.initialOhlcReceived);
-          newInitialReceived.delete(message.symbol);
-          
-          set({ 
-            subscriptions: newSubscriptions,
-            tickData: newTickData,
-            ohlcData: newOhlcData,
-            ohlcByTimeframe: newOhlcByTimeframe,
-            initialOhlcReceived: newInitialReceived
-          });
-          get().addLog(`Unsubscribed from ${message.symbol}`, 'warning');
-          break;
+          {
+            const newSubscriptions = new Map(state.subscriptions);
+            const newTickData = new Map(state.tickData);
+            const newOhlcData = new Map(state.ohlcData);
+            const newOhlcByTimeframe = new Map(state.ohlcByTimeframe);
+            const newInitialReceived = new Set(state.initialOhlcReceived);
+
+            const tf = message?.timeframe;
+            if (tf) {
+              // Remove only the unsubscribed timeframe buffers
+              const perSymbol = new Map(newOhlcByTimeframe.get(message.symbol) || new Map());
+              const tfAliases = (t) => {
+                switch ((t || '').toUpperCase()) {
+                  case '1M': case 'M1': return ['1M','M1'];
+                  case '5M': case 'M5': return ['5M','M5'];
+                  case '15M': case 'M15': return ['15M','M15'];
+                  case '30M': case 'M30': return ['30M','M30'];
+                  case '1H': case 'H1': return ['1H','H1'];
+                  case '4H': case 'H4': return ['4H','H4'];
+                  case '1D': case 'D1': return ['1D','D1'];
+                  case '1W': case 'W1': return ['1W','W1'];
+                  default: return [t];
+                }
+              };
+              for (const key of tfAliases(tf)) perSymbol.delete(key);
+              if (perSymbol.size > 0) {
+                newOhlcByTimeframe.set(message.symbol, perSymbol);
+              } else {
+                newOhlcByTimeframe.delete(message.symbol);
+                newOhlcData.delete(message.symbol);
+                newTickData.delete(message.symbol);
+                newInitialReceived.delete(message.symbol);
+                newSubscriptions.delete(message.symbol);
+              }
+            } else {
+              // Remove all timeframes for the symbol (legacy behavior)
+              newOhlcByTimeframe.delete(message.symbol);
+              newOhlcData.delete(message.symbol);
+              newTickData.delete(message.symbol);
+              newInitialReceived.delete(message.symbol);
+              newSubscriptions.delete(message.symbol);
+            }
+
+            set({ 
+              subscriptions: newSubscriptions,
+              tickData: newTickData,
+              ohlcData: newOhlcData,
+              ohlcByTimeframe: newOhlcByTimeframe,
+              initialOhlcReceived: newInitialReceived
+            });
+            get().addLog(`Unsubscribed from ${message.symbol}${message?.timeframe ? ' ('+message.timeframe+')' : ''}`, 'warning');
+            break;
+          }
           
         case 'initial_ohlc':
           const ohlcData = new Map(state.ohlcData);
@@ -325,12 +374,30 @@ const useRSITrackerStore = create(
           // Update multi-timeframe structure
           const ohlcByTimeframe = new Map(state.ohlcByTimeframe);
           const perSymbol = new Map(ohlcByTimeframe.get(message.symbol) || new Map());
-          perSymbol.set(message.timeframe, {
+          const tfEntry = {
             symbol: message.symbol,
             timeframe: message.timeframe,
             bars: message.data,
             lastUpdate: new Date()
-          });
+          };
+          // Store under server timeframe key
+          perSymbol.set(message.timeframe, tfEntry);
+          // Also store under UI-alias key (e.g., H4 -> 4H) for direct access
+          const toUiAlias = (t) => {
+            const u = (t || '').toUpperCase();
+            switch (u) {
+              case 'M1': return '1M';
+              case 'M5': return '5M';
+              case 'M15': return '15M';
+              case 'M30': return '30M';
+              case 'H1': return '1H';
+              case 'H4': return '4H';
+              case 'D1': return '1D';
+              case 'W1': return '1W';
+              default: return u;
+            }
+          };
+          perSymbol.set(toUiAlias(message.timeframe), tfEntry);
           ohlcByTimeframe.set(message.symbol, perSymbol);
 
           const initialReceived = new Set(state.initialOhlcReceived);
@@ -343,9 +410,33 @@ const useRSITrackerStore = create(
           });
           get().addLog(`Received ${message.data.length} initial OHLC bars for ${message.symbol}`, 'info');
           
-          // Trigger calculations when initial data is received
+          // Trigger calculations ONLY for the active timeframe to avoid mixing buffers
           setTimeout(() => {
-            get().recalculateAllRsi();
+            const activeTf = get().settings?.timeframe;
+            const perSymbolMap = get().ohlcByTimeframe.get(message.symbol);
+            if (!activeTf || !perSymbolMap) return;
+            const tfAliases = (t) => {
+              switch (t) {
+                case '1M': return ['1M', 'M1'];
+                case '5M': return ['5M', 'M5'];
+                case '15M': return ['15M', 'M15'];
+                case '30M': return ['30M', 'M30'];
+                case '1H': return ['1H', 'H1'];
+                case '4H': return ['4H', 'H4'];
+                case '1D': return ['1D', 'D1'];
+                case '1W': return ['1W', 'W1'];
+                default: return [t];
+              }
+            };
+            let tfData = null;
+            for (const key of tfAliases(activeTf)) {
+              const candidate = perSymbolMap.get(key);
+              if (candidate && Array.isArray(candidate.bars) && candidate.bars.length >= 15) {
+                tfData = candidate;
+                break;
+              }
+            }
+            if (tfData) get().recalculateAllRsi();
           }, 200);
           break;
           
@@ -390,10 +481,17 @@ const useRSITrackerStore = create(
           // Update multi-timeframe map
           const currentByTf = new Map(state.ohlcByTimeframe);
           const perSymbolTf = new Map(currentByTf.get(message.data.symbol) || new Map());
-          const existingTfData = perSymbolTf.get(message.data.timeframe);
+          const existingTfData = perSymbolTf.get(message.data.timeframe) || perSymbolTf.get(((t)=>{
+            const u=(t||'').toUpperCase();
+            return ({M1:'1M',M5:'5M',M15:'15M',M30:'30M',H1:'1H',H4:'4H',D1:'1D',W1:'1W'})[u]||u;
+          })(message.data.timeframe));
           const tfBars = existingTfData ? [...existingTfData.bars] : [];
           const tfLast = tfBars[tfBars.length - 1];
-          if (tfLast && toTime(tfLast.time) === toTime(message.data.time)) {
+          const wasUpdateEvent = tfLast && toTime(tfLast.time) === toTime(message.data.time);
+
+          // Backend now guarantees closed-minute emission for every minute.
+          // No client-side backfilling required.
+          if (wasUpdateEvent) {
             tfBars[tfBars.length - 1] = message.data;
           } else {
             tfBars.push(message.data);
@@ -401,19 +499,164 @@ const useRSITrackerStore = create(
               tfBars.shift();
             }
           }
-          perSymbolTf.set(message.data.timeframe, {
+          const tfEntry2 = {
             symbol: message.data.symbol,
             timeframe: message.data.timeframe,
             bars: tfBars,
             lastUpdate: new Date()
-          });
+          };
+          // Store under server key and UI alias for direct keyed access
+          const toUiAlias2 = (t) => {
+            const u = (t || '').toUpperCase();
+            switch (u) {
+              case 'M1': return '1M';
+              case 'M5': return '5M';
+              case 'M15': return '15M';
+              case 'M30': return '30M';
+              case 'H1': return '1H';
+              case 'H4': return '4H';
+              case 'D1': return '1D';
+              case 'W1': return '1W';
+              default: return u;
+            }
+          };
+          perSymbolTf.set(message.data.timeframe, tfEntry2);
+          perSymbolTf.set(toUiAlias2(message.data.timeframe), tfEntry2);
           currentByTf.set(message.data.symbol, perSymbolTf);
+
+          // OHLC debug logging: OPEN/UPDATE events and previous CLOSE with RSI(14)
+          try {
+            const isSymbol = message?.data?.symbol === OHLC_DEBUG_SYMBOL;
+            const isTf = (() => {
+              const tf = (message?.data?.timeframe || '').toUpperCase();
+              if (OHLC_DEBUG_TF === '1M') return tf === '1M' || tf === 'M1';
+              if (OHLC_DEBUG_TF === '5M') return tf === '5M' || tf === 'M5';
+              if (OHLC_DEBUG_TF === '15M') return tf === '15M' || tf === 'M15';
+              if (OHLC_DEBUG_TF === '30M') return tf === '30M' || tf === 'M30';
+              if (OHLC_DEBUG_TF === '1H') return tf === '1H' || tf === 'H1';
+              if (OHLC_DEBUG_TF === '4H') return tf === '4H' || tf === 'H4';
+              if (OHLC_DEBUG_TF === '1D') return tf === '1D' || tf === 'D1';
+              if (OHLC_DEBUG_TF === '1W') return tf === '1W' || tf === 'W1';
+              return tf === OHLC_DEBUG_TF;
+            })();
+            if (ENABLE_OHLC_DEBUG_LOGS && isSymbol && isTf) {
+              const toMs = (t) => {
+                const n = Number(t);
+                return Number.isFinite(n) ? n : Date.parse(t);
+              };
+
+              const isUpdate = wasUpdateEvent;
+
+              const tsMs = toMs(message.data.time);
+              const dt = new Date(tsMs);
+              const iso = dt.toISOString();
+              const dateStr = iso.slice(0, 10);
+              const timeStr = iso.slice(11, 19);
+
+              const o = Number(message.data.open);
+              const h = Number(message.data.high);
+              const l = Number(message.data.low);
+              const c = Number(message.data.close);
+
+              // Compute RSI(14) including current bar
+              const closesIncluding = tfBars.map(b => {
+                const bid = Number(b?.closeBid);
+                const generic = Number(b?.close);
+                return Number.isFinite(bid) ? bid : generic;
+              }).filter(v => Number.isFinite(v));
+              const rsiIncluding = closesIncluding.length >= 15 ? calculateRSI(closesIncluding, 14) : null;
+
+              // Compute RSI(14) using only closed bars (strict parity with MT5)
+              const closesClosedAll = tfBars
+                .filter(b => b && b.is_closed === true)
+                .map(b => {
+                  const bid = Number(b?.closeBid);
+                  const generic = Number(b?.close);
+                  return Number.isFinite(bid) ? bid : generic;
+                })
+                .filter(v => Number.isFinite(v));
+              const rsiClosed = closesClosedAll.length >= 15 ? calculateRSI(closesClosedAll, 14) : null;
+
+              // Log CLOSE only when previous bar is explicitly closed and not yet logged
+              if (tfBars.length > 1) {
+                const prev = tfBars[tfBars.length - 2];
+                if (prev && prev.is_closed === true) {
+                  const prevKey = `${message.data.symbol}|${message.data.timeframe}|${toMs(prev.time)}`;
+                  const logged = get()._loggedClosedBars;
+                  if (!logged.has(prevKey)) {
+                    const prevTs = toMs(prev?.time);
+                    const prevDt = new Date(prevTs);
+                    const prevIso = prevDt.toISOString();
+                    const prevDate = prevIso.slice(0, 10);
+                    const prevTime = prevIso.slice(11, 19);
+
+                    // RSI for the previous closed candle using closed-only series
+                    const closesClosed = tfBars
+                      .filter(b => b && b.is_closed === true)
+                      .map(b => {
+                        const bid = Number(b?.closeBid);
+                        const generic = Number(b?.close);
+                        return Number.isFinite(bid) ? bid : generic;
+                      })
+                      .filter(v => Number.isFinite(v));
+                    const prevClosedRsi = closesClosed.length >= 15 ? calculateRSI(closesClosed, 14) : null;
+
+                    // eslint-disable-next-line no-console
+                    console.log(
+                      `[BTCUSDm][1M][CLOSE] ${prevDate} ${prevTime} | O:${prev?.open} H:${prev?.high} L:${prev?.low} C:${prev?.close} | RSI14(closed): ${prevClosedRsi != null ? prevClosedRsi.toFixed(2) : 'n/a'}`,
+                      prev
+                    );
+                    logged.add(prevKey);
+                  }
+                }
+              }
+
+              const evt = isUpdate ? 'UPDATE' : 'OPEN';
+              // eslint-disable-next-line no-console
+              console.log(
+                `[BTCUSDm][1M][${evt}] ${dateStr} ${timeStr} | O:${o} H:${h} L:${l} C:${c} | RSI14(curr): ${rsiIncluding != null ? rsiIncluding.toFixed(2) : 'n/a'} | RSI14(prev_closed): ${rsiClosed != null ? rsiClosed.toFixed(2) : 'n/a'}`,
+                message.data
+              );
+            }
+          } catch (_e) {
+            // Swallow logging errors to avoid impacting data flow
+          }
 
           set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
           
-          // Recalculate RSI on every update; calculation excludes forming bar based on timeframe
+          // Recalculate RSI on every update; hard-gate to active timeframe buffer only
           setTimeout(() => {
-            get().recalculateAllRsi();
+            try {
+              const activeTf = get().settings?.timeframe;
+              if (!activeTf) return;
+              const perSymbolTf2 = get().ohlcByTimeframe.get(message.data.symbol);
+              if (!perSymbolTf2) return;
+              const tfAliases = (t) => {
+                switch (t) {
+                  case '1M': return ['1M', 'M1'];
+                  case '5M': return ['5M', 'M5'];
+                  case '15M': return ['15M', 'M15'];
+                  case '30M': return ['30M', 'M30'];
+                  case '1H': return ['1H', 'H1'];
+                  case '4H': return ['4H', 'H4'];
+                  case '1D': return ['1D', 'D1'];
+                  case '1W': return ['1W', 'W1'];
+                  default: return [t];
+                }
+              };
+              let tfData2 = null;
+              for (const key of tfAliases(activeTf)) {
+                const candidate = perSymbolTf2.get(key);
+                if (candidate) { tfData2 = candidate; break; }
+              }
+              const closedBars = tfData2 && Array.isArray(tfData2.bars)
+                ? tfData2.bars.filter(b => b && b.is_closed === true)
+                : [];
+              const period = get().settings?.rsiPeriod || 14;
+              if (closedBars.length >= period + 1) {
+                get().recalculateAllRsi();
+              }
+            } catch (_e) { /* ignore */ }
           }, 100);
           break;
           
@@ -438,7 +681,7 @@ const useRSITrackerStore = create(
       set({ settings: updatedSettings });
       
       // If timeframe changed, update all subscriptions
-      if (newSettings.timeframe && newSettings.timeframe !== oldSettings.timeframe) {
+      if (updatedSettings.timeframe && updatedSettings.timeframe !== oldSettings.timeframe) {
         
         const { subscribe } = get();
         const currentSubscriptions = Array.from(state.subscriptions.entries());
@@ -455,7 +698,7 @@ const useRSITrackerStore = create(
           updatedSubscriptions.set(symbol, updatedSubscription);
           
           // Subscribe to new timeframe
-          subscribe(symbol, newSettings.timeframe, subscription.dataTypes || ['ticks', 'ohlc']);
+          subscribe(symbol, updatedSettings.timeframe, subscription.dataTypes || ['ticks', 'ohlc']);
         });
         
         // Update subscriptions map
@@ -483,42 +726,21 @@ const useRSITrackerStore = create(
         const n = Number(t);
         return Number.isFinite(n) ? n : Date.parse(t);
       };
-      const tfToMs = (t) => {
-        switch (t) {
-          case '1M':
-          case 'M1': return 60 * 1000;
-          case '5M':
-          case 'M5': return 5 * 60 * 1000;
-          case '15M':
-          case 'M15': return 15 * 60 * 1000;
-          case '30M':
-          case 'M30': return 30 * 60 * 1000;
-          case '1H':
-          case 'H1': return 60 * 60 * 1000;
-          case '4H':
-          case 'H4': return 4 * 60 * 60 * 1000;
-          case '1D':
-          case 'D1': return 24 * 60 * 60 * 1000;
-          case '1W':
-          case 'W1': return 7 * 24 * 60 * 60 * 1000;
-          default: return null;
-        }
-      };
 
       // Ensure chronological order (ascending by time)
       const ordered = [...bars].sort((a, b) => toTime(a?.time) - toTime(b?.time));
 
-      const tf = get().settings?.timeframe;
-      const tfMs = tfToMs(tf);
-      const lastTime = toTime(ordered[ordered.length - 1]?.time);
-      const now = Date.now();
-      const isLastClosed = Number.isFinite(lastTime) && Number.isFinite(tfMs) && (now - lastTime) >= tfMs;
-
-      // Prefer closed candles strictly: if last is still forming, drop it; else include it
+      const lastIsClosed = ordered[ordered.length - 1]?.is_closed === true;
+      // Strict closed-candle policy: drop last bar if not closed and we have enough history; else return null
       const hasEnoughForDrop = ordered.length >= (period + 2);
-      const effectiveBars = (!isLastClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
+      const effectiveBars = (!lastIsClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
+      if (!lastIsClosed && !hasEnoughForDrop) return null;
       const closes = effectiveBars
-        .map(bar => Number(bar.close))
+        .map(bar => {
+          const bid = Number(bar.closeBid);
+          const generic = Number(bar.close);
+          return Number.isFinite(bid) ? bid : generic;
+        })
         .filter(v => Number.isFinite(v));
       if (closes.length < period + 1) return null;
 

@@ -512,10 +512,17 @@ const useMarketStore = create(
       const bars = get().getOhlcForSymbol(symbol);
       if (!bars || bars.length < period + 1) return null;
 
-      // Prefer closed candles: drop the last bar only when we have enough history
-      const effectiveBars = bars.length > period + 1 ? bars.slice(0, -1) : bars;
+      const lastBar = bars[bars.length - 1];
+      const lastIsClosed = lastBar && lastBar.is_closed === true;
+      // Strict closed-candle policy: if last isn't closed and we have enough, drop it; else return null
+      const effectiveBars = (!lastIsClosed && bars.length >= period + 2) ? bars.slice(0, -1) : bars;
+      if (!lastIsClosed && bars.length < period + 2) return null;
       const closes = effectiveBars
-        .map(bar => Number(bar.close))
+        .map(bar => {
+          const bid = Number(bar.closeBid);
+          const generic = Number(bar.close);
+          return Number.isFinite(bid) ? bid : generic;
+        })
         .filter(v => Number.isFinite(v));
 
       if (closes.length < period + 1) return null;

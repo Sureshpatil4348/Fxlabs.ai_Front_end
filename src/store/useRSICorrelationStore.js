@@ -550,17 +550,18 @@ const useRSICorrelationStore = create(
       // Ensure chronological order (ascending by time)
       const ordered = [...bars].sort((a, b) => toTime(a?.time) - toTime(b?.time));
 
-      const tf = get().settings?.timeframe;
-      const tfMs = tfToMs(tf);
-      const lastTime = toTime(ordered[ordered.length - 1]?.time);
-      const now = Date.now();
-      const isLastClosed = Number.isFinite(lastTime) && Number.isFinite(tfMs) && (now - lastTime) >= tfMs;
-
-      // Prefer closed candles strictly: if last is still forming, drop it; else include it
+      const lastBarObj = ordered[ordered.length - 1];
+      const flagClosed = lastBarObj && lastBarObj.is_closed === true;
+      // Strict closed-candle policy: drop last bar if not closed and we have enough history; else return null
       const hasEnoughForDrop = ordered.length >= (period + 2);
-      const effectiveBars = (!isLastClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
+      const effectiveBars = (!flagClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
+      if (!flagClosed && !hasEnoughForDrop) return null;
       const closes = effectiveBars
-        .map(bar => Number(bar.close))
+        .map(bar => {
+          const bid = Number(bar.closeBid);
+          const generic = Number(bar.close);
+          return Number.isFinite(bid) ? bid : generic;
+        })
         .filter(v => Number.isFinite(v));
       if (closes.length < period + 1) return null;
 
