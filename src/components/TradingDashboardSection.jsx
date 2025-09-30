@@ -268,13 +268,7 @@ const TradingDashboardSection = () => {
 
 
   return (
-    <section className={`relative py-12 overflow-hidden ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900' : 'bg-gradient-to-br from-gray-50 via-white to-gray-50'}`}>
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-20 -left-20 w-96 h-96 ${isDarkMode ? 'bg-teal-500/10' : 'bg-teal-500/5'} rounded-full blur-3xl animate-pulse`}></div>
-        <div className={`absolute bottom-20 -right-20 w-96 h-96 ${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-500/5'} rounded-full blur-3xl animate-pulse`} style={{ animationDelay: '1s' }}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${isDarkMode ? 'bg-[#03c05d]/5' : 'bg-[#03c05d]/3'} rounded-full blur-3xl`}></div>
-      </div>
+    <section className="relative py-12 overflow-hidden">
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
