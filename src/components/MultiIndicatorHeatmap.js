@@ -3,7 +3,7 @@ import {
   Bell,
   Sliders
 } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 
 import HeatmapIndicatorTrackerAlertConfig from './HeatmapIndicatorTrackerAlertConfig';
@@ -324,19 +324,24 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   
   // Add this state
 const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
-const [isTouchDevice, setIsTouchDevice] = useState(false);
+const symbolDropdownRef = useRef(null);
 
-  // Detect touch device
+  // Close symbol dropdown on outside click
   useEffect(() => {
-    const checkTouchDevice = () => {
-      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (!isSymbolDropdownOpen) return;
+    const handleOutside = (e) => {
+      const el = symbolDropdownRef.current;
+      if (el && !el.contains(e.target)) {
+        setIsSymbolDropdownOpen(false);
+      }
     };
-    
-    checkTouchDevice();
-    window.addEventListener('resize', checkTouchDevice);
-    
-    return () => window.removeEventListener('resize', checkTouchDevice);
-  }, []);
+    document.addEventListener('mousedown', handleOutside, true);
+    document.addEventListener('touchstart', handleOutside, true);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside, true);
+      document.removeEventListener('touchstart', handleOutside, true);
+    };
+  }, [isSymbolDropdownOpen]);
 
   // Load settings from database on component mount
   useEffect(() => {
@@ -860,22 +865,8 @@ useEffect(() => {
           
           {/* Symbol Dropdown */}
           <div className="flex items-center space-x-1">
-            <div className="relative">
-              <div 
-                onMouseEnter={() => {
-                  // Only use hover on non-touch devices (desktop)
-                  if (!isTouchDevice) {
-                    setIsSymbolDropdownOpen(true);
-                  }
-                }}
-                onMouseLeave={() => {
-                  // Only use hover on non-touch devices (desktop)
-                  if (!isTouchDevice) {
-                    setIsSymbolDropdownOpen(false);
-                  }
-                }}
-                className="relative"
-              >
+            <div className="relative" ref={symbolDropdownRef}>
+              <div className="relative">
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
                   className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
@@ -896,7 +887,6 @@ useEffect(() => {
                         key={option.value}
                         onClick={() => {
                           handleSymbolChange(option.value);
-                          setIsSymbolDropdownOpen(false);
                         }}
                         className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
                           option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-semibold' : 'text-gray-700 dark:text-slate-300'

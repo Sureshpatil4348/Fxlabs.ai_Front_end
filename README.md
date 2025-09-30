@@ -54,6 +54,11 @@ Example:
 
 ## Recent Updates
 
+### Quantum Analysis: Pair Selector Behavior (Latest)
+- Pair selector now opens on click and stays open until you click outside the dropdown area.
+- Selecting an option updates the symbol but does not auto-close the menu; click outside to close.
+- Implemented with a controlled `open` state and document-level outside-click handler, with proper cleanup to avoid leaks.
+
 ### RSI Tracker Timeframe Switching (Latest)
 - Fixed issue where RSI values appeared stuck on the previous timeframe (e.g., showing 1M while switching to 4H).
  - Root causes:
