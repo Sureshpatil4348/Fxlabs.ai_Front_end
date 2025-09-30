@@ -8,7 +8,10 @@ import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import RefundPolicy from './pages/RefundPolicy';
 import Reset from './pages/Reset';
+import TermsOfService from './pages/TermsOfService';
 
 function App() {
   const { loading } = useAuth();
@@ -31,6 +34,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/reset" element={<Reset />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         
         {/* Protected routes */}
         <Route path="/dashboard" element={

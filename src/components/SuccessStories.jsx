@@ -6,17 +6,17 @@ import { useTheme } from '../contexts/ThemeContext'
 
 const testimonials = [
   {
-    quote: 'FXLabs is the only surface where our macro desk, quant pod and execution teams see the same truth. Signal clarity is unmatched.',
+    quote: 'FXLabs gives our macro and quant teams a single view of the market. We\'ve cut mis-trades by 30% and improved execution alignment across desks.',
     name: 'Global Macro Lead',
     firm: 'Tier-1 Prop Fund'
   },
   {
-    quote: 'The AI news cognition anticipates flows we used to miss. We now act minutes before consensus moves.',
+    quote: 'The AI news engine flagged a policy shift two minutes before the wire. That early edge let us reposition ahead of the market — a difference worth millions.',
     name: 'Head of FX Trading',
     firm: 'International Bank'
   },
   {
-    quote: 'Concierge onboarding had us live in under a week. Compliance, reporting and strategy automation—impeccable.',
+    quote: 'From onboarding to first live trade took just 6 days. Compliance reports plugged straight into our system — no friction, no delays.',
     name: 'Chief Investment Officer',
     firm: 'Family Office'
   }
@@ -26,7 +26,7 @@ const SuccessStories = () => {
   const { isDarkMode } = useTheme()
 
   return (
-    <section className="relative py-24">
+    <section className="relative py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-4">

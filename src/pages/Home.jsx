@@ -102,9 +102,6 @@ const Home = () => {
           <HeroSection />
         </div>
 
-        <div id="partner">
-          <PartnersSection />
-        </div>
         {/* Trading Dashboard Section */}
         <div id="trading-dashboard">
           <TradingDashboardSection />
@@ -127,6 +124,10 @@ const Home = () => {
         {/* Success Stories Section */}
         <div id="success-stories">
           <SuccessStories />
+        </div>
+
+        <div id="partner">
+          <PartnersSection />
         </div>
 
         {/* FAQ Section */}

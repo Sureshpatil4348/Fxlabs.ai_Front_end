@@ -5,24 +5,24 @@ import { useTheme } from '../contexts/ThemeContext'
 
 const faqs = [
   {
-    question: 'How fast can our desk go live with FXLabs?',
-    answer: 'Most teams complete onboarding within 5–7 business days. We configure data feeds, compliance policies and execution workflows alongside your team.'
+    question: 'What is FX Labs AI?',
+    answer: 'An institutional-grade trade-intelligence dashboard that scores signals (RSI, correlation, AI news) across 25 FX pairs with real-time alerts and risk tools. We provide analytics only—no guaranteed returns or financial advice.'
   },
   {
-    question: 'Can you integrate with our existing OMS / EMS stack?',
-    answer: 'Yes. We integrate with leading brokers, MetaTrader, FIX APIs and internal OMS/EMS solutions. Bespoke connectors are available for enterprise plans.'
+    question: 'Does it place trades automatically?',
+    answer: 'By default, it gives signals and alerts. If you want, you can connect MT4/MT5 to automate entries—your broker, rules, and risk remain under your control.'
   },
   {
-    question: 'What makes your AI market intelligence unique?',
-    answer: 'We blend macro news cognition, technical pattern recognition and liquidity signals into a single probability layer. Traders receive context, not noise.'
+    question: 'Which platforms/brokers are supported?',
+    answer: 'Any broker that supports MT4/MT5. FX Labs is broker-agnostic; just connect via our bridge and select your accounts/pairs.'
   },
   {
-    question: 'Is FXLabs suitable for regulated institutions?',
-    answer: 'Absolutely. Role-based permissions, audit trails, encryption at rest and dedicated environments are all standard. We support SOC2 alignment for enterprise teams.'
+    question: 'How do alerts work?',
+    answer: 'You get real-time alerts on the web app and Telegram. Choose pairs and timeframes, and pick update mode (on tick or candle close) to match your style.'
   },
   {
-    question: 'Do you provide human support?',
-    answer: 'Our concierge desk is available 24/5 for institutional clients. You’ll work directly with our product specialists during onboarding and beyond.'
+    question: 'Is there a free trial and what about pricing?',
+    answer: 'Yes—short trial and monthly/annual plans are available, with occasional partner-broker promos. Ping us on Telegram for current offers and activation. Use is subject to your local laws.'
   }
 ]
 
@@ -35,7 +35,7 @@ const FAQSection = () => {
   }
 
   return (
-    <section className="relative py-24">
+    <section className="relative py-12">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 space-y-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-gray-200/70 bg-white/70 px-5 py-2 text-xs uppercase tracking-[0.5em] text-gray-500 dark:border-white/10 dark:bg-gray-900/60 dark:text-gray-300">
