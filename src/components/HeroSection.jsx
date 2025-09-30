@@ -13,6 +13,7 @@ import {
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
+import FreeTrialPopup from './FreeTrialPopup'
 import { useAuth } from '../auth/AuthProvider'
 import { useTheme } from '../contexts/ThemeContext'
 import useRSITrackerStore from '../store/useRSITrackerStore'
@@ -41,6 +42,8 @@ const HeroSection = () => {
   const [_hasRealData, _setHasRealData] = useState(true)
   const [dataInitialized, setDataInitialized] = useState(false)
   const _scale = 1
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const [isFreeTrialOpen, setIsFreeTrialOpen] = useState(false)
 
   // Connect to real market data
   useEffect(() => {
@@ -178,6 +181,26 @@ const HeroSection = () => {
     }
   }, [dataInitialized])
 
+  // Close video modal on Escape key
+  useEffect(() => {
+    if (!showVideoModal) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowVideoModal(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showVideoModal])
+
+  // Scroll to pricing section
+  const scrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing')
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <section className="relative min-h-screen flex items-center pt-12 sm:pt-16 md:pt-18 lg:pt-12 pb-6 sm:pb-8 lg:pb-10">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -235,21 +258,23 @@ const HeroSection = () => {
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               ) : (
-                <Link
-                  to="/login"
+                <button
+                  onClick={scrollToPricing}
                   className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
                   <Shield className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Get Started Now</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                </Link>
+                </button>
               )}
 
-              <button className={`group inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 border-2 font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
-                isDarkMode
-                  ? 'border-white hover:border-[#03c05d] text-white hover:text-[#03c05d]'
-                  : 'border-gray-700 hover:border-[#03c05d] text-gray-700 hover:text-[#03c05d]'
-              }`}>
+              <button 
+                onClick={() => setShowVideoModal(true)}
+                className={`group inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 border-2 font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
+                  isDarkMode
+                    ? 'border-white hover:border-[#03c05d] text-white hover:text-[#03c05d]'
+                    : 'border-gray-700 hover:border-[#03c05d] text-gray-700 hover:text-[#03c05d]'
+                }`}>
                 <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
                 <span>Watch Demo</span>
               </button>
@@ -461,7 +486,9 @@ const HeroSection = () => {
                       Market Trend: {marketTrend}
                     </span>
                   </div>
-                  <button className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ">
+                  <button 
+                    onClick={() => setIsFreeTrialOpen(true)}
+                    className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ">
                     View Full Analysis
                   </button>
                 </div>
@@ -471,6 +498,59 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      {/* YouTube Video Modal */}
+      {showVideoModal && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="video-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          {/* Full-screen close target behind dialog (click outside to close) */}
+          <button
+            type="button"
+            aria-label="Close video modal overlay"
+            onClick={() => setShowVideoModal(false)}
+            className="absolute inset-0 w-full h-full"
+            tabIndex={-1}
+          />
+
+          <div 
+            role="document"
+            className="relative w-full max-w-4xl mx-4 z-10"
+          >
+            <h2 id="video-modal-title" className="sr-only">Demo Video</h2>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowVideoModal(false)}
+              className="absolute -top-10 right-0 text-white hover:text-[#03c05d] transition-colors duration-300"
+              aria-label="Close video modal"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* YouTube Video */}
+            <div className="relative pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-2xl">
+              <iframe
+                className="absolute top-0 left-0 w-full h-full"
+                src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1"
+                title="Demo Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Free Trial Popup (same as Start Free Trial) */}
+      <FreeTrialPopup isOpen={isFreeTrialOpen} onClose={() => setIsFreeTrialOpen(false)} />
     </section>
   )
 }

@@ -7,6 +7,13 @@ import { useTheme } from '../contexts/ThemeContext'
 const InteractiveFooter = () => {
   const { isDarkMode } = useTheme()
   
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+  
   return (
     <footer className={`relative py-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -108,27 +115,29 @@ const InteractiveFooter = () => {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/technology" 
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('subscription')}
                   className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
-                  Technology
-                </Link>
+                  Pricing
+                </button>
               </li>
               <li>
-                <Link 
-                  to="/about" 
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('video-explanation')}
                   className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
                   About
-                </Link>
+                </button>
               </li>
               <li>
                 <Link 
                   to="/contact" 
                   className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
-                  Contact
+                  
                 </Link>
               </li>
             </ul>
