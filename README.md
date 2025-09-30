@@ -1262,7 +1262,7 @@ The `RSITrackerAlertService` provides a minimal API for the single RSI tracker a
 #### Creating an RSI Tracker Alert
 ```javascript
 const alertConfig = {
-  timeframe: '1H',
+  timeframe: '4H',
   rsiPeriod: 14,
   rsiOverbought: 70,
   rsiOversold: 30,
@@ -1413,7 +1413,7 @@ The `RSICorrelationTrackerAlertService` provides a minimal API for the single RS
 #### Creating an RSI Correlation Alert
 ```javascript
 const alertConfig = {
-  timeframe: '1H',
+  timeframe: '4H',
   mode: 'rsi_threshold', // or 'real_correlation'
   rsiPeriod: 14,
   rsiOverbought: 70,

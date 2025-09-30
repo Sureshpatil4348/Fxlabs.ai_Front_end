@@ -64,7 +64,7 @@ const useRSICorrelationStore = create(
     
     // Dashboard-specific settings
     settings: {
-      timeframe: '1H',
+      timeframe: '4H',
       rsiPeriod: 14,
       rsiOverbought: 70,
       rsiOversold: 30,

@@ -9,7 +9,7 @@ class RSITrackerAlertService {
 
   getDefaultAlertConfig() {
     return {
-      timeframe: '1H',
+      timeframe: '4H',
       rsiPeriod: 14,
       rsiOverbought: 70,
       rsiOversold: 30,
@@ -161,5 +161,4 @@ class RSITrackerAlertService {
 
 const rsiTrackerAlertService = new RSITrackerAlertService();
 export default rsiTrackerAlertService;
-
 

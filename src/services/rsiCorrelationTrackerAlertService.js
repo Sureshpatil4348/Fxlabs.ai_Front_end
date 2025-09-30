@@ -9,7 +9,7 @@ class RSICorrelationTrackerAlertService {
 
   getDefaultAlertConfig() {
     return {
-      timeframe: '1H',
+      timeframe: '4H',
       mode: 'rsi_threshold', // 'rsi_threshold' | 'real_correlation'
       rsiPeriod: 14,
       rsiOverbought: 70,
@@ -147,5 +147,4 @@ class RSICorrelationTrackerAlertService {
 
 const rsiCorrelationTrackerAlertService = new RSICorrelationTrackerAlertService();
 export default rsiCorrelationTrackerAlertService;
-
 
