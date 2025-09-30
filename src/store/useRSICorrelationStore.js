@@ -525,27 +525,6 @@ const useRSICorrelationStore = create(
         const n = Number(t);
         return Number.isFinite(n) ? n : Date.parse(t);
       };
-      const tfToMs = (t) => {
-        switch (t) {
-          case '1M':
-          case 'M1': return 60 * 1000;
-          case '5M':
-          case 'M5': return 5 * 60 * 1000;
-          case '15M':
-          case 'M15': return 15 * 60 * 1000;
-          case '30M':
-          case 'M30': return 30 * 60 * 1000;
-          case '1H':
-          case 'H1': return 60 * 60 * 1000;
-          case '4H':
-          case 'H4': return 4 * 60 * 60 * 1000;
-          case '1D':
-          case 'D1': return 24 * 60 * 60 * 1000;
-          case '1W':
-          case 'W1': return 7 * 24 * 60 * 60 * 1000;
-          default: return null;
-        }
-      };
 
       // Ensure chronological order (ascending by time)
       const ordered = [...bars].sort((a, b) => toTime(a?.time) - toTime(b?.time));
