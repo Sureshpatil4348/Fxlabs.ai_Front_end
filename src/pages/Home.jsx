@@ -102,13 +102,13 @@ const Home = () => {
           <HeroSection />
         </div>
 
-        <div id="partner">
-          <PartnersSection />
-        </div>
+        
         {/* Trading Dashboard Section */}
         <div id="trading-dashboard">
           <TradingDashboardSection />
         </div>
+
+        
 
         <div id="benefits">
           <BenefitsSection />
@@ -128,6 +128,13 @@ const Home = () => {
         <div id="success-stories">
           <SuccessStories />
         </div>
+
+
+
+        <div id="partner">
+          <PartnersSection />
+        </div>
+
 
         {/* FAQ Section */}
         <div id="faq">

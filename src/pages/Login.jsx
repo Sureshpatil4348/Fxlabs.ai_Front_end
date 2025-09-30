@@ -3,6 +3,7 @@ import { Navigate, Link } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
 import Orb from '../components/ui/Orb'
+import { useTheme } from '../contexts/ThemeContext'
 import { supabase } from '../lib/supabaseClient'
 
 const Login = () => {
@@ -13,6 +14,7 @@ const Login = () => {
   const [success, setSuccess] = useState('')
   
   const { user } = useAuth()
+  const { isDarkMode } = useTheme()
 
   // Redirect if already logged in
   if (user) {
@@ -44,7 +46,9 @@ const Login = () => {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className={`relative min-h-screen flex items-center flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
       {/* Orb background - pointer-events-none is handled by the Orb component itself */}
       <div className="absolute inset-0 z-0">
         <Orb
@@ -57,14 +61,23 @@ const Login = () => {
       
       {/* Content with proper z-index to be above Orb */}
       <div className="relative z-10 flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold"><span className="text-green-600">FX</span><span className="text-gray-500 font-light">LABS</span></div>
-        <div className="text-sm text-gray-500">Decode the Market</div>
+        <div className="text-2xl font-bold">
+          <span className="text-green-600">FX</span>
+          <span className={`font-light transition-colors duration-300 ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-500'
+          }`}>LABS</span>
+        </div>
+        <div className={`text-sm transition-colors duration-300 ${
+          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+        }`}>Decode the Market</div>
       </div>
       
       {/* Form content with proper z-index */}
       <div className="relative z-10 max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className={`mt-6 text-center text-3xl font-extrabold transition-colors duration-300 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>
             Sign in to your account
           </h2>
         </div>
@@ -81,7 +94,11 @@ const Login = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-colors duration-300 ${
+                  isDarkMode 
+                    ? 'border-gray-600 placeholder-gray-400 text-white bg-gray-800' 
+                    : 'border-gray-300 placeholder-gray-500 text-gray-900 bg-white'
+                }`}
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -97,7 +114,11 @@ const Login = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-colors duration-300 ${
+                  isDarkMode 
+                    ? 'border-gray-600 placeholder-gray-400 text-white bg-gray-800' 
+                    : 'border-gray-300 placeholder-gray-500 text-gray-900 bg-white'
+                }`}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -106,11 +127,15 @@ const Login = () => {
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
+            <div className={`text-sm text-center transition-colors duration-300 ${
+              isDarkMode ? 'text-red-400' : 'text-red-600'
+            }`}>{error}</div>
           )}
           
           {success && (
-            <div className="text-green-600 text-sm text-center">{success}</div>
+            <div className={`text-sm text-center transition-colors duration-300 ${
+              isDarkMode ? 'text-green-400' : 'text-green-600'
+            }`}>{success}</div>
           )}
 
           <div>
@@ -128,7 +153,11 @@ const Login = () => {
         <div className="text-center">
           <Link
             to="/forgot"
-            className="font-medium text-green-600 hover:text-green-500 text-sm transition-colors cursor-pointer relative z-10 inline-block px-4 py-2"
+            className={`font-medium text-sm transition-colors cursor-pointer relative z-10 inline-block px-4 py-2 ${
+              isDarkMode 
+                ? 'text-green-400 hover:text-green-300' 
+                : 'text-green-600 hover:text-green-500'
+            }`}
           >
             Forgot password?
           </Link>

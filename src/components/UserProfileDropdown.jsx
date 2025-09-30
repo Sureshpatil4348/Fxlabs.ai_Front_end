@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../auth/AuthProvider'
+import { useTheme } from '../contexts/ThemeContext'
 import { supabase } from '../lib/supabaseClient'
 import useMarketStore from '../store/useMarketStore'
 
@@ -13,6 +14,7 @@ const UserProfileDropdown = () => {
   const [showSettings, setShowSettings] = useState(false)
   const dropdownRef = useRef(null)
   const { user } = useAuth()
+  const { isDarkMode } = useTheme()
   const navigate = useNavigate()
 
   // Close dropdown when clicking outside
@@ -70,7 +72,11 @@ const UserProfileDropdown = () => {
         {/* Avatar Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+            isDarkMode 
+              ? 'bg-gray-700 hover:bg-gray-600 focus:ring-offset-gray-900' 
+              : 'bg-gray-200 hover:bg-gray-300 focus:ring-offset-white'
+          }`}
         >
           <div className={`w-10 h-10 rounded-full ${getAvatarColor(user?.email)} flex items-center justify-center text-white font-semibold text-sm`}>
             {getUserInitials(user?.email)}
@@ -79,17 +85,29 @@ const UserProfileDropdown = () => {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+          <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 z-50 transition-colors duration-300 ${
+            isDarkMode 
+              ? 'bg-gray-800 border border-gray-700' 
+              : 'bg-white border border-gray-200'
+          }`}>
             <button
               onClick={handleSettings}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:bg-gray-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <Settings className="w-4 h-4 mr-3" />
               Settings
             </button>
             <button
               onClick={handleSignOut}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:bg-gray-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <LogOut className="w-4 h-4 mr-3" />
               Sign Out
@@ -101,28 +119,48 @@ const UserProfileDropdown = () => {
       {/* Settings Modal - Rendered via Portal to avoid layout constraints */}
       {showSettings && createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full">
+          <div className={`rounded-lg p-8 max-w-md w-full transition-colors duration-300 ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="flex items-center justify-between mb-0">
-              <h2 className="text-2xl font-bold text-gray-900">Account Settings</h2>
+              <h2 className={`text-2xl font-bold transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>Account Settings</h2>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                className={`text-2xl font-bold transition-colors duration-300 ${
+                  isDarkMode 
+                    ? 'text-gray-400 hover:text-gray-200' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
               >
                 ×
               </button>
             </div>
 
             {/* Account Information */}
-            <div className="bg-gray-50 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+            <div className={`rounded-lg p-6 mb-6 transition-colors duration-300 ${
+              isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>Account Information</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Email:</span>
-                  <span className="font-medium text-gray-900">{user?.email}</span>
+                  <span className={`transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>Email:</span>
+                  <span className={`font-medium transition-colors duration-300 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{user?.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Last Sign In:</span>
-                  <span className="text-gray-900">
+                  <span className={`transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>Last Sign In:</span>
+                  <span className={`transition-colors duration-300 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A'}
                   </span>
                 </div>
@@ -142,7 +180,11 @@ const UserProfileDropdown = () => {
               </button>
               <button
                 onClick={() => setShowSettings(false)}
-                className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className={`flex-1 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
+                  isDarkMode 
+                    ? 'bg-gray-600 text-gray-200 hover:bg-gray-500 focus:ring-gray-400 focus:ring-offset-gray-800' 
+                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400 focus:ring-gray-500 focus:ring-offset-white'
+                }`}
               >
                 Close
               </button>

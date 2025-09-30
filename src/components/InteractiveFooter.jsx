@@ -7,8 +7,15 @@ import { useTheme } from '../contexts/ThemeContext'
 const InteractiveFooter = () => {
   const { isDarkMode } = useTheme()
   
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+  
   return (
-    <footer className={`relative py-16 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+    <footer className={`relative py-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Content */}
@@ -108,27 +115,29 @@ const InteractiveFooter = () => {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/technology" 
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('subscription')}
                   className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
-                  Technology
-                </Link>
+                  Pricing
+                </button>
               </li>
               <li>
-                <Link 
-                  to="/about" 
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('video-explanation')}
                   className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
                   About
-                </Link>
+                </button>
               </li>
               <li>
                 <Link 
                   to="/contact" 
                   className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
-                  Contact
+                  
                 </Link>
               </li>
             </ul>
@@ -176,19 +185,19 @@ const InteractiveFooter = () => {
               <div className="flex items-start space-x-3">
                 <Mail className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  support@Pinaxalabs.com
+                  support@Fxlabs.ai
                 </span>
               </div>
               <div className="flex items-start space-x-3">
                 <Phone className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  +91 6361156726
+                  +91 8867571889
                 </span>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  253, SMT Rukkavva Junnur, Mudhol - 587313 Karnataka, India
+                  253,Junnur, Mudhol - 587313 Karnataka, India
                 </span>
               </div>
             </div>

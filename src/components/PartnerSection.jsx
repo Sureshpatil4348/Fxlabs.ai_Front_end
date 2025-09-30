@@ -3,18 +3,18 @@ import React from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 
 const partners = [
-  { name: 'Bloomberg Terminal', tag: 'Data partner' },
+  { name: 'Meta Quotes', tag: 'Data partner' },
   { name: 'MetaTrader 5', tag: 'Execution' },
   { name: 'TradingView', tag: 'Charting' },
-  { name: 'NewsGuard AI', tag: 'Sentiment' },
-  { name: 'AWS Global', tag: 'Infrastructure' }
+  { name: 'AI News Analysis', tag: 'Sentiment' },
+  { name: 'Azure', tag: 'Infrastructure' }
 ]
 
 const PartnersSection = () => {
   const { isDarkMode } = useTheme()
 
   return (
-    <section className="relative py-20">
+    <section className="relative py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-[2.5rem] border border-gray-200/70 bg-white/70 p-10 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/60">
           <div className="flex flex-col gap-6 border-b border-gray-200/70 pb-8 dark:border-white/10 lg:flex-row lg:items-end lg:justify-between">
