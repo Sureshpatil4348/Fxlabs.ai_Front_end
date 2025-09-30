@@ -202,96 +202,93 @@ const HeroSection = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center pt-12 sm:pt-16 md:pt-18 lg:pt-12 pb-6 sm:pb-8 lg:pb-10">
+    <section className="relative min-h-screen flex items-center pt-16 sm:pt-20 md:pt-24 lg:pt-16 pb-8 sm:pb-12 lg:pb-16">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
           
           {/* Left Side - Text Content */}
-          <div className="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-7 lg:-mt-16">
-            {/* Premium Badge */}
-
-
+          <div className="space-y-6 sm:space-y-7 md:space-y-8 lg:space-y-9 lg:-mt-16">
             {/* Main Headline */}
-            <div className="space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-left font-poppins">
+            <div className="space-y-4 sm:space-y-5 md:space-y-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-left font-poppins">
                 <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>
                   <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">FX Labs</span>{' '} - Decode the Market with AI
                 </span>
               </h1>
 
-              <p className={`text-base sm:text-lg md:text-xl leading-relaxed max-w-xl text-left transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
+              <p className={`text-lg sm:text-xl md:text-2xl lg:text-2xl leading-relaxed max-w-2xl text-left transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-600'}`}>
                 Professional-grade AI tools for <span className="text-[#03c05d] font-semibold">market analysis</span>,
-                <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-700'}`}> real-time insights</span>, and
+                <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}> real-time insights</span>, and
                 <span className="text-[#03c05d] font-semibold"> precision trading</span>
               </p>
             </div>
 
             {/* Key Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
               <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
-                <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">AI Chart Analysis</span>
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#03c05d] flex-shrink-0" />
+                <span className="text-base sm:text-lg font-medium">AI Chart Analysis</span>
               </div>
               <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
-                <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">AI News Analysis</span>
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#03c05d] flex-shrink-0" />
+                <span className="text-base sm:text-lg font-medium">AI News Analysis</span>
               </div>
               <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
-                <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">Closed-Candle RSI Updates</span>
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#03c05d] flex-shrink-0" />
+                <span className="text-base sm:text-lg font-medium">Closed-Candle RSI Updates</span>
               </div>
               <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
-                <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">Daily Market Overview</span>
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#03c05d] flex-shrink-0" />
+                <span className="text-base sm:text-lg font-medium">Daily Market Overview</span>
               </div>
             </div>
 
             {/* Premium CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 md:gap-6">
               {user ? (
                 <Link
                   to="/dashboard"
-                  className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-6 sm:px-8 py-4 sm:py-4 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-base sm:text-lg rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
-                  <BarChart3 className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                  <BarChart3 className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Go to Dashboard</span>
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               ) : (
                 <button
                   onClick={scrollToPricing}
-                  className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-6 sm:px-8 py-4 sm:py-4 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-base sm:text-lg rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
-                  <Shield className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                  <Shield className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Get Started Now</span>
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
                 </button>
               )}
 
               <button 
                 onClick={() => setShowVideoModal(true)}
-                className={`group inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 border-2 font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
+                className={`group inline-flex items-center justify-center px-6 sm:px-8 py-4 sm:py-4 border-2 font-semibold text-base sm:text-lg rounded-xl transition-all duration-300 backdrop-blur-sm ${
                   isDarkMode
                     ? 'border-white hover:border-[#03c05d] text-white hover:text-[#03c05d]'
                     : 'border-gray-700 hover:border-[#03c05d] text-gray-700 hover:text-[#03c05d]'
                 }`}>
-                <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                <Play className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
                 <span>Watch Demo</span>
               </button>
             </div>
 
             {/* Premium Trust Indicators */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-3 sm:pt-4">
-              <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-md px-3 py-2 text-[#03c05d] text-xs font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
-                <CheckCircle className="w-4 h-4" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 md:gap-6 pt-4 sm:pt-5">
+              <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-lg px-4 py-3 text-[#03c05d] text-sm font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
+                <CheckCircle className="w-5 h-5" />
                 <span>80% Accuracy</span>
               </div>
-              <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-md px-3 py-2 text-[#03c05d] text-xs font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
-                <Clock className="w-4 h-4" />
+              <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-lg px-4 py-3 text-[#03c05d] text-sm font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
+                <Clock className="w-5 h-5" />
                 <span>24/7 Live Updates</span>
               </div>
-              <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-md px-3 py-2 text-[#03c05d] text-xs font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
-                <Sparkles className="w-4 h-4" />
+              <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-lg px-4 py-3 text-[#03c05d] text-sm font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
+                <Sparkles className="w-5 h-5" />
                 <span>10+ AI Analysis Tools</span>
               </div>
             </div>
@@ -300,7 +297,7 @@ const HeroSection = () => {
           {/* Right Side - Supreme Professional Visual */}
           <div className="relative group mt-8 lg:mt-0">
             {/* Master Trader AI Dashboard Container */}
-            <div className="relative w-full max-w-[320px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] xl:w-[650px] mx-auto min-h-[500px] sm:min-h-[450px] md:min-h-[520px] lg:min-h-[590px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-2 sm:p-3 md:p-4 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
+            <div className="relative w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[700px] mx-auto min-h-[550px] sm:min-h-[500px] md:min-h-[580px] lg:min-h-[650px] xl:min-h-[700px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 lg:p-6 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
                  style={{
                    transformStyle: 'preserve-3d',
                    perspective: '1000px',
@@ -309,51 +306,51 @@ const HeroSection = () => {
               
               
               {/* Master Trader AI Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
-                    <Settings className="w-3 h-3 text-[#03c05d]" />
+              <div className="flex items-center justify-between mb-5 sm:mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-[#03c05d]" />
                   </div>
-                  <span className="text-gray-800 dark:text-white text-sm font-bold font-poppins">FXLabs - decode the Market with AI</span>
+                  <span className="text-gray-800 dark:text-white text-sm sm:text-base font-bold font-poppins">FXLabs - decode the Market with AI</span>
                 </div>
-                <div className="flex items-center space-x-1 bg-[#03c05d]/20 backdrop-blur-md rounded-lg px-2 py-1 border border-[#03c05d]/30">
-                  <div className="w-1.5 h-1.5 bg-[#03c05d] rounded-full animate-pulse"></div>
-                  <span className="text-[#03c05d] text-xs font-semibold">Live Analysis</span>
+                <div className="flex items-center space-x-2 bg-[#03c05d]/20 backdrop-blur-md rounded-lg px-3 py-2 border border-[#03c05d]/30">
+                  <div className="w-2 h-2 bg-[#03c05d] rounded-full animate-pulse"></div>
+                  <span className="text-[#03c05d] text-xs sm:text-sm font-semibold">Live Analysis</span>
                 </div>
               </div>
 
               {/* Cryptocurrency Analysis Cards */}
-              <div className="space-y-3">
+              <div className="space-y-4 sm:space-y-5">
                 {/* Bitcoin Analysis Card */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 border border-[#03c05d]/20 shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
-                        <span className="text-gray-800 dark:text-white font-bold text-xs">BTC</span>
+                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
+                        <span className="text-gray-800 dark:text-white font-bold text-sm">BTC</span>
                       </div>
                       <div>
-                        <div className="text-gray-800 dark:text-white font-semibold text-sm">Bitcoin</div>
-                        <div className="text-gray-600 dark:text-gray-400 text-xs">BTC/USD</div>
+                        <div className="text-gray-800 dark:text-white font-semibold text-base sm:text-lg">Bitcoin</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-sm">BTC/USD</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-800 dark:text-white font-bold text-base">
+                      <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">
                         {isDataLoading ? (
-                          <div className="flex items-center space-x-1">
-                            <div className="w-3 h-3 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-xs">Loading...</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-sm">Loading...</span>
                           </div>
                         ) : (
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center space-x-2">
                             <span>${btcData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full" title="Real Data (Static)"></div>
+                            <div className="w-2 h-2 bg-green-400 rounded-full" title="Real Data (Static)"></div>
                           </div>
                         )}
                       </div>
-                      <div className={`text-xs flex items-center ${btcData.changePercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      <div className={`text-sm flex items-center ${btcData.changePercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                         {!isDataLoading && (
                           <>
-                            {btcData.changePercent >= 0 ? <TrendingUp className="w-2.5 h-2.5 mr-0.5" /> : <TrendingDown className="w-2.5 h-2.5 mr-0.5" />}
+                            {btcData.changePercent >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                             {`${btcData.changePercent >= 0 ? '+' : ''}${btcData.changePercent.toFixed(2)}%`}
                           </>
                         )}
@@ -362,7 +359,7 @@ const HeroSection = () => {
                   </div>
                   
                   {/* Bitcoin Price Chart */}
-                  <div className="h-12 mb-2 relative">
+                  <div className="h-16 sm:h-20 mb-3 sm:mb-4 relative">
                     <svg className="w-full h-full" viewBox="0 0 700 60">
                       <path
                         d="M0,35 Q175,20 350,25 Q525,30 700,28"
@@ -374,23 +371,23 @@ const HeroSection = () => {
                     </svg>
                   </div>
                   
-                  <div className="space-y-1.5">
+                  <div className="space-y-2 sm:space-y-3">
                     <div>
-                      <div className="text-gray-600 dark:text-gray-400 text-xs mb-0.5">Success Probability</div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                        <div className="bg-[#03c05d] h-1.5 rounded-full" style={{width: '35%'}}></div>
+                      <div className="text-gray-600 dark:text-gray-400 text-sm mb-1">Success Probability</div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div className="bg-[#03c05d] h-2 rounded-full" style={{width: '35%'}}></div>
                       </div>
-                      <div className="text-[#03c05d] text-xs mt-0.5">35%</div>
+                      <div className="text-[#03c05d] text-sm mt-1">35%</div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1.5">
-                        <div className="w-3 h-3 bg-[#03c05d] rounded-full flex items-center justify-center">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 bg-[#03c05d] rounded-full flex items-center justify-center">
                           <span className="text-white text-xs">✓</span>
                         </div>
-                        <span className="text-red-500 dark:text-red-400 text-xs">Weak Downtrend</span>
+                        <span className="text-red-500 dark:text-red-400 text-sm">Weak Downtrend</span>
                       </div>
-                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs">
-                        <Clock className="w-2.5 h-2.5" />
+                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-sm">
+                        <Clock className="w-3 h-3" />
                         <span>Just now</span>
                       </div>
                     </div>
@@ -398,35 +395,35 @@ const HeroSection = () => {
                 </div>
 
                 {/* Ethereum Analysis Card */}
-                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-3 border border-[#03c05d]/20 shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
-                        <span className="text-gray-800 dark:text-white font-bold text-xs">ETH</span>
+                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
+                        <span className="text-gray-800 dark:text-white font-bold text-sm">ETH</span>
                       </div>
                       <div>
-                        <div className="text-gray-800 dark:text-white font-semibold text-sm">Ethereum</div>
-                        <div className="text-gray-600 dark:text-gray-400 text-xs">ETH/USD</div>
+                        <div className="text-gray-800 dark:text-white font-semibold text-base sm:text-lg">Ethereum</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-sm">ETH/USD</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-800 dark:text-white font-bold text-base">
+                      <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">
                         {isDataLoading ? (
-                          <div className="flex items-center space-x-1">
-                            <div className="w-3 h-3 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-xs">Loading...</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-sm">Loading...</span>
                           </div>
                         ) : (
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center space-x-2">
                             <span>${ethData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full" title="Real Data (Static)"></div>
+                            <div className="w-2 h-2 bg-green-400 rounded-full" title="Real Data (Static)"></div>
                           </div>
                         )}
                       </div>
-                      <div className={`text-xs flex items-center ${ethData.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className={`text-sm flex items-center ${ethData.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {!isDataLoading && (
                           <>
-                            {ethData.changePercent >= 0 ? <TrendingUp className="w-2.5 h-2.5 mr-0.5" /> : <TrendingDown className="w-2.5 h-2.5 mr-0.5" />}
+                            {ethData.changePercent >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                             {`${ethData.changePercent >= 0 ? '+' : ''}${ethData.changePercent.toFixed(2)}%`}
                           </>
                         )}
@@ -435,7 +432,7 @@ const HeroSection = () => {
                   </div>
                   
                   {/* Ethereum Price Chart */}
-                  <div className="h-12 mb-2 relative">
+                  <div className="h-16 sm:h-20 mb-3 sm:mb-4 relative">
                     <svg className="w-full h-full" viewBox="0 0 700 60">
                       <path
                         d="M0,40 Q175,25 350,30 Q525,35 700,32"
@@ -472,13 +469,13 @@ const HeroSection = () => {
               </div>
               
               {/* Market Trend Section */}
-              <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 border border-[#03c05d]/20 shadow-lg mt-4">
+              <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg mt-4 sm:mt-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="w-4 h-4 text-[#03c05d]" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="w-5 h-5 text-[#03c05d]" />
                     </div>
-                    <span className={`font-semibold ${
+                    <span className={`font-semibold text-base sm:text-lg ${
                       marketTrend === 'Bullish' ? 'text-[#03c05d]' : 
                       marketTrend === 'Bearish' ? 'text-red-500 dark:text-red-400' : 
                       'text-yellow-600 dark:text-yellow-400'
@@ -488,7 +485,7 @@ const HeroSection = () => {
                   </div>
                   <button 
                     onClick={() => setIsFreeTrialOpen(true)}
-                    className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ">
+                    className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-5 py-3 rounded-lg text-sm sm:text-base font-medium transition-colors">
                     View Full Analysis
                   </button>
                 </div>

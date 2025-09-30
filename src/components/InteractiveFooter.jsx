@@ -15,23 +15,23 @@ const InteractiveFooter = () => {
   }
   
   return (
-    <footer className={`relative py-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+    <footer className={`relative py-8 sm:py-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
           
-          {/* Pinaxa Labs Column */}
-          <div className="space-y-4">
+          {/* FX Labs Column */}
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               FX Labs
             </h3>
-            <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            <p className={`text-sm leading-relaxed max-w-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Empowering traders with cutting-edge AI technology for smarter market decisions.
             </p>
             
             {/* Social Media Icons */}
-            <div className="flex items-center space-x-3 pt-2">
+            <div className="flex items-center flex-wrap gap-3 pt-2">
               <a 
                 href="https://x.com/fxlabs_ai" 
                 target="_blank" 
@@ -105,7 +105,7 @@ const InteractiveFooter = () => {
             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               Quick Links
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link 
                   to="/" 
@@ -148,7 +148,7 @@ const InteractiveFooter = () => {
             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               Legal
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
                 <Link 
                   to="/privacy-policy" 
@@ -177,11 +177,11 @@ const InteractiveFooter = () => {
           </div>
 
           {/* Contact Us Column */}
-          <div className="space-y-4">
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               Contact Us
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-start space-x-3">
                 <Mail className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -209,8 +209,8 @@ const InteractiveFooter = () => {
         <div className={`border-t mb-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}></div>
 
         {/* Copyright Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className={`text-sm text-center md:text-left ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+          <div className={`text-sm text-center sm:text-left ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             © 2025 FX Labs. All rights reserved.
           </div>
           
