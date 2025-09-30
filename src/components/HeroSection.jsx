@@ -13,6 +13,7 @@ import {
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
+import FreeTrialPopup from './FreeTrialPopup'
 import { useAuth } from '../auth/AuthProvider'
 import { useTheme } from '../contexts/ThemeContext'
 import useRSITrackerStore from '../store/useRSITrackerStore'
@@ -41,6 +42,8 @@ const HeroSection = () => {
   const [_hasRealData, _setHasRealData] = useState(true)
   const [dataInitialized, setDataInitialized] = useState(false)
   const _scale = 1
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const [isFreeTrialOpen, setIsFreeTrialOpen] = useState(false)
 
   // Connect to real market data
   useEffect(() => {
@@ -178,85 +181,107 @@ const HeroSection = () => {
     }
   }, [dataInitialized])
 
+  // Close video modal on Escape key
+  useEffect(() => {
+    if (!showVideoModal) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowVideoModal(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showVideoModal])
+
+  // Scroll to pricing section
+  const scrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing')
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <section className="relative min-h-screen flex items-center pt-12 sm:pt-16 md:pt-18 lg:pt-12 pb-6 sm:pb-8 lg:pb-10">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
           
           {/* Left Side - Text Content */}
-          <div className="space-y-2 sm:space-y-3 md:space-y-4 lg:-mt-16">
+          <div className="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-7 lg:-mt-16">
             {/* Premium Badge */}
-           
+
 
             {/* Main Headline */}
-            <div className="space-y-1">
+            <div className="space-y-3 sm:space-y-4">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-left font-poppins">
                 <span className={isDarkMode ? 'text-white' : 'text-gray-900'}>
-                  AI predictions, success probabilities and auto alerts for every major pair
+                  <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">FX Labs</span>{' '} - Decode the Market with AI
                 </span>
               </h1>
-              
+
               <p className={`text-base sm:text-lg md:text-xl leading-relaxed max-w-xl text-left transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
-                Professional-grade AI tools for <span className="text-[#03c05d] font-semibold">market analysis</span>, 
-                <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-700'}`}> real-time insights</span>, and 
+                Professional-grade AI tools for <span className="text-[#03c05d] font-semibold">market analysis</span>,
+                <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-700'}`}> real-time insights</span>, and
                 <span className="text-[#03c05d] font-semibold"> precision trading</span>
               </p>
             </div>
 
             {/* Key Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className={`flex items-center space-x-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
                 <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
                 <span className="text-sm sm:text-base font-medium">AI Chart Analysis</span>
               </div>
-              <div className={`flex items-center space-x-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
+              <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
                 <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
                 <span className="text-sm sm:text-base font-medium">AI News Analysis</span>
               </div>
-              <div className={`flex items-center space-x-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
+              <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
                 <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
                 <span className="text-sm sm:text-base font-medium">Closed-Candle RSI Updates</span>
               </div>
-              <div className={`flex items-center space-x-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
+              <div className={`flex items-center space-x-3 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-700'}`}>
                 <CheckCircle className="w-5 h-5 text-[#03c05d] flex-shrink-0" />
                 <span className="text-sm sm:text-base font-medium">Daily Market Overview</span>
               </div>
             </div>
 
             {/* Premium CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 md:gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               {user ? (
                 <Link
                   to="/dashboard"
-                  className="group relative inline-flex items-center justify-center px-3 sm:px-5 py-2 sm:py-2 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-sm rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
+                  className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
                   <BarChart3 className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Go to Dashboard</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               ) : (
-                <Link
-                  to="/login"
-                  className="group relative inline-flex items-center justify-center px-3 sm:px-5 py-2 sm:py-2 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-sm rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
+                <button
+                  onClick={scrollToPricing}
+                  className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 shadow-2xl hover:shadow-[#03c05d]/25 transform hover:scale-105"
                 >
                   <Shield className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Get Started Now</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                </Link>
+                </button>
               )}
-              
-              <button className={`group inline-flex items-center justify-center px-3 sm:px-5 py-2 sm:py-2 border-2 font-semibold text-sm sm:text-sm rounded-xl transition-all duration-300 backdrop-blur-sm ${
-                isDarkMode 
-                  ? 'border-white hover:border-[#03c05d] text-white hover:text-[#03c05d]' 
-                  : 'border-gray-700 hover:border-[#03c05d] text-gray-700 hover:text-[#03c05d]'
-              }`}>
+
+              <button 
+                onClick={() => setShowVideoModal(true)}
+                className={`group inline-flex items-center justify-center px-4 sm:px-6 py-3 sm:py-3 border-2 font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 backdrop-blur-sm ${
+                  isDarkMode
+                    ? 'border-white hover:border-[#03c05d] text-white hover:text-[#03c05d]'
+                    : 'border-gray-700 hover:border-[#03c05d] text-gray-700 hover:text-[#03c05d]'
+                }`}>
                 <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
                 <span>Watch Demo</span>
               </button>
             </div>
 
             {/* Premium Trust Indicators */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2 md:gap-3 pt-2 sm:pt-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-3 sm:pt-4">
               <div className="inline-flex items-center space-x-2 bg-white/10 border border-[#03c05d]/30 rounded-md px-3 py-2 text-[#03c05d] text-xs font-semibold shadow-lg shadow-[#03c05d]/20 backdrop-blur-sm transition-all duration-300 hover:shadow-[#03c05d]/30">
                 <CheckCircle className="w-4 h-4" />
                 <span>80% Accuracy</span>
@@ -289,7 +314,7 @@ const HeroSection = () => {
                   <div className="w-6 h-6 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
                     <Settings className="w-3 h-3 text-[#03c05d]" />
                   </div>
-                  <span className="text-gray-800 dark:text-white text-sm font-bold font-poppins">Master Trader AI</span>
+                  <span className="text-gray-800 dark:text-white text-sm font-bold font-poppins">FXLabs - decode the Market with AI</span>
                 </div>
                 <div className="flex items-center space-x-1 bg-[#03c05d]/20 backdrop-blur-md rounded-lg px-2 py-1 border border-[#03c05d]/30">
                   <div className="w-1.5 h-1.5 bg-[#03c05d] rounded-full animate-pulse"></div>
@@ -461,7 +486,9 @@ const HeroSection = () => {
                       Market Trend: {marketTrend}
                     </span>
                   </div>
-                  <button className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ">
+                  <button 
+                    onClick={() => setIsFreeTrialOpen(true)}
+                    className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ">
                     View Full Analysis
                   </button>
                 </div>
@@ -471,6 +498,59 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      {/* YouTube Video Modal */}
+      {showVideoModal && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="video-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          {/* Full-screen close target behind dialog (click outside to close) */}
+          <button
+            type="button"
+            aria-label="Close video modal overlay"
+            onClick={() => setShowVideoModal(false)}
+            className="absolute inset-0 w-full h-full"
+            tabIndex={-1}
+          />
+
+          <div 
+            role="document"
+            className="relative w-full max-w-4xl mx-4 z-10"
+          >
+            <h2 id="video-modal-title" className="sr-only">Demo Video</h2>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowVideoModal(false)}
+              className="absolute -top-10 right-0 text-white hover:text-[#03c05d] transition-colors duration-300"
+              aria-label="Close video modal"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* YouTube Video */}
+            <div className="relative pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-2xl">
+              <iframe
+                className="absolute top-0 left-0 w-full h-full"
+                src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1"
+                title="Demo Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Free Trial Popup (same as Start Free Trial) */}
+      <FreeTrialPopup isOpen={isFreeTrialOpen} onClose={() => setIsFreeTrialOpen(false)} />
     </section>
   )
 }

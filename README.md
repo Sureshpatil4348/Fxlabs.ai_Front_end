@@ -302,6 +302,12 @@ Usage notes (WebSocket):
 - **TAILWIND CONFIG**: Updated Tailwind config to support class-based dark mode
 - **ACCESSIBILITY**: Proper tooltips and ARIA labels for theme toggle button
 - **CLEAN IMPLEMENTATION**: Minimal complexity with clean, readable code following best practices
+- **LOGIN PAGE THEME SUPPORT**: Both LoginModal and standalone Login page now fully support light/dark theme switching:
+  - **LOGIN MODAL**: Updated with comprehensive theme-aware styling for all elements including background, text, inputs, buttons, and error messages
+  - **STANDALONE LOGIN PAGE**: Added theme support to the dedicated login page with proper background, form styling, and interactive elements
+  - **CONSISTENT THEMING**: Both login interfaces maintain visual consistency with the rest of the application
+  - **SMOOTH TRANSITIONS**: All theme changes include smooth color transitions for better user experience
+  - **ACCESSIBILITY**: Maintained proper contrast ratios and accessibility standards across both themes
 - **MULTI-INDICATOR HEATMAP DARK MODE**: Updated MultiIndicatorHeatmap component with comprehensive dark mode support:
   - Dark mode text colors for all labels, headers, and dropdowns
   - Dark mode backgrounds for dropdown menus and progress bars
