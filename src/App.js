@@ -8,7 +8,6 @@ import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
-import Login from './pages/Login';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import RefundPolicy from './pages/RefundPolicy';
 import Reset from './pages/Reset';
@@ -33,7 +32,6 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/reset" element={<Reset />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
