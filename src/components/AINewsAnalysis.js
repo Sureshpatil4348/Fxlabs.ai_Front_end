@@ -524,11 +524,16 @@ const AINewsAnalysis = () => {
     }
   });
 
-  // Sort news: newest on top (reverse chronological) in all tabs
+  // Sort news per tab:
+  // - 'upcoming': soonest first (ascending)
+  // - 'released' and 'all': newest first (descending)
   const sortedNews = filteredNews.sort((a, b) => {
     const aTs = formatNewsLocalDateTime({ dateIso: a.date, originalTime: a.originalTime }).dateObj.getTime();
     const bTs = formatNewsLocalDateTime({ dateIso: b.date, originalTime: b.originalTime }).dateObj.getTime();
-    return bTs - aTs; // descending: newest first
+    if (newsFilter === 'upcoming') {
+      return aTs - bTs; // earliest upcoming on top
+    }
+    return bTs - aTs; // newest first for released/all
   });
 
   const filters = [
