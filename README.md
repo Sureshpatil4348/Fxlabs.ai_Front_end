@@ -58,6 +58,11 @@ Example:
 
 ## Recent Updates
 
+### AI News Analysis: Newest-First Ordering (Latest)
+- News items now display in reverse chronological order across all tabs (Upcoming, Released, All). The newest events appear at the top regardless of tab.
+- Implementation: UI sorts by the event timestamp descending using `formatNewsLocalDateTime` for consistent parsing across ISO/original formats.
+- Affected file: `src/components/AINewsAnalysis.js`
+
 ### Quantum Analysis: Pair Selector Behavior (Latest)
 - Pair selector now opens on click and stays open until you click outside the dropdown area.
 - Selecting an option updates the symbol but does not auto-close the menu; click outside to close.

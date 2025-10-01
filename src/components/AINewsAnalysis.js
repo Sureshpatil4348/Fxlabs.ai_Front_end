@@ -524,22 +524,11 @@ const AINewsAnalysis = () => {
     }
   });
 
-  // Sort news: starting soon first, then upcoming, then by impact
+  // Sort news: newest on top (reverse chronological) in all tabs
   const sortedNews = filteredNews.sort((a, b) => {
-    const timingA = getEventTiming(a);
-    const timingB = getEventTiming(b);
-    
-    // Starting soon events first
-    if (timingA.isStartingSoon && !timingB.isStartingSoon) return -1;
-    if (timingB.isStartingSoon && !timingA.isStartingSoon) return 1;
-    
-    // Then upcoming events
-    if (timingA.isUpcoming && !timingB.isUpcoming) return -1;
-    if (timingB.isUpcoming && !timingA.isUpcoming) return 1;
-    
-    // Then by impact
-    const impactOrder = { 'high': 3, 'medium': 2, 'low': 1 };
-    return (impactOrder[b.impact] || 2) - (impactOrder[a.impact] || 2);
+    const aTs = formatNewsLocalDateTime({ dateIso: a.date, originalTime: a.originalTime }).dateObj.getTime();
+    const bTs = formatNewsLocalDateTime({ dateIso: b.date, originalTime: b.originalTime }).dateObj.getTime();
+    return bTs - aTs; // descending: newest first
   });
 
   const filters = [
