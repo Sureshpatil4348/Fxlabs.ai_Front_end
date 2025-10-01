@@ -2,6 +2,10 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Documentation
+
+- Calculations reference and source of truth for all formulas, static symbol lists, correlation pairs, thresholds, and percentages: see `CALCULATIONS.md`.
+
 ## Code Quality & Linting
 
 - All ESLint warnings are treated as errors. The project is configured to fail on any warning.
