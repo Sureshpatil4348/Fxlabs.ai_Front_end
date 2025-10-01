@@ -129,9 +129,9 @@ const Reset = () => {
         // Sign out the user explicitly to clear the reset session
         await supabase.auth.signOut()
         
-        // Redirect to login after a brief delay
+        // Redirect to home page after a brief delay
         setTimeout(() => {
-          navigate('/login')
+          navigate('/')
         }, 1500)
       }
     } catch (err) {

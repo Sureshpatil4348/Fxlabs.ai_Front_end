@@ -211,7 +211,8 @@ const LoginModal = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => {
-                  // TODO: Implement forgot password functionality
+                  onClose()
+                  navigate('/forgot')
                 }}
                 className={`text-sm transition-colors ${
                   isDarkMode 
