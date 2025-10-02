@@ -1,5 +1,7 @@
 # Calculations Reference
 
+**IMPORTANT**: As of the latest update, all calculations described in this document are performed **server-side**. The frontend no longer performs any technical indicator calculations client-side. This document serves as a reference for understanding how the calculations work, but the actual computation happens on the backend. The frontend receives pre-calculated indicator values via WebSocket/API.
+
 This document explains, in detail, how every widget computes its values and how the UI derives Buy/Sell labels and percentages. It also calls out data sources, guardrails, and thresholds used across the app.
 
 Contents

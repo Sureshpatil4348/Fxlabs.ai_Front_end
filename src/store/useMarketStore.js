@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { calculateRSI } from '../utils/calculations';
+// Note: All calculations are now performed server-side
+// RSI and other indicators should be received from WebSocket/API
 
 // WebSocket URL configuration - v2 probe (logs only)
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
@@ -456,79 +457,24 @@ const useMarketStore = create(
       get().recalculateAllRsi();
     },
 
-    calculateRsi: (symbol, period = 14) => {
-      const bars = get().getOhlcForSymbol(symbol);
-      if (!bars || bars.length < period + 1) return null;
-
-      const lastBar = bars[bars.length - 1];
-      const lastIsClosed = lastBar && lastBar.is_closed === true;
-      // Strict closed-candle policy: if last isn't closed and we have enough, drop it; else return null
-      const effectiveBars = (!lastIsClosed && bars.length >= period + 2) ? bars.slice(0, -1) : bars;
-      if (!lastIsClosed && bars.length < period + 2) return null;
-      const closes = effectiveBars
-        .map(bar => Number(bar.close))
-        .filter(v => Number.isFinite(v));
-
-      if (closes.length < period + 1) return null;
-
-      return calculateRSI(closes, period);
+    calculateRsi: (_symbol, _period = 14) => {
+      // RSI calculations are now done server-side
+      // This function should be replaced with server data retrieval
+      console.warn('calculateRsi called but calculations are now server-side');
+      return null;
     },
 
     recalculateAllRsi: () => {
-      const state = get();
-      const newRsiData = new Map();
-      const newCorrelationStatus = new Map();
-
-      // Calculate RSI for all subscribed symbols
-      state.subscriptions.forEach((sub, symbol) => {
-        const rsi = get().calculateRsi(symbol, state.rsiSettings.period);
-        if (rsi !== null) {
-          newRsiData.set(symbol, {
-            value: rsi,
-            timestamp: new Date(),
-            period: state.rsiSettings.period
-          });
-        }
-      });
-
-      // Update correlation status
-      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
-        const [symbol1, symbol2] = pair;
-        const sym1 = symbol1 + 'm';
-        const sym2 = symbol2 + 'm';
-        const rsi1 = newRsiData.get(sym1)?.value;
-        const rsi2 = newRsiData.get(sym2)?.value;
-        
-        
-        if (rsi1 !== undefined && rsi2 !== undefined) {
-          const isPositiveCorrelation = state.correlationPairs.positive.some(
-            p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
-          );
-          const pairKey = `${symbol1}_${symbol2}`;
-          
-          let status = 'neutral';
-          if (rsi1 > state.rsiSettings.overbought && rsi2 > state.rsiSettings.overbought) {
-            status = isPositiveCorrelation ? 'match' : 'mismatch';
-          } else if (rsi1 < state.rsiSettings.oversold && rsi2 < state.rsiSettings.oversold) {
-            status = isPositiveCorrelation ? 'match' : 'mismatch';
-          } else if ((rsi1 > state.rsiSettings.overbought && rsi2 < state.rsiSettings.oversold) ||
-                     (rsi1 < state.rsiSettings.oversold && rsi2 > state.rsiSettings.overbought)) {
-            status = isPositiveCorrelation ? 'mismatch' : 'match';
-          }
-
-          newCorrelationStatus.set(pairKey, {
-            status,
-            rsi1,
-            rsi2,
-            type: isPositiveCorrelation ? 'positive' : 'negative'
-          });
-        }
-      });
-
-      set({ 
-        rsiData: newRsiData,
-        correlationStatus: newCorrelationStatus
-      });
+      // Note: RSI calculations are now performed server-side
+      // This function should be updated to process RSI data received from WebSocket
+      // For now, it's a no-op placeholder
+      console.warn('recalculateAllRsi called but RSI is now calculated server-side');
+      
+      // The server should send RSI values via WebSocket messages
+      // Components should listen for those messages and update state accordingly
+      
+      // Placeholder: maintain existing state structure but don't calculate
+      // In a full implementation, this would process server-sent RSI data
     },
 
     // Currency Strength Actions

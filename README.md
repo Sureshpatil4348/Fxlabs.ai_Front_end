@@ -2,6 +2,45 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Migration Notice: Server-Side Calculations (Latest)
+
+**IMPORTANT ARCHITECTURAL CHANGE**: All technical indicator calculations have been moved to the server-side.
+
+### What Changed
+- **Client-side calculations removed**: RSI, EMA, MACD, UTBOT, Ichimoku, RFI, and all other technical indicators are no longer calculated on the frontend
+- **Server-side calculation architecture**: All indicators should now be pre-calculated by the backend and delivered via WebSocket/API
+- **Calculation files updated**: 
+  - `src/utils/calculations.js` - Exports only constants and parameters, no calculation logic
+  - `src/utils/rfiCalculations.js` - Exports only UI formatting helpers, no calculation logic
+  - `src/utils/dataFormulasExample.js` - Deleted (was example/demo file)
+- **Stores updated**: All calculation calls in stores are now placeholder functions that log warnings
+  - `src/store/useRSITrackerStore.js`
+  - `src/store/useRSICorrelationStore.js`
+  - `src/store/useMarketStore.js`
+- **Components updated**: `src/components/MultiIndicatorHeatmap.js` now uses neutral fallback values instead of calculating indicators
+
+### Why This Change
+- **Performance**: Complex calculations no longer burden the client browser
+- **Consistency**: Single source of truth for all calculations ensures consistency across users
+- **Scalability**: Backend can optimize and cache calculations for multiple users
+- **Reliability**: Server-side calculations with proper data management and error handling
+- **Maintenance**: Single codebase for calculation logic, easier to update and fix
+
+### Migration Path for Integrators
+If you're integrating with this frontend:
+1. **Backend must provide pre-calculated indicators** via WebSocket messages or API responses
+2. **Expected data format**: Technical indicators should be included in the data payloads sent to frontend
+3. **No client-side recalculation**: The frontend will not recalculate any indicators from raw OHLC data
+4. **UI will show neutral/placeholder values** until server data arrives
+
+### Affected Features
+All features that relied on client-side calculations now expect server-provided data:
+- Multi-Indicator Heatmap (EMA, MACD, RSI, UTBOT, Ichimoku)
+- RSI Tracker (RSI values)
+- RSI Correlation Dashboard (RSI values and correlation coefficients)
+- Currency Strength Meter (calculations)
+- RFI Score Cards (RFI components)
+
 ## Migration Notice: Market v2 Probe (Step 1)
 
 - Legacy WebSocket data flows for market ticks/OHLC have been disabled temporarily.

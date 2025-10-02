@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
-import { calculateRSI } from '../utils/calculations';
-import { calculateRFIForSymbols } from '../utils/rfiCalculations';
+// Note: All calculations are now performed server-side
+// RSI, RFI, and other indicators should be received from WebSocket/API
 
 // WebSocket URL configuration (v2 probe - logs only)
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
@@ -476,18 +476,8 @@ const useRSITrackerStore = create(
               const l = Number(message.data.low);
               const c = Number(message.data.close);
 
-              // Compute RSI(14) including current bar
-              const closesIncluding = tfBars
-                .map(b => Number(b?.close))
-                .filter(v => Number.isFinite(v));
-              const rsiIncluding = closesIncluding.length >= 15 ? calculateRSI(closesIncluding, 14) : null;
-
-              // Compute RSI(14) using only closed bars (strict parity with MT5)
-              const closesClosedAll = tfBars
-                .filter(b => b && b.is_closed === true)
-                .map(b => Number(b?.close))
-                .filter(v => Number.isFinite(v));
-              const rsiClosed = closesClosedAll.length >= 15 ? calculateRSI(closesClosedAll, 14) : null;
+              // Note: RSI calculations removed - should come from server
+              // Debug logging now shows only OHLC data
 
               // Log CLOSE only when previous bar is explicitly closed and not yet logged
               if (tfBars.length > 1) {
@@ -502,16 +492,9 @@ const useRSITrackerStore = create(
                     const prevDate = prevIso.slice(0, 10);
                     const prevTime = prevIso.slice(11, 19);
 
-                    // RSI for the previous closed candle using closed-only series
-                    const closesClosed = tfBars
-                      .filter(b => b && b.is_closed === true)
-                      .map(b => Number(b?.close))
-                      .filter(v => Number.isFinite(v));
-                    const prevClosedRsi = closesClosed.length >= 15 ? calculateRSI(closesClosed, 14) : null;
-
                     // eslint-disable-next-line no-console
                     console.log(
-                      `[BTCUSDm][1M][CLOSE] ${prevDate} ${prevTime} | O:${prev?.open} H:${prev?.high} L:${prev?.low} C:${prev?.close} | RSI14(closed): ${prevClosedRsi != null ? prevClosedRsi.toFixed(2) : 'n/a'}`,
+                      `[BTCUSDm][1M][CLOSE] ${prevDate} ${prevTime} | O:${prev?.open} H:${prev?.high} L:${prev?.low} C:${prev?.close}`,
                       prev
                     );
                     logged.add(prevKey);
@@ -522,7 +505,7 @@ const useRSITrackerStore = create(
               const evt = isUpdate ? 'UPDATE' : 'OPEN';
               // eslint-disable-next-line no-console
               console.log(
-                `[BTCUSDm][1M][${evt}] ${dateStr} ${timeStr} | O:${o} H:${h} L:${l} C:${c} | RSI14(curr): ${rsiIncluding != null ? rsiIncluding.toFixed(2) : 'n/a'} | RSI14(prev_closed): ${rsiClosed != null ? rsiClosed.toFixed(2) : 'n/a'}`,
+                `[BTCUSDm][1M][${evt}] ${dateStr} ${timeStr} | O:${o} H:${h} L:${l} C:${c}`,
                 message.data
               );
             }
@@ -625,100 +608,26 @@ const useRSITrackerStore = create(
     },
     
     // RSI Calculation Actions
-    // Use Wilder's RSI on closed candles when possible (via utils.calculateRSI)
-    calculateRsi: (symbol, period = 14) => {
-      const bars = get().getOhlcForSymbol(symbol);
-      if (!bars || bars.length < period + 1) return null;
-
-      const toTime = (t) => {
-        const n = Number(t);
-        return Number.isFinite(n) ? n : Date.parse(t);
-      };
-
-      // Ensure chronological order (ascending by time)
-      const ordered = [...bars].sort((a, b) => toTime(a?.time) - toTime(b?.time));
-
-      const lastIsClosed = ordered[ordered.length - 1]?.is_closed === true;
-      // Strict closed-candle policy: drop last bar if not closed and we have enough history; else return null
-      const hasEnoughForDrop = ordered.length >= (period + 2);
-      const effectiveBars = (!lastIsClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
-      if (!lastIsClosed && !hasEnoughForDrop) return null;
-      const closes = effectiveBars
-        .map(bar => Number(bar.close))
-        .filter(v => Number.isFinite(v));
-      if (closes.length < period + 1) return null;
-
-      return calculateRSI(closes, period);
+    // Note: RSI is now calculated server-side and received via WebSocket
+    // This function is kept for backward compatibility but should not perform calculations
+    calculateRsi: (_symbol, _period = 14) => {
+      // RSI calculations are now done server-side
+      // This function should be replaced with server data retrieval
+      console.warn('calculateRsi called but calculations are now server-side');
+      return null;
     },
 
     recalculateAllRsi: () => {
-      const state = get();
-      const newRsiData = new Map();
-      const newRsiHistory = new Map(state.rsiHistory);
-      const newRsiEvents = new Map(state.rsiEvents);
-      const newPriceHistory = new Map(state.priceHistory);
-
-      // Calculate RSI for all subscribed symbols
-      state.subscriptions.forEach((sub, symbol) => {
-        const rsi = get().calculateRsi(symbol, state.settings.rsiPeriod);
-        if (rsi !== null) {
-          const currentTime = new Date();
-          const rsiInfo = {
-            value: rsi,
-            timestamp: currentTime,
-            period: state.settings.rsiPeriod
-          };
-          
-          newRsiData.set(symbol, rsiInfo);
-          
-          // Store historical RSI data
-          if (!newRsiHistory.has(symbol)) {
-            newRsiHistory.set(symbol, []);
-          }
-          const history = newRsiHistory.get(symbol);
-          history.push({
-            value: rsi,
-            timestamp: currentTime
-          });
-          
-          // Keep only last 100 historical values
-          if (history.length > 100) {
-            history.shift();
-          }
-          
-          // Track RSI events (crossdown/crossup)
-          get().trackRsiEvents(symbol, rsi, newRsiEvents);
-          
-          // Store price history for sparklines
-          const latestTick = get().getLatestTickForSymbol(symbol);
-          const latestBar = get().getLatestOhlcForSymbol(symbol);
-          const currentPrice = latestTick?.bid || latestBar?.close || 0;
-          
-          if (!newPriceHistory.has(symbol)) {
-            newPriceHistory.set(symbol, []);
-          }
-          const priceHistory = newPriceHistory.get(symbol);
-          priceHistory.push({
-            price: currentPrice,
-            timestamp: currentTime
-          });
-          
-          // Keep only last 50 price points for sparklines
-          if (priceHistory.length > 50) {
-            priceHistory.shift();
-          }
-        }
-      });
-
-      set({ 
-        rsiData: newRsiData,
-        rsiHistory: newRsiHistory,
-        rsiEvents: newRsiEvents,
-        priceHistory: newPriceHistory
-      });
+      // Note: RSI calculations are now performed server-side
+      // This function should be updated to process RSI data received from WebSocket
+      // For now, it's a no-op placeholder
+      console.warn('recalculateAllRsi called but RSI is now calculated server-side');
       
-      // Also calculate RFI after RSI calculation
-      get().recalculateAllRfi();
+      // The server should send RSI values via WebSocket messages
+      // Components should listen for those messages and update state accordingly
+      
+      // Placeholder: maintain existing state structure but don't calculate
+      // In a full implementation, this would process server-sent RSI data
     },
 
     // RSI Event Tracking
@@ -811,41 +720,16 @@ const useRSITrackerStore = create(
 
     // RFI Calculation Actions
     recalculateAllRfi: () => {
-      const state = get();
-      const symbolData = new Map();
-
-      // Prepare data for RFI calculation
-      state.subscriptions.forEach((sub, symbol) => {
-        const rsiInfo = state.rsiData.get(symbol);
-        const ohlcInfo = state.ohlcData.get(symbol);
-        const _tickInfo = state.tickData.get(symbol); // Unused variable, prefixed with underscore
-
-        if (rsiInfo && ohlcInfo) {
-          // Get recent RSI values (simulate historical RSI for flow calculation)
-          const rsiValues = [rsiInfo.value, rsiInfo.value * 0.95, rsiInfo.value * 1.05]; // Simplified
-          
-          // Get recent price data
-          const bars = ohlcInfo.bars.slice(-10); // Last 10 bars
-          const priceData = bars.map(bar => bar.close);
-          
-          // Get volume data (simulate from price movement)
-          const volumeData = bars.map((bar, index) => {
-            if (index === 0) return 1000000; // Base volume
-            const priceChange = Math.abs(bar.close - bars[index - 1].close) / bars[index - 1].close;
-            return 1000000 * (1 + priceChange * 5); // Volume based on price volatility
-          });
-
-          symbolData.set(symbol, {
-            rsiValues,
-            priceData,
-            volumeData
-          });
-        }
-      });
-
-      // Calculate RFI for all symbols
-      const rfiResults = calculateRFIForSymbols(symbolData);
-      set({ rfiData: rfiResults });
+      // Note: RFI calculations are now performed server-side
+      // This function should be updated to process RFI data received from WebSocket
+      // For now, it's a no-op placeholder
+      console.warn('recalculateAllRfi called but RFI is now calculated server-side');
+      
+      // The server should send RFI values via WebSocket messages
+      // Components should listen for those messages and update state accordingly
+      
+      // Placeholder: maintain existing state structure but don't calculate
+      // In a full implementation, this would process server-sent RFI data
     },
     
     // Utility Actions

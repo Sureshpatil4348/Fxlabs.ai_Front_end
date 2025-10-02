@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import { calculateRSI } from '../utils/calculations';
+// Note: All calculations are now performed server-side
+// RSI, correlations, and other indicators should be received from WebSocket/API
 
 // WebSocket URL configuration (v2 probe - logs only)
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
@@ -454,226 +455,50 @@ const useRSICorrelationStore = create(
     },
     
     // RSI Calculation Actions
-    // Use Wilder's RSI on closed candles when possible (via utils.calculateRSI)
-    calculateRsi: (symbol, period = 14) => {
-      const bars = get().getOhlcForSymbol(symbol);
-      if (!bars || bars.length < period + 1) return null;
-
-      const toTime = (t) => {
-        const n = Number(t);
-        return Number.isFinite(n) ? n : Date.parse(t);
-      };
-
-      // Ensure chronological order (ascending by time)
-      const ordered = [...bars].sort((a, b) => toTime(a?.time) - toTime(b?.time));
-
-      const lastBarObj = ordered[ordered.length - 1];
-      const flagClosed = lastBarObj && lastBarObj.is_closed === true;
-      // Strict closed-candle policy: drop last bar if not closed and we have enough history; else return null
-      const hasEnoughForDrop = ordered.length >= (period + 2);
-      const effectiveBars = (!flagClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
-      if (!flagClosed && !hasEnoughForDrop) return null;
-      const closes = effectiveBars
-        .map(bar => Number(bar.close))
-        .filter(v => Number.isFinite(v));
-      if (closes.length < period + 1) return null;
-
-      return calculateRSI(closes, period);
+    // Note: RSI is now calculated server-side and received via WebSocket
+    // This function is kept for backward compatibility but should not perform calculations
+    calculateRsi: (_symbol, _period = 14) => {
+      // RSI calculations are now done server-side
+      // This function should be replaced with server data retrieval
+      console.warn('calculateRsi called but calculations are now server-side');
+      return null;
     },
 
-    // Real Rolling Correlation Calculation (time-aligned, stable)
-    // Aligns candles by timestamp across both symbols and uses the last
-    // `window + 1` overlapping candles to compute log-return correlation.
-    // This avoids spurious low percentages caused by misaligned OHLC series
-    // that can happen right after subscriptions initialize.
-    calculateRollingCorrelation: (symbol1, symbol2, window = 50) => {
-      const raw1 = get().getOhlcForSymbol(symbol1);
-      const raw2 = get().getOhlcForSymbol(symbol2);
-
-      if (!raw1?.length || !raw2?.length) return null;
-
-      // Ensure ascending order by time
-      const toTime = (t) => {
-        // Normalize time key for comparison and Map keys
-        // Handles numeric epoch or ISO-like strings
-        const n = Number(t);
-        return Number.isFinite(n) ? n : Date.parse(t);
-      };
-
-      const bars1 = [...raw1].sort((a, b) => toTime(a.time) - toTime(b.time));
-      const bars2 = [...raw2].sort((a, b) => toTime(a.time) - toTime(b.time));
-
-      // Build quick lookup for close by time
-      const map1 = new Map(bars1.map(b => [toTime(b.time), Number(b.close)]));
-      const map2 = new Map(bars2.map(b => [toTime(b.time), Number(b.close)]));
-
-      // Intersect timestamps present in both series
-      const times1 = Array.from(map1.keys());
-      const times2 = new Set(map2.keys());
-      const intersectTimes = times1.filter(t => times2.has(t)).sort((a, b) => a - b);
-
-      // Need at least `window + 1` aligned candles to produce `window` returns
-      if (intersectTimes.length < window + 1) return null;
-
-      // Take the last `window + 1` aligned timestamps (closed candles only)
-      const alignedTimes = intersectTimes.slice(-1 * (window + 1));
-
-      // Compute log returns for both symbols using aligned times
-      const returns1 = [];
-      const returns2 = [];
-      for (let i = 1; i < alignedTimes.length; i++) {
-        const t = alignedTimes[i];
-        const prevT = alignedTimes[i - 1];
-
-        const p1 = map1.get(t);
-        const p1Prev = map1.get(prevT);
-        const p2 = map2.get(t);
-        const p2Prev = map2.get(prevT);
-
-        if (p1Prev > 0 && p2Prev > 0 && p1 > 0 && p2 > 0) {
-          returns1.push(Math.log(p1 / p1Prev));
-          returns2.push(Math.log(p2 / p2Prev));
-        }
-      }
-
-      if (returns1.length < window) return null;
-
-      // Calculate Pearson correlation
-      const mean1 = returns1.reduce((s, v) => s + v, 0) / returns1.length;
-      const mean2 = returns2.reduce((s, v) => s + v, 0) / returns2.length;
-
-      let num = 0;
-      let sumSq1 = 0;
-      let sumSq2 = 0;
-      for (let i = 0; i < returns1.length; i++) {
-        const d1 = returns1[i] - mean1;
-        const d2 = returns2[i] - mean2;
-        num += d1 * d2;
-        sumSq1 += d1 * d1;
-        sumSq2 += d2 * d2;
-      }
-
-      if (sumSq1 === 0 || sumSq2 === 0) return 0;
-      return num / Math.sqrt(sumSq1 * sumSq2);
+    // Rolling Correlation Calculation
+    // Note: Correlation calculations are now performed server-side
+    // This function is kept for backward compatibility but should not perform calculations
+    calculateRollingCorrelation: (_symbol1, _symbol2, _window = 50) => {
+      // Correlation calculations are now done server-side
+      // This function should be replaced with server data retrieval
+      console.warn('calculateRollingCorrelation called but calculations are now server-side');
+      return null;
     },
     
       // Calculate all correlations
     calculateAllCorrelations: () => {
-      const state = get();
-      const newCorrelationData = new Map();
+      // Note: Correlation calculations are now performed server-side
+      // This function should be updated to process correlation data received from WebSocket
+      // For now, it's a no-op placeholder
+      console.warn('calculateAllCorrelations called but correlations are now calculated server-side');
       
-      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
-        const [symbol1, symbol2] = pair;
-        const sym1 = symbol1 + 'm';
-        const sym2 = symbol2 + 'm';
-        
-        const correlation = get().calculateRollingCorrelation(sym1, sym2, state.settings.correlationWindow);
-        
-          if (correlation !== null) {
-          const pairKey = `${symbol1}_${symbol2}`;
-          
-          // Determine correlation strength
-          let strength;
-          if (Math.abs(correlation) >= 0.7) {
-            strength = 'strong';
-          } else if (Math.abs(correlation) >= 0.3) {
-            strength = 'moderate';
-          } else {
-            strength = 'weak';
-          }
-          
-          // Determine trend (simplified - could be enhanced with historical comparison)
-          let trend = 'stable';
-          // TODO: Implement trend calculation by comparing with previous window
-            
-            // Determine correlation sign type
-            const pairType = state.correlationPairs.positive.some(
-              p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
-            ) ? 'positive' : 'negative';
-
-            // Mismatch logic for Real Correlation mode
-            // For Positive cells: correlation below +0.25 -> mismatch
-            // For Negative cells: correlation above -0.15 -> mismatch
-            const isMismatch = (
-              (pairType === 'positive' && correlation < 0.25) ||
-              (pairType === 'negative' && correlation > -0.15)
-            );
-
-          const next = {
-            correlation: correlation,
-            strength: strength,
-            trend: trend,
-              type: pairType,
-              isMismatch,
-            timestamp: new Date()
-          };
-          // Backend will evaluate/send alerts
-          newCorrelationData.set(pairKey, next);
-        }
-      });
+      // The server should send correlation values via WebSocket messages
+      // Components should listen for those messages and update state accordingly
       
-      set({ realCorrelationData: newCorrelationData });
+      // Placeholder: maintain existing state structure but don't calculate
+      // In a full implementation, this would process server-sent correlation data
     },
 
     recalculateAllRsi: () => {
-      const state = get();
-      const newRsiData = new Map();
-      const newCorrelationStatus = new Map();
-
-      // Build a superset of symbols from subscriptions and any OHLC buffers (handles reconnects and missing ACKs)
-      const candidateSymbols = new Set([
-        ...Array.from(state.subscriptions.keys()),
-        ...Array.from((state.ohlcByTimeframe || new Map()).keys()),
-        ...Array.from(state.ohlcData.keys())
-      ]);
-
-      // Calculate RSI for all candidate symbols
-      candidateSymbols.forEach((symbol) => {
-        const rsi = get().calculateRsi(symbol, state.settings.rsiPeriod);
-        if (rsi !== null) {
-          newRsiData.set(symbol, {
-            value: rsi,
-            timestamp: new Date(),
-            period: state.settings.rsiPeriod
-          });
-        }
-      });
-
-      // Update correlation status from freshly computed RSI map
-      [...state.correlationPairs.positive, ...state.correlationPairs.negative].forEach((pair) => {
-        const [symbol1, symbol2] = pair;
-        const sym1 = symbol1 + 'm';
-        const sym2 = symbol2 + 'm';
-        const rsi1 = newRsiData.get(sym1)?.value;
-        const rsi2 = newRsiData.get(sym2)?.value;
-
-        if (rsi1 !== undefined && rsi2 !== undefined) {
-          const pairKey = `${symbol1}_${symbol2}`;
-          const isPositiveCorrelation = state.correlationPairs.positive.some(
-            p => (p[0] === symbol1 && p[1] === symbol2) || (p[0] === symbol2 && p[1] === symbol1)
-          );
-
-          let status;
-          const { rsiOverbought, rsiOversold } = state.settings;
-
-          if (isPositiveCorrelation) {
-            const mismatch = (rsi1 > rsiOverbought && rsi2 < rsiOversold) || (rsi2 > rsiOverbought && rsi1 < rsiOversold);
-            status = mismatch ? 'mismatch' : 'neutral';
-          } else {
-            const mismatch = (rsi1 > rsiOverbought && rsi2 > rsiOverbought) || (rsi1 < rsiOversold && rsi2 < rsiOversold);
-            status = mismatch ? 'mismatch' : 'neutral';
-          }
-
-          newCorrelationStatus.set(pairKey, {
-            status,
-            rsi1,
-            rsi2,
-            type: isPositiveCorrelation ? 'positive' : 'negative'
-          });
-        }
-      });
-
-      set({ rsiData: newRsiData, correlationStatus: newCorrelationStatus });
+      // Note: RSI calculations are now performed server-side
+      // This function should be updated to process RSI data received from WebSocket
+      // For now, it's a no-op placeholder
+      console.warn('recalculateAllRsi called but RSI is now calculated server-side');
+      
+      // The server should send RSI values via WebSocket messages
+      // Components should listen for those messages and update state accordingly
+      
+      // Placeholder: maintain existing state structure but don't calculate
+      // In a full implementation, this would process server-sent RSI data
     },
 
     

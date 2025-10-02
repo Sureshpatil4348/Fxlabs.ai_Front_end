@@ -14,14 +14,10 @@ import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { 
-  calculateEMASignals,
-  calculateMACDSignals,
-  calculateRSISignals,
-  generateUTBotSignal,
-  calculateIchimokuCloneSignals,
-  isQuietMarket,
   QUIET_MARKET_PARAMETERS
 } from '../utils/calculations';
+// Note: All indicator calculations are now performed server-side
+// EMA, MACD, RSI, UTBOT, Ichimoku signals should be received from WebSocket/API
 // import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
 
 // Format timeframe for UI display
@@ -625,12 +621,15 @@ useEffect(() => {
       const createUTBotFallback = () => ({ signal: 'neutral', confidence: 0.5, new: false });
       const createIchimokuFallback = () => ({ analysis: { signal: 'neutral', new: false }, cloudTop: tfCloses[tfCloses.length - 1], cloudBottom: tfCloses[tfCloses.length - 1] });
 
-      const emaSignals = safeCalculate('EMA', () => calculateEMASignals(tfCloses), tfCloses.length >= 21 ? createEMAFallback : null);
-      const macdSignals = safeCalculate('MACD', () => calculateMACDSignals(tfCloses), tfCloses.length >= 26 ? createMACDFallback : null);
-      const rsiSignals = safeCalculate('RSI', () => calculateRSISignals(tfCloses, 14), tfCloses.length >= 15 ? createRSIFallback : null);
-      const utBot = safeCalculate('UTBOT', () => generateUTBotSignal(tfBars, tfCloses[tfCloses.length - 1]), tfBars.length >= 20 ? createUTBotFallback : null);
-      const ichimokuSignals = safeCalculate('Ichimoku', () => calculateIchimokuCloneSignals(tfBars), tfBars.length >= 26 ? createIchimokuFallback : null);
-      const quietMarketInfo = safeCalculate('QuietMarket', () => isQuietMarket(tfBars, 14), () => ({ isQuiet: false, currentATR: null, fifthPercentile: null }));
+      // Note: All calculations are now performed server-side
+      // These signals should be received from WebSocket/API instead of being calculated here
+      // For now, using fallback neutral values until server integration is complete
+      const emaSignals = tfCloses.length >= 21 ? createEMAFallback() : null;
+      const macdSignals = tfCloses.length >= 26 ? createMACDFallback() : null;
+      const rsiSignals = tfCloses.length >= 15 ? createRSIFallback() : null;
+      const utBot = tfBars.length >= 20 ? createUTBotFallback() : null;
+      const ichimokuSignals = tfBars.length >= 26 ? createIchimokuFallback() : null;
+      const quietMarketInfo = { isQuiet: false, currentATR: null, fifthPercentile: null };
       anyQuiet = anyQuiet || !!quietMarketInfo?.isQuiet;
 
       const ema21Reason = emaSignals?.ema21 ? (emaSignals.ema21.signal === 'buy' ? 'close>EMA & slope≥0' : emaSignals.ema21.signal === 'sell' ? 'close<EMA & slope≤0' : 'neutral') : null;
