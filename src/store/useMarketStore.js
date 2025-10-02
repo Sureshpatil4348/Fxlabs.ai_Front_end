@@ -117,9 +117,8 @@ const useMarketStore = create(
       
       // Register with centralized message router
       websocketService.registerStore('market', {
-        messageHandler: (message, rawData) => {
-          // v2 probe: log raw frames only, no state updates
-          console.log('[WS][Market-v2][message]', rawData);
+        messageHandler: (_message, _rawData) => {
+          // v2 probe: no logging - handled by router
         },
         connectionCallback: () => {
           set({ 

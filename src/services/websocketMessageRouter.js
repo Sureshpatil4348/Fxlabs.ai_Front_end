@@ -126,11 +126,13 @@ class WebSocketMessageRouter {
       }
     });
 
-    // Log routing info for debugging
-    if (targetStores.size > 0) {
-      console.log(`[Router] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
-    } else {
-      console.log(`[Router] No stores registered for message type: ${messageType}`);
+    // Log routing info for debugging (only for non-connected messages to reduce noise)
+    if (messageType !== 'connected') {
+      if (targetStores.size > 0) {
+        console.log(`[Router] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
+      } else {
+        console.log(`[Router] No stores registered for message type: ${messageType}`);
+      }
     }
   }
 
@@ -138,7 +140,7 @@ class WebSocketMessageRouter {
    * Notify all stores of connection
    */
   notifyConnection() {
-    console.log(`[Router] Notifying ${this.connectionCallbacks.size} stores of connection`);
+    console.log(`[Router] Connected - ${this.connectionCallbacks.size} stores registered`);
     this.connectionCallbacks.forEach((callback, storeName) => {
       try {
         callback();

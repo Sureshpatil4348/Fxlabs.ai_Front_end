@@ -83,9 +83,8 @@ const useRSICorrelationStore = create(
       
       // Register with centralized message router
       websocketService.registerStore('rsiCorrelation', {
-        messageHandler: (message, rawData) => {
-          // v2 probe: log raw frames only, no state updates
-          console.log('[WS][RSI-Correlation-v2][message]', rawData);
+        messageHandler: (_message, _rawData) => {
+          // v2 probe: no logging - handled by router
         },
         connectionCallback: () => {
           set({ isConnected: true, isConnecting: false });
