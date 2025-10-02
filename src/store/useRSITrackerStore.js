@@ -15,15 +15,7 @@ const ENABLE_OHLC_DEBUG_LOGS = (
 const OHLC_DEBUG_SYMBOL = process.env.REACT_APP_OHLC_DEBUG_SYMBOL || 'BTCUSDm';
 const OHLC_DEBUG_TF = (process.env.REACT_APP_OHLC_DEBUG_TF || 'H4').toUpperCase();
 
-// Smart symbol formatting
-const formatSymbol = (input) => {
-  const trimmed = input.trim();
-  if (trimmed.toLowerCase().endsWith('m')) {
-    const base = trimmed.slice(0, -1);
-    return base + 'm';
-  }
-  return trimmed;
-};
+// Note: formatSymbol function removed as it's no longer used
 
 const useRSITrackerStore = create(
   subscribeWithSelector((set, get) => ({

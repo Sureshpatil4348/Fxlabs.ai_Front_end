@@ -596,20 +596,7 @@ useEffect(() => {
         return;
       }
 
-      // Helpers
-    const safeCalculate = (name, calculationFn, fallbackFn = null) => {
-      try {
-        const result = calculationFn();
-        if (!result) {
-            calculationWarnings.push(`${name}: Insufficient data (${timeframe})`);
-          return fallbackFn ? fallbackFn() : null;
-        }
-        return result;
-      } catch (error) {
-          calculationErrors.push(`${name}: ${error.message} (${timeframe})`);
-        return fallbackFn ? fallbackFn() : null;
-      }
-    };
+      // Note: safeCalculate helper removed as calculations are now server-side
     
     const createEMAFallback = () => ({
         ema21: { value: tfCloses[tfCloses.length - 1], signal: 'neutral', new: false },

@@ -4,15 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 // WebSocket URL configuration (v2 probe - logs only)
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
-// Smart symbol formatting
-const formatSymbol = (input) => {
-  const trimmed = input.trim();
-  if (trimmed.toLowerCase().endsWith('m')) {
-    const base = trimmed.slice(0, -1);
-    return base + 'm';
-  }
-  return trimmed;
-};
+// Note: formatSymbol function removed as it's no longer used
 
 // Core currency pairs - Major pairs only (7 pairs)
 const CORE_PAIRS = [
