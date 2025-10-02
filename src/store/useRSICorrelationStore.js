@@ -81,66 +81,65 @@ const useRSICorrelationStore = create(
       
       set({ isConnecting: true, connectionError: null });
       
-      // Add message handler for RSI correlation store
-      websocketService.addMessageHandler('rsiCorrelation', (event, data) => {
-        // v2 probe: log raw frames only, no state updates
-        console.log('[WS][RSI-Correlation-v2][message]', data);
-      });
-      
-      // Add connection callbacks
-      websocketService.addConnectionCallback(() => {
-        set({ isConnected: true, isConnecting: false });
-        get().addLog('Connected to Market v2 (RSI Correlation probe)', 'success');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('rsiCorrelation', {
-            connected: true,
-            connecting: false,
-            error: null
+      // Register with centralized message router
+      websocketService.registerStore('rsiCorrelation', {
+        messageHandler: (message, rawData) => {
+          // v2 probe: log raw frames only, no state updates
+          console.log('[WS][RSI-Correlation-v2][message]', rawData);
+        },
+        connectionCallback: () => {
+          set({ isConnected: true, isConnecting: false });
+          get().addLog('Connected to Market v2 (RSI Correlation probe)', 'success');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('rsiCorrelation', {
+              connected: true,
+              connecting: false,
+              error: null
+            });
           });
-        });
-      });
-      
-      websocketService.addDisconnectionCallback(() => {
-        // Reset connection flags and clear subscription/data maps so a future
-        // auto-subscribe will re-send subscribe messages on a new socket
-        set({ 
-          isConnected: false, 
-          isConnecting: false,
-          subscriptions: new Map(),
-          tickData: new Map(),
-          ohlcData: new Map(),
-          ohlcByTimeframe: new Map(),
-          initialOhlcReceived: new Set()
-        });
-        get().addLog('Disconnected from Market v2 (RSI Correlation probe)', 'warning');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('rsiCorrelation', {
-            connected: false,
-            connecting: false,
-            error: 'Connection closed'
+        },
+        disconnectionCallback: () => {
+          // Reset connection flags and clear subscription/data maps so a future
+          // auto-subscribe will re-send subscribe messages on a new socket
+          set({ 
+            isConnected: false, 
+            isConnecting: false,
+            subscriptions: new Map(),
+            tickData: new Map(),
+            ohlcData: new Map(),
+            ohlcByTimeframe: new Map(),
+            initialOhlcReceived: new Set()
           });
-        });
-      });
-      
-      websocketService.addErrorCallback((_error) => {
-        set({ 
-          isConnecting: false, 
-          connectionError: 'Failed to connect to Market v2' 
-        });
-        get().addLog('Connection error (RSI Correlation v2 probe)', 'error');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('rsiCorrelation', {
-            connected: false,
-            connecting: false,
-            error: 'Failed to connect to MT5 server'
+          get().addLog('Disconnected from Market v2 (RSI Correlation probe)', 'warning');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('rsiCorrelation', {
+              connected: false,
+              connecting: false,
+              error: 'Connection closed'
+            });
           });
-        });
+        },
+        errorCallback: (_error) => {
+          set({ 
+            isConnecting: false, 
+            connectionError: 'Failed to connect to Market v2' 
+          });
+          get().addLog('Connection error (RSI Correlation v2 probe)', 'error');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('rsiCorrelation', {
+              connected: false,
+              connecting: false,
+              error: 'Failed to connect to MT5 server'
+            });
+          });
+        },
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -153,8 +152,8 @@ const useRSICorrelationStore = create(
     },
     
     disconnect: () => {
-      // Remove message handler
-      websocketService.removeMessageHandler('rsiCorrelation');
+      // Unregister from centralized message router
+      websocketService.unregisterStore('rsiCorrelation');
       
       set({ 
         isConnected: false, 

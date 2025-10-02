@@ -115,36 +115,35 @@ const useMarketStore = create(
       
       set({ isConnecting: true, connectionError: null });
       
-      // Add message handler for market store
-      websocketService.addMessageHandler('market', (event, data) => {
-        // v2 probe: log raw frames only, no state updates
-        console.log('[WS][Market-v2][message]', data);
-      });
-      
-      // Add connection callbacks
-      websocketService.addConnectionCallback(() => {
-        set({ 
-          isConnected: true, 
-          isConnecting: false, 
-          connectionError: null 
-        });
-        get().addLog('Connected to Market v2 (probe mode)', 'success');
-      });
-      
-      websocketService.addDisconnectionCallback(() => {
-        set({ 
-          isConnected: false, 
-          isConnecting: false
-        });
-        get().addLog('Disconnected from Market v2 (probe mode)', 'warning');
-      });
-      
-      websocketService.addErrorCallback((_error) => {
-        set({ 
-          isConnecting: false, 
-          connectionError: 'Failed to connect to Market v2' 
-        });
-        get().addLog('Connection error (Market v2 probe)', 'error');
+      // Register with centralized message router
+      websocketService.registerStore('market', {
+        messageHandler: (message, rawData) => {
+          // v2 probe: log raw frames only, no state updates
+          console.log('[WS][Market-v2][message]', rawData);
+        },
+        connectionCallback: () => {
+          set({ 
+            isConnected: true, 
+            isConnecting: false, 
+            connectionError: null 
+          });
+          get().addLog('Connected to Market v2 (probe mode)', 'success');
+        },
+        disconnectionCallback: () => {
+          set({ 
+            isConnected: false, 
+            isConnecting: false
+          });
+          get().addLog('Disconnected from Market v2 (probe mode)', 'warning');
+        },
+        errorCallback: (_error) => {
+          set({ 
+            isConnecting: false, 
+            connectionError: 'Failed to connect to Market v2' 
+          });
+          get().addLog('Connection error (Market v2 probe)', 'error');
+        },
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -157,8 +156,8 @@ const useMarketStore = create(
     },
     
     disconnect: () => {
-      // Remove message handler
-      websocketService.removeMessageHandler('market');
+      // Unregister from centralized message router
+      websocketService.unregisterStore('market');
       
       set({ 
         isConnected: false, 

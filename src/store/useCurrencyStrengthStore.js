@@ -90,59 +90,58 @@ const useCurrencyStrengthStore = create(
       
       set({ isConnecting: true, connectionError: null });
       
-      // Add message handler for currency strength store
-      websocketService.addMessageHandler('currencyStrength', (event, data) => {
-        // v2 probe: log raw frames only, no state updates
-        console.log('[WS][CurrencyStrength-v2][message]', data);
-      });
-      
-      // Add connection callbacks
-      websocketService.addConnectionCallback(() => {
-        set({ isConnected: true, isConnecting: false });
-        get().addLog('Connected to Market v2 (Currency Strength probe)', 'success');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('currencyStrength', {
-            connected: true,
-            connecting: false,
-            error: null
+      // Register with centralized message router
+      websocketService.registerStore('currencyStrength', {
+        messageHandler: (message, rawData) => {
+          // v2 probe: log raw frames only, no state updates
+          console.log('[WS][CurrencyStrength-v2][message]', rawData);
+        },
+        connectionCallback: () => {
+          set({ isConnected: true, isConnecting: false });
+          get().addLog('Connected to Market v2 (Currency Strength probe)', 'success');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('currencyStrength', {
+              connected: true,
+              connecting: false,
+              error: null
+            });
           });
-        });
-      });
-      
-      websocketService.addDisconnectionCallback(() => {
-        set({ 
-          isConnected: false, 
-          isConnecting: false
-        });
-        get().addLog('Disconnected from Market v2 (Currency Strength probe)', 'warning');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('currencyStrength', {
-            connected: false,
-            connecting: false,
-            error: 'Connection closed'
+        },
+        disconnectionCallback: () => {
+          set({ 
+            isConnected: false, 
+            isConnecting: false
           });
-        });
-      });
-      
-      websocketService.addErrorCallback((_error) => {
-        set({ 
-          isConnecting: false, 
-          connectionError: 'Failed to connect to Market v2' 
-        });
-        get().addLog('Connection error (Currency Strength v2 probe)', 'error');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('currencyStrength', {
-            connected: false,
-            connecting: false,
-            error: 'Failed to connect to MT5 server'
+          get().addLog('Disconnected from Market v2 (Currency Strength probe)', 'warning');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('currencyStrength', {
+              connected: false,
+              connecting: false,
+              error: 'Connection closed'
+            });
           });
-        });
+        },
+        errorCallback: (_error) => {
+          set({ 
+            isConnecting: false, 
+            connectionError: 'Failed to connect to Market v2' 
+          });
+          get().addLog('Connection error (Currency Strength v2 probe)', 'error');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('currencyStrength', {
+              connected: false,
+              connecting: false,
+              error: 'Failed to connect to MT5 server'
+            });
+          });
+        },
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -155,8 +154,8 @@ const useCurrencyStrengthStore = create(
     },
     
     disconnect: () => {
-      // Remove message handler
-      websocketService.removeMessageHandler('currencyStrength');
+      // Unregister from centralized message router
+      websocketService.unregisterStore('currencyStrength');
       
       set({ 
         isConnected: false, 

@@ -79,59 +79,58 @@ const useRSITrackerStore = create(
       
       set({ isConnecting: true, connectionError: null });
       
-      // Add message handler for RSI tracker store
-      websocketService.addMessageHandler('rsiTracker', (event, data) => {
-        // v2 probe: log raw frames only, no state updates
-        console.log('[WS][RSI-Tracker-v2][message]', data);
-      });
-      
-      // Add connection callbacks
-      websocketService.addConnectionCallback(() => {
-        set({ isConnected: true, isConnecting: false });
-        get().addLog('Connected to Market v2 (RSI Tracker probe)', 'success');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('rsiTracker', {
-            connected: true,
-            connecting: false,
-            error: null
+      // Register with centralized message router
+      websocketService.registerStore('rsiTracker', {
+        messageHandler: (message, rawData) => {
+          // v2 probe: log raw frames only, no state updates
+          console.log('[WS][RSI-Tracker-v2][message]', rawData);
+        },
+        connectionCallback: () => {
+          set({ isConnected: true, isConnecting: false });
+          get().addLog('Connected to Market v2 (RSI Tracker probe)', 'success');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('rsiTracker', {
+              connected: true,
+              connecting: false,
+              error: null
+            });
           });
-        });
-      });
-      
-      websocketService.addDisconnectionCallback(() => {
-        set({ 
-          isConnected: false, 
-          isConnecting: false
-        });
-        get().addLog('Disconnected from Market v2 (RSI Tracker probe)', 'warning');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('rsiTracker', {
-            connected: false,
-            connecting: false,
-            error: 'Connection closed'
+        },
+        disconnectionCallback: () => {
+          set({ 
+            isConnected: false, 
+            isConnecting: false
           });
-        });
-      });
-      
-      websocketService.addErrorCallback((_error) => {
-        set({ 
-          isConnecting: false, 
-          connectionError: 'Failed to connect to Market v2' 
-        });
-        get().addLog('Connection error (RSI Tracker v2 probe)', 'error');
-        
-        // Report to global connection manager
-        import('./useMarketStore').then(({ default: useMarketStore }) => {
-          useMarketStore.getState().updateDashboardConnection('rsiTracker', {
-            connected: false,
-            connecting: false,
-            error: 'Failed to connect to MT5 server'
+          get().addLog('Disconnected from Market v2 (RSI Tracker probe)', 'warning');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('rsiTracker', {
+              connected: false,
+              connecting: false,
+              error: 'Connection closed'
+            });
           });
-        });
+        },
+        errorCallback: (_error) => {
+          set({ 
+            isConnecting: false, 
+            connectionError: 'Failed to connect to Market v2' 
+          });
+          get().addLog('Connection error (RSI Tracker v2 probe)', 'error');
+          
+          // Report to global connection manager
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('rsiTracker', {
+              connected: false,
+              connecting: false,
+              error: 'Failed to connect to MT5 server'
+            });
+          });
+        },
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -144,8 +143,8 @@ const useRSITrackerStore = create(
     },
     
     disconnect: () => {
-      // Remove message handler
-      websocketService.removeMessageHandler('rsiTracker');
+      // Unregister from centralized message router
+      websocketService.unregisterStore('rsiTracker');
       
       set({ 
         isConnected: false, 
