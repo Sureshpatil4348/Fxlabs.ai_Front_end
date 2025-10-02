@@ -86,11 +86,6 @@ const useMarketStore = create(
     // Global Connection Management
     globalConnectionState: {
       status: 'INITIALIZING', // 'INITIALIZING' | 'CONNECTING' | 'RETRYING' | 'CONNECTED' | 'FAILED'
-      dashboardConnections: {
-        rsiCorrelation: { connected: false, connecting: false, error: null },
-        rsiTracker: { connected: false, connecting: false, error: null },
-        currencyStrength: { connected: false, connecting: false, error: null }
-      },
       connectionAttempts: 0,
       maxRetries: 2,
       timeoutDuration: 5000,
@@ -651,18 +646,6 @@ const useMarketStore = create(
             import('./useCurrencyStrengthStore')
           ]);
 
-          // Set connecting status for all dashboards
-          set(state => ({
-            globalConnectionState: {
-              ...state.globalConnectionState,
-              dashboardConnections: {
-                rsiCorrelation: { connected: false, connecting: true, error: null },
-                rsiTracker: { connected: false, connecting: true, error: null },
-                currencyStrength: { connected: false, connecting: true, error: null }
-              }
-            }
-          }));
-
           // Initiate connections with staggered timing
           setTimeout(() => useRSICorrelationStore.getState().connect(), 100);
           setTimeout(() => useRSITrackerStore.getState().connect(), 300);
@@ -694,42 +677,12 @@ const useMarketStore = create(
     },
 
     updateDashboardConnection: (dashboard, connectionStatus) => {
-      
-      set(state => ({
-        globalConnectionState: {
-          ...state.globalConnectionState,
-          dashboardConnections: {
-            ...state.globalConnectionState.dashboardConnections,
-            [dashboard]: connectionStatus
-          }
-        }
-      }));
-
-      // Check if all dashboards are connected (only if we're still in CONNECTING state)
+      // Simplified: Just mark as connected when any store connects successfully
       const currentState = get().globalConnectionState;
-      if (currentState.status === 'CONNECTING') {
-        setTimeout(() => get().checkAllConnectionsReady(), 100);
-      }
-    },
-
-    checkAllConnectionsReady: () => {
-      const state = get();
-      const { dashboardConnections, status } = state.globalConnectionState;
-      
-      // Don't check if we're not in CONNECTING state
-      if (status !== 'CONNECTING') {
-        return;
-      }
-      
-      const allConnected = Object.values(dashboardConnections).every(conn => conn.connected);
-      const anyFailed = Object.values(dashboardConnections).some(conn => conn.error);
-
-
-      if (allConnected) {
-        
+      if (currentState.status === 'CONNECTING' && connectionStatus.connected) {
         // Clear timeout immediately to prevent retry
-        if (state.globalConnectionState.timeoutId) {
-          clearTimeout(state.globalConnectionState.timeoutId);
+        if (currentState.timeoutId) {
+          clearTimeout(currentState.timeoutId);
         }
 
         set(state => ({
@@ -740,8 +693,6 @@ const useMarketStore = create(
             timeoutId: null
           }
         }));
-      } else if (anyFailed && state.globalConnectionState.status !== 'RETRYING') {
-        get().handleConnectionTimeout();
       }
     },
 
@@ -799,11 +750,6 @@ const useMarketStore = create(
           ...state.globalConnectionState,
           status: 'INITIALIZING',
           connectionAttempts: 0,
-          dashboardConnections: {
-            rsiCorrelation: { connected: false, connecting: false, error: null },
-            rsiTracker: { connected: false, connecting: false, error: null },
-            currencyStrength: { connected: false, connecting: false, error: null }
-          },
           showLoader: true
         }
       }));
@@ -834,11 +780,6 @@ const useMarketStore = create(
       set({
         globalConnectionState: {
           status: 'INITIALIZING',
-          dashboardConnections: {
-            rsiCorrelation: { connected: false, connecting: false, error: null },
-            rsiTracker: { connected: false, connecting: false, error: null },
-            currencyStrength: { connected: false, connecting: false, error: null }
-          },
           connectionAttempts: 0,
           maxRetries: 2,
           timeoutDuration: 5000,

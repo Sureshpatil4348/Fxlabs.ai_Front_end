@@ -19,7 +19,6 @@
     const showLoader = useMarketStore(state => state.globalConnectionState.showLoader)
     const connectionStatus = useMarketStore(state => state.globalConnectionState.status)
     const connectionAttempts = useMarketStore(state => state.globalConnectionState.connectionAttempts)
-    const dashboardConnections = useMarketStore(state => state.globalConnectionState.dashboardConnections)
 
   const { loadTabState, tabStateHasLoaded: _tabStateHasLoaded } = useBaseMarketStore();
 
@@ -53,7 +52,6 @@
           <LoadingOverlay
             status={connectionStatus}
             connectionAttempts={connectionAttempts}
-            dashboardConnections={dashboardConnections}
             onRetry={retryAllConnections}
           />
         )}

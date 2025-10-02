@@ -1,7 +1,7 @@
 import { RefreshCw, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import React from 'react';
 
-const LoadingOverlay = ({ status, connectionAttempts, onRetry, dashboardConnections }) => {
+const LoadingOverlay = ({ status, connectionAttempts, onRetry }) => {
   const getStatusInfo = () => {
     switch (status) {
       case 'INITIALIZING':
@@ -44,24 +44,6 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry, dashboardConnecti
 
   const statusInfo = getStatusInfo();
 
-  const getDashboardStatus = (dashboardKey) => {
-    const dashboard = dashboardConnections[dashboardKey];
-    if (!dashboard) return { icon: '⚪', status: 'Waiting', color: 'text-gray-500' };
-    
-    if (dashboard.connected) {
-      return { icon: '✅', status: 'Connected', color: 'text-green-600' };
-    } else if (dashboard.connecting) {
-      return { icon: '🔄', status: 'Connecting...', color: 'text-blue-600' };
-    } else if (dashboard.error) {
-      return { icon: '❌', status: 'Failed', color: 'text-red-600' };
-    } else {
-      return { icon: '⚪', status: 'Waiting', color: 'text-gray-500' };
-    }
-  };
-
-  const connectedCount = Object.values(dashboardConnections).filter(d => d.connected).length;
-  const totalCount = Object.keys(dashboardConnections).length;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
@@ -83,12 +65,12 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry, dashboardConnecti
           <div className="mb-6">
             <div className="flex justify-between text-xs text-gray-500 mb-2">
               <span>Connection Progress</span>
-              <span>{connectedCount}/{totalCount}</span>
+              <span>Connecting...</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-500 ease-in-out"
-                style={{ width: `${(connectedCount / totalCount) * 100}%` }}
+                className="bg-blue-500 h-2 rounded-full transition-all duration-500 ease-in-out animate-pulse"
+                style={{ width: '100%' }}
               />
             </div>
           </div>
@@ -97,26 +79,19 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry, dashboardConnecti
         {/* Dashboard Connection Status */}
         {statusInfo.showProgress && (
           <div className="space-y-3 mb-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Dashboard Connections:</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Connection Status:</h3>
             
-            {[
-              { key: 'rsiCorrelation', name: 'Securing connection 1' },
-              { key: 'rsiTracker', name: 'Securing connection 2' },
-              { key: 'currencyStrength', name: 'Securing connection 3' }
-            ].map(({ key, name }) => {
-              const dashboardStatus = getDashboardStatus(key, name);
-              return (
-                <div key={key} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm">{dashboardStatus.icon}</span>
-                    <span className="text-sm font-medium text-gray-700">{name}</span>
-                  </div>
-                  <span className={`text-xs font-medium ${dashboardStatus.color}`}>
-                    {dashboardStatus.status}
-                  </span>
-                </div>
-              );
-            })}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm">🔗</span>
+                <span className="text-sm font-medium text-gray-700">WebSocket Connection</span>
+              </div>
+              <span className="text-xs font-medium text-blue-600">
+                {status === 'CONNECTING' ? 'Connecting...' : 
+                 status === 'CONNECTED' ? 'Connected' : 
+                 status === 'RETRYING' ? 'Retrying...' : 'Failed'}
+              </span>
+            </div>
           </div>
         )}
 
