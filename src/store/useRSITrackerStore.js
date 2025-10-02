@@ -2,11 +2,9 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
+import websocketService from '../services/websocketService';
 // Note: All calculations are now performed server-side
 // RSI, RFI, and other indicators should be received from WebSocket/API
-
-// WebSocket URL configuration (v2 probe - logs only)
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 // OHLC debug logging configuration (symbol + timeframe)
 const ENABLE_OHLC_DEBUG_LOGS = (
@@ -19,11 +17,10 @@ const OHLC_DEBUG_TF = (process.env.REACT_APP_OHLC_DEBUG_TF || 'H4').toUpperCase(
 
 const useRSITrackerStore = create(
   subscribeWithSelector((set, get) => ({
-    // Connection state
+    // Connection state (now managed by shared WebSocket service)
     isConnected: false,
     isConnecting: false,
     connectionError: null,
-    websocket: null,
     pendingWatchlistSubscriptions: new Set(), // symbols waiting to be subscribed
     
     // Market data
@@ -82,96 +79,77 @@ const useRSITrackerStore = create(
       
       set({ isConnecting: true, connectionError: null });
       
-      try {
-        const ws = new WebSocket(WEBSOCKET_URL);
-        set({ websocket: ws });
+      // Add message handler for RSI tracker store
+      websocketService.addMessageHandler('rsiTracker', (event, data) => {
+        // v2 probe: log raw frames only, no state updates
+        console.log('[WS][RSI-Tracker-v2][message]', data);
+      });
+      
+      // Add connection callbacks
+      websocketService.addConnectionCallback(() => {
+        set({ isConnected: true, isConnecting: false });
+        get().addLog('Connected to Market v2 (RSI Tracker probe)', 'success');
         
-        ws.onopen = () => {
-          set({ isConnected: true, isConnecting: false });
-          get().addLog('Connected to Market v2 (RSI Tracker probe)', 'success');
-          // eslint-disable-next-line no-console
-          console.warn(`[WS][RSI-Tracker-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
-          
-          // v2 probe: do not subscribe to any symbols; only observe logs
-          
-          // Report to global connection manager
-          import('./useMarketStore').then(({ default: useMarketStore }) => {
-            useMarketStore.getState().updateDashboardConnection('rsiTracker', {
-              connected: true,
-              connecting: false,
-              error: null
-            });
+        // Report to global connection manager
+        import('./useMarketStore').then(({ default: useMarketStore }) => {
+          useMarketStore.getState().updateDashboardConnection('rsiTracker', {
+            connected: true,
+            connecting: false,
+            error: null
           });
-        };
+        });
+      });
+      
+      websocketService.addDisconnectionCallback(() => {
+        set({ 
+          isConnected: false, 
+          isConnecting: false
+        });
+        get().addLog('Disconnected from Market v2 (RSI Tracker probe)', 'warning');
         
-        ws.onmessage = (event) => {
-          // v2 probe: log raw frames only, no state updates
-          if (event?.data instanceof Blob) {
-            event.data.text().then((text) => {
-              // eslint-disable-next-line no-console
-              console.log('[WS][RSI-Tracker-v2][message][blob->text]', text);
-            }).catch((e) => console.error('[WS][RSI-Tracker-v2] blob read error:', e));
-          } else {
-            // eslint-disable-next-line no-console
-            console.log('[WS][RSI-Tracker-v2][message]', event?.data);
-          }
-        };
+        // Report to global connection manager
+        import('./useMarketStore').then(({ default: useMarketStore }) => {
+          useMarketStore.getState().updateDashboardConnection('rsiTracker', {
+            connected: false,
+            connecting: false,
+            error: 'Connection closed'
+          });
+        });
+      });
+      
+      websocketService.addErrorCallback((_error) => {
+        set({ 
+          isConnecting: false, 
+          connectionError: 'Failed to connect to Market v2' 
+        });
+        get().addLog('Connection error (RSI Tracker v2 probe)', 'error');
         
-        ws.onclose = (event) => {
-          // eslint-disable-next-line no-console
-          console.error(`[WS][RSI-Tracker-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
-          set({ 
-            isConnected: false, 
-            isConnecting: false, 
-            websocket: null 
+        // Report to global connection manager
+        import('./useMarketStore').then(({ default: useMarketStore }) => {
+          useMarketStore.getState().updateDashboardConnection('rsiTracker', {
+            connected: false,
+            connecting: false,
+            error: 'Failed to connect to MT5 server'
           });
-          get().addLog('Disconnected from Market v2 (RSI Tracker probe)', 'warning');
-          
-          // Report to global connection manager
-          import('./useMarketStore').then(({ default: useMarketStore }) => {
-            useMarketStore.getState().updateDashboardConnection('rsiTracker', {
-              connected: false,
-              connecting: false,
-              error: 'Connection closed'
-            });
-          });
-        };
-        
-        ws.onerror = (error) => {
-          console.error('[WS][RSI-Tracker-v2] error:', error);
-          set({ 
-            isConnecting: false, 
-            connectionError: 'Failed to connect to Market v2' 
-          });
-          get().addLog('Connection error (RSI Tracker v2 probe)', 'error');
-          
-          // Report to global connection manager
-          import('./useMarketStore').then(({ default: useMarketStore }) => {
-            useMarketStore.getState().updateDashboardConnection('rsiTracker', {
-              connected: false,
-              connecting: false,
-              error: 'Failed to connect to MT5 server'
-            });
-          });
-        };
-        
-      } catch (error) {
+        });
+      });
+      
+      // Connect to shared WebSocket service
+      websocketService.connect().catch((error) => {
         set({ 
           isConnecting: false, 
           connectionError: error.message 
         });
-      }
+      });
     },
     
     disconnect: () => {
-      const { websocket } = get();
-      if (websocket) {
-        websocket.close();
-      }
+      // Remove message handler
+      websocketService.removeMessageHandler('rsiTracker');
+      
       set({ 
         isConnected: false, 
         isConnecting: false, 
-        websocket: null,
         subscriptions: new Map(),
         tickData: new Map(),
         ohlcData: new Map(),

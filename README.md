@@ -41,14 +41,18 @@ All features that relied on client-side calculations now expect server-provided 
 - Currency Strength Meter (calculations)
 - RFI Score Cards (RFI components)
 
-## Migration Notice: Market v2 Probe (Step 1)
+## Migration Notice: Market v2 Probe (Step 1) - OPTIMIZED
 
+- **WebSocket Optimization**: Consolidated 4 separate WebSocket connections into a single shared connection
+- **Performance Improvement**: Reduced connection overhead and improved resource efficiency
+- **Architecture**: All stores now use `src/services/websocketService.js` for centralized connection management
 - Legacy WebSocket data flows for market ticks/OHLC have been disabled temporarily.
 - Frontend now connects to the new WebSocket endpoint and logs raw frames only (no subscriptions, no state updates):
   - Default endpoint: `wss://api.fxlabs.ai/market-v2`
   - Override via `REACT_APP_WEBSOCKET_URL`
 - Purpose: verify integration connectivity and handshake while backend v2 is in progress.
-- Affected files (v2 probe logging only):
+- **Optimized files** (now using shared WebSocket service):
+  - `src/services/websocketService.js` (NEW - shared connection manager)
   - `src/store/useMarketStore.js`
   - `src/store/useRSITrackerStore.js`
   - `src/store/useRSICorrelationStore.js`
@@ -169,18 +173,21 @@ Usage notes (WebSocket):
 - Ensured RSI recalculation does not depend on subscription ACKs: after reconnect, RSI is computed for all symbols present in OHLC buffers so cards populate immediately even if `subscribed` messages are delayed.
 - Affected file: `src/store/useRSICorrelationStore.js`
 
-### WebSocket Connection Logs (Latest)
+### WebSocket Connection Logs (Latest) - OPTIMIZED
+- **Single Connection**: All stores now share one WebSocket connection via `websocketService.js`
 - Added explicit browser console logs on WebSocket connect/disconnect for faster debugging:
-  - `[WS][RSI Correlation] Connected/Disconnected ...`
-  - `[WS][RSI Tracker] Connected/Disconnected ...`
-  - `[WS][Market] Connected/Disconnected ...`
-  - `[WS][CurrencyStrength] Connected/Disconnected ...`
+  - `[WS][Shared-v2] Connected/Disconnected ...`
+  - `[WS][Market-v2][message]` (routed to market store)
+  - `[WS][RSI-Tracker-v2][message]` (routed to RSI tracker store)
+  - `[WS][RSI-Correlation-v2][message]` (routed to RSI correlation store)
+  - `[WS][CurrencyStrength-v2][message]` (routed to currency strength store)
 - Includes timestamp, close code, and reason (when available).
-- Affected files:
-  - `src/store/useRSICorrelationStore.js`
-  - `src/store/useRSITrackerStore.js`
-  - `src/store/useMarketStore.js`
-  - `src/store/useCurrencyStrengthStore.js`
+- **Optimized Architecture**:
+  - `src/services/websocketService.js` (NEW - shared connection manager)
+  - `src/store/useRSICorrelationStore.js` (updated to use shared service)
+  - `src/store/useRSITrackerStore.js` (updated to use shared service)
+  - `src/store/useMarketStore.js` (updated to use shared service)
+  - `src/store/useCurrencyStrengthStore.js` (updated to use shared service)
 
 ### RSI Correlation Dashboard Pair Rendering Reliability (Latest)
 - Fixed an issue where some correlation pairs intermittently disappeared a second after load.

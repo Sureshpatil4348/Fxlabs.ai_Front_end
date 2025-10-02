@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
+import websocketService from '../services/websocketService';
+
 // Note: All calculations are now performed server-side
 // RSI and other indicators should be received from WebSocket/API
-
-// WebSocket URL configuration - v2 probe (logs only)
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 // Smart symbol formatting - keeps 'm' suffix lowercase
 const formatSymbol = (input) => {
@@ -42,11 +41,10 @@ const CORRELATION_PAIRS = {
 
 const useMarketStore = create(
   subscribeWithSelector((set, get) => ({
-    // Connection state
+    // Connection state (now managed by shared WebSocket service)
     isConnected: false,
     isConnecting: false,
     connectionError: null,
-    websocket: null,
     
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
@@ -117,74 +115,54 @@ const useMarketStore = create(
       
       set({ isConnecting: true, connectionError: null });
       
-      try {
-        const ws = new WebSocket(WEBSOCKET_URL);
-        
-        ws.onopen = () => {
-          set({ 
-            isConnected: true, 
-            isConnecting: false, 
-            websocket: ws,
-            connectionError: null 
-          });
-          get().addLog('Connected to Market v2 (probe mode)', 'success');
-          // eslint-disable-next-line no-console
-          console.warn(`[WS][Market-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
-        };
-        
-        ws.onmessage = (event) => {
-          // v2 probe: log raw frames only, no state updates
-          if (event?.data instanceof Blob) {
-            event.data.text().then((text) => {
-              // eslint-disable-next-line no-console
-              console.log('[WS][Market-v2][message][blob->text]', text);
-            }).catch((e) => {
-              console.error('[WS][Market-v2] Failed to read blob data:', e);
-            });
-          } else {
-            // eslint-disable-next-line no-console
-            console.log('[WS][Market-v2][message]', event?.data);
-          }
-        };
-        
-        ws.onclose = (event) => {
-          // eslint-disable-next-line no-console
-          console.error(`[WS][Market-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
-          set({ 
-            isConnected: false, 
-            isConnecting: false, 
-            websocket: null 
-          });
-          get().addLog('Disconnected from Market v2 (probe mode)', 'warning');
-        };
-        
-        ws.onerror = (error) => {
-          // eslint-disable-next-line no-console
-          console.error('[WS][Market-v2] error:', error);
-          set({ 
-            isConnecting: false, 
-            connectionError: 'Failed to connect to Market v2' 
-          });
-          get().addLog('Connection error (Market v2 probe)', 'error');
-        };
-        
-      } catch (error) {
+      // Add message handler for market store
+      websocketService.addMessageHandler('market', (event, data) => {
+        // v2 probe: log raw frames only, no state updates
+        console.log('[WS][Market-v2][message]', data);
+      });
+      
+      // Add connection callbacks
+      websocketService.addConnectionCallback(() => {
+        set({ 
+          isConnected: true, 
+          isConnecting: false, 
+          connectionError: null 
+        });
+        get().addLog('Connected to Market v2 (probe mode)', 'success');
+      });
+      
+      websocketService.addDisconnectionCallback(() => {
+        set({ 
+          isConnected: false, 
+          isConnecting: false
+        });
+        get().addLog('Disconnected from Market v2 (probe mode)', 'warning');
+      });
+      
+      websocketService.addErrorCallback((_error) => {
+        set({ 
+          isConnecting: false, 
+          connectionError: 'Failed to connect to Market v2' 
+        });
+        get().addLog('Connection error (Market v2 probe)', 'error');
+      });
+      
+      // Connect to shared WebSocket service
+      websocketService.connect().catch((error) => {
         set({ 
           isConnecting: false, 
           connectionError: error.message 
         });
-      }
+      });
     },
     
     disconnect: () => {
-      const { websocket } = get();
-      if (websocket) {
-        websocket.close();
-      }
+      // Remove message handler
+      websocketService.removeMessageHandler('market');
+      
       set({ 
         isConnected: false, 
         isConnecting: false, 
-        websocket: null,
         subscriptions: new Map(),
         tickData: new Map(),
         ohlcData: new Map(),
@@ -872,26 +850,8 @@ const useMarketStore = create(
         }
       });
 
-      // Close individual dashboard WebSocket connections
-      try {
-        // Import and disconnect from each store
-        import('./useRSICorrelationStore').then(({ default: useRSICorrelationStore }) => {
-          const store = useRSICorrelationStore.getState();
-          if (store.disconnect) store.disconnect();
-        });
-        
-        import('./useRSITrackerStore').then(({ default: useRSITrackerStore }) => {
-          const store = useRSITrackerStore.getState();
-          if (store.disconnect) store.disconnect();
-        });
-        
-        import('./useCurrencyStrengthStore').then(({ default: useCurrencyStrengthStore }) => {
-          const store = useCurrencyStrengthStore.getState();
-          if (store.disconnect) store.disconnect();
-        });
-      } catch (error) {
-        console.error('Error disconnecting dashboard stores:', error);
-      }
+      // Disconnect shared WebSocket service
+      websocketService.disconnect();
     }
   }))
 );
