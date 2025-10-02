@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-// WebSocket URL configuration
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
+// WebSocket URL configuration (v2 probe - logs only)
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 // Smart symbol formatting
 const formatSymbol = (input) => {
@@ -106,9 +106,9 @@ const useCurrencyStrengthStore = create(
         
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
-          get().addLog('Connected to MT5 server (Currency Strength)', 'success');
+          get().addLog('Connected to Market v2 (Currency Strength probe)', 'success');
           // eslint-disable-next-line no-console
-          console.warn(`[WS][CurrencyStrength] Connected at ${new Date().toISOString()}`);
+          console.warn(`[WS][CurrencyStrength-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -121,42 +121,27 @@ const useCurrencyStrengthStore = create(
         };
         
         ws.onmessage = (event) => {
-          try {
-            // Handle binary data - convert to text first
-            let message;
-            if (event.data instanceof Blob) {
-              // Convert blob to text
-              event.data.text().then(text => {
-                try {
-                  message = JSON.parse(text);
-                  get().handleMessage(message);
-                } catch (parseError) {
-                  console.error('Failed to parse WebSocket message text:', parseError);
-                }
-              }).catch(blobError => {
-                console.error('Failed to read blob data:', blobError);
-              });
-            } else if (typeof event.data === 'string') {
-              // Handle string data directly
-              message = JSON.parse(event.data);
-              get().handleMessage(message);
-            } else {
-              console.warn('Unknown message data type:', typeof event.data);
-            }
-          } catch (error) {
-            console.error('Failed to handle WebSocket message:', error);
+          // v2 probe: log raw frames only, no state updates
+          if (event?.data instanceof Blob) {
+            event.data.text().then((text) => {
+              // eslint-disable-next-line no-console
+              console.log('[WS][CurrencyStrength-v2][message][blob->text]', text);
+            }).catch((e) => console.error('[WS][CurrencyStrength-v2] blob read error:', e));
+          } else {
+            // eslint-disable-next-line no-console
+            console.log('[WS][CurrencyStrength-v2][message]', event?.data);
           }
         };
         
         ws.onclose = (event) => {
           // eslint-disable-next-line no-console
-          console.error(`[WS][CurrencyStrength] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
+          console.error(`[WS][CurrencyStrength-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           set({ 
             isConnected: false, 
             isConnecting: false, 
             websocket: null 
           });
-          get().addLog('Disconnected from MT5 server (Currency Strength)', 'warning');
+          get().addLog('Disconnected from Market v2 (Currency Strength probe)', 'warning');
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -169,12 +154,12 @@ const useCurrencyStrengthStore = create(
         };
         
         ws.onerror = (error) => {
-          console.error('Currency Strength WebSocket error:', error);
+          console.error('[WS][CurrencyStrength-v2] error:', error);
           set({ 
             isConnecting: false, 
-            connectionError: 'Failed to connect to MT5 server' 
+            connectionError: 'Failed to connect to Market v2' 
           });
-          get().addLog('Connection error (Currency Strength)', 'error');
+          get().addLog('Connection error (Currency Strength v2 probe)', 'error');
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -210,56 +195,18 @@ const useCurrencyStrengthStore = create(
       });
     },
     
+    // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for subscription to ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const subscription = {
-        action: 'subscribe',
-        symbol: formattedSymbol,
-        timeframe,
-        data_types: dataTypes
-      };
-      
-      try {
-        websocket.send(JSON.stringify(subscription));
-        get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to subscribe to ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][CurrencyStrength-v2][probe] subscribe() is disabled');
     },
     
+    // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for unsubscription from ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const message = {
-        action: 'unsubscribe',
-        symbol: formattedSymbol
-      };
-      
-      try {
-        websocket.send(JSON.stringify(message));
-        get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to unsubscribe from ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][CurrencyStrength-v2][probe] unsubscribe() is disabled');
     },
     
     handleMessage: (message) => {

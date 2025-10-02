@@ -2,6 +2,20 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Migration Notice: Market v2 Probe (Step 1)
+
+- Legacy WebSocket data flows for market ticks/OHLC have been disabled temporarily.
+- Frontend now connects to the new WebSocket endpoint and logs raw frames only (no subscriptions, no state updates):
+  - Default endpoint: `wss://api.fxlabs.ai/market-v2`
+  - Override via `REACT_APP_WEBSOCKET_URL`
+- Purpose: verify integration connectivity and handshake while backend v2 is in progress.
+- Affected files (v2 probe logging only):
+  - `src/store/useMarketStore.js`
+  - `src/store/useRSITrackerStore.js`
+  - `src/store/useRSICorrelationStore.js`
+  - `src/store/useCurrencyStrengthStore.js`
+- Env example updated to `.../market-v2` (`env.example`).
+
 ## Documentation
 
 - Calculations reference and source of truth for all formulas, static symbol lists, correlation pairs, thresholds, and percentages: see `CALCULATIONS.md`.

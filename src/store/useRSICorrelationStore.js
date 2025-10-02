@@ -3,8 +3,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { calculateRSI } from '../utils/calculations';
 
-// WebSocket URL configuration
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
+// WebSocket URL configuration (v2 probe - logs only)
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 // Smart symbol formatting
 const formatSymbol = (input) => {
@@ -96,9 +96,9 @@ const useRSICorrelationStore = create(
         
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
-          get().addLog('Connected to MT5 server (RSI Correlation)', 'success');
+          get().addLog('Connected to Market v2 (RSI Correlation probe)', 'success');
           // eslint-disable-next-line no-console
-          console.warn(`[WS][RSI Correlation] Connected at ${new Date().toISOString()}`);
+          console.warn(`[WS][RSI-Correlation-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -109,51 +109,25 @@ const useRSICorrelationStore = create(
             });
           });
 
-          // Ensure subscriptions are restored on (re)connect
-          // Small delay to give the socket a moment before sending batch subscriptions
-          setTimeout(() => {
-            try {
-              // Force re-subscribe regardless of current in-memory map
-              get().autoSubscribeToCorrelationPairs(true);
-            } catch (e) {
-              // eslint-disable-next-line no-console
-              console.error('Failed to auto-subscribe correlation pairs on connect:', e);
-            }
-          }, 300);
+          // v2 probe: do not auto-subscribe; only observe logs
         };
         
         ws.onmessage = (event) => {
-          try {
-            // Handle binary data - convert to text first
-            let message;
-            if (event.data instanceof Blob) {
-              // Convert blob to text
-              event.data.text().then(text => {
-                try {
-                  message = JSON.parse(text);
-                  get().handleMessage(message);
-                } catch (parseError) {
-                  console.error('Failed to parse WebSocket message text:', parseError);
-                }
-              }).catch(blobError => {
-                console.error('Failed to read blob data:', blobError);
-              });
-            } else if (typeof event.data === 'string') {
-              // Handle string data directly
-              message = JSON.parse(event.data);
-              get().handleMessage(message);
-            } else {
-              console.warn('Unknown message data type:', typeof event.data);
-            }
-          } catch (error) {
+          // v2 probe: log raw frames only, no state updates
+          if (event?.data instanceof Blob) {
+            event.data.text().then((text) => {
+              // eslint-disable-next-line no-console
+              console.log('[WS][RSI-Correlation-v2][message][blob->text]', text);
+            }).catch((e) => console.error('[WS][RSI-Correlation-v2] blob read error:', e));
+          } else {
             // eslint-disable-next-line no-console
-            console.error('Failed to handle WebSocket message:', error);
+            console.log('[WS][RSI-Correlation-v2][message]', event?.data);
           }
         };
         
         ws.onclose = (event) => {
           // eslint-disable-next-line no-console
-          console.error(`[WS][RSI Correlation] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
+          console.error(`[WS][RSI-Correlation-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           // Reset connection flags and clear subscription/data maps so a future
           // auto-subscribe will re-send subscribe messages on a new socket
           set({ 
@@ -166,7 +140,7 @@ const useRSICorrelationStore = create(
             ohlcByTimeframe: new Map(),
             initialOhlcReceived: new Set()
           });
-          get().addLog('Disconnected from MT5 server (RSI Correlation)', 'warning');
+          get().addLog('Disconnected from Market v2 (RSI Correlation probe)', 'warning');
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -179,12 +153,12 @@ const useRSICorrelationStore = create(
         };
         
         ws.onerror = (error) => {
-          console.error('RSI Correlation WebSocket error:', error);
+          console.error('[WS][RSI-Correlation-v2] error:', error);
           set({ 
             isConnecting: false, 
-            connectionError: 'Failed to connect to MT5 server' 
+            connectionError: 'Failed to connect to Market v2' 
           });
-          get().addLog('Connection error (RSI Correlation)', 'error');
+          get().addLog('Connection error (RSI Correlation v2 probe)', 'error');
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -221,56 +195,18 @@ const useRSICorrelationStore = create(
       });
     },
     
+    // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for subscription to ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const subscription = {
-        action: 'subscribe',
-        symbol: formattedSymbol,
-        timeframe,
-        data_types: dataTypes
-      };
-      
-      try {
-        websocket.send(JSON.stringify(subscription));
-        get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to subscribe to ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][RSI-Correlation-v2][probe] subscribe() is disabled');
     },
     
+    // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for unsubscription from ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const message = {
-        action: 'unsubscribe',
-        symbol: formattedSymbol
-      };
-      
-      try {
-        websocket.send(JSON.stringify(message));
-        get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to unsubscribe from ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][RSI-Correlation-v2][probe] unsubscribe() is disabled');
     },
     
     handleMessage: (message) => {

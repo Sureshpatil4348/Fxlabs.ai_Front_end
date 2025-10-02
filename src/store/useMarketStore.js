@@ -3,8 +3,8 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { calculateRSI } from '../utils/calculations';
 
-// WebSocket URL configuration - can be overridden with environment variables
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
+// WebSocket URL configuration - v2 probe (logs only)
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 // Smart symbol formatting - keeps 'm' suffix lowercase
 const formatSymbol = (input) => {
@@ -126,59 +126,45 @@ const useMarketStore = create(
             websocket: ws,
             connectionError: null 
           });
-          get().addLog('Connected to MT5 server', 'success');
+          get().addLog('Connected to Market v2 (probe mode)', 'success');
           // eslint-disable-next-line no-console
-          console.warn(`[WS][Market] Connected at ${new Date().toISOString()}`);
+          console.warn(`[WS][Market-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
         };
         
         ws.onmessage = (event) => {
-          try {
-            // Handle both text and Blob data
-            if (event.data instanceof Blob) {
-              // Convert Blob to text first
-              event.data.text().then(text => {
-                try {
-                  const message = JSON.parse(text);
-                  get().handleMessage(message);
-                } catch (parseError) {
-                  console.error('Error parsing WebSocket message:', parseError);
-                  get().addLog(`Error parsing message: ${parseError.message}`, 'error');
-                }
-              }).catch(blobError => {
-                console.error('Error reading Blob data:', blobError);
-                get().addLog(`Error reading message data: ${blobError.message}`, 'error');
-              });
-            } else {
-              // Handle text data directly
-              const message = JSON.parse(event.data);
-              get().handleMessage(message);
-            }
-          } catch (error) {
+          // v2 probe: log raw frames only, no state updates
+          if (event?.data instanceof Blob) {
+            event.data.text().then((text) => {
+              // eslint-disable-next-line no-console
+              console.log('[WS][Market-v2][message][blob->text]', text);
+            }).catch((e) => {
+              console.error('[WS][Market-v2] Failed to read blob data:', e);
+            });
+          } else {
             // eslint-disable-next-line no-console
-            console.error('Error handling WebSocket message:', error);
-            get().addLog(`Error handling message: ${error.message}`, 'error');
+            console.log('[WS][Market-v2][message]', event?.data);
           }
         };
         
         ws.onclose = (event) => {
           // eslint-disable-next-line no-console
-          console.error(`[WS][Market] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
+          console.error(`[WS][Market-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           set({ 
             isConnected: false, 
             isConnecting: false, 
             websocket: null 
           });
-          get().addLog('Disconnected from MT5 server', 'warning');
+          get().addLog('Disconnected from Market v2 (probe mode)', 'warning');
         };
         
         ws.onerror = (error) => {
           // eslint-disable-next-line no-console
-          console.error('WebSocket error:', error);
+          console.error('[WS][Market-v2] error:', error);
           set({ 
             isConnecting: false, 
-            connectionError: 'Failed to connect to MT5 server' 
+            connectionError: 'Failed to connect to Market v2' 
           });
-          get().addLog('Connection error', 'error');
+          get().addLog('Connection error (Market v2 probe)', 'error');
         };
         
       } catch (error) {
@@ -205,56 +191,18 @@ const useMarketStore = create(
       });
     },
     
+    // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for subscription to ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const subscription = {
-        action: 'subscribe',
-        symbol: formattedSymbol,
-        timeframe,
-        data_types: dataTypes
-      };
-      
-      try {
-        websocket.send(JSON.stringify(subscription));
-        get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to subscribe to ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][Market-v2][probe] subscribe() is disabled');
     },
     
+    // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for unsubscription from ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const message = {
-        action: 'unsubscribe',
-        symbol: formattedSymbol
-      };
-      
-      try {
-        websocket.send(JSON.stringify(message));
-        get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to unsubscribe from ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][Market-v2][probe] unsubscribe() is disabled');
     },
     
     handleMessage: (message) => {

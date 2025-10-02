@@ -5,8 +5,8 @@ import useBaseMarketStore from './useBaseMarketStore';
 import { calculateRSI } from '../utils/calculations';
 import { calculateRFIForSymbols } from '../utils/rfiCalculations';
 
-// WebSocket URL configuration
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/ws/market';
+// WebSocket URL configuration (v2 probe - logs only)
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 // OHLC debug logging configuration (symbol + timeframe)
 const ENABLE_OHLC_DEBUG_LOGS = (
@@ -96,40 +96,11 @@ const useRSITrackerStore = create(
         
         ws.onopen = () => {
           set({ isConnected: true, isConnecting: false });
-          get().addLog('Connected to MT5 server (RSI Tracker)', 'success');
+          get().addLog('Connected to Market v2 (RSI Tracker probe)', 'success');
           // eslint-disable-next-line no-console
-          console.warn(`[WS][RSI Tracker] Connected at ${new Date().toISOString()}`);
+          console.warn(`[WS][RSI-Tracker-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
           
-          // Subscribe to any pending watchlist symbols
-          const { pendingWatchlistSubscriptions, settings } = get();
-          if (pendingWatchlistSubscriptions.size > 0) {
-            pendingWatchlistSubscriptions.forEach(symbol => {
-              get().subscribe(symbol, settings.timeframe, ['ticks', 'ohlc']);
-            });
-            set({ pendingWatchlistSubscriptions: new Set() });
-          }
-          
-          // Also subscribe to any existing watchlist symbols (plus debug symbol/timeframe)
-          setTimeout(async () => {
-            try {
-              const useBaseMarketStore = await import('./useBaseMarketStore');
-              const watchlistSymbols = useBaseMarketStore.default.getState().getWishlistArray();
-              watchlistSymbols.forEach(symbol => {
-                const symbolWithM = symbol + 'm';
-                if (!get().subscriptions.has(symbolWithM)) {
-                  get().subscribe(symbolWithM, settings.timeframe, ['ticks', 'ohlc']);
-                }
-              });
-              if (ENABLE_OHLC_DEBUG_LOGS && OHLC_DEBUG_SYMBOL) {
-                const tf = (get().settings?.timeframe) || '4H';
-                if (!get().subscriptions.has(OHLC_DEBUG_SYMBOL)) {
-                  get().subscribe(OHLC_DEBUG_SYMBOL, tf, ['ticks', 'ohlc']);
-                }
-              }
-            } catch (error) {
-              console.error('Failed to subscribe to existing watchlist symbols:', error);
-            }
-          }, 500);
+          // v2 probe: do not subscribe to any symbols; only observe logs
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -142,42 +113,27 @@ const useRSITrackerStore = create(
         };
         
         ws.onmessage = (event) => {
-          try {
-            // Handle binary data - convert to text first
-            let message;
-            if (event.data instanceof Blob) {
-              // Convert blob to text
-              event.data.text().then(text => {
-                try {
-                  message = JSON.parse(text);
-                  get().handleMessage(message);
-                } catch (parseError) {
-                  console.error('Failed to parse WebSocket message text:', parseError);
-                }
-              }).catch(blobError => {
-                console.error('Failed to read blob data:', blobError);
-              });
-            } else if (typeof event.data === 'string') {
-              // Handle string data directly
-              message = JSON.parse(event.data);
-              get().handleMessage(message);
-            } else {
-              console.warn('Unknown message data type:', typeof event.data);
-            }
-          } catch (error) {
-            console.error('Failed to handle WebSocket message:', error);
+          // v2 probe: log raw frames only, no state updates
+          if (event?.data instanceof Blob) {
+            event.data.text().then((text) => {
+              // eslint-disable-next-line no-console
+              console.log('[WS][RSI-Tracker-v2][message][blob->text]', text);
+            }).catch((e) => console.error('[WS][RSI-Tracker-v2] blob read error:', e));
+          } else {
+            // eslint-disable-next-line no-console
+            console.log('[WS][RSI-Tracker-v2][message]', event?.data);
           }
         };
         
         ws.onclose = (event) => {
           // eslint-disable-next-line no-console
-          console.error(`[WS][RSI Tracker] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
+          console.error(`[WS][RSI-Tracker-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           set({ 
             isConnected: false, 
             isConnecting: false, 
             websocket: null 
           });
-          get().addLog('Disconnected from MT5 server (RSI Tracker)', 'warning');
+          get().addLog('Disconnected from Market v2 (RSI Tracker probe)', 'warning');
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -190,12 +146,12 @@ const useRSITrackerStore = create(
         };
         
         ws.onerror = (error) => {
-          console.error('RSI Tracker WebSocket error:', error);
+          console.error('[WS][RSI-Tracker-v2] error:', error);
           set({ 
             isConnecting: false, 
-            connectionError: 'Failed to connect to MT5 server' 
+            connectionError: 'Failed to connect to Market v2' 
           });
-          get().addLog('Connection error (RSI Tracker)', 'error');
+          get().addLog('Connection error (RSI Tracker v2 probe)', 'error');
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -232,57 +188,18 @@ const useRSITrackerStore = create(
       });
     },
     
+    // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for subscription to ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const subscription = {
-        action: 'subscribe',
-        symbol: formattedSymbol,
-        timeframe,
-        data_types: dataTypes
-      };
-      
-      try {
-        websocket.send(JSON.stringify(subscription));
-        get().addLog(`Subscribing to ${formattedSymbol} (${timeframe}) - ${dataTypes.join(', ')}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to subscribe to ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][RSI-Tracker-v2][probe] subscribe() is disabled');
     },
     
+    // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol, timeframe) => {
-      const { websocket, isConnected } = get();
-      if (!isConnected || !websocket) return;
-      
-      // Check if WebSocket is ready to send data
-      if (websocket.readyState !== WebSocket.OPEN) {
-        get().addLog(`WebSocket not ready for unsubscription from ${symbol}`, 'warning');
-        return;
-      }
-      
-      const formattedSymbol = formatSymbol(symbol);
-      
-      const message = {
-        action: 'unsubscribe',
-        symbol: formattedSymbol,
-        ...(timeframe ? { timeframe } : {})
-      };
-      
-      try {
-        websocket.send(JSON.stringify(message));
-        get().addLog(`Unsubscribing from ${formattedSymbol}`, 'info');
-      } catch (error) {
-        get().addLog(`Failed to unsubscribe from ${formattedSymbol}: ${error.message}`, 'error');
-      }
+      get().addLog(`(probe) Unsubscribe skipped for ${symbol}${timeframe ? ' @ ' + timeframe : ''}`, 'warning');
+      // eslint-disable-next-line no-console
+      console.warn('[WS][RSI-Tracker-v2][probe] unsubscribe() is disabled');
     },
     
     handleMessage: (message) => {
