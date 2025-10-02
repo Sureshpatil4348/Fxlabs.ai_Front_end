@@ -505,16 +505,18 @@ const RSICorrelationDashboard = () => {
 
   return (
     <>
-    <div className="widget-card px-4 pb-1 z-1 relative h-full flex flex-col mb-[15px]">
-      {/* Fixed Header Section */}
-      <div className="flex-shrink-0">
-        {/* Header */}
-        <div className="widget-header flex flex-col sm:flex-row sm:items-center justify-between mb-2 space-y-2 sm:space-y-0">
+    <div className="widget-card px-5 pb-2 z-1 relative h-full flex flex-col mb-[15px] custom-scrollbar">
+      {/* Premium Fixed Header Section */}
+      <div className="flex-shrink-0 pt-1">
+        {/* Premium Header */}
+        <div className="widget-header flex flex-col sm:flex-row sm:items-center justify-between mb-3 space-y-2 sm:space-y-0">
         <div className="flex-1">
-          <div className="flex items-center space-x-2">
-            <BarChart3 className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 rounded-xl backdrop-blur-sm border border-[#3B82F6]/30">
+              <BarChart3 className="w-5 h-5 text-[#60A5FA] opacity-90" />
+            </div>
             <div>
-              <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] bg-clip-text text-transparent tracking-tight">RSI Correlation</h2>
             </div>
           </div>
           <div className="flex items-center space-x-3 mt-1">
@@ -523,13 +525,13 @@ const RSICorrelationDashboard = () => {
         </div>
         
         <div className="flex items-center space-x-2 sm:self-start">
-          {/* Calculation Mode Toggle */}
+          {/* Premium Calculation Mode Toggle */}
           <button
             onClick={handleCalculationModeToggle}
-            className={`px-3 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md ${
+            className={`px-3 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex items-center space-x-2 shadow-lg border ${
               localSettings.calculationMode === 'real_correlation'
-                ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-gray-200'
+                ? 'text-[#60A5FA] bg-gradient-to-r from-[#3B82F6]/30 to-[#2563EB]/20 border-[#3B82F6]/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+                : 'text-[#8B92B3] bg-[#1E253E]/40 border-[#1E253E]/50 hover:text-[#E2E8F0] hover:bg-[#1E253E]/60 hover:border-[#3B82F6]/30'
             }`}
             title={`Switch to ${localSettings.calculationMode === 'rsi_threshold' ? 'Real Correlation' : 'RSI Threshold'} mode`}
           >
@@ -548,17 +550,17 @@ const RSICorrelationDashboard = () => {
             )}
           </button>
           
-          {/* RSI Correlation Alert Bell Icon */}
+          {/* Premium RSI Correlation Alert Bell Icon */}
           {user && (
             <button 
               type="button"
               aria-label="Configure RSI correlation alerts"
               onClick={handleRSICorrelationBellClick}
-              className="relative p-2 text-gray-400 dark:text-slate-400 hover:text-purple-500 transition-colors duration-300 group"
+              className="relative p-2 rounded-lg bg-[#1E253E]/40 hover:bg-[#A855F7]/20 text-[#8B92B3] hover:text-[#C4B5FD] transition-all duration-300 group border border-[#1E253E]/50 hover:border-[#A855F7]/30"
             >
               <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
               {activeRSICorrelationAlertsCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#A855F7] to-[#8B5CF6] text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg">
                   {activeRSICorrelationAlertsCount > 9 ? '9+' : activeRSICorrelationAlertsCount}
                 </span>
               )}
@@ -567,7 +569,7 @@ const RSICorrelationDashboard = () => {
           
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
+            className="p-2 rounded-lg bg-[#1E253E]/40 hover:bg-[#1E253E]/60 text-[#8B92B3] hover:text-[#E2E8F0] transition-all duration-300 shadow-sm hover:shadow-lg border border-[#1E253E]/50 hover:border-[#6366F1]/30"
             title="Dashboard Settings"
           >
             <Settings className="w-4 h-4" />
@@ -575,7 +577,7 @@ const RSICorrelationDashboard = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg bg-[#1E253E]/40 hover:bg-[#1E253E]/60 text-[#8B92B3] hover:text-[#E2E8F0] transition-all duration-300 shadow-sm hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed border border-[#1E253E]/50 hover:border-[#6366F1]/30"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />

@@ -422,23 +422,25 @@ const RSIOverboughtOversoldTracker = () => {
 
   return (
     <>
-    <div className="widget-card px-4 pb-4 h-full flex flex-col z-1 relative">
-      {/* Fixed Header Section */}
-      <div className="flex-shrink-0">
-        {/* Header */}
-        <div className="mb-2">
+    <div className="widget-card px-5 pb-4 h-full flex flex-col z-1 relative custom-scrollbar">
+      {/* Premium Fixed Header Section */}
+      <div className="flex-shrink-0 pt-1">
+        {/* Premium Header */}
+        <div className="mb-3">
         <div className="widget-header flex items-center justify-between">
           <div>
-            <div className="flex items-center space-x-2">
-              <Activity className="w-5 h-5 text-purple-600" />
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-to-br from-[#A855F7]/20 to-[#8B5CF6]/20 rounded-xl backdrop-blur-sm border border-[#A855F7]/30">
+                <Activity className="w-5 h-5 text-[#C4B5FD] opacity-90" />
+              </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">RSI Tracker</h2>
+                <h2 className="text-xl font-bold bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#8B5CF6] bg-clip-text text-transparent tracking-tight">RSI Tracker</h2>
               </div>
               {/* Connection status pill removed; status shown as top-right dot */}
             </div>
           </div>
           <div className="flex items-center space-x-1">
-            {/* Watchlist Toggle Button */}
+            {/* Premium Watchlist Toggle Button */}
             <button
               onClick={async () => {
                 const next = !showWatchlist;
@@ -451,10 +453,10 @@ const RSIOverboughtOversoldTracker = () => {
                   console.error('Failed to persist watchlist toggle:', e);
                 }
               }}
-              className={`px-3 py-1.5 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1.5 ${
+              className={`px-3 py-2 rounded-lg transition-all duration-300 shadow-lg flex items-center space-x-2 border ${
                 showWatchlist 
-                  ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200' 
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-gray-200'
+                  ? 'text-[#60A5FA] bg-gradient-to-r from-[#3B82F6]/30 to-[#2563EB]/20 border-[#3B82F6]/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] font-bold' 
+                  : 'text-[#8B92B3] bg-[#1E253E]/40 border-[#1E253E]/50 hover:text-[#E2E8F0] hover:bg-[#1E253E]/60 hover:border-[#3B82F6]/30 font-bold'
               }`}
               title={showWatchlist ? "Switch to RSI Tracker mode" : "Switch to Watchlist mode"}
             >
@@ -503,22 +505,24 @@ const RSIOverboughtOversoldTracker = () => {
         </div>
 
 
-        {/* Tab Navigation - Only show when not in watchlist mode */}
+        {/* Premium Tab Navigation - Only show when not in watchlist mode */}
         {!showWatchlist && (
-          <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg">
+          <div className="flex space-x-1 mb-2 p-1 bg-[#1E253E]/40 rounded-xl border border-[#1E253E]/50">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center py-2 px-1 rounded-lg text-xs font-bold transition-all duration-200 ${
                 activeTab === tab.id
-                  ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                  ? 'bg-gradient-to-r from-[#A855F7]/30 to-[#8B5CF6]/20 text-[#C4B5FD] shadow-lg border border-[#A855F7]/50'
+                  : 'text-[#8B92B3] hover:text-[#E2E8F0] hover:bg-[#1E253E]/40'
               }`}
             >
               {tab.label}
-              <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
-                activeTab === tab.id ? 'bg-gray-100 dark:bg-slate-500 text-gray-700 dark:text-slate-200' : 'bg-gray-200 dark:bg-slate-600 text-gray-600 dark:text-slate-400'
+              <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                activeTab === tab.id 
+                  ? 'bg-[#A855F7]/40 text-[#DDD6FE]' 
+                  : 'bg-[#1E253E]/60 text-[#64748B]'
               }`}>
                 {tab.count}
               </span>

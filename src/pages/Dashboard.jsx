@@ -46,74 +46,86 @@
       });
     }, [loadTabState]);
 
-    return (
-      <div className="relative h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 overflow-hidden flex flex-col transition-colors duration-300">
-        {/* Loading Overlay - Render at root level to avoid layout constraints */}
-        {showLoader && (
-          <LoadingOverlay
-            status={connectionStatus}
-            connectionAttempts={connectionAttempts}
-            dashboardConnections={dashboardConnections}
-            onRetry={retryAllConnections}
-          />
-        )}
+  return (
+    <div className="relative h-screen bg-[#0A0E27] overflow-hidden flex flex-col transition-colors duration-300">
+      {/* Subtle gradient overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0F1629] via-[#0A0E27] to-[#080B1E] pointer-events-none"></div>
+      
+      {/* Grid pattern overlay for premium feel */}
+      <div className="absolute inset-0 opacity-[0.015]" style={{
+        backgroundImage: `
+          linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px)
+        `,
+        backgroundSize: '50px 50px'
+      }}></div>
 
-        {/* Navbar */}
-        <Navbar />
+      {/* Loading Overlay - Render at root level to avoid layout constraints */}
+      {showLoader && (
+        <LoadingOverlay
+          status={connectionStatus}
+          connectionAttempts={connectionAttempts}
+          dashboardConnections={dashboardConnections}
+          onRetry={retryAllConnections}
+        />
+      )}
 
-        {/* Main Content - Takes remaining screen height */}
-        <main className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-3">
-          {/* Mobile Layout - Stack vertically */}
-          <div className="block lg:hidden space-y-3">
-            {/* Section 1 - Multi Indicator Heatmap */}
-            <div className="h-96 overflow-hidden">
-              <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
-            </div>
+      {/* Navbar */}
+      <Navbar />
 
-            {/* Section 2 - AI News Analysis */}
-            <div className="h-80">
-              <AINewsAnalysis />
-            </div>
-
-            {/* Section 3 - RSI Correlation Dashboard */}
-            <div className="h-80">
-              <RSICorrelationDashboard />
-            </div>
-
-            {/* Section 4 - RSI Tracker */}
-            <div className="h-64">
-              <RSIOverboughtOversoldTracker />
-            </div>
+      {/* Main Content - Takes remaining screen height */}
+      <main className="relative flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 lg:p-5">
+        {/* Mobile Layout - Stack vertically */}
+        <div className="block lg:hidden space-y-4">
+          {/* Section 1 - Multi Indicator Heatmap */}
+          <div className="h-96 overflow-hidden">
+            <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
           </div>
 
-          {/* Desktop Layout - Original 12x12 grid preserved exactly */}
-          <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-2">
-            
-            {/* Section 1 - Multi Indicator Heatmap (largest area - top left) */}
-            <div className="col-span-7 row-span-7 min-h-0">
-              <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
-            </div>
-
-            {/* Section 3rd - AI News Analysis (top right) - Further increased height */}
-            <div className="col-span-5 row-span-7">
-              <AINewsAnalysis />
-            </div>
-
-            {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
-            <div className="col-span-7 row-span-5 row-start-8">
-              <RSICorrelationDashboard />
-            </div>
-
-            {/* Section 5th - RSI Tracker (bottom right) - Further reduced height */}
-            <div className="col-span-5 row-span-5 row-start-8">
-              <RSIOverboughtOversoldTracker />
-            </div>
-
+          {/* Section 2 - AI News Analysis */}
+          <div className="h-80">
+            <AINewsAnalysis />
           </div>
 
-        </main>
-      </div>
-    )
+          {/* Section 3 - RSI Correlation Dashboard */}
+          <div className="h-80">
+            <RSICorrelationDashboard />
+          </div>
+
+          {/* Section 4 - RSI Tracker */}
+          <div className="h-64">
+            <RSIOverboughtOversoldTracker />
+          </div>
+        </div>
+
+        {/* Desktop Layout - Enhanced grid with better spacing */}
+        <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-4">
+          
+          {/* Section 1 - Multi Indicator Heatmap (largest area - top left) */}
+          <div className="col-span-7 row-span-7 min-h-0">
+            <MultiIndicatorHeatmap selectedSymbol="EURUSDm" />
+          </div>
+
+          {/* Section 3rd - AI News Analysis (top right) */}
+          <div className="col-span-5 row-span-7">
+            <AINewsAnalysis />
+          </div>
+
+          {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
+          <div className="col-span-7 row-span-5 row-start-8">
+            <RSICorrelationDashboard />
+          </div>
+
+          {/* Section 5th - RSI Tracker (bottom right) */}
+          <div className="col-span-5 row-span-5 row-start-8">
+            <RSIOverboughtOversoldTracker />
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  )
   }
 
   export default Dashboard
