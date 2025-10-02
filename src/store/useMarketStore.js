@@ -195,15 +195,13 @@ const useMarketStore = create(
     // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
       get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
-      // eslint-disable-next-line no-console
-      console.warn('[WS][Market-v2][probe] subscribe() is disabled');
+      // Note: subscribe() is disabled in probe mode - no console warning needed
     },
     
     // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
       get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
-      // eslint-disable-next-line no-console
-      console.warn('[WS][Market-v2][probe] unsubscribe() is disabled');
+      // Note: unsubscribe() is disabled in probe mode - no console warning needed
     },
     
     handleMessage: (message) => {
@@ -460,7 +458,7 @@ const useMarketStore = create(
     calculateRsi: (_symbol, _period = 14) => {
       // RSI calculations are now done server-side
       // This function should be replaced with server data retrieval
-      console.warn('calculateRsi called but calculations are now server-side');
+      // Note: RSI is now calculated server-side - no console warning needed
       return null;
     },
 
@@ -468,7 +466,7 @@ const useMarketStore = create(
       // Note: RSI calculations are now performed server-side
       // This function should be updated to process RSI data received from WebSocket
       // For now, it's a no-op placeholder
-      console.warn('recalculateAllRsi called but RSI is now calculated server-side');
+      // Note: RSI is now calculated server-side - no console warning needed
       
       // The server should send RSI values via WebSocket messages
       // Components should listen for those messages and update state accordingly

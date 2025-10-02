@@ -55,6 +55,12 @@ All features that relied on client-side calculations now expect server-provided 
   - `src/store/useCurrencyStrengthStore.js`
 - Env example updated to `.../market-v2` (`env.example`).
 
+### Console Warning Cleanup (Latest)
+- Removed all console warnings related to disabled WebSocket subscribe/unsubscribe functions in probe mode
+- Removed all console warnings about server-side RSI calculations being called
+- Cleaned up warning messages in all store files to reduce console noise during development
+- Affected functions: `subscribe()`, `unsubscribe()`, `recalculateAllRsi()`, `calculateRsi()`, `calculateAllCorrelations()`, `recalculateAllRfi()`
+
 ## Documentation
 
 - Calculations reference and source of truth for all formulas, static symbol lists, correlation pairs, thresholds, and percentages: see `CALCULATIONS.md`.

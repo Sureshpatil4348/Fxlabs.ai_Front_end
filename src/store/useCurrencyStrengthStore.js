@@ -190,15 +190,13 @@ const useCurrencyStrengthStore = create(
     // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
       get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
-      // eslint-disable-next-line no-console
-      console.warn('[WS][CurrencyStrength-v2][probe] subscribe() is disabled');
+      // Note: subscribe() is disabled in probe mode - no console warning needed
     },
     
     // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
       get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
-      // eslint-disable-next-line no-console
-      console.warn('[WS][CurrencyStrength-v2][probe] unsubscribe() is disabled');
+      // Note: unsubscribe() is disabled in probe mode - no console warning needed
     },
     
     handleMessage: (message) => {

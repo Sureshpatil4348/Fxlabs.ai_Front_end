@@ -191,15 +191,13 @@ const useRSICorrelationStore = create(
     // v2 probe: disable legacy subscribe; log intent only
     subscribe: (symbol, timeframe, dataTypes) => {
       get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
-      // eslint-disable-next-line no-console
-      console.warn('[WS][RSI-Correlation-v2][probe] subscribe() is disabled');
+      // Note: subscribe() is disabled in probe mode - no console warning needed
     },
     
     // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
       get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
-      // eslint-disable-next-line no-console
-      console.warn('[WS][RSI-Correlation-v2][probe] unsubscribe() is disabled');
+      // Note: unsubscribe() is disabled in probe mode - no console warning needed
     },
     
     handleMessage: (message) => {
@@ -471,7 +469,7 @@ const useRSICorrelationStore = create(
       // Note: Correlation calculations are now performed server-side
       // This function should be updated to process correlation data received from WebSocket
       // For now, it's a no-op placeholder
-      console.warn('calculateAllCorrelations called but correlations are now calculated server-side');
+      // Note: correlations are now calculated server-side - no console warning needed
       
       // The server should send correlation values via WebSocket messages
       // Components should listen for those messages and update state accordingly
@@ -484,7 +482,7 @@ const useRSICorrelationStore = create(
       // Note: RSI calculations are now performed server-side
       // This function should be updated to process RSI data received from WebSocket
       // For now, it's a no-op placeholder
-      console.warn('recalculateAllRsi called but RSI is now calculated server-side');
+      // Note: RSI is now calculated server-side - no console warning needed
       
       // The server should send RSI values via WebSocket messages
       // Components should listen for those messages and update state accordingly
