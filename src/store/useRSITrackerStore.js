@@ -559,21 +559,15 @@ const useRSITrackerStore = create(
               const c = Number(message.data.close);
 
               // Compute RSI(14) including current bar
-              const closesIncluding = tfBars.map(b => {
-                const bid = Number(b?.closeBid);
-                const generic = Number(b?.close);
-                return Number.isFinite(bid) ? bid : generic;
-              }).filter(v => Number.isFinite(v));
+              const closesIncluding = tfBars
+                .map(b => Number(b?.close))
+                .filter(v => Number.isFinite(v));
               const rsiIncluding = closesIncluding.length >= 15 ? calculateRSI(closesIncluding, 14) : null;
 
               // Compute RSI(14) using only closed bars (strict parity with MT5)
               const closesClosedAll = tfBars
                 .filter(b => b && b.is_closed === true)
-                .map(b => {
-                  const bid = Number(b?.closeBid);
-                  const generic = Number(b?.close);
-                  return Number.isFinite(bid) ? bid : generic;
-                })
+                .map(b => Number(b?.close))
                 .filter(v => Number.isFinite(v));
               const rsiClosed = closesClosedAll.length >= 15 ? calculateRSI(closesClosedAll, 14) : null;
 
@@ -593,11 +587,7 @@ const useRSITrackerStore = create(
                     // RSI for the previous closed candle using closed-only series
                     const closesClosed = tfBars
                       .filter(b => b && b.is_closed === true)
-                      .map(b => {
-                        const bid = Number(b?.closeBid);
-                        const generic = Number(b?.close);
-                        return Number.isFinite(bid) ? bid : generic;
-                      })
+                      .map(b => Number(b?.close))
                       .filter(v => Number.isFinite(v));
                     const prevClosedRsi = closesClosed.length >= 15 ? calculateRSI(closesClosed, 14) : null;
 
@@ -736,11 +726,7 @@ const useRSITrackerStore = create(
       const effectiveBars = (!lastIsClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
       if (!lastIsClosed && !hasEnoughForDrop) return null;
       const closes = effectiveBars
-        .map(bar => {
-          const bid = Number(bar.closeBid);
-          const generic = Number(bar.close);
-          return Number.isFinite(bid) ? bid : generic;
-        })
+        .map(bar => Number(bar.close))
         .filter(v => Number.isFinite(v));
       if (closes.length < period + 1) return null;
 

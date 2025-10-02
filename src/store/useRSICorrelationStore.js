@@ -536,11 +536,7 @@ const useRSICorrelationStore = create(
       const effectiveBars = (!flagClosed && hasEnoughForDrop) ? ordered.slice(0, -1) : ordered;
       if (!flagClosed && !hasEnoughForDrop) return null;
       const closes = effectiveBars
-        .map(bar => {
-          const bid = Number(bar.closeBid);
-          const generic = Number(bar.close);
-          return Number.isFinite(bid) ? bid : generic;
-        })
+        .map(bar => Number(bar.close))
         .filter(v => Number.isFinite(v));
       if (closes.length < period + 1) return null;
 

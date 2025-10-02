@@ -13,7 +13,7 @@ export const formatPercentage = (value, precision = 2) => {
 
 export const formatRsi = (rsi) => {
   if (typeof rsi !== 'number' || isNaN(rsi)) return '--';
-  return rsi.toFixed(1);
+  return rsi.toFixed(2);
 };
 
 export const formatCurrency = (currency) => {

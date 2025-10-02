@@ -32,9 +32,16 @@ Frontend config only; backend evaluates and sends notifications.
   - Today (HIGH impact) Released: count and items
 - Open the browser DevTools Console to view these logs as the news feed updates.
 
-### MT5 Parity: RSI on Bid Close (System-wide)
+### MT5 Parity: RSI on Close (System‑wide)
 
-RSI(14) is now computed from Bid closes (`closeBid`) for MT5 parity across RSI Tracker and RSI Correlation. Forming candles are excluded when possible (closed-candle preference), mirroring MT5 behavior.
+- Applied price: Close (canonical MT5 default). We do not use Bid/Ask‑only variants for RSI math.
+- Bar policy: Closed bars only. The forming candle is never used for RSI.
+- Smoothing: Wilder’s method (not SMA/EMA).
+- Symbols: Always request with the broker suffix (e.g., `EURUSDm`, `XAUUSDm`, `BTCUSDm`).
+- Timeframes: `1M, 5M, 15M, 30M, 1H, 4H, 1D, 1W` (alerts remain 5M+).
+- Rounding: UI renders to 2 decimals; internal state keeps full precision.
+
+All RSI widgets (Global dashboard, RSI Tracker, RSI Correlation, and Heatmap RSI cell) now derive RSI from closed‑candle `close` prices only and use Wilder smoothing for exact backend/MT5 parity.
 
 ### BTCUSD 1M Candle Logging
 
@@ -42,8 +49,8 @@ Detailed console logs are emitted for `BTCUSDm` 1-minute candles inside `src/sto
 
 - What is logged per event:
   - Date (UTC), Time (UTC), Open, High, Low, Close
-  - RSI(14) with the current forming bar (Bid-based)
-  - RSI(14) using closed bars only (Bid-based)
+  - RSI(14) with the current forming bar (for reference only)
+  - RSI(14) using closed bars only (used in UI and parity checks)
   - Event type: OPEN on new bar; UPDATE while forming; plus a CLOSE line for the previous bar when a new bar opens
 - Toggle via feature flag:
   - `REACT_APP_ENABLE_BTCUSD_M1_LOGS=true` to enable (default)

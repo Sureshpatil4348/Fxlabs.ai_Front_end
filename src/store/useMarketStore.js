@@ -518,11 +518,7 @@ const useMarketStore = create(
       const effectiveBars = (!lastIsClosed && bars.length >= period + 2) ? bars.slice(0, -1) : bars;
       if (!lastIsClosed && bars.length < period + 2) return null;
       const closes = effectiveBars
-        .map(bar => {
-          const bid = Number(bar.closeBid);
-          const generic = Number(bar.close);
-          return Number.isFinite(bid) ? bid : generic;
-        })
+        .map(bar => Number(bar.close))
         .filter(v => Number.isFinite(v));
 
       if (closes.length < period + 1) return null;
