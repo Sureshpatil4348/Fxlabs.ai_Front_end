@@ -138,6 +138,16 @@ Usage notes (WebSocket):
 - Ensures real-time updates even when the global connection initiator is not mounted.
 - Auto-subscription and on-update recalculations remain unchanged and continue to run on each `ohlc_update`.
 
+### Timeframe Options Update (Latest)
+- Removed 1M timeframe from RSI Correlation Dashboard and RSI Tracker widgets.
+- UI dropdowns exclude 1M; stores also omit 1M from their `timeframes` arrays.
+- If previously saved user settings contain `1M`/`M1`, the UI normalizes to `5M` on load to keep selections valid.
+- Affected files:
+  - `src/store/useRSICorrelationStore.js:82`
+  - `src/components/RSICorrelationDashboard.js:663`
+  - `src/store/useRSITrackerStore.js:81`
+  - `src/components/RSIOverboughtOversoldTracker.js:719`
+
 ### Success Stories Section Responsive Design (Latest)
 - **RESPONSIVE LAYOUT**: Made SuccessStories section fully responsive across all screen sizes
 - **BANNER IMPROVEMENTS**: Updated banner with responsive padding, text sizes, and icon sizes

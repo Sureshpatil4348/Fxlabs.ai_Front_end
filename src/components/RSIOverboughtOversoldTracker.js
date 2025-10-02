@@ -249,11 +249,13 @@ const RSIOverboughtOversoldTracker = () => {
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.rsiTracker) {
           const { timeframe, rsiPeriod, rsiOverbought, rsiOversold } = savedSettings.rsiTracker;
+          // Normalize disallowed timeframe (exclude 1M/M1)
+          const normalizedTf = (timeframe === '1M' || timeframe === 'M1') ? '5M' : timeframe;
           
           // Update local settings state using only provided keys
           setLocalSettings(prev => ({
             ...prev,
-            ...(timeframe != null ? { timeframe } : {}),
+            ...(normalizedTf != null ? { timeframe: normalizedTf } : {}),
             ...(rsiPeriod != null ? { rsiPeriod } : {}),
             ...(rsiOverbought != null ? { rsiOverbought } : {}),
             ...(rsiOversold != null ? { rsiOversold } : {})
@@ -261,7 +263,7 @@ const RSIOverboughtOversoldTracker = () => {
 
           // Update store settings using partial update
           const partialUpdate = {};
-          if (timeframe != null) partialUpdate.timeframe = timeframe;
+          if (normalizedTf != null) partialUpdate.timeframe = normalizedTf;
           if (rsiPeriod != null) partialUpdate.rsiPeriod = rsiPeriod;
           if (rsiOverbought != null) partialUpdate.rsiOverbought = rsiOverbought;
           if (rsiOversold != null) partialUpdate.rsiOversold = rsiOversold;
@@ -721,7 +723,7 @@ const RSIOverboughtOversoldTracker = () => {
                 onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
                 className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {timeframes.map(tf => (
+                {timeframes.filter(tf => tf !== '1M').map(tf => (
                   <option key={tf} value={tf}>{tf}</option>
                 ))}
               </select>

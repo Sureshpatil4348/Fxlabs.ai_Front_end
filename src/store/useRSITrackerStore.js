@@ -78,7 +78,8 @@ const useRSITrackerStore = create(
     
     // UI state
     logs: [],
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'],
+    // Remove 1M from selectable timeframes for RSI Tracker
+    timeframes: ['5M', '15M', '30M', '1H', '4H', '1D', '1W'],
     // Internal logging memo to avoid duplicate [CLOSE] prints
     _loggedClosedBars: new Set(), // keys: `${symbol}|${timeframe}|${timestampMs}`
     

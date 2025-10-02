@@ -79,7 +79,8 @@ const useRSICorrelationStore = create(
     
     // UI state
     logs: [],
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D'],
+    // Remove 1M from selectable timeframes for RSI Correlation Dashboard
+    timeframes: ['5M', '15M', '30M', '1H', '4H', '1D'],
     correlationWindows: CORRELATION_WINDOWS,
     
     // Connection Actions
@@ -279,7 +280,8 @@ const useRSICorrelationStore = create(
         case 'connected':
           get().addLog(`Welcome: ${message.message}`, 'success');
           if (message.supported_timeframes) {
-            set({ timeframes: message.supported_timeframes });
+            // Ensure 1M is excluded even if server sends it
+            set({ timeframes: message.supported_timeframes.filter(tf => tf !== '1M' && tf !== 'M1') });
           }
           break;
           
