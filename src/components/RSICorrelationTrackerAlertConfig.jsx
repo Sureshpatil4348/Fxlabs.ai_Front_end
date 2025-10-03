@@ -5,7 +5,7 @@ import rsiCorrelationTrackerAlertService from '../services/rsiCorrelationTracker
 import useRSICorrelationStore from '../store/useRSICorrelationStore';
 
 const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
-  const { timeframes, correlationWindows, updateSettings } = useRSICorrelationStore();
+  const { timeframes, correlationWindows: _correlationWindows, updateSettings } = useRSICorrelationStore();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -24,10 +24,8 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
           setForm({
             timeframe: existing.timeframe,
             mode: existing.mode,
-            rsiPeriod: existing.rsiPeriod,
             rsiOverbought: existing.rsiOverbought,
             rsiOversold: existing.rsiOversold,
-            correlationWindow: existing.correlationWindow,
             isActive: existing.isActive
           });
         } else {
@@ -54,8 +52,7 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
         timeframe: saved.timeframe,
         calculationMode: saved.mode === 'real_correlation' ? 'real_correlation' : 'rsi_threshold',
         rsiOverbought: saved.rsiOverbought,
-        rsiOversold: saved.rsiOversold,
-        correlationWindow: saved.correlationWindow
+        rsiOversold: saved.rsiOversold
       });
       onClose?.();
     } catch (e) {
@@ -144,21 +141,7 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
                 </div>
               )}
 
-              {form.mode === 'real_correlation' && (
-                <div>
-                  <label htmlFor="rsi-corr-window" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Correlation Window</label>
-                  <select
-                    id="rsi-corr-window"
-                    value={form.correlationWindow}
-                    onChange={(e) => setForm({ ...form, correlationWindow: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    {correlationWindows.map(w => (
-                      <option key={w} value={w}>{w} periods</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              {/* Correlation Window fixed at 50 for real correlation mode */}
 
               <div className="flex items-center justify-between">
                 <div className="text-xs text-gray-500 dark:text-slate-400">Only one alert per user. Checks all correlation pairs; triggers on mismatches.</div>

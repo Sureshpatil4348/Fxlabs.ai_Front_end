@@ -840,7 +840,7 @@ The application now includes comprehensive dashboard settings persistence:
 
 ### Settings Categories
 - **Global Settings**: Universal timeframe for all indicators
-- **RSI Correlation Settings**: Timeframe, RSI overbought/oversold thresholds, correlation window, calculation mode (RSI period fixed at 14)
+- **RSI Correlation Settings**: Timeframe, RSI overbought/oversold thresholds, calculation mode (RSI period fixed at 14, correlation window fixed at 50)
 - **RSI Tracker Settings**: Timeframe, RSI overbought/oversold thresholds, auto-subscribe symbols (RSI period fixed at 14)
 - **Currency Strength Settings**: Timeframe, calculation mode (closed/live), enhanced calculation toggle, auto-subscribe symbols
 - **Multi-Indicator Heatmap Settings**: Symbol selection, trading style, indicator weights, new signal display toggle
@@ -1482,7 +1482,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 - **Timeframe**: Choose exactly one timeframe (5M to 1W)
 - **Mode**: `rsi_threshold` or `real_correlation`
 - **RSI Settings** (RSI mode): RSI overbought (60-90), oversold (10-40) (RSI period fixed at 14)
-- **Correlation Settings** (Real mode): Rolling correlation window (20, 50, 90, 120)
+- **Correlation Settings** (Real mode): Rolling correlation window (fixed at 50)
 - **Pairs**: Not required; all correlation pairs are evaluated by the backend
 
 #### Alert Management
@@ -1514,7 +1514,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 - rsi_period: INTEGER - RSI calculation period (fixed at 14)
 - rsi_overbought_threshold: INTEGER - Overbought threshold (60-90)
 - rsi_oversold_threshold: INTEGER - Oversold threshold (10-40)
-- correlation_window: INTEGER - Rolling correlation window (20, 50, 90, 120)
+- correlation_window: INTEGER - Rolling correlation window (fixed at 50)
 - alert_conditions: JSONB - Array of alert conditions based on mode
 - strong_correlation_threshold: DECIMAL(3,2) - Strong correlation threshold (0.50-1.00)
 - moderate_correlation_threshold: DECIMAL(3,2) - Moderate correlation threshold (0.20-0.80)
@@ -1604,7 +1604,7 @@ const alert = await rsiCorrelationTrackerAlertService.saveAlert(alertConfig);
 The alert system integrates seamlessly with the existing RSI Correlation Dashboard:
 
 1. **Shared Data Source**: Uses the same RSI calculations and correlation analysis
-2. **Consistent Logic**: Applies the same RSI thresholds, period, and correlation windows (RSI period fixed at 14)
+2. **Consistent Logic**: Applies the same RSI thresholds, period, and correlation windows (RSI period fixed at 14, correlation window fixed at 50)
 3. **Real-time Updates**: Monitors closed-candle RSI correlation data for trigger conditions
 4. **Unified Interface**: Alert management integrated into the navbar with purple BarChart3 icon
 5. **Visual Indicators**: BarChart3 icon shows active RSI correlation alert count as a badge

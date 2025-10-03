@@ -189,8 +189,8 @@ const CorrelationPairCard = ({ pairKey, pairData, pair, calculationMode, realCor
 };
 
 const RSICorrelationDashboard = () => {
-  const { 
-    correlationStatus, 
+  const {
+    correlationStatus,
     realCorrelationData,
     settings,
     recalculateAllRsi,
@@ -200,7 +200,7 @@ const RSICorrelationDashboard = () => {
     updateSettings,
     autoSubscribeToCorrelationPairs,
     timeframes,
-    correlationWindows,
+    correlationWindows: _correlationWindows,
     connect,
     correlationPairs
   } = useRSICorrelationStore();
@@ -224,7 +224,6 @@ const RSICorrelationDashboard = () => {
     timeframe: settings.timeframe,
     rsiOverbought: settings.rsiOverbought,
     rsiOversold: settings.rsiOversold,
-    correlationWindow: settings.correlationWindow,
     calculationMode: settings.calculationMode
   });
 
@@ -330,7 +329,7 @@ const RSICorrelationDashboard = () => {
         if (!user) return;
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.rsiCorrelation) {
-          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold, correlationWindow, calculationMode } = savedSettings.rsiCorrelation;
+          const { timeframe, rsiOverbought, rsiOversold, calculationMode } = savedSettings.rsiCorrelation;
           // Normalize disallowed timeframe (exclude 1M/M1)
           const normalizedTf = (timeframe === '1M' || timeframe === 'M1') ? '5M' : timeframe;
 
@@ -340,7 +339,6 @@ const RSICorrelationDashboard = () => {
             ...(normalizedTf != null ? { timeframe: normalizedTf } : {}),
             ...(rsiOverbought != null ? { rsiOverbought } : {}),
             ...(rsiOversold != null ? { rsiOversold } : {}),
-            ...(correlationWindow != null ? { correlationWindow } : {}),
             ...(calculationMode != null ? { calculationMode } : {})
           }));
 
@@ -349,7 +347,6 @@ const RSICorrelationDashboard = () => {
           if (normalizedTf != null) partialUpdate.timeframe = normalizedTf;
           if (rsiOverbought != null) partialUpdate.rsiOverbought = rsiOverbought;
           if (rsiOversold != null) partialUpdate.rsiOversold = rsiOversold;
-          if (correlationWindow != null) partialUpdate.correlationWindow = correlationWindow;
           if (calculationMode != null) partialUpdate.calculationMode = calculationMode;
           if (Object.keys(partialUpdate).length > 0) {
             updateSettings(partialUpdate);
@@ -380,7 +377,6 @@ const RSICorrelationDashboard = () => {
         timeframe: localSettings.timeframe,
         rsiOverbought: localSettings.rsiOverbought,
         rsiOversold: localSettings.rsiOversold,
-        correlationWindow: localSettings.correlationWindow,
         calculationMode: localSettings.calculationMode
       });
 
@@ -391,7 +387,6 @@ const RSICorrelationDashboard = () => {
             timeframe: localSettings.timeframe,
             rsiOverbought: localSettings.rsiOverbought,
             rsiOversold: localSettings.rsiOversold,
-            correlationWindow: localSettings.correlationWindow,
             calculationMode: localSettings.calculationMode
           }
         });
@@ -408,7 +403,6 @@ const RSICorrelationDashboard = () => {
       timeframe: settings.timeframe,
       rsiOverbought: settings.rsiOverbought,
       rsiOversold: settings.rsiOversold,
-      correlationWindow: settings.correlationWindow,
       calculationMode: settings.calculationMode
     });
   };
@@ -667,24 +661,7 @@ const RSICorrelationDashboard = () => {
                 </select>
               </div>
 
-              {/* Correlation Window (only show for real correlation mode) */}
-              {localSettings.calculationMode === 'real_correlation' && (
-                <div>
-                  <label htmlFor="rsi-corr-window" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                    Correlation Window
-                  </label>
-                  <select
-                    id="rsi-corr-window"
-                    value={localSettings.correlationWindow}
-                    onChange={(e) => setLocalSettings(prev => ({ ...prev, correlationWindow: parseInt(e.target.value) }))}
-                    className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {correlationWindows.map(window => (
-                      <option key={window} value={window}>{window} periods</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              {/* Correlation Window fixed at 50 for real correlation mode */}
 
               {/* RSI Settings (only show for RSI threshold mode; period fixed at 14) */}
               {localSettings.calculationMode === 'rsi_threshold' && (

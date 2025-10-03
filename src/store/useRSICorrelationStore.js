@@ -375,9 +375,9 @@ const useRSICorrelationStore = create(
     updateSettings: (newSettings) => {
       const state = get();
       const oldSettings = state.settings;
-      // Ignore rsiPeriod updates; RSI period is fixed at 14
-      const { rsiPeriod: _ignoredRsiPeriod, ...rest } = newSettings || {};
-      const updatedSettings = { ...oldSettings, ...rest, rsiPeriod: 14 };
+      // Ignore rsiPeriod and correlationWindow updates; both are fixed
+      const { rsiPeriod: _ignoredRsiPeriod, correlationWindow: _ignoredCorrelationWindow, ...rest } = newSettings || {};
+      const updatedSettings = { ...oldSettings, ...rest, rsiPeriod: 14, correlationWindow: 50 };
       
       set({ settings: updatedSettings });
       
@@ -419,12 +419,7 @@ const useRSICorrelationStore = create(
         get().recalculateAllRsi();
       }
       
-      // If correlation window changed, recalculate correlations
-      if (newSettings.correlationWindow && newSettings.correlationWindow !== oldSettings.correlationWindow) {
-        if (updatedSettings.calculationMode === 'real_correlation') {
-          get().calculateAllCorrelations();
-        }
-      }
+      // Correlation window is fixed at 50; no recalculation needed
       
       // If calculation mode changed, recalculate appropriate metrics
       if (newSettings.calculationMode && newSettings.calculationMode !== oldSettings.calculationMode) {

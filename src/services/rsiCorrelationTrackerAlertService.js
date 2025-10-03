@@ -30,9 +30,7 @@ class RSICorrelationTrackerAlertService {
       if (!Number.isFinite(cfg.rsiOversold) || cfg.rsiOversold < 10 || cfg.rsiOversold > 40) errors.push('Oversold 10-40');
       if (cfg.rsiOversold >= cfg.rsiOverbought) errors.push('Oversold < Overbought');
     }
-    if (cfg.mode === 'real_correlation') {
-      if (!Number.isFinite(cfg.correlationWindow) || ![20,50,90,120].includes(cfg.correlationWindow)) errors.push('Invalid correlation window');
-    }
+    // Correlation window is fixed at 50; no validation required
     return { isValid: errors.length === 0, errors };
   }
 
@@ -65,8 +63,9 @@ class RSICorrelationTrackerAlertService {
     const user = await this.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
     const merged = { ...this.getDefaultAlertConfig(), ...config };
-    // Enforce RSI period to 14 globally
+    // Enforce RSI period to 14 and correlation window to 50 globally
     merged.rsiPeriod = 14;
+    merged.correlationWindow = 50;
     const { isValid, errors } = this._validate(merged);
     if (!isValid) throw new Error(errors.join(', '));
 
@@ -78,7 +77,7 @@ class RSICorrelationTrackerAlertService {
       rsi_period: 14,
       rsi_overbought: merged.rsiOverbought,
       rsi_oversold: merged.rsiOversold,
-      correlation_window: merged.correlationWindow,
+      correlation_window: 50,
       is_active: merged.isActive ?? true
     };
 
