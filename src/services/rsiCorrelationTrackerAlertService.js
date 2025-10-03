@@ -2,9 +2,9 @@ import { supabase } from '../lib/supabaseClient';
 
 class RSICorrelationTrackerAlertService {
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { session }, error } = await supabase.auth.getSession();
     if (error) return null;
-    return user;
+    return session?.user ?? null;
   }
 
   getDefaultAlertConfig() {

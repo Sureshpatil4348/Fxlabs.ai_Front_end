@@ -201,12 +201,7 @@ const TradingDashboardSection = () => {
     }
   }, [tickData, dataInitialized, lastUpdateTime])
 
-  // Load user tab states on dashboard mount
-  useEffect(() => {
-    loadTabState().catch(_error => {
-      // console.error('Failed to load tab states:', _error);
-    });
-  }, [loadTabState]);
+  // Load user tab state once via Dashboard (avoid duplicate here)
 
   // Alert Demo Animation
   useEffect(() => {

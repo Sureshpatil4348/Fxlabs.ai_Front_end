@@ -1683,6 +1683,16 @@ The application follows web accessibility best practices to ensure an inclusive 
 - **Authentication**: Secure user authentication with Supabase Auth
 - **Data Isolation**: Each user can only access their own data
 - **XSS Protection**: HTML sanitization implemented to prevent cross-site scripting attacks
+
+### Auth Call Optimization (Frontend)
+
+To reduce excessive calls to `https://<project>.supabase.co/auth/v1/user`, the frontend now relies on `supabase.auth.getSession()` wherever possible instead of `supabase.auth.getUser()`.
+
+- Updated services: `watchlistService.js`, `usertabService.js`, `userStateService.js`, `heatmapTrackerAlertService.js`, `heatmapIndicatorTrackerAlertService.js`, `rsiTrackerAlertService.js`, `rsiCorrelationTrackerAlertService.js`
+- Rationale: `getSession()` returns cached session data (including `user`) without always hitting the `/auth/v1/user` endpoint, significantly reducing redundant auth traffic during dashboard usage.
+- Behavior: If no session exists, methods return `null` and callers surface appropriate auth-required errors.
+
+Additionally, duplicate calls to load user tab state were removed from `TradingDashboardSection.jsx` (centralized in `pages/Dashboard.jsx`).
   - Custom sanitization function for AI news analysis content
   - Escapes all HTML entities before applying safe transformations
   - Whitelists only `<strong>` and `<br />` tags for formatting

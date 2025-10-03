@@ -5,12 +5,12 @@ class UserStateService {
    * Get current user
    */
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { session }, error } = await supabase.auth.getSession();
     if (error) {
-      console.error("Error fetching user:", error);
+      console.error("Error fetching session:", error);
       return null;
     }
-    return user;
+    return session?.user ?? null;
   }
 
   /**
