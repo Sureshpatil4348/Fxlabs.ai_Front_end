@@ -130,6 +130,11 @@ class WebSocketMessageRouter {
     if (messageType !== 'connected' && messageType !== 'ticks') {
       if (targetStores.size > 0) {
         console.log(`[Router] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
+        
+        // Log full message content for specific message types
+        if (messageType === 'indicator_update') {
+          console.log(`[Router] Full ${messageType} message:`, JSON.stringify(message, null, 2));
+        }
       } else {
         console.log(`[Router] No stores registered for message type: ${messageType}`);
       }

@@ -49,8 +49,7 @@ const useMarketStore = create(
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
     tickData: new Map(),      // symbol -> latest ticks
-    ohlcData: new Map(),      // symbol -> OHLC bars
-    initialOhlcReceived: new Set(), // symbols that received initial OHLC
+    indicatorData: new Map(), // symbol -> indicator snapshots
     
     // RSI Data
     rsiData: new Map(), // symbol -> RSI values
@@ -97,7 +96,7 @@ const useMarketStore = create(
     // UI state
     selectedSymbol: 'EURUSDm',
     selectedTimeframe: '1M',
-    dataTypes: ['ticks', 'ohlc'],
+    dataTypes: ['ticks', 'indicators'],
     logs: [],
     
     // Available options
@@ -137,7 +136,7 @@ const useMarketStore = create(
           });
           get().addLog('Connection error (Market v2 probe)', 'error');
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -158,8 +157,7 @@ const useMarketStore = create(
         isConnecting: false, 
         subscriptions: new Map(),
         tickData: new Map(),
-        ohlcData: new Map(),
-        initialOhlcReceived: new Set()
+        indicatorData: new Map()
       });
     },
     
@@ -203,42 +201,31 @@ const useMarketStore = create(
           newSubscriptions.delete(message.symbol);
           const newTickData = new Map(state.tickData);
           newTickData.delete(message.symbol);
-          const newOhlcData = new Map(state.ohlcData);
-          newOhlcData.delete(message.symbol);
-          const newInitialReceived = new Set(state.initialOhlcReceived);
-          newInitialReceived.delete(message.symbol);
+          const newIndicatorData = new Map(state.indicatorData);
+          newIndicatorData.delete(message.symbol);
           
           set({ 
             subscriptions: newSubscriptions,
             tickData: newTickData,
-            ohlcData: newOhlcData,
-            initialOhlcReceived: newInitialReceived
+            indicatorData: newIndicatorData
           });
           get().addLog(`Unsubscribed from ${message.symbol}`, 'warning');
           break;
           
-        case 'initial_ohlc':
-          const ohlcData = new Map(state.ohlcData);
-          ohlcData.set(message.symbol, {
-            symbol: message.symbol,
-            timeframe: message.timeframe,
-            bars: message.data,
-            lastUpdate: new Date()
-          });
-          const initialReceived = new Set(state.initialOhlcReceived);
-          initialReceived.add(message.symbol);
-          
-          set({ 
-            ohlcData,
-            initialOhlcReceived: initialReceived
-          });
-          get().addLog(`Received ${message.data.length} initial OHLC bars for ${message.symbol}`, 'info');
-          
-          // Trigger calculations when initial data is received
-          setTimeout(() => {
-            get().recalculateAllRsi();
-            get().calculateCurrencyStrength();
-          }, 200);
+        case 'initial_indicators':
+          // Handle initial indicator snapshots
+          const indicatorData = new Map(state.indicatorData || new Map());
+          if (message.data && message.data.symbol) {
+            indicatorData.set(message.data.symbol, {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              indicators: message.data.indicators,
+              barTime: message.data.bar_time,
+              lastUpdate: new Date()
+            });
+            set({ indicatorData });
+            get().addLog(`Received initial indicators for ${message.data.symbol}`, 'info');
+          }
           break;
           
         case 'ticks':
@@ -252,40 +239,33 @@ const useMarketStore = create(
           set({ tickData });
           break;
           
-        case 'ohlc_update':
-          const currentOhlcData = new Map(state.ohlcData);
-          const symbolData = currentOhlcData.get(message.data.symbol);
-          if (symbolData) {
-            // Update the most recent bar or add new one
-            const bars = [...symbolData.bars];
-            const lastBar = bars[bars.length - 1];
-            const toTime = (t) => {
-              const n = Number(t);
-              return Number.isFinite(n) ? n : Date.parse(t);
-            };
+        case 'indicator_update':
+          // Handle live indicator updates
+          const currentIndicatorData = new Map(state.indicatorData || new Map());
+          if (message.data && message.data.symbol) {
+            currentIndicatorData.set(message.data.symbol, {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              indicators: message.data.indicators,
+              barTime: message.data.bar_time,
+              lastUpdate: new Date()
+            });
+            set({ indicatorData: currentIndicatorData });
             
-            if (lastBar && toTime(lastBar.time) === toTime(message.data.time)) {
-              // Update existing bar - don't log
-              bars[bars.length - 1] = message.data;
-            } else {
-              // Add new bar and keep only last 100 - log this as it's a new candle
-              bars.push(message.data);
-              if (bars.length > 100) {
-                bars.shift();
+            // Update RSI data if available
+            if (message.data.indicators && message.data.indicators.rsi) {
+              const newRsiData = new Map(state.rsiData);
+              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+              if (typeof rsiValue === 'number') {
+                newRsiData.set(message.data.symbol, {
+                  value: rsiValue,
+                  period: Object.keys(message.data.indicators.rsi)[0],
+                  timeframe: message.data.timeframe,
+                  updatedAt: new Date()
+                });
+                set({ rsiData: newRsiData });
               }
-              get().addLog(`New candle: ${message.data.symbol} - ${message.data.close}`, 'info');
             }
-            
-            symbolData.bars = bars;
-            symbolData.lastUpdate = new Date();
-            currentOhlcData.set(message.data.symbol, symbolData);
-            set({ ohlcData: currentOhlcData });
-            
-            // Trigger RSI and Currency Strength recalculation when new data arrives
-            setTimeout(() => {
-              get().recalculateAllRsi();
-              get().calculateCurrencyStrength();
-            }, 100);
           }
           break;
           
@@ -334,41 +314,25 @@ const useMarketStore = create(
       return tickData ? tickData.ticks : [];
     },
     
-    getOhlcForSymbol: (symbol) => {
-      const ohlcData = get().ohlcData.get(symbol);
-      if (!ohlcData) return [];
-
-      // Ensure bars match the active global timeframe to avoid stale data on timeframe switch
-      const tf = get().globalSettings?.timeframe;
-      const tfAliases = (t) => {
-        switch (t) {
-          case '1M': return ['1M', 'M1'];
-          case '5M': return ['5M', 'M5'];
-          case '15M': return ['15M', 'M15'];
-          case '30M': return ['30M', 'M30'];
-          case '1H': return ['1H', 'H1'];
-          case '4H': return ['4H', 'H4'];
-          case '1D': return ['1D', 'D1'];
-          case '1W': return ['1W', 'W1'];
-          default: return [t];
-        }
-      };
-      if (tf) {
-        const aliases = tfAliases(tf);
-        if (!aliases.includes(ohlcData.timeframe)) return [];
-      }
-      return ohlcData.bars || [];
-    },
-    
     getLatestTickForSymbol: (symbol) => {
       const ticks = get().getTicksForSymbol(symbol);
       return ticks.length > 0 ? ticks[0] : null;
     },
     
-    getLatestOhlcForSymbol: (symbol) => {
-      const bars = get().getOhlcForSymbol(symbol);
-      return bars.length > 0 ? bars[bars.length - 1] : null;
+    getIndicatorsForSymbol: (symbol) => {
+      const indicatorData = get().indicatorData.get(symbol);
+      return indicatorData ? indicatorData.indicators : null;
     },
+    
+    getLatestIndicatorsForSymbol: (symbol) => {
+      const indicatorData = get().indicatorData.get(symbol);
+      return indicatorData ? {
+        indicators: indicatorData.indicators,
+        barTime: indicatorData.barTime,
+        lastUpdate: indicatorData.lastUpdate
+      } : null;
+    },
+    
     
     isSymbolSubscribed: (symbol) => {
       return get().subscriptions.has(symbol);

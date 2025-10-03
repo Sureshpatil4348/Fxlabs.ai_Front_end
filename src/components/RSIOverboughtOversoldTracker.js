@@ -36,16 +36,15 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   );
 };
 
-const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLatestTickForSymbol, getLatestOhlcForSymbol, getDailyChangePercent, isRemoving }) => {
+const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLatestTickForSymbol, getDailyChangePercent, isRemoving }) => {
   // Convert watchlist symbol (base format) to RSI Tracker format (with 'm' suffix)
   const rsiSymbol = symbol + 'm';
   
   const latestTick = getLatestTickForSymbol(rsiSymbol);
-  const latestBar = getLatestOhlcForSymbol(rsiSymbol);
   const rsiValue = rsiData.get(rsiSymbol)?.value ?? null;
   
-  const price = latestTick?.bid || latestBar?.close || null;
-  const change = getDailyChangePercent ? getDailyChangePercent(rsiSymbol) : (latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : null);
+  const price = latestTick?.bid || null;
+  const change = getDailyChangePercent ? getDailyChangePercent(rsiSymbol) : (latestTick?.daily_change_pct || null);
   const priceText = price != null
     ? (symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5))
     : '--';
@@ -108,7 +107,6 @@ const RSIOverboughtOversoldTracker = () => {
     updateSettings,
     timeframes,
     getLatestTickForSymbol,
-    getLatestOhlcForSymbol,
     getDailyChangePercent
   } = useRSITrackerStore();
   // Read correlation settings to keep tracker in sync (timeframe, RSI period)
@@ -575,7 +573,6 @@ const RSIOverboughtOversoldTracker = () => {
                         settings={settings}
                         rsiData={rsiData}
                         getLatestTickForSymbol={getLatestTickForSymbol}
-                        getLatestOhlcForSymbol={getLatestOhlcForSymbol}
                         getDailyChangePercent={getDailyChangePercent}
                         isRemoving={isRemoving}
                       />

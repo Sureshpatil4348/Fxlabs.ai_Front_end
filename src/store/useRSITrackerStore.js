@@ -26,9 +26,7 @@ const useRSITrackerStore = create(
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
     tickData: new Map(),      // symbol -> latest ticks
-    ohlcData: new Map(),      // symbol -> OHLC bars (default timeframe; kept for backward compatibility)
-    ohlcByTimeframe: new Map(), // symbol -> Map(timeframe -> { symbol, timeframe, bars, lastUpdate })
-    initialOhlcReceived: new Set(), // symbols that received initial OHLC
+    indicatorData: new Map(), // symbol -> indicator snapshots
     
     // RSI Data
     rsiData: new Map(), // symbol -> RSI values
@@ -134,7 +132,7 @@ const useRSITrackerStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'ohlc_live', 'indicator_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -155,9 +153,7 @@ const useRSITrackerStore = create(
         isConnecting: false, 
         subscriptions: new Map(),
         tickData: new Map(),
-        ohlcData: new Map(),
-        ohlcByTimeframe: new Map(),
-        initialOhlcReceived: new Set()
+        indicatorData: new Map()
       });
     },
     
@@ -200,133 +196,59 @@ const useRSITrackerStore = create(
           {
             const newSubscriptions = new Map(state.subscriptions);
             const newTickData = new Map(state.tickData);
-            const newOhlcData = new Map(state.ohlcData);
-            const newOhlcByTimeframe = new Map(state.ohlcByTimeframe);
-            const newInitialReceived = new Set(state.initialOhlcReceived);
+            const newIndicatorData = new Map(state.indicatorData);
 
             const tf = message?.timeframe;
             if (tf) {
-              // Remove only the unsubscribed timeframe buffers
-              const perSymbol = new Map(newOhlcByTimeframe.get(message.symbol) || new Map());
-              const tfAliases = (t) => {
-                switch ((t || '').toUpperCase()) {
-                  case '1M': case 'M1': return ['1M','M1'];
-                  case '5M': case 'M5': return ['5M','M5'];
-                  case '15M': case 'M15': return ['15M','M15'];
-                  case '30M': case 'M30': return ['30M','M30'];
-                  case '1H': case 'H1': return ['1H','H1'];
-                  case '4H': case 'H4': return ['4H','H4'];
-                  case '1D': case 'D1': return ['1D','D1'];
-                  case '1W': case 'W1': return ['1W','W1'];
-                  default: return [t];
-                }
-              };
-              for (const key of tfAliases(tf)) perSymbol.delete(key);
-              if (perSymbol.size > 0) {
-                newOhlcByTimeframe.set(message.symbol, perSymbol);
-              } else {
-                newOhlcByTimeframe.delete(message.symbol);
-                newOhlcData.delete(message.symbol);
-                newTickData.delete(message.symbol);
-                newInitialReceived.delete(message.symbol);
-                newSubscriptions.delete(message.symbol);
-              }
-            } else {
-              // Remove all timeframes for the symbol (legacy behavior)
-              newOhlcByTimeframe.delete(message.symbol);
-              newOhlcData.delete(message.symbol);
+              // Remove only the unsubscribed timeframe data
+              newIndicatorData.delete(message.symbol);
               newTickData.delete(message.symbol);
-              newInitialReceived.delete(message.symbol);
+              newSubscriptions.delete(message.symbol);
+            } else {
+              // Remove all data for the symbol (legacy behavior)
+              newIndicatorData.delete(message.symbol);
+              newTickData.delete(message.symbol);
               newSubscriptions.delete(message.symbol);
             }
 
             set({ 
               subscriptions: newSubscriptions,
               tickData: newTickData,
-              ohlcData: newOhlcData,
-              ohlcByTimeframe: newOhlcByTimeframe,
-              initialOhlcReceived: newInitialReceived
+              indicatorData: newIndicatorData
             });
             get().addLog(`Unsubscribed from ${message.symbol}${message?.timeframe ? ' ('+message.timeframe+')' : ''}`, 'warning');
             break;
           }
           
-        case 'initial_ohlc':
-          const ohlcData = new Map(state.ohlcData);
-          ohlcData.set(message.symbol, {
-            symbol: message.symbol,
-            timeframe: message.timeframe,
-            bars: message.data,
-            lastUpdate: new Date()
-          });
-
-          // Update multi-timeframe structure
-          const ohlcByTimeframe = new Map(state.ohlcByTimeframe);
-          const perSymbol = new Map(ohlcByTimeframe.get(message.symbol) || new Map());
-          const tfEntry = {
-            symbol: message.symbol,
-            timeframe: message.timeframe,
-            bars: message.data,
-            lastUpdate: new Date()
-          };
-          // Store under server timeframe key
-          perSymbol.set(message.timeframe, tfEntry);
-          // Also store under UI-alias key (e.g., H4 -> 4H) for direct access
-          const toUiAlias = (t) => {
-            const u = (t || '').toUpperCase();
-            switch (u) {
-              case 'M1': return '1M';
-              case 'M5': return '5M';
-              case 'M15': return '15M';
-              case 'M30': return '30M';
-              case 'H1': return '1H';
-              case 'H4': return '4H';
-              case 'D1': return '1D';
-              case 'W1': return '1W';
-              default: return u;
-            }
-          };
-          perSymbol.set(toUiAlias(message.timeframe), tfEntry);
-          ohlcByTimeframe.set(message.symbol, perSymbol);
-
-          const initialReceived = new Set(state.initialOhlcReceived);
-          initialReceived.add(message.symbol);
-          
-          set({ 
-            ohlcData,
-            ohlcByTimeframe,
-            initialOhlcReceived: initialReceived
-          });
-          get().addLog(`Received ${message.data.length} initial OHLC bars for ${message.symbol}`, 'info');
-          
-          // Trigger calculations ONLY for the active timeframe to avoid mixing buffers
-          setTimeout(() => {
-            const activeTf = get().settings?.timeframe;
-            const perSymbolMap = get().ohlcByTimeframe.get(message.symbol);
-            if (!activeTf || !perSymbolMap) return;
-            const tfAliases = (t) => {
-              switch (t) {
-                case '1M': return ['1M', 'M1'];
-                case '5M': return ['5M', 'M5'];
-                case '15M': return ['15M', 'M15'];
-                case '30M': return ['30M', 'M30'];
-                case '1H': return ['1H', 'H1'];
-                case '4H': return ['4H', 'H4'];
-                case '1D': return ['1D', 'D1'];
-                case '1W': return ['1W', 'W1'];
-                default: return [t];
-              }
-            };
-            let tfData = null;
-            for (const key of tfAliases(activeTf)) {
-              const candidate = perSymbolMap.get(key);
-              if (candidate && Array.isArray(candidate.bars) && candidate.bars.length >= 15) {
-                tfData = candidate;
-                break;
+        case 'initial_indicators':
+          // Handle initial indicator snapshots
+          const initialIndicatorData = new Map(state.indicatorData || new Map());
+          if (message.data && message.data.symbol) {
+            initialIndicatorData.set(message.data.symbol, {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              indicators: message.data.indicators,
+              barTime: message.data.bar_time,
+              lastUpdate: new Date()
+            });
+            set({ indicatorData: initialIndicatorData });
+            get().addLog(`Received initial indicators for ${message.data.symbol}`, 'info');
+            
+            // Update RSI data if available
+            if (message.data.indicators && message.data.indicators.rsi) {
+              const newRsiData = new Map(state.rsiData);
+              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+              if (typeof rsiValue === 'number') {
+                newRsiData.set(message.data.symbol, {
+                  value: rsiValue,
+                  period: Object.keys(message.data.indicators.rsi)[0],
+                  timeframe: message.data.timeframe,
+                  updatedAt: new Date()
+                });
+                set({ rsiData: newRsiData });
               }
             }
-            if (tfData) get().recalculateAllRsi();
-          }, 200);
+          }
           break;
           
         case 'ticks':
@@ -340,237 +262,42 @@ const useRSITrackerStore = create(
           set({ tickData });
           break;
 
-        case 'ohlc_live':
-          // Treat similar to ohlc_update, but without assuming closure
-          {
-            const currentByTfLive = new Map(state.ohlcByTimeframe);
-            const perSymbolTfLive = new Map(currentByTfLive.get(message.data.symbol) || new Map());
-            const existingTfDataLive = perSymbolTfLive.get(message.data.timeframe) || perSymbolTfLive.get(((t)=>{
-              const u=(t||'').toUpperCase();
-              return ({M1:'1M',M5:'5M',M15:'15M',M30:'30M',H1:'1H',H4:'4H',D1:'1D',W1:'1W'})[u]||u;
-            })(message.data.timeframe));
-            const tfBarsLive = existingTfDataLive ? [...existingTfDataLive.bars] : [];
-            const toTimeLive = (t) => { const n = Number(t); return Number.isFinite(n) ? n : Date.parse(t); };
-            const tfLastLive = tfBarsLive[tfBarsLive.length - 1];
-            if (tfLastLive && toTimeLive(tfLastLive.time) === toTimeLive(message.data.time)) {
-              tfBarsLive[tfBarsLive.length - 1] = message.data;
-            } else {
-              tfBarsLive.push(message.data);
-              if (tfBarsLive.length > 100) tfBarsLive.shift();
-            }
-            const tfEntryLive = { symbol: message.data.symbol, timeframe: message.data.timeframe, bars: tfBarsLive, lastUpdate: new Date() };
-            const toUiAliasLive = (t) => { const u=(t||'').toUpperCase(); return ({M1:'1M',M5:'5M',M15:'15M',M30:'30M',H1:'1H',H4:'4H',D1:'1D',W1:'1W'})[u]||u; };
-            perSymbolTfLive.set(message.data.timeframe, tfEntryLive);
-            perSymbolTfLive.set(toUiAliasLive(message.data.timeframe), tfEntryLive);
-            currentByTfLive.set(message.data.symbol, perSymbolTfLive);
-            set({ ohlcByTimeframe: currentByTfLive });
-          }
-          break;
-
         case 'indicator_update':
-          // Structure expected: { type: 'indicator_update', data: { symbol, timeframe, indicators: { rsi: { period, value }, ... } } }
-          try {
-            const { data } = message;
-            if (data && data.symbol) {
+          // Handle live indicator updates
+          const currentIndicatorData = new Map(state.indicatorData || new Map());
+          if (message.data && message.data.symbol) {
+            currentIndicatorData.set(message.data.symbol, {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              indicators: message.data.indicators,
+              barTime: message.data.bar_time,
+              lastUpdate: new Date()
+            });
+            set({ indicatorData: currentIndicatorData });
+            
+            // Update RSI data if available
+            if (message.data.indicators && message.data.indicators.rsi) {
               const newRsiData = new Map(state.rsiData);
-              const rsiPayload = data.indicators?.rsi;
-              if (rsiPayload && typeof rsiPayload.value === 'number') {
-                newRsiData.set(data.symbol, { value: rsiPayload.value, period: rsiPayload.period || get().settings.rsiPeriod, timeframe: data.timeframe, updatedAt: new Date() });
+              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+              if (typeof rsiValue === 'number') {
+                newRsiData.set(message.data.symbol, {
+                  value: rsiValue,
+                  period: Object.keys(message.data.indicators.rsi)[0],
+                  timeframe: message.data.timeframe,
+                  updatedAt: new Date()
+                });
                 set({ rsiData: newRsiData });
-                // Maintain minimal RSI history per symbol for event tracking (optional)
+                
+                // Maintain minimal RSI history per symbol for event tracking
                 const historyMap = new Map(get().rsiHistory);
-                const hist = [...(historyMap.get(data.symbol) || [])];
-                hist.push({ time: Date.now(), value: rsiPayload.value });
+                const hist = [...(historyMap.get(message.data.symbol) || [])];
+                hist.push({ time: Date.now(), value: rsiValue });
                 if (hist.length > 200) hist.shift();
-                historyMap.set(data.symbol, hist);
+                historyMap.set(message.data.symbol, hist);
                 set({ rsiHistory: historyMap });
               }
             }
-          } catch (_e) {
-            // ignore
           }
-          break;
-          
-        case 'ohlc_update':
-          const currentOhlcData = new Map(state.ohlcData);
-          const toTime = (t) => {
-            const n = Number(t);
-            return Number.isFinite(n) ? n : Date.parse(t);
-          };
-          const topLevelSymbolData = currentOhlcData.get(message.data.symbol);
-          if (topLevelSymbolData) {
-            // Update the most recent bar or add new one (top-level default timeframe)
-            const bars = [...topLevelSymbolData.bars];
-            const lastBar = bars[bars.length - 1];
-            
-            if (lastBar && toTime(lastBar.time) === toTime(message.data.time)) {
-              bars[bars.length - 1] = message.data;
-            } else {
-              bars.push(message.data);
-              if (bars.length > 100) {
-                bars.shift();
-              }
-              get().addLog(`New candle: ${message.data.symbol} - ${message.data.close}`, 'info');
-            }
-            
-            topLevelSymbolData.bars = bars;
-            topLevelSymbolData.lastUpdate = new Date();
-            currentOhlcData.set(message.data.symbol, topLevelSymbolData);
-          }
-
-          // Update multi-timeframe map
-          const currentByTf = new Map(state.ohlcByTimeframe);
-          const perSymbolTf = new Map(currentByTf.get(message.data.symbol) || new Map());
-          const existingTfData = perSymbolTf.get(message.data.timeframe) || perSymbolTf.get(((t)=>{
-            const u=(t||'').toUpperCase();
-            return ({M1:'1M',M5:'5M',M15:'15M',M30:'30M',H1:'1H',H4:'4H',D1:'1D',W1:'1W'})[u]||u;
-          })(message.data.timeframe));
-          const tfBars = existingTfData ? [...existingTfData.bars] : [];
-          const tfLast = tfBars[tfBars.length - 1];
-          const wasUpdateEvent = tfLast && toTime(tfLast.time) === toTime(message.data.time);
-
-          // Backend now guarantees closed-minute emission for every minute.
-          // No client-side backfilling required.
-          if (wasUpdateEvent) {
-            tfBars[tfBars.length - 1] = message.data;
-          } else {
-            tfBars.push(message.data);
-            if (tfBars.length > 100) {
-              tfBars.shift();
-            }
-          }
-          const tfEntry2 = {
-            symbol: message.data.symbol,
-            timeframe: message.data.timeframe,
-            bars: tfBars,
-            lastUpdate: new Date()
-          };
-          // Store under server key and UI alias for direct keyed access
-          const toUiAlias2 = (t) => {
-            const u = (t || '').toUpperCase();
-            switch (u) {
-              case 'M1': return '1M';
-              case 'M5': return '5M';
-              case 'M15': return '15M';
-              case 'M30': return '30M';
-              case 'H1': return '1H';
-              case 'H4': return '4H';
-              case 'D1': return '1D';
-              case 'W1': return '1W';
-              default: return u;
-            }
-          };
-          perSymbolTf.set(message.data.timeframe, tfEntry2);
-          perSymbolTf.set(toUiAlias2(message.data.timeframe), tfEntry2);
-          currentByTf.set(message.data.symbol, perSymbolTf);
-
-          // OHLC debug logging: OPEN/UPDATE events and previous CLOSE with RSI(14)
-          try {
-            const isSymbol = message?.data?.symbol === OHLC_DEBUG_SYMBOL;
-            const isTf = (() => {
-              const tf = (message?.data?.timeframe || '').toUpperCase();
-              if (OHLC_DEBUG_TF === '1M') return tf === '1M' || tf === 'M1';
-              if (OHLC_DEBUG_TF === '5M') return tf === '5M' || tf === 'M5';
-              if (OHLC_DEBUG_TF === '15M') return tf === '15M' || tf === 'M15';
-              if (OHLC_DEBUG_TF === '30M') return tf === '30M' || tf === 'M30';
-              if (OHLC_DEBUG_TF === '1H') return tf === '1H' || tf === 'H1';
-              if (OHLC_DEBUG_TF === '4H') return tf === '4H' || tf === 'H4';
-              if (OHLC_DEBUG_TF === '1D') return tf === '1D' || tf === 'D1';
-              if (OHLC_DEBUG_TF === '1W') return tf === '1W' || tf === 'W1';
-              return tf === OHLC_DEBUG_TF;
-            })();
-            if (ENABLE_OHLC_DEBUG_LOGS && isSymbol && isTf) {
-              const toMs = (t) => {
-                const n = Number(t);
-                return Number.isFinite(n) ? n : Date.parse(t);
-              };
-
-              const isUpdate = wasUpdateEvent;
-
-              const tsMs = toMs(message.data.time);
-              const dt = new Date(tsMs);
-              const iso = dt.toISOString();
-              const dateStr = iso.slice(0, 10);
-              const timeStr = iso.slice(11, 19);
-
-              const o = Number(message.data.open);
-              const h = Number(message.data.high);
-              const l = Number(message.data.low);
-              const c = Number(message.data.close);
-
-              // Note: RSI calculations removed - should come from server
-              // Debug logging now shows only OHLC data
-
-              // Log CLOSE only when previous bar is explicitly closed and not yet logged
-              if (tfBars.length > 1) {
-                const prev = tfBars[tfBars.length - 2];
-                if (prev && prev.is_closed === true) {
-                  const prevKey = `${message.data.symbol}|${message.data.timeframe}|${toMs(prev.time)}`;
-                  const logged = get()._loggedClosedBars;
-                  if (!logged.has(prevKey)) {
-                    const prevTs = toMs(prev?.time);
-                    const prevDt = new Date(prevTs);
-                    const prevIso = prevDt.toISOString();
-                    const prevDate = prevIso.slice(0, 10);
-                    const prevTime = prevIso.slice(11, 19);
-
-                    // eslint-disable-next-line no-console
-                    console.log(
-                      `[BTCUSDm][1M][CLOSE] ${prevDate} ${prevTime} | O:${prev?.open} H:${prev?.high} L:${prev?.low} C:${prev?.close}`,
-                      prev
-                    );
-                    logged.add(prevKey);
-                  }
-                }
-              }
-
-              const evt = isUpdate ? 'UPDATE' : 'OPEN';
-              // eslint-disable-next-line no-console
-              console.log(
-                `[BTCUSDm][1M][${evt}] ${dateStr} ${timeStr} | O:${o} H:${h} L:${l} C:${c}`,
-                message.data
-              );
-            }
-          } catch (_e) {
-            // Swallow logging errors to avoid impacting data flow
-          }
-
-          set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
-          
-          // Recalculate RSI on every update; hard-gate to active timeframe buffer only
-          setTimeout(() => {
-            try {
-              const activeTf = get().settings?.timeframe;
-              if (!activeTf) return;
-              const perSymbolTf2 = get().ohlcByTimeframe.get(message.data.symbol);
-              if (!perSymbolTf2) return;
-              const tfAliases = (t) => {
-                switch (t) {
-                  case '1M': return ['1M', 'M1'];
-                  case '5M': return ['5M', 'M5'];
-                  case '15M': return ['15M', 'M15'];
-                  case '30M': return ['30M', 'M30'];
-                  case '1H': return ['1H', 'H1'];
-                  case '4H': return ['4H', 'H4'];
-                  case '1D': return ['1D', 'D1'];
-                  case '1W': return ['1W', 'W1'];
-                  default: return [t];
-                }
-              };
-              let tfData2 = null;
-              for (const key of tfAliases(activeTf)) {
-                const candidate = perSymbolTf2.get(key);
-                if (candidate) { tfData2 = candidate; break; }
-              }
-              const closedBars = tfData2 && Array.isArray(tfData2.bars)
-                ? tfData2.bars.filter(b => b && b.is_closed === true)
-                : [];
-              const period = get().settings?.rsiPeriod || 14;
-              if (closedBars.length >= period + 1) {
-                get().recalculateAllRsi();
-              }
-            } catch (_e) { /* ignore */ }
-          }, 100);
           break;
           
         case 'pong':
@@ -611,7 +338,7 @@ const useRSITrackerStore = create(
           updatedSubscriptions.set(symbol, updatedSubscription);
           
           // Subscribe to new timeframe
-          subscribe(symbol, updatedSettings.timeframe, subscription.dataTypes || ['ticks', 'ohlc']);
+          subscribe(symbol, updatedSettings.timeframe, subscription.dataTypes || ['ticks', 'indicators']);
         });
         
         // Update subscriptions map
@@ -771,72 +498,18 @@ const useRSITrackerStore = create(
     },
 
     // Data Getters
-    getOhlcForSymbol: (symbol) => {
-      // Prefer the active timeframe's bars when available
-      const tf = get().settings?.timeframe;
-      const byTf = get().ohlcByTimeframe.get(symbol);
-
-      // Normalize timeframe aliases between UI ('5M','4H','1D','1W') and server ('M5','H4','D1','W1')
-      const tfAliases = (t) => {
-        switch (t) {
-          case '1M': return ['1M', 'M1'];
-          case '5M': return ['5M', 'M5'];
-          case '15M': return ['15M', 'M15'];
-          case '30M': return ['30M', 'M30'];
-          case '1H': return ['1H', 'H1'];
-          case '4H': return ['4H', 'H4'];
-          case '1D': return ['1D', 'D1'];
-          case '1W': return ['1W', 'W1'];
-          default: return [t];
-        }
-      };
-
-      if (tf && byTf) {
-        const keys = tfAliases(tf);
-        for (const key of keys) {
-          const tfData = byTf.get(key);
-          if (tfData && Array.isArray(tfData.bars) && tfData.bars.length > 0) {
-            return tfData.bars;
-          }
-        }
-      }
-
-      // Fallback: only if legacy top-level timeframe matches active timeframe
-      const ohlcData = get().ohlcData.get(symbol);
-      if (ohlcData && tf) {
-        const aliases = tfAliases(tf);
-        if (aliases.includes(ohlcData.timeframe)) {
-          return ohlcData.bars || [];
-        }
-        // Timeframe mismatch: avoid using stale bars from another timeframe
-        return [];
-      }
-      return ohlcData ? (ohlcData.bars || []) : [];
+    getIndicatorsForSymbol: (symbol) => {
+      const indicatorData = get().indicatorData.get(symbol);
+      return indicatorData ? indicatorData.indicators : null;
     },
-
-    getOhlcForSymbolAndTimeframe: (symbol, timeframe) => {
-      const byTf = get().ohlcByTimeframe.get(symbol);
-      if (!byTf) return [];
-      const tfAliases = (t) => {
-        switch (t) {
-          case '1M': return ['1M', 'M1'];
-          case '5M': return ['5M', 'M5'];
-          case '15M': return ['15M', 'M15'];
-          case '30M': return ['30M', 'M30'];
-          case '1H': return ['1H', 'H1'];
-          case '4H': return ['4H', 'H4'];
-          case '1D': return ['1D', 'D1'];
-          case '1W': return ['1W', 'W1'];
-          default: return [t];
-        }
-      };
-      for (const key of tfAliases(timeframe)) {
-        const tfData = byTf.get(key);
-        if (tfData && Array.isArray(tfData.bars) && tfData.bars.length > 0) {
-          return tfData.bars;
-        }
-      }
-      return [];
+    
+    getLatestIndicatorsForSymbol: (symbol) => {
+      const indicatorData = get().indicatorData.get(symbol);
+      return indicatorData ? {
+        indicators: indicatorData.indicators,
+        barTime: indicatorData.barTime,
+        lastUpdate: indicatorData.lastUpdate
+      } : null;
     },
 
     getTicksForSymbol: (symbol) => {
@@ -849,67 +522,14 @@ const useRSITrackerStore = create(
       return ticks.length > 0 ? ticks[0] : null;
     },
 
-    getLatestOhlcForSymbol: (symbol) => {
-      const bars = get().getOhlcForSymbol(symbol);
-      return bars.length > 0 ? bars[bars.length - 1] : null;
-    },
-
-    // Daily Change helpers
-    // Try to obtain today's open from daily timeframe (preferred),
-    // then fall back to the first bar of the current day from the active timeframe,
-    // and finally to the latest bar open as a last resort.
-    getDailyOpenForSymbol: (symbol) => {
-      // Preferred: explicit daily timeframe data ('1D' or 'D1')
-      const dailyBars1D = get().getOhlcForSymbolAndTimeframe(symbol, '1D');
-      const dailyBarsD1 = dailyBars1D && dailyBars1D.length > 0
-        ? dailyBars1D
-        : get().getOhlcForSymbolAndTimeframe(symbol, 'D1');
-      const dailyBars = dailyBarsD1;
-      if (dailyBars && dailyBars.length > 0) {
-        const latestDaily = dailyBars[dailyBars.length - 1];
-        if (latestDaily && typeof latestDaily.open === 'number') return latestDaily.open;
-      }
-
-      // Fallback: derive from current timeframe bars by finding first bar of "today".
-      const bars = get().getOhlcForSymbol(symbol);
-      if (!bars || bars.length === 0) return null;
-
-      const latest = bars[bars.length - 1];
-      const latestTime = latest?.time || latest?.timestamp;
-      if (latestTime) {
-        try {
-          const d = new Date(latestTime);
-          const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-          // Find the first bar whose time is on/after start of day
-          for (let i = 0; i < bars.length; i++) {
-            const bt = bars[i]?.time || bars[i]?.timestamp;
-            if (bt && new Date(bt).getTime() >= startOfDay) {
-              if (typeof bars[i].open === 'number') return bars[i].open;
-            }
-          }
-        } catch (_e) {
-          // ignore and fall through
-        }
-      }
-
-      // Last resort: use latest bar open (intrabar), which approximates change
-      return typeof latest?.open === 'number' ? latest.open : null;
-    },
-
     getDailyChangePercent: (symbol) => {
       const latestTick = get().getLatestTickForSymbol(symbol);
-      // Prefer server-provided daily_change_pct when available
+      // Use server-provided daily_change_pct when available
       if (latestTick && typeof latestTick.daily_change_pct === 'number') {
         return latestTick.daily_change_pct;
       }
-      const latestBar = get().getLatestOhlcForSymbol(symbol);
-      const currentPrice = latestTick?.bid || latestBar?.close;
-      if (typeof currentPrice !== 'number') return 0;
-
-      const dayOpen = get().getDailyOpenForSymbol(symbol);
-      if (typeof dayOpen !== 'number' || dayOpen === 0) return 0;
-
-      return ((currentPrice - dayOpen) / dayOpen) * 100;
+      // Fallback to 0 if no tick data available
+      return 0;
     },
 
     // RSI Analysis Functions
@@ -920,17 +540,16 @@ const useRSITrackerStore = create(
       state.rsiData.forEach((rsiInfo, symbol) => {
         if (rsiInfo.value <= state.settings.rsiOversold) {
           const latestTick = get().getLatestTickForSymbol(symbol);
-          const latestBar = get().getLatestOhlcForSymbol(symbol);
           const rfiData = state.rfiData.get(symbol);
           
           oversold.push({
             symbol,
             rsi: rsiInfo.value,
             rfiData,
-            price: latestTick?.bid || latestBar?.close || 0,
-            // Daily % based on start-of-day open when available
+            price: latestTick?.bid || 0,
+            // Daily % based on server-provided daily_change_pct
             change: get().getDailyChangePercent(symbol),
-            volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0 // Simulated volume
+            volume: 0 // Volume not available from tick data
           });
         }
       });
@@ -945,17 +564,16 @@ const useRSITrackerStore = create(
       state.rsiData.forEach((rsiInfo, symbol) => {
         if (rsiInfo.value >= state.settings.rsiOverbought) {
           const latestTick = get().getLatestTickForSymbol(symbol);
-          const latestBar = get().getLatestOhlcForSymbol(symbol);
           const rfiData = state.rfiData.get(symbol);
           
           overbought.push({
             symbol,
             rsi: rsiInfo.value,
             rfiData,
-            price: latestTick?.bid || latestBar?.close || 0,
-            // Daily % based on start-of-day open when available
+            price: latestTick?.bid || 0,
+            // Daily % based on server-provided daily_change_pct
             change: get().getDailyChangePercent(symbol),
-            volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0 // Simulated volume
+            volume: 0 // Volume not available from tick data
           });
         }
       });
@@ -970,17 +588,16 @@ const useRSITrackerStore = create(
       
       state.rsiData.forEach((rsiInfo, symbol) => {
         const latestTick = get().getLatestTickForSymbol(symbol);
-        const latestBar = get().getLatestOhlcForSymbol(symbol);
         const rfiData = state.rfiData.get(symbol);
         
         allPairs.push({
           symbol,
           rsi: rsiInfo.value,
           rfiData,
-          price: latestTick?.bid || latestBar?.close || 0,
-          // Daily % based on start-of-day open when available
+          price: latestTick?.bid || 0,
+          // Daily % based on server-provided daily_change_pct
           change: get().getDailyChangePercent(symbol),
-          volume: latestBar ? Math.abs(latestBar.close - latestBar.open) * 1000000 : 0
+          volume: 0 // Volume not available from tick data
         });
       });
       
@@ -996,7 +613,7 @@ const useRSITrackerStore = create(
       
       state.settings.autoSubscribeSymbols.forEach(symbol => {
         if (!state.subscriptions.has(symbol)) {
-          subscribe(symbol, state.settings.timeframe, ['ticks', 'ohlc']);
+          subscribe(symbol, state.settings.timeframe, ['ticks', 'indicators']);
         }
       });
       
@@ -1039,7 +656,7 @@ const useRSITrackerStore = create(
       
       if (state.isConnected && !state.subscriptions.has(normalized)) {
         // Subscribe immediately if connected
-        get().subscribe(normalized, state.settings.timeframe, ['ticks', 'ohlc']);
+        get().subscribe(normalized, state.settings.timeframe, ['ticks', 'indicators']);
       } else if (!state.isConnected) {
         // Add to pending subscriptions if not connected
         const pending = new Set(state.pendingWatchlistSubscriptions);

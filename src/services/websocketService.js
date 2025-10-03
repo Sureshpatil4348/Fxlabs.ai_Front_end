@@ -7,7 +7,7 @@
 
 import websocketMessageRouter from './websocketMessageRouter';
 
-// WebSocket URL configuration - v2 probe (logs only)
+// WebSocket URL configuration - v2 with indicator support
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
 class WebSocketService {
@@ -58,7 +58,7 @@ class WebSocketService {
           this.isConnecting = false;
           this.reconnectAttempts = 0;
           
-          console.warn(`[WS][Shared-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
+          console.warn(`[WS][Market-v2] Connected at ${new Date().toISOString()} -> ${WEBSOCKET_URL}`);
           
           // Notify all stores via router
           websocketMessageRouter.notifyConnection();
@@ -74,23 +74,23 @@ class WebSocketService {
                 const message = JSON.parse(text);
                 websocketMessageRouter.routeMessage(message, text);
               } catch (error) {
-                console.error('[WS][Shared-v2] Failed to parse blob message:', error);
+                console.error('[WS][Market-v2] Failed to parse blob message:', error);
               }
             }).catch((e) => {
-              console.error('[WS][Shared-v2] Failed to read blob data:', e);
+              console.error('[WS][Market-v2] Failed to read blob data:', e);
             });
           } else {
             try {
               const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
               websocketMessageRouter.routeMessage(message, event?.data);
             } catch (error) {
-              console.error('[WS][Shared-v2] Failed to parse message:', error);
+              console.error('[WS][Market-v2] Failed to parse message:', error);
             }
           }
         };
 
         this.ws.onclose = (event) => {
-          console.error(`[WS][Shared-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
+          console.error(`[WS][Market-v2] Disconnected at ${new Date().toISOString()} (code: ${event?.code}, reason: ${event?.reason || '-'})`);
           
           this.isConnected = false;
           this.isConnecting = false;
@@ -106,7 +106,7 @@ class WebSocketService {
         };
 
         this.ws.onerror = (error) => {
-          console.error('[WS][Shared-v2] error:', error);
+          console.error('[WS][Market-v2] error:', error);
           
           this.connectionError = 'Failed to connect to Market v2';
           this.isConnecting = false;
@@ -132,11 +132,11 @@ class WebSocketService {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
     
-    console.warn(`[WS][Shared-v2] Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
+    console.warn(`[WS][Market-v2] Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
     
     setTimeout(() => {
       this.connect().catch(error => {
-        console.error('[WS][Shared-v2] Reconnection failed:', error);
+        console.error('[WS][Market-v2] Reconnection failed:', error);
       });
     }, delay);
   }
@@ -165,7 +165,7 @@ class WebSocketService {
       const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
       this.ws.send(messageStr);
     } else {
-      console.warn('[WS][Shared-v2] Cannot send message: not connected');
+      console.warn('[WS][Market-v2] Cannot send message: not connected');
     }
   }
 

@@ -43,31 +43,62 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Market v2 WebSocket Integration (Latest)
 
-- **WebSocket Optimization**: Consolidated 4 separate WebSocket connections into a single shared connection
-- **Performance Improvement**: Reduced connection overhead and improved resource efficiency
-- **Architecture**: All stores now use `src/services/websocketService.js` for centralized connection management
-- Default endpoint: `wss://api.fxlabs.ai/market-v2` (override via `REACT_APP_WEBSOCKET_URL`).
-- Message router now actively routes and updates stores instead of logging only.
-- Handled message types (frontend):
-  - `connected`
-  - `ticks` (includes `daily_change_pct` per tick; preferred for Daily %)
-  - `ohlc_live` (forming candle stream)
-  - `initial_ohlc` (bootstrap bars)
-  - `ohlc_update` (update/append bars; closed-minute emissions)
-  - `indicator_update` (server-calculated indicators; e.g., RSI)
-  - `subscribed` / `unsubscribed` / `pong` / `error`
-- Affected files:
-  - `src/services/websocketService.js` (routes messages to stores)
-  - `src/services/websocketMessageRouter.js` (store/type routing)
-  - `src/store/useRSITrackerStore.js` (ticks/ohlc_live/ohlc_update/indicator_update handling; daily % uses tick.daily_change_pct when present)
-  - `src/components/RSIOverboughtOversoldTracker.js` (self-initiates connection on mount)
-- **Optimized files** (now using shared WebSocket service):
-  - `src/services/websocketService.js` (NEW - shared connection manager)
-  - `src/store/useMarketStore.js`
-  - `src/store/useRSITrackerStore.js`
-  - `src/store/useRSICorrelationStore.js`
-  - `src/store/useCurrencyStrengthStore.js`
-- Env example updated to `.../market-v2` (`env.example`).
+**IMPORTANT ARCHITECTURAL CHANGE**: The server has removed OHLC streaming and now provides polling-based market data with indicator streaming.
+
+### What Changed
+- **OHLC streaming removed**: Server no longer streams OHLC bars in real-time
+- **Polling-based market data**: Server fetches ticks and OHLC bars using MetaTrader5 Python package on a 10-second cadence
+- **Indicator streaming**: Server pushes `indicator_update` messages when new closed-bar indicators are computed
+- **Indicator cache**: Server maintains an in-memory cache to provide instant snapshots of indicators on WebSocket connect
+- **Broadcast-all mode**: WebSocket v2 broadcasts ticks and indicator updates for a baseline set of symbols/timeframes to all connected clients
+
+### WebSocket v2 Architecture
+- **Endpoint**: `wss://api.fxlabs.ai/market-v2` (override via `REACT_APP_WEBSOCKET_URL`)
+- **Connection management**: Single shared WebSocket connection across all stores
+- **Message routing**: Centralized message router (`src/services/websocketMessageRouter.js`) directs messages to appropriate stores
+- **Data types**: `['ticks', 'indicators']` (OHLC no longer available)
+
+### Message Types (Frontend)
+- `connected` - Connection established with server info
+- `ticks` - Real-time tick data (includes `daily_change_pct` per tick)
+- `initial_indicators` - Bootstrap indicator snapshots on connect
+- `indicator_update` - Live indicator updates when new closed-bar indicators are computed
+- `subscribed` / `unsubscribed` / `pong` / `error` - Standard WebSocket messages
+
+### Server-Side Calculations
+All technical indicator calculations are now performed server-side:
+- **RSI** (Relative Strength Index)
+- **EMA** (Exponential Moving Average)
+- **MACD** (Moving Average Convergence Divergence)
+- **UTBOT** (Ultimate Trading Bot indicators)
+- **Ichimoku** (Ichimoku Cloud)
+- **RFI** (Risk Factor Index)
+
+### Affected Files
+- `src/services/websocketService.js` - Updated to use `/market-v2` endpoint
+- `src/services/websocketMessageRouter.js` - Routes `indicator_update` messages
+- `src/store/useMarketStore.js` - Handles `initial_indicators` and `indicator_update` messages
+- `src/store/useRSITrackerStore.js` - Updated to use indicator data instead of OHLC
+- `src/store/useRSICorrelationStore.js` - Updated to use indicator data instead of OHLC
+- `src/store/useCurrencyStrengthStore.js` - Updated to use tick data instead of OHLC
+- `src/components/OHLCDataView.js` - Renamed to `IndicatorDataView.js` and updated to display indicators
+- `src/components/TradingViewChart.js` - Updated to use tick data for line charts
+- `src/components/RSIOverboughtOversoldTracker.js` - Updated to use tick data for price display
+- `src/components/MultiIndicatorHeatmap.js` - Updated to use indicator data instead of OHLC
+
+### Data Flow
+1. **Client connects** to `/market-v2` WebSocket endpoint
+2. **Server sends** `connected` message with server info
+3. **Server sends** `initial_indicators` snapshots for all subscribed symbols
+4. **Server streams** `ticks` for real-time price updates
+5. **Server streams** `indicator_update` when new closed-bar indicators are computed
+6. **Frontend stores** receive and process indicator data for display
+
+### Migration Notes
+- **No OHLC data**: Components that previously used OHLC data now use tick data or indicator data
+- **No client-side calculations**: All technical indicators are provided by the server
+- **Real-time updates**: Indicators update when new closed bars are processed server-side
+- **Performance**: Reduced client-side processing and improved real-time responsiveness
 
 ### Console Warning Cleanup (Latest)
 - Removed all console warnings related to disabled WebSocket subscribe/unsubscribe functions in probe mode

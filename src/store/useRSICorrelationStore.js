@@ -46,9 +46,7 @@ const useRSICorrelationStore = create(
     // Market data
     subscriptions: new Map(), // symbol -> subscription info
     tickData: new Map(),      // symbol -> latest ticks
-    ohlcData: new Map(),      // symbol -> OHLC bars (default timeframe)
-    ohlcByTimeframe: new Map(), // symbol -> Map(timeframe -> { symbol, timeframe, bars, lastUpdate })
-    initialOhlcReceived: new Set(), // symbols that received initial OHLC
+    indicatorData: new Map(), // symbol -> indicator snapshots
     
     // RSI Data
     rsiData: new Map(), // symbol -> RSI values
@@ -107,9 +105,7 @@ const useRSICorrelationStore = create(
             isConnecting: false,
             subscriptions: new Map(),
             tickData: new Map(),
-            ohlcData: new Map(),
-            ohlcByTimeframe: new Map(),
-            initialOhlcReceived: new Set()
+            indicatorData: new Map()
           });
           get().addLog('Disconnected from Market v2 (RSI Correlation probe)', 'warning');
           
@@ -138,7 +134,7 @@ const useRSICorrelationStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -159,9 +155,7 @@ const useRSICorrelationStore = create(
         isConnecting: false, 
         subscriptions: new Map(),
         tickData: new Map(),
-        ohlcData: new Map(),
-        ohlcByTimeframe: new Map(),
-        initialOhlcReceived: new Set()
+        indicatorData: new Map()
       });
     },
     
@@ -206,59 +200,46 @@ const useRSICorrelationStore = create(
           newSubscriptions.delete(message.symbol);
           const newTickData = new Map(state.tickData);
           newTickData.delete(message.symbol);
-          const newOhlcData = new Map(state.ohlcData);
-          newOhlcData.delete(message.symbol);
-          const newInitialReceived = new Set(state.initialOhlcReceived);
-          newInitialReceived.delete(message.symbol);
+          const newIndicatorData = new Map(state.indicatorData);
+          newIndicatorData.delete(message.symbol);
           
           set({ 
             subscriptions: newSubscriptions,
             tickData: newTickData,
-            ohlcData: newOhlcData,
-            initialOhlcReceived: newInitialReceived
+            indicatorData: newIndicatorData
           });
           get().addLog(`Unsubscribed from ${message.symbol}`, 'warning');
           break;
           
-        case 'initial_ohlc':
-          const ohlcData = new Map(state.ohlcData);
-          const initialReceived = new Set(state.initialOhlcReceived);
-          const ohlcByTimeframe_init = new Map(state.ohlcByTimeframe || new Map());
-
-          // Top-level default timeframe buffer (kept for backward compatibility)
-          ohlcData.set(message.symbol, {
-            symbol: message.symbol,
-            timeframe: message.timeframe,
-            bars: message.data,
-            lastUpdate: new Date()
-          });
-
-          // Populate multi-timeframe buffer
-          const perSymbol_init = new Map(ohlcByTimeframe_init.get(message.symbol) || new Map());
-          perSymbol_init.set(message.timeframe, {
-            symbol: message.symbol,
-            timeframe: message.timeframe,
-            bars: message.data,
-            lastUpdate: new Date()
-          });
-          ohlcByTimeframe_init.set(message.symbol, perSymbol_init);
-
-          initialReceived.add(message.symbol);
-
-          set({ 
-            ohlcData,
-            ohlcByTimeframe: ohlcByTimeframe_init,
-            initialOhlcReceived: initialReceived
-          });
-          get().addLog(`Received ${message.data.length} initial OHLC bars for ${message.symbol}`, 'info');
-          
-          // Trigger calculations when initial data is received
-          setTimeout(() => {
-            get().recalculateAllRsi();
-            if (state.settings.calculationMode === 'real_correlation') {
-              get().calculateAllCorrelations();
+        case 'initial_indicators':
+          // Handle initial indicator snapshots
+          const initialIndicatorData = new Map(state.indicatorData || new Map());
+          if (message.data && message.data.symbol) {
+            initialIndicatorData.set(message.data.symbol, {
+              symbol: message.data.symbol,
+              timeframe: message.data.timeframe,
+              indicators: message.data.indicators,
+              barTime: message.data.bar_time,
+              lastUpdate: new Date()
+            });
+            set({ indicatorData: initialIndicatorData });
+            get().addLog(`Received initial indicators for ${message.data.symbol}`, 'info');
+            
+            // Update RSI data if available
+            if (message.data.indicators && message.data.indicators.rsi) {
+              const newRsiData = new Map(state.rsiData);
+              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+              if (typeof rsiValue === 'number') {
+                newRsiData.set(message.data.symbol, {
+                  value: rsiValue,
+                  period: Object.keys(message.data.indicators.rsi)[0],
+                  timeframe: message.data.timeframe,
+                  updatedAt: new Date()
+                });
+                set({ rsiData: newRsiData });
+              }
             }
-          }, 200);
+          }
           break;
           
         case 'ticks':
@@ -272,78 +253,34 @@ const useRSICorrelationStore = create(
           set({ tickData });
           break;
           
-        case 'ohlc_update':
-          const currentOhlcData = new Map(state.ohlcData);
-          const currentByTf = new Map(state.ohlcByTimeframe || new Map());
-
-          // Normalize timestamp helper to align numeric epoch and ISO strings
-          const toTime = (t) => {
-            const n = Number(t);
-            return Number.isFinite(n) ? n : Date.parse(t);
-          };
-
-          // Ensure top-level buffer exists and update
-          let symbolData = currentOhlcData.get(message.data.symbol);
-          if (!symbolData) {
-            symbolData = {
+        case 'indicator_update':
+          // Handle live indicator updates
+          const currentIndicatorData = new Map(state.indicatorData || new Map());
+          if (message.data && message.data.symbol) {
+            currentIndicatorData.set(message.data.symbol, {
               symbol: message.data.symbol,
               timeframe: message.data.timeframe,
-              bars: [],
-              lastUpdate: new Date()
-            };
-          }
-
-          // Update the most recent bar or add new one for top-level buffer
-          {
-            const bars = Array.isArray(symbolData.bars) ? [...symbolData.bars] : [];
-            const lastBar = bars[bars.length - 1];
-            if (lastBar && toTime(lastBar.time) === toTime(message.data.time)) {
-              bars[bars.length - 1] = message.data;
-            } else {
-              bars.push(message.data);
-              if (bars.length > 100) {
-                bars.shift();
-              }
-              get().addLog(`New candle: ${message.data.symbol} - ${message.data.close}`, 'info');
-            }
-            symbolData.bars = bars;
-            symbolData.timeframe = message.data.timeframe;
-            symbolData.lastUpdate = new Date();
-            currentOhlcData.set(message.data.symbol, symbolData);
-          }
-
-          // Update multi-timeframe buffer (robust even without initial_ohlc)
-          {
-            const perSymbolTf = new Map(currentByTf.get(message.data.symbol) || new Map());
-            const existingTfData = perSymbolTf.get(message.data.timeframe);
-            const tfBars = existingTfData && Array.isArray(existingTfData.bars) ? [...existingTfData.bars] : [];
-            const tfLast = tfBars[tfBars.length - 1];
-            if (tfLast && toTime(tfLast.time) === toTime(message.data.time)) {
-              tfBars[tfBars.length - 1] = message.data;
-            } else {
-              tfBars.push(message.data);
-              if (tfBars.length > 100) {
-                tfBars.shift();
-              }
-            }
-            perSymbolTf.set(message.data.timeframe, {
-              symbol: message.data.symbol,
-              timeframe: message.data.timeframe,
-              bars: tfBars,
+              indicators: message.data.indicators,
+              barTime: message.data.bar_time,
               lastUpdate: new Date()
             });
-            currentByTf.set(message.data.symbol, perSymbolTf);
-          }
-
-          set({ ohlcData: currentOhlcData, ohlcByTimeframe: currentByTf });
-
-          // Recalculate RSI on every update; calculation excludes forming bar based on timeframe
-          setTimeout(() => {
-            get().recalculateAllRsi();
-            if (state.settings.calculationMode === 'real_correlation') {
-              get().calculateAllCorrelations();
+            set({ indicatorData: currentIndicatorData });
+            
+            // Update RSI data if available
+            if (message.data.indicators && message.data.indicators.rsi) {
+              const newRsiData = new Map(state.rsiData);
+              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+              if (typeof rsiValue === 'number') {
+                newRsiData.set(message.data.symbol, {
+                  value: rsiValue,
+                  period: Object.keys(message.data.indicators.rsi)[0],
+                  timeframe: message.data.timeframe,
+                  updatedAt: new Date()
+                });
+                set({ rsiData: newRsiData });
+              }
             }
-          }, 100);
+          }
           break;
           
         case 'pong':
@@ -384,7 +321,7 @@ const useRSICorrelationStore = create(
           updatedSubscriptions.set(symbol, updatedSubscription);
           
           // Subscribe to new timeframe
-          subscribe(symbol, newSettings.timeframe, subscription.dataTypes || ['ticks', 'ohlc']);
+          subscribe(symbol, newSettings.timeframe, subscription.dataTypes || ['ticks', 'indicators']);
         });
         
         // Update subscriptions map
@@ -487,45 +424,18 @@ const useRSICorrelationStore = create(
     },
 
     // Data Getters
-    getOhlcForSymbol: (symbol) => {
-      // Prefer the active timeframe's bars when available (multi-timeframe buffer)
-      const tf = get().settings?.timeframe;
-      const byTf = get().ohlcByTimeframe?.get(symbol);
-
-      const tfAliases = (t) => {
-        switch (t) {
-          case '1M': return ['1M', 'M1'];
-          case '5M': return ['5M', 'M5'];
-          case '15M': return ['15M', 'M15'];
-          case '30M': return ['30M', 'M30'];
-          case '1H': return ['1H', 'H1'];
-          case '4H': return ['4H', 'H4'];
-          case '1D': return ['1D', 'D1'];
-          case '1W': return ['1W', 'W1'];
-          default: return [t];
-        }
-      };
-
-      if (tf && byTf) {
-        const keys = tfAliases(tf);
-        for (const key of keys) {
-          const tfData = byTf.get(key);
-          if (tfData && Array.isArray(tfData.bars) && tfData.bars.length > 0) {
-            return tfData.bars;
-          }
-        }
-      }
-
-      // Fallback: top-level buffer, but only if timeframe matches active timeframe
-      const ohlcData = get().ohlcData.get(symbol);
-      if (ohlcData && tf) {
-        const aliases = tfAliases(tf);
-        if (aliases.includes(ohlcData.timeframe)) {
-          return ohlcData.bars || [];
-        }
-        return [];
-      }
-      return ohlcData ? (ohlcData.bars || []) : [];
+    getIndicatorsForSymbol: (symbol) => {
+      const indicatorData = get().indicatorData.get(symbol);
+      return indicatorData ? indicatorData.indicators : null;
+    },
+    
+    getLatestIndicatorsForSymbol: (symbol) => {
+      const indicatorData = get().indicatorData.get(symbol);
+      return indicatorData ? {
+        indicators: indicatorData.indicators,
+        barTime: indicatorData.barTime,
+        lastUpdate: indicatorData.lastUpdate
+      } : null;
     },
 
     getTicksForSymbol: (symbol) => {
@@ -546,10 +456,10 @@ const useRSICorrelationStore = create(
         const sym2 = symbol2 + 'm';
         
         if (force || !state.subscriptions.has(sym1)) {
-          subscribe(sym1, state.settings.timeframe, ['ticks', 'ohlc']);
+          subscribe(sym1, state.settings.timeframe, ['ticks', 'indicators']);
         }
         if (force || !state.subscriptions.has(sym2)) {
-          subscribe(sym2, state.settings.timeframe, ['ticks', 'ohlc']);
+          subscribe(sym2, state.settings.timeframe, ['ticks', 'indicators']);
         }
       });
       

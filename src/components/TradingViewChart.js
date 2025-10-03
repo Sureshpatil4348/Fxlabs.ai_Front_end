@@ -11,7 +11,7 @@ const TradingViewChart = ({ symbol }) => {
   const chartRef = useRef();
   const candlestickSeriesRef = useRef();
   const volumeSeriesRef = useRef();
-  const { getOhlcForSymbol, getLatestTickForSymbol, subscriptions, ohlcData, tickData } = useMarketStore();
+  const { getLatestTickForSymbol, subscriptions, tickData } = useMarketStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [chartOptions, setChartOptions] = useState({
     showVolume: true,
@@ -165,77 +165,34 @@ const TradingViewChart = ({ symbol }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbol]);
 
-  // Update chart data reactively when OHLC data changes
+  // Update chart data reactively when tick data changes
   useEffect(() => {
     if (!symbol || !candlestickSeriesRef.current) return;
 
     // Safety check: ensure chart and series are still valid
     if (!chartRef.current || !candlestickSeriesRef.current) return;
     
-    const ohlcBars = getOhlcForSymbol(symbol);
+    const latestTick = getLatestTickForSymbol(symbol);
     
-    if (ohlcBars.length === 0) return;
+    if (!latestTick) return;
 
-    // Transform data for TradingView format
-    const candlestickData = ohlcBars.map((bar) => ({
-      time: Math.floor(new Date(bar.time).getTime() / 1000), // TradingView expects Unix timestamp in seconds
-      open: parseFloat(bar.open),
-      high: parseFloat(bar.high),
-      low: parseFloat(bar.low),
-      close: parseFloat(bar.close),
-    }));
+    // Create a simple line chart using tick data
+    const lineData = {
+      time: Math.floor(new Date(latestTick.time).getTime() / 1000),
+      value: parseFloat(latestTick.bid),
+    };
 
-    // Sort by time to ensure proper order and remove duplicates
-    candlestickData.sort((a, b) => a.time - b.time);
-    
-    // Remove duplicate timestamps
-    const uniqueCandlestickData = [];
-    const seenTimestamps = new Set();
-    candlestickData.forEach((item) => {
-      if (!seenTimestamps.has(item.time)) {
-        uniqueCandlestickData.push(item);
-        seenTimestamps.add(item.time);
-      }
-    });
-
-    // Update candlestick series
+    // Update the series with new data
     try {
-      candlestickSeriesRef.current.setData(uniqueCandlestickData);
+      candlestickSeriesRef.current.update(lineData);
     } catch (error) {
-      console.warn('Error updating candlestick data:', error);
+      console.warn('Error updating tick data:', error);
       return;
-    }
-
-    // Update volume series if available
-    if (volumeSeriesRef.current && ohlcBars[0].volume !== undefined) {
-      const volumeData = ohlcBars.map((bar) => ({
-        time: Math.floor(new Date(bar.time).getTime() / 1000),
-        value: bar.volume || 0,
-        color: parseFloat(bar.close) >= parseFloat(bar.open) ? '#26a69a80' : '#ef535080',
-      }));
-
-      // Sort and remove duplicates for volume data
-      volumeData.sort((a, b) => a.time - b.time);
-      
-      const uniqueVolumeData = [];
-      const seenVolumeTimestamps = new Set();
-      volumeData.forEach((item) => {
-        if (!seenVolumeTimestamps.has(item.time)) {
-          uniqueVolumeData.push(item);
-          seenVolumeTimestamps.add(item.time);
-        }
-      });
-      
-      try {
-        volumeSeriesRef.current.setData(uniqueVolumeData);
-      } catch (error) {
-        console.warn('Error updating volume data:', error);
-      }
     }
 
     // Don't auto-fit content to preserve user zoom level
     // Users can manually zoom and pan as needed
-  }, [symbol, ohlcData, getOhlcForSymbol]);
+  }, [symbol, tickData, getLatestTickForSymbol]);
 
   // Update tick data reactively when new ticks arrive
   useEffect(() => {
@@ -369,32 +326,12 @@ const TradingViewChart = ({ symbol }) => {
         volumeSeriesRef.current = volumeSeries;
         
         // Populate the volume series with current data
-        const ohlcBars = getOhlcForSymbol(symbol);
-        if (ohlcBars.length > 0 && ohlcBars[0].volume !== undefined) {
-          const volumeData = ohlcBars.map((bar) => ({
-            time: Math.floor(new Date(bar.time).getTime() / 1000),
-            value: bar.volume || 0,
-            color: parseFloat(bar.close) >= parseFloat(bar.open) ? '#26a69a80' : '#ef535080',
-          }));
-
-          // Sort and remove duplicates for volume data
-          volumeData.sort((a, b) => a.time - b.time);
-          
-          const uniqueVolumeData = [];
-          const seenVolumeTimestamps = new Set();
-          volumeData.forEach((item) => {
-            if (!seenVolumeTimestamps.has(item.time)) {
-              uniqueVolumeData.push(item);
-              seenVolumeTimestamps.add(item.time);
-            }
-          });
-          
-          try {
-            volumeSeriesRef.current.setData(uniqueVolumeData);
-          } catch (error) {
-            console.warn('Error setting volume data:', error);
-          }
-        }
+        // Note: Volume data is not available from tick data, so we'll skip volume series
+        // const latestTick = getLatestTickForSymbol(symbol);
+        // if (latestTick) {
+        //   // Volume data is not available from tick data
+        //   console.log('Volume data not available from tick data');
+        // }
       } else if (!newShowVolume && volumeSeriesRef.current) {
         // Remove volume series
         try {
