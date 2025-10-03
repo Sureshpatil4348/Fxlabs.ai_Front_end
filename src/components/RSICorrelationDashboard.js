@@ -222,7 +222,6 @@ const RSICorrelationDashboard = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
-    rsiPeriod: settings.rsiPeriod,
     rsiOverbought: settings.rsiOverbought,
     rsiOversold: settings.rsiOversold,
     correlationWindow: settings.correlationWindow,
@@ -339,7 +338,6 @@ const RSICorrelationDashboard = () => {
           setLocalSettings(prev => ({
             ...prev,
             ...(normalizedTf != null ? { timeframe: normalizedTf } : {}),
-            ...(rsiPeriod != null ? { rsiPeriod } : {}),
             ...(rsiOverbought != null ? { rsiOverbought } : {}),
             ...(rsiOversold != null ? { rsiOversold } : {}),
             ...(correlationWindow != null ? { correlationWindow } : {}),
@@ -349,7 +347,6 @@ const RSICorrelationDashboard = () => {
           // Update store settings only for provided keys (avoid referencing external settings defaults)
           const partialUpdate = {};
           if (normalizedTf != null) partialUpdate.timeframe = normalizedTf;
-          if (rsiPeriod != null) partialUpdate.rsiPeriod = rsiPeriod;
           if (rsiOverbought != null) partialUpdate.rsiOverbought = rsiOverbought;
           if (rsiOversold != null) partialUpdate.rsiOversold = rsiOversold;
           if (correlationWindow != null) partialUpdate.correlationWindow = correlationWindow;
@@ -381,7 +378,6 @@ const RSICorrelationDashboard = () => {
       // Update local store first
       updateSettings({
         timeframe: localSettings.timeframe,
-        rsiPeriod: localSettings.rsiPeriod,
         rsiOverbought: localSettings.rsiOverbought,
         rsiOversold: localSettings.rsiOversold,
         correlationWindow: localSettings.correlationWindow,
@@ -393,7 +389,6 @@ const RSICorrelationDashboard = () => {
         await userStateService.updateUserDashboardSettings({
           rsiCorrelation: {
             timeframe: localSettings.timeframe,
-            rsiPeriod: localSettings.rsiPeriod,
             rsiOverbought: localSettings.rsiOverbought,
             rsiOversold: localSettings.rsiOversold,
             correlationWindow: localSettings.correlationWindow,
@@ -411,7 +406,6 @@ const RSICorrelationDashboard = () => {
   const handleResetSettings = () => {
     setLocalSettings({
       timeframe: settings.timeframe,
-      rsiPeriod: settings.rsiPeriod,
       rsiOverbought: settings.rsiOverbought,
       rsiOversold: settings.rsiOversold,
       correlationWindow: settings.correlationWindow,
@@ -692,24 +686,9 @@ const RSICorrelationDashboard = () => {
                 </div>
               )}
 
-              {/* RSI Settings (only show for RSI threshold mode) */}
+              {/* RSI Settings (only show for RSI threshold mode; period fixed at 14) */}
               {localSettings.calculationMode === 'rsi_threshold' && (
                 <>
-                  {/* RSI Period */}
-                  <div>
-                    <label htmlFor="rsi-period-input" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                      RSI Period
-                    </label>
-                    <input
-                      id="rsi-period-input"
-                      type="number"
-                      min="2"
-                      max="50"
-                      value={localSettings.rsiPeriod}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiPeriod: parseInt(e.target.value) }))}
-                      className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
 
                   {/* Overbought Level */}
                   <div>

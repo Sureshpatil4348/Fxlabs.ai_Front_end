@@ -109,7 +109,7 @@ const RSIOverboughtOversoldTracker = () => {
     getLatestTickForSymbol,
     getDailyChangePercent
   } = useRSITrackerStore();
-  // Read correlation settings to keep tracker in sync (timeframe, RSI period)
+  // Read correlation settings to keep tracker in sync (timeframe only)
   const { settings: corrSettings } = useRSICorrelationStore();
   
   // Get tab state from base market store
@@ -138,7 +138,6 @@ const RSIOverboughtOversoldTracker = () => {
   const [removingSymbol, setRemovingSymbol] = useState(null); // State for tracking which symbol is being removed
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe,
-    rsiPeriod: settings.rsiPeriod,
     rsiOverbought: settings.rsiOverbought,
     rsiOversold: settings.rsiOversold
   });
@@ -239,14 +238,7 @@ const RSIOverboughtOversoldTracker = () => {
     //console.log('RSI data updated in tracker, oversold:', oversoldPairs.length, 'overbought:', overboughtPairs.length);
   }, [rsiData, oversoldPairs.length, overboughtPairs.length]);
 
-  // Optional: keep RSI period aligned with correlation (do not override timeframe)
-  useEffect(() => {
-    const tPeriod = settings?.rsiPeriod;
-    const cPeriod = corrSettings?.rsiPeriod;
-    if (Number.isFinite(cPeriod) && Number.isFinite(tPeriod) && cPeriod !== tPeriod) {
-      updateSettings({ rsiPeriod: cPeriod });
-    }
-  }, [corrSettings?.rsiPeriod, settings?.rsiPeriod, updateSettings]);
+  // Period is fixed at 14; no cross-sync needed
 
   // Load settings from database on user change (avoid continuous overwrites that can desync timeframes)
   useEffect(() => {
@@ -254,7 +246,7 @@ const RSIOverboughtOversoldTracker = () => {
       try {
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.rsiTracker) {
-          const { timeframe, rsiPeriod, rsiOverbought, rsiOversold } = savedSettings.rsiTracker;
+          const { timeframe, rsiOverbought, rsiOversold } = savedSettings.rsiTracker;
           // Normalize disallowed timeframe (exclude 1M/M1)
           const normalizedTf = (timeframe === '1M' || timeframe === 'M1') ? '5M' : timeframe;
           
@@ -262,7 +254,6 @@ const RSIOverboughtOversoldTracker = () => {
           setLocalSettings(prev => ({
             ...prev,
             ...(normalizedTf != null ? { timeframe: normalizedTf } : {}),
-            ...(rsiPeriod != null ? { rsiPeriod } : {}),
             ...(rsiOverbought != null ? { rsiOverbought } : {}),
             ...(rsiOversold != null ? { rsiOversold } : {})
           }));
@@ -270,7 +261,6 @@ const RSIOverboughtOversoldTracker = () => {
           // Update store settings using partial update
           const partialUpdate = {};
           if (normalizedTf != null) partialUpdate.timeframe = normalizedTf;
-          if (rsiPeriod != null) partialUpdate.rsiPeriod = rsiPeriod;
           if (rsiOverbought != null) partialUpdate.rsiOverbought = rsiOverbought;
           if (rsiOversold != null) partialUpdate.rsiOversold = rsiOversold;
           if (Object.keys(partialUpdate).length > 0) {
@@ -369,7 +359,6 @@ const RSIOverboughtOversoldTracker = () => {
       // Update local store first
       updateSettings({
         timeframe: localSettings.timeframe,
-        rsiPeriod: localSettings.rsiPeriod,
         rsiOverbought: validatedOverbought,
         rsiOversold: validatedOversold
       });
@@ -378,7 +367,6 @@ const RSIOverboughtOversoldTracker = () => {
       await userStateService.updateUserDashboardSettings({
         rsiTracker: {
           timeframe: localSettings.timeframe,
-          rsiPeriod: localSettings.rsiPeriod,
           rsiOverbought: validatedOverbought,
           rsiOversold: validatedOversold
         }
@@ -393,7 +381,6 @@ const RSIOverboughtOversoldTracker = () => {
   const handleResetSettings = () => {
     setLocalSettings({
       timeframe: settings.timeframe,
-      rsiPeriod: settings.rsiPeriod,
       rsiOverbought: settings.rsiOverbought,
       rsiOversold: settings.rsiOversold
     });
@@ -734,24 +721,7 @@ const RSIOverboughtOversoldTracker = () => {
               </select>
             </div>
 
-            {/* RSI Period */}
-            <div>
-              <label htmlFor="rsi-tracker-period" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-                RSI Period
-              </label>
-              <input
-                id="rsi-tracker-period"
-                type="number"
-                min="2"
-                max="50"
-                value={localSettings.rsiPeriod}
-                onChange={(e) => {
-                  const n = Number.parseInt(e.target.value, 10);
-                  setLocalSettings(prev => ({ ...prev, rsiPeriod: Number.isFinite(n) ? clamp(n, 2, 50) : prev.rsiPeriod }));
-                }}
-                className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            {/* RSI Period removed: fixed at 14 */}
 
             {/* Overbought Level */}
             <div>

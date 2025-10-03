@@ -24,9 +24,6 @@ class RSITrackerAlertService {
     if (!validTimeframes.includes(config.timeframe)) {
       errors.push('Invalid timeframe');
     }
-    if (!Number.isFinite(config.rsiPeriod) || config.rsiPeriod < 5 || config.rsiPeriod > 50) {
-      errors.push('RSI period must be 5-50');
-    }
     if (!Number.isFinite(config.rsiOverbought) || config.rsiOverbought < 60 || config.rsiOverbought > 90) {
       errors.push('Overbought must be 60-90');
     }
@@ -73,6 +70,8 @@ class RSITrackerAlertService {
     if (!user) throw new Error('User not authenticated');
 
     const merged = { ...this.getDefaultAlertConfig(), ...config };
+    // Enforce RSI period to 14 globally
+    merged.rsiPeriod = 14;
     const { isValid, errors } = this._validate(merged);
     if (!isValid) throw new Error(errors.join(', '));
 
@@ -80,7 +79,7 @@ class RSITrackerAlertService {
       user_id: user.id,
       user_email: user.email,
       timeframe: merged.timeframe,
-      rsi_period: merged.rsiPeriod,
+      rsi_period: 14,
       rsi_overbought: merged.rsiOverbought,
       rsi_oversold: merged.rsiOversold,
       is_active: merged.isActive ?? true

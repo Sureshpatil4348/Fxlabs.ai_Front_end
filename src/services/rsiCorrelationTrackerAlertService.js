@@ -25,7 +25,7 @@ class RSICorrelationTrackerAlertService {
     if (!validTimeframes.includes(cfg.timeframe)) errors.push('Invalid timeframe');
     if (!['rsi_threshold','real_correlation'].includes(cfg.mode)) errors.push('Invalid mode');
     if (cfg.mode === 'rsi_threshold') {
-      if (!Number.isFinite(cfg.rsiPeriod) || cfg.rsiPeriod < 5 || cfg.rsiPeriod > 50) errors.push('RSI period 5-50');
+      // RSI period is fixed at 14; no validation required beyond enforcement
       if (!Number.isFinite(cfg.rsiOverbought) || cfg.rsiOverbought < 60 || cfg.rsiOverbought > 90) errors.push('Overbought 60-90');
       if (!Number.isFinite(cfg.rsiOversold) || cfg.rsiOversold < 10 || cfg.rsiOversold > 40) errors.push('Oversold 10-40');
       if (cfg.rsiOversold >= cfg.rsiOverbought) errors.push('Oversold < Overbought');
@@ -65,6 +65,8 @@ class RSICorrelationTrackerAlertService {
     const user = await this.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
     const merged = { ...this.getDefaultAlertConfig(), ...config };
+    // Enforce RSI period to 14 globally
+    merged.rsiPeriod = 14;
     const { isValid, errors } = this._validate(merged);
     if (!isValid) throw new Error(errors.join(', '));
 
@@ -73,7 +75,7 @@ class RSICorrelationTrackerAlertService {
       user_email: user.email,
       timeframe: merged.timeframe,
       mode: merged.mode,
-      rsi_period: merged.rsiPeriod,
+      rsi_period: 14,
       rsi_overbought: merged.rsiOverbought,
       rsi_oversold: merged.rsiOversold,
       correlation_window: merged.correlationWindow,

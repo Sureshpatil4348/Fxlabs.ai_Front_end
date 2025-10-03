@@ -375,7 +375,9 @@ const useRSICorrelationStore = create(
     updateSettings: (newSettings) => {
       const state = get();
       const oldSettings = state.settings;
-      const updatedSettings = { ...oldSettings, ...newSettings };
+      // Ignore rsiPeriod updates; RSI period is fixed at 14
+      const { rsiPeriod: _ignoredRsiPeriod, ...rest } = newSettings || {};
+      const updatedSettings = { ...oldSettings, ...rest, rsiPeriod: 14 };
       
       set({ settings: updatedSettings });
       
@@ -412,8 +414,8 @@ const useRSICorrelationStore = create(
         }, 1500);
       }
       
-      // If RSI settings changed, recalculate
-      if (newSettings.rsiPeriod || newSettings.rsiOverbought || newSettings.rsiOversold) {
+      // If RSI thresholds changed, recalculate (period is fixed)
+      if (newSettings.rsiOverbought || newSettings.rsiOversold) {
         get().recalculateAllRsi();
       }
       

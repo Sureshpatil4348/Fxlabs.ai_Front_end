@@ -11,7 +11,6 @@ const GlobalSettingsPanel = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [localSettings, setLocalSettings] = useState({
     timeframe: globalSettings.timeframe,
-    rsiPeriod: rsiSettings.period,
     rsiOverbought: rsiSettings.overbought,
     rsiOversold: rsiSettings.oversold,
     strengthMode: strengthSettings.mode
@@ -25,7 +24,6 @@ const GlobalSettingsPanel = () => {
       // Update local settings state
       const newLocalSettings = {
         timeframe: settings.global.timeframe,
-        rsiPeriod: settings.rsiCorrelation.rsiPeriod,
         rsiOverbought: settings.rsiCorrelation.rsiOverbought,
         rsiOversold: settings.rsiCorrelation.rsiOversold,
         strengthMode: settings.currencyStrength.mode
@@ -36,7 +34,7 @@ const GlobalSettingsPanel = () => {
       // Update store settings
       updateGlobalSettings({ timeframe: settings.global.timeframe });
       updateRsiSettings({
-        period: settings.rsiCorrelation.rsiPeriod,
+        // period fixed at 14
         overbought: settings.rsiCorrelation.rsiOverbought,
         oversold: settings.rsiCorrelation.rsiOversold
       });
@@ -61,7 +59,6 @@ const GlobalSettingsPanel = () => {
       // Update stores (for immediate UI response)
       updateGlobalSettings({ timeframe: localSettings.timeframe });
       updateRsiSettings({
-        period: localSettings.rsiPeriod,
         overbought: localSettings.rsiOverbought,
         oversold: localSettings.rsiOversold
       });
@@ -73,13 +70,11 @@ const GlobalSettingsPanel = () => {
         global: { timeframe: localSettings.timeframe },
         rsiCorrelation: {
           timeframe: localSettings.timeframe,
-          rsiPeriod: localSettings.rsiPeriod,
           rsiOverbought: localSettings.rsiOverbought,
           rsiOversold: localSettings.rsiOversold
         },
         rsiTracker: {
           timeframe: localSettings.timeframe,
-          rsiPeriod: localSettings.rsiPeriod,
           rsiOverbought: localSettings.rsiOverbought,
           rsiOversold: localSettings.rsiOversold
         },
@@ -107,7 +102,6 @@ const GlobalSettingsPanel = () => {
   const handleReset = () => {
     setLocalSettings({
       timeframe: globalSettings.timeframe,
-      rsiPeriod: rsiSettings.period,
       rsiOverbought: rsiSettings.overbought,
       rsiOversold: rsiSettings.oversold,
       strengthMode: strengthSettings.mode
@@ -130,7 +124,7 @@ const GlobalSettingsPanel = () => {
                 Timeframe: <span className="font-medium">{globalSettings.timeframe}</span>
                 <span className="mx-2">•</span>
                 <BarChart3 className="w-4 h-4 inline mr-1" />
-                RSI Period: <span className="font-medium">{rsiSettings.period}</span>
+                RSI Period: <span className="font-medium">14</span>
                 <span className="mx-2">•</span>
                 <TrendingUp className="w-4 h-4 inline mr-1" />
                 Strength Mode: <span className="font-medium capitalize">{strengthSettings.mode}</span>
@@ -186,27 +180,14 @@ const GlobalSettingsPanel = () => {
                 </select>
               </div>
 
-              {/* RSI Settings */}
+              {/* RSI Settings (period fixed at 14) */}
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <h4 className="text-lg font-medium text-green-900 mb-3 flex items-center">
                   <BarChart3 className="w-5 h-5 mr-2" />
                   RSI Indicator Settings
                 </h4>
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label htmlFor="rsi-period" className="block text-sm font-medium text-green-700 mb-1">
-                      Period
-                    </label>
-                    <input
-                      id="rsi-period"
-                      type="number"
-                      min="5"
-                      max="50"
-                      value={localSettings.rsiPeriod}
-                      onChange={(e) => setLocalSettings({...localSettings, rsiPeriod: parseInt(e.target.value)})}
-                      className="input-field w-full"
-                    />
-                  </div>
+                  {/* Period control removed */}
                   <div>
                     <label htmlFor="rsi-overbought" className="block text-sm font-medium text-green-700 mb-1">
                       Overbought

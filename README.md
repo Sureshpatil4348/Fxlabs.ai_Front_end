@@ -370,7 +370,7 @@ Usage notes (WebSocket):
   - Added timeframe sanity checks in all stores so RSI never uses stale bars from a previous timeframe after switching. If the active timeframe's bars aren't available yet, the view avoids using mismatched buffers and updates as soon as new bars arrive.
   - Settings persistence load scope: RSI Tracker now loads saved settings only on user change to avoid continuous DB overwrites. This prevents unintended timeframe resets that could desync it from other widgets.
 
-- Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. Now both stores wait for at least `period + 2` raw bars before dropping the last (forming) one; else they return null to avoid inconsistent intrabar values.
+- Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. Now both stores wait for at least `period + 2` raw bars before dropping the last (forming) one; else they return null to avoid inconsistent intrabar values. RSI period is fixed at 14.
 
 ### Subscription Scope (Updated)
 - Correlation subscribes only the configured correlation pairs for the active timeframe.
@@ -635,7 +635,7 @@ Usage notes (WebSocket):
 - Prevents data loss when updating only specific pairs/timeframes
 - Fixed numeric validation security issue in `rsiAlertService.js`
 - Added Number.isFinite guards to prevent NaN/Infinity bypassing validation
-- Protected RSI period, overbought/oversold thresholds, and RFI thresholds
+- Protected RSI overbought/oversold thresholds, and RFI thresholds (RSI period fixed at 14)
 - Ensures proper validation of all numeric range and ordering comparisons
 - Prevents silent failures from non-finite numeric values
 - Fixed snake_case to camelCase field mapping issue in `rsiAlertService.js`
@@ -646,7 +646,7 @@ Usage notes (WebSocket):
 - Prevents database field name mismatches in RSI alert operations
 - Fixed numeric validation security issue in `rsiCorrelationTrackerAlertService.js`
 - Added Number.isFinite guards to prevent NaN/Infinity bypassing validation
-- Protected RSI period, overbought/oversold thresholds, and correlation thresholds
+- Protected RSI overbought/oversold thresholds, and correlation thresholds (RSI period fixed at 14)
 - Ensures proper validation of all numeric range and ordering comparisons
 - Prevents silent failures from non-finite numeric values
 - Fixed snake_case to camelCase field mapping issue in `rsiCorrelationTrackerAlertService.js`
@@ -840,13 +840,13 @@ The application now includes comprehensive dashboard settings persistence:
 
 ### Settings Categories
 - **Global Settings**: Universal timeframe for all indicators
-- **RSI Correlation Settings**: Timeframe, RSI period, overbought/oversold thresholds, correlation window, calculation mode
-- **RSI Tracker Settings**: Timeframe, RSI period, overbought/oversold thresholds, auto-subscribe symbols
+- **RSI Correlation Settings**: Timeframe, RSI overbought/oversold thresholds, correlation window, calculation mode (RSI period fixed at 14)
+- **RSI Tracker Settings**: Timeframe, RSI overbought/oversold thresholds, auto-subscribe symbols (RSI period fixed at 14)
 - **Currency Strength Settings**: Timeframe, calculation mode (closed/live), enhanced calculation toggle, auto-subscribe symbols
 - **Multi-Indicator Heatmap Settings**: Symbol selection, trading style, indicator weights, new signal display toggle
 
 ### Robustness And Partial Updates (Latest)
-- Settings upserts now support partial updates safely. When calling `updateUserDashboardSettings`, you may pass only the sections you intend to update (e.g., `{ rsiTracker: { rsiPeriod: 12 } }`). The service merges with existing settings and sensible defaults.
+- Settings upserts now support partial updates safely. When calling `updateUserDashboardSettings`, you may pass only the sections you intend to update (e.g., `{ rsiTracker: { rsiOverbought: 75 } }`). The service merges with existing settings and sensible defaults.
 - Defensive defaults added for tab state loading. If `user_state.tab_state` is missing/null, the app falls back to default tab state to prevent undefined reads.
 - Affected code:
   - `src/services/userStateService.js`: partial merge handling in `updateUserDashboardSettings`; safer defaults in `getUserTabState`.
@@ -1337,7 +1337,7 @@ The RSI Tracker Alert is simplified to a single per-user alert. Users choose exa
 
 #### Alert Configuration
 - **Timeframe**: Choose exactly one timeframe (5M to 1W)
-- **RSI Settings**: RSI period (5-50), overbought (60-90), oversold (10-40)
+- **RSI Settings**: RSI overbought (60-90), oversold (10-40) (RSI period fixed at 14)
 - **Pairs**: Not required; all pairs are evaluated by the backend
 
 #### Alert Management
@@ -1365,7 +1365,7 @@ The RSI Tracker Alert is simplified to a single per-user alert. Users choose exa
 - is_active: BOOLEAN - Alert status
 - pairs: JSONB - Array of up to 5 trading pairs
 - timeframes: JSONB - Array of 1-3 timeframes for RSI analysis
-- rsi_period: INTEGER - RSI calculation period (5-50)
+- rsi_period: INTEGER - RSI calculation period (fixed at 14)
 - rsi_overbought_threshold: INTEGER - Overbought threshold (60-90)
 - rsi_oversold_threshold: INTEGER - Oversold threshold (10-40)
 - alert_conditions: JSONB - Array of alert conditions
@@ -1451,7 +1451,7 @@ const alert = await rsiTrackerAlertService.saveAlert(alertConfig);
 The alert system integrates seamlessly with the existing RSI Tracker:
 
 1. **Shared Data Source**: Uses the same RSI calculations and RFI analysis
-2. **Consistent Logic**: Applies the same RSI period and threshold logic
+2. **Consistent Logic**: Applies the same RSI thresholds and period logic (RSI period fixed at 14)
 3. **Real-time Updates**: Monitors closed-candle RSI data for trigger conditions
 4. **Unified Interface**: Alert management integrated into the navbar with orange TrendingUp icon
 5. **Visual Indicators**: TrendingUp icon shows active RSI alert count as a badge
@@ -1481,7 +1481,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 #### Alert Configuration
 - **Timeframe**: Choose exactly one timeframe (5M to 1W)
 - **Mode**: `rsi_threshold` or `real_correlation`
-- **RSI Settings** (RSI mode): RSI period (5-50), overbought (60-90), oversold (10-40)
+- **RSI Settings** (RSI mode): RSI overbought (60-90), oversold (10-40) (RSI period fixed at 14)
 - **Correlation Settings** (Real mode): Rolling correlation window (20, 50, 90, 120)
 - **Pairs**: Not required; all correlation pairs are evaluated by the backend
 
@@ -1511,7 +1511,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 - correlation_pairs: JSONB - Array of up to 5 correlation pairs
 - timeframes: JSONB - Array of 1-3 timeframes for correlation analysis
 - calculation_mode: VARCHAR(20) - 'rsi_threshold' | 'real_correlation'
-- rsi_period: INTEGER - RSI calculation period (5-50)
+- rsi_period: INTEGER - RSI calculation period (fixed at 14)
 - rsi_overbought_threshold: INTEGER - Overbought threshold (60-90)
 - rsi_oversold_threshold: INTEGER - Oversold threshold (10-40)
 - correlation_window: INTEGER - Rolling correlation window (20, 50, 90, 120)
@@ -1604,7 +1604,7 @@ const alert = await rsiCorrelationTrackerAlertService.saveAlert(alertConfig);
 The alert system integrates seamlessly with the existing RSI Correlation Dashboard:
 
 1. **Shared Data Source**: Uses the same RSI calculations and correlation analysis
-2. **Consistent Logic**: Applies the same RSI period, thresholds, and correlation windows
+2. **Consistent Logic**: Applies the same RSI thresholds, period, and correlation windows (RSI period fixed at 14)
 3. **Real-time Updates**: Monitors closed-candle RSI correlation data for trigger conditions
 4. **Unified Interface**: Alert management integrated into the navbar with purple BarChart3 icon
 5. **Visual Indicators**: BarChart3 icon shows active RSI correlation alert count as a badge

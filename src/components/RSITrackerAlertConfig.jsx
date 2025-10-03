@@ -48,10 +48,9 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
     try {
       const saved = await rsiTrackerAlertService.saveAlert(form);
       setAlert(saved);
-      // Sync tracker settings so the UI view matches alert evaluation timeframe & RSI
+      // Sync tracker settings so the UI view matches alert evaluation timeframe
       updateSettings({
         timeframe: saved.timeframe,
-        rsiPeriod: saved.rsiPeriod,
         rsiOverbought: saved.rsiOverbought,
         rsiOversold: saved.rsiOversold
       });
@@ -117,18 +116,6 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label htmlFor="rsi-tracker-period" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">RSI Period</label>
-                  <input
-                    id="rsi-tracker-period"
-                    type="number"
-                    min="5"
-                    max="50"
-                    value={form.rsiPeriod}
-                    onChange={(e) => setForm({ ...form, rsiPeriod: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  />
-                </div>
                 <div>
                   <label htmlFor="rsi-tracker-overbought" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Overbought</label>
                   <input

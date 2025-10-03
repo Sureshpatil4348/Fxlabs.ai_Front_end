@@ -53,7 +53,6 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
       updateSettings({
         timeframe: saved.timeframe,
         calculationMode: saved.mode === 'real_correlation' ? 'real_correlation' : 'rsi_threshold',
-        rsiPeriod: saved.rsiPeriod,
         rsiOverbought: saved.rsiOverbought,
         rsiOversold: saved.rsiOversold,
         correlationWindow: saved.correlationWindow
@@ -134,10 +133,6 @@ const RSICorrelationTrackerAlertConfig = ({ isOpen, onClose }) => {
 
               {form.mode === 'rsi_threshold' && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label htmlFor="rsi-corr-period" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">RSI Period</label>
-                    <input id="rsi-corr-period" type="number" min="5" max="50" value={form.rsiPeriod} onChange={(e) => setForm({ ...form, rsiPeriod: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
-                  </div>
                   <div>
                     <label htmlFor="rsi-corr-overbought" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Overbought</label>
                     <input id="rsi-corr-overbought" type="number" min="60" max="90" value={form.rsiOverbought} onChange={(e) => setForm({ ...form, rsiOverbought: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
