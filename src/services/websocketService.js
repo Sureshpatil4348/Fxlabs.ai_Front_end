@@ -10,6 +10,9 @@ import websocketMessageRouter from './websocketMessageRouter';
 // WebSocket URL configuration - v2 with indicator support
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
 
+// Debug configuration
+const ENABLE_TICK_LOGGING = process.env.REACT_APP_ENABLE_TICK_LOGGING === 'true';
+
 class WebSocketService {
   constructor() {
     this.ws = null;
@@ -67,13 +70,15 @@ class WebSocketService {
         };
 
         this.ws.onmessage = (event) => {
-          // Log full payload of every message, then parse and route
+          // Parse message first to determine if we should log it
           if (event?.data instanceof Blob) {
             event.data.text().then((text) => {
               try {
-                // Full raw payload (Blob -> text)
-                console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, text);
                 const message = JSON.parse(text);
+                // Only log non-tick messages to reduce console noise (unless explicitly enabled)
+                if (message.type !== 'ticks' || ENABLE_TICK_LOGGING) {
+                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, text);
+                }
                 websocketMessageRouter.routeMessage(message, text);
               } catch (error) {
                 console.error(`[WS][Market-v2][${new Date().toISOString()}] Failed to parse blob message:`, error);
@@ -83,17 +88,19 @@ class WebSocketService {
             });
           } else {
             try {
-              // Full raw payload (string or other)
-              if (typeof event?.data === 'string') {
-                console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, event.data);
-              } else {
-                try {
-                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, JSON.stringify(event?.data));
-                } catch (_e) {
-                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received (non-string)`, event?.data);
+              const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
+              // Only log non-tick messages to reduce console noise (unless explicitly enabled)
+              if (message.type !== 'ticks' || ENABLE_TICK_LOGGING) {
+                if (typeof event?.data === 'string') {
+                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, event.data);
+                } else {
+                  try {
+                    console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, JSON.stringify(event?.data));
+                  } catch (_e) {
+                    console.log(`[WS][Market-v2][${new Date().toISOString()}] Received (non-string)`, event?.data);
+                  }
                 }
               }
-              const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
               websocketMessageRouter.routeMessage(message, event?.data);
             } catch (error) {
               console.error(`[WS][Market-v2][${new Date().toISOString()}] Failed to parse message:`, error);

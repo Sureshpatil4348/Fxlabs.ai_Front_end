@@ -112,10 +112,13 @@ All technical indicator calculations are now performed server-side:
 - Cleaned up warning messages in all store files to reduce console noise during development
 - Affected functions: `subscribe()`, `unsubscribe()`, `recalculateAllRsi()`, `calculateRsi()`, `calculateAllCorrelations()`, `recalculateAllRfi()`
 
-### WebSocket Full Payload Logging (Latest)
-- The client now logs the full raw payload of every WebSocket message at the shared receive point in `src/services/websocketService.js`.
+### WebSocket Selective Logging (Latest)
+- The client now logs WebSocket messages selectively to reduce console noise from frequent tick data.
+- **Tick messages are NOT logged by default** to prevent console spam from high-frequency market data.
+- Other message types (indicator updates, connection status, etc.) are still logged for debugging.
 - Blob payloads are converted to text before logging; string payloads are logged as-is.
 - This logging uses `console.log` with an ISO timestamp prefix like `[WS][Market-v2][timestamp] Received:` to aid debugging.
+- **Environment Variable**: Set `REACT_APP_ENABLE_TICK_LOGGING=true` to enable tick logging for debugging purposes.
 - Note on performance/data: Full-payload logging can be verbose and may contain sensitive data. Use browser filters in DevTools when inspecting logs, and disable logging in production builds as needed.
 
 ## Documentation
