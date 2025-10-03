@@ -174,6 +174,13 @@ Example:
 ```
 
 ## Recent Updates
+### Fix: Removed legacy ohlcData.get usage causing mount errors (Latest)
+- Removed references to `ohlcData.get(...)` that could throw "Cannot read properties of undefined (reading 'get')" during initial mount.
+- Components now rely on `tickData` and `indicatorData` maps provided by the live stores:
+  - `src/components/HeroSection.jsx`: chart data built from `tickData` only.
+  - `src/components/TradingDashboardSection.jsx`: tick-only logging/reads; no `ohlcData` access.
+
+Troubleshooting: If you encounter similar errors, search for `.get(` on possibly undefined maps and either initialize the map in the store or guard before calling `.get`.
 
 ### AI News Analysis: Ordering Update (Latest)
 - Upcoming tab now shows the soonest events first (ascending by event time).

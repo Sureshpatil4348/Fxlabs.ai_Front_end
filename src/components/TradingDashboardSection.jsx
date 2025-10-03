@@ -13,7 +13,6 @@ const TradingDashboardSection = () => {
   const { } = useMarketStore()
   const { 
     tickData, 
-    ohlcData, 
     isConnected,
     connect,
     subscribe
@@ -84,32 +83,16 @@ const TradingDashboardSection = () => {
     return () => clearInterval(newsInterval)
   }, [])
 
-  // Console log real data for TradingDashboardSection
+  // Console log real data for TradingDashboardSection (tick-only)
   useEffect(() => {
-    // console.log('🔍 TradingDashboardSection - Real Data Check:', {
-    //   isConnected,
-    //   tickDataSize: tickData.size,
-    //   ohlcDataSize: ohlcData.size,
-    //   allTickData: tickData,
-    //   allOhlcData: ohlcData
-    // })
-    
-    // Log specific currency pairs data
     const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USDJPYm']
     symbols.forEach(symbol => {
       const tickSymbolData = tickData.get(symbol)
-      const ohlcSymbolData = ohlcData.get(symbol)
-      
-      if (tickSymbolData || ohlcSymbolData) {
-        // console.log(`📊 ${symbol} Data:`, {
-        //   tickData: tickSymbolData,
-        //   ohlcData: ohlcSymbolData,
-        //   latestTick: tickSymbolData?.ticks?.[tickSymbolData.ticks.length - 1],
-        //   latestOhlc: ohlcSymbolData?.bars?.[ohlcSymbolData.bars.length - 1]
-        // })
+      if (tickSymbolData) {
+        // Optional debug retained but commented to avoid noise
       }
     })
-  }, [tickData, ohlcData, isConnected])
+  }, [tickData, isConnected])
 
   // Update currency pairs with real dynamic data (throttled to every 3 seconds)
   useEffect(() => {

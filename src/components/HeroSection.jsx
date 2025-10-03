@@ -22,7 +22,6 @@ const HeroSection = () => {
   const { user } = useAuth()
   const { isDarkMode } = useTheme()
   const { 
-    ohlcData, 
     tickData, 
     isConnected,
     connect,
@@ -75,45 +74,28 @@ const HeroSection = () => {
     }
   }, [isConnected, selectedSymbol, subscribe])
 
-  // Update chart data from real market data
+  // Update chart data from real market data (tick-only)
   useEffect(() => {
-    // Try OHLC data first
-    const ohlcSymbolData = ohlcData.get(selectedSymbol)
-    if (ohlcSymbolData && ohlcSymbolData.bars && ohlcSymbolData.bars.length > 0) {
-      const bars = ohlcSymbolData.bars.slice(-30) // Get last 30 bars
-      const data = bars.map((bar, index) => ({
-        x: index,
-        y: bar.close,
-        open: bar.open,
-        high: bar.high,
-        low: bar.low,
-        close: bar.close
-      }))
+    const tickSymbolData = tickData.get(selectedSymbol)
+    if (tickSymbolData && tickSymbolData.ticks && tickSymbolData.ticks.length > 0) {
+      const ticks = tickSymbolData.ticks.slice(-30)
+      const data = ticks.map((tick, index) => {
+        const price = tick.bid || tick.ask || tick.price || tick.close || 0
+        return {
+          x: index,
+          y: price,
+          open: price,
+          high: price,
+          low: price,
+          close: price,
+          volume: Math.abs(tick.change || 0) * 1000 || 0
+        }
+      })
       _setChartData(data)
     } else {
-      // Fallback to tick data for line chart
-      const tickSymbolData = tickData.get(selectedSymbol)
-      if (tickSymbolData && tickSymbolData.ticks && tickSymbolData.ticks.length > 0) {
-        const ticks = tickSymbolData.ticks.slice(-30) // Get last 30 ticks
-        const data = ticks.map((tick, index) => {
-          const price = tick.bid || tick.ask || tick.price || tick.close || 0
-          return {
-            x: index,
-            y: price,
-            open: price,
-            high: price,
-            low: price,
-            close: price,
-            volume: Math.abs(tick.change || 0) * 1000 || 0 // Calculate volume from price change
-          }
-        })
-        _setChartData(data)
-      } else {
-        // No data available
-        _setChartData([])
-      }
+      _setChartData([])
     }
-  }, [ohlcData, tickData, selectedSymbol])
+  }, [tickData, selectedSymbol])
 
   // Update price from real tick data
   useEffect(() => {
