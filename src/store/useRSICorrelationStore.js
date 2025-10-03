@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import websocketService from '../services/websocketService';
 import indicatorService from '../services/indicatorService';
+import websocketService from '../services/websocketService';
 
 // Note: All calculations are now performed server-side
 // RSI, correlations, and other indicators should be received from WebSocket/API
@@ -278,6 +278,8 @@ const useRSICorrelationStore = create(
                     updatedAt: new Date()
                   });
                   set({ rsiData: newRsiData });
+                  // Update derived correlation statuses immediately
+                  try { get().recalculateAllRsi(); } catch (_e) {}
                 }
               }
             }
@@ -354,6 +356,8 @@ const useRSICorrelationStore = create(
                     updatedAt: new Date()
                   });
                   set({ rsiData: newRsiData });
+                  // Update derived correlation statuses immediately
+                  try { get().recalculateAllRsi(); } catch (_e) {}
                 }
               }
             }
@@ -507,16 +511,51 @@ const useRSICorrelationStore = create(
     },
 
     recalculateAllRsi: () => {
-      // Note: RSI calculations are now performed server-side
-      // This function should be updated to process RSI data received from WebSocket
-      // For now, it's a no-op placeholder
-      // Note: RSI is now calculated server-side - no console warning needed
-      
-      // The server should send RSI values via WebSocket messages
-      // Components should listen for those messages and update state accordingly
-      
-      // Placeholder: maintain existing state structure but don't calculate
-      // In a full implementation, this would process server-sent RSI data
+      // Derive pair match/mismatch/neutral statuses from latest RSI values
+      const state = get();
+      const { rsiData, settings, correlationPairs } = state;
+      const overbought = settings.rsiOverbought;
+      const oversold = settings.rsiOversold;
+
+      const computeStatus = (rsi1, rsi2, type) => {
+        const r1 = typeof rsi1 === 'number' && Number.isFinite(rsi1) ? rsi1 : null;
+        const r2 = typeof rsi2 === 'number' && Number.isFinite(rsi2) ? rsi2 : null;
+        if (r1 == null || r2 == null) return 'neutral';
+
+        const r1Over = r1 >= overbought;
+        const r1Under = r1 <= oversold;
+        const r2Over = r2 >= overbought;
+        const r2Under = r2 <= oversold;
+
+        if (type === 'positive') {
+          if ((r1Over && r2Over) || (r1Under && r2Under)) return 'match';
+          if ((r1Over && r2Under) || (r1Under && r2Over)) return 'mismatch';
+        } else {
+          if ((r1Over && r2Under) || (r1Under && r2Over)) return 'match';
+          if ((r1Over && r2Over) || (r1Under && r2Under)) return 'mismatch';
+        }
+        return 'neutral';
+      };
+
+      const nextStatus = new Map();
+
+      const addPair = (s1, s2, type) => {
+        const key = `${s1}_${s2}`;
+        const r1 = rsiData.get(`${s1}m`)?.value;
+        const r2 = rsiData.get(`${s2}m`)?.value;
+        const status = computeStatus(r1, r2, type);
+        nextStatus.set(key, {
+          status,
+          rsi1: Number.isFinite(r1) ? r1 : NaN,
+          rsi2: Number.isFinite(r2) ? r2 : NaN,
+          type
+        });
+      };
+
+      (correlationPairs.positive || []).forEach(([s1, s2]) => addPair(s1, s2, 'positive'));
+      (correlationPairs.negative || []).forEach(([s1, s2]) => addPair(s1, s2, 'negative'));
+
+      set({ correlationStatus: nextStatus });
     },
 
     

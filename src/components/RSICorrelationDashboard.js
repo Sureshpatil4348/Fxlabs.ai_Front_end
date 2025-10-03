@@ -300,6 +300,8 @@ const RSICorrelationDashboard = () => {
             });
           });
           useRSICorrelationStore.setState({ rsiData: next });
+          // Immediately derive pair statuses from the fresh RSI snapshot
+          try { useRSICorrelationStore.getState().recalculateAllRsi(); } catch (_e) {}
         }
       } catch (_e) {
         // silent; websocket will fill

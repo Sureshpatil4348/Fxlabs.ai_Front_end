@@ -1729,8 +1729,13 @@ This project is licensed under the MIT License.
   - Stores/components merge the snapshot into `rsiData` to render immediately, then live `indicator_update` pushes keep it fresh.
 - Implementations:
   - `src/store/useRSITrackerStore.js`: fires REST snapshot on timeframe change; populates `rsiData`.
-  - `src/store/useRSICorrelationStore.js`: fires REST snapshot on timeframe change for correlation pairs; populates `rsiData`.
+  - `src/store/useRSICorrelationStore.js`: fires REST snapshot on timeframe change for correlation pairs; populates `rsiData` and immediately derives `correlationStatus`.
   - `src/components/RSIOverboughtOversoldTracker.js`: fetches on mount/timeframe change.
-  - `src/components/RSICorrelationDashboard.js`: fetches on mount/timeframe change.
+  - `src/components/RSICorrelationDashboard.js`: fetches on mount/timeframe change and triggers `recalculateAllRsi()` to derive statuses.
 - Notes:
   - REST base is fixed: `https://api.fxlabs.ai` (no env vars required).
+
+### RSI Correlation Dashboard: Blank/Neutral Render Troubleshooting
+- Ensure WebSocket connection established (see console `[WS][Market-v2] Connected`).
+- The dashboard now derives pair statuses from `rsiData`; placeholders will show until initial snapshot or first `indicator_update` arrives.
+- After timeframe/mode changes, a REST snapshot is fetched and `recalculateAllRsi()` runs to populate statuses immediately.
