@@ -302,13 +302,22 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
     }
   }
 
-  // Border and background classes based on analysis effect and timing
+  // Premium border and background classes based on analysis effect and timing
   const effect = analysis?.effect;
   const borderClass =
-    effect === 'Bullish' ? 'border-success-600 border-2' :
-    effect === 'Bearish' ? 'border-danger-600 border-2' :
-    'border-gray-200 dark:border-slate-600';
-  const backgroundClass = 'bg-white dark:bg-slate-800';
+    effect === 'Bullish' ? 'border-[#10B981]/50 border-2' :
+    effect === 'Bearish' ? 'border-[#EF4444]/50 border-2' :
+    'border-[#1E253E]/50 border';
+  const backgroundClass = effect === 'Bullish' 
+    ? 'bg-gradient-to-br from-[#10B981]/10 to-[#059669]/5' 
+    : effect === 'Bearish'
+    ? 'bg-gradient-to-br from-[#EF4444]/10 to-[#DC2626]/5'
+    : 'bg-[#1E253E]/20';
+  const glowClass = effect === 'Bullish'
+    ? 'shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+    : effect === 'Bearish'
+    ? 'shadow-[0_0_20px_rgba(239,68,68,0.15)]'
+    : 'shadow-lg';
 
   return (
     <div
@@ -316,7 +325,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
       tabIndex={0}
       onClick={() => onShowDetails(news)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onShowDetails(news); } }}
-      className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer ${borderClass} ${backgroundClass}`}
+      className={`border rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] cursor-pointer backdrop-blur-sm ${borderClass} ${backgroundClass} ${glowClass} hover:shadow-2xl`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -562,15 +571,17 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="widget-card px-4 pb-2 z-1 relative h-full flex flex-col">
-      {/* Fixed Header Section */}
-      <div className="flex-shrink-0">
-        {/* Header */}
-        <div className="widget-header flex items-center justify-between mb-2">
-        <div className="flex items-center space-x-2">
-          <Newspaper className="w-5 h-5 text-primary-600" />
+    <div className="widget-card px-5 pb-3 z-1 relative h-full flex flex-col custom-scrollbar">
+      {/* Premium Fixed Header Section */}
+      <div className="flex-shrink-0 pt-1">
+        {/* Premium Header */}
+        <div className="widget-header flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 rounded-xl backdrop-blur-sm border border-[#3B82F6]/30">
+            <Newspaper className="w-5 h-5 text-[#60A5FA] opacity-90" />
+          </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">AI News Analysis</h2>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] bg-clip-text text-transparent tracking-tight">AI News Analysis</h2>
           </div>
         </div>
         {!apiAvailable && (
@@ -580,21 +591,23 @@ const AINewsAnalysis = () => {
         )}
         </div>
 
-        {/* Filter Tabs (match RSI Tracker styles) */}
-        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg">
+        {/* Premium Filter Tabs */}
+        <div className="flex space-x-1 mb-2 p-1 bg-[#1E253E]/40 rounded-xl border border-[#1E253E]/50">
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
             onClick={() => handleFilterChange(filterOption.id)}
-            className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center py-2 px-1 rounded-lg text-xs font-bold transition-all duration-200 ${
               newsFilter === filterOption.id
-                ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                ? 'bg-gradient-to-r from-[#3B82F6]/30 to-[#2563EB]/30 text-[#60A5FA] shadow-lg border border-[#3B82F6]/50'
+                : 'text-[#8B92B3] hover:text-[#E2E8F0] hover:bg-[#1E253E]/40'
             }`}
           >
             {filterOption.label}
-            <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
-              newsFilter === filterOption.id ? 'bg-gray-100 dark:bg-slate-500 text-gray-700 dark:text-slate-200' : 'bg-gray-200 dark:bg-slate-600 text-gray-600 dark:text-slate-400'
+            <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              newsFilter === filterOption.id 
+                ? 'bg-[#3B82F6]/40 text-[#BFDBFE]' 
+                : 'bg-[#1E253E]/60 text-[#64748B]'
             }`}>
               {filterOption.count}
             </span>

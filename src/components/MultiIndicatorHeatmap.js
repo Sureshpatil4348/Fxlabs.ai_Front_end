@@ -823,31 +823,33 @@ useEffect(() => {
   
   return (
     <>
-    <div className="widget-card h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
-      {/* Header */}
-      <div className="mb-2 px-4">
+    <div className="widget-card h-full flex flex-col custom-scrollbar" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
+      {/* Premium header with enhanced styling */}
+      <div className="mb-3 px-5 pt-1">
         {/* Top Row - Title, Trading Signals, and Controls */}
-        <div className="widget-header flex items-center justify-between mb-2">
-          {/* Title */}
-          <div className="flex items-center space-x-2">
-            <img src={quantImage} alt="Quantum" className="w-5 h-5" />
-            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">Quantum Analysis</h2>
+        <div className="widget-header flex items-center justify-between mb-3">
+          {/* Title with premium gradient */}
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-[#6366F1]/20 to-[#8B5CF6]/20 rounded-xl backdrop-blur-sm border border-[#6366F1]/30">
+              <img src={quantImage} alt="Quantum" className="w-5 h-5 opacity-90" />
+            </div>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-[#818CF8] via-[#A78BFA] to-[#C4B5FD] bg-clip-text text-transparent tracking-tight">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
           <div className="flex items-center space-x-1">
-          {/* Alert Bell Icon */}
+          {/* Premium Alert Bell Icon */}
           {user && (
-            <div className="flex items-center">
+            <div className="flex items-center space-x-1">
               <button 
                 type="button"
                 aria-label="Configure heatmap alerts"
                 onClick={handleBellClick}
-                className="relative p-1 text-gray-400 hover:text-blue-500 transition-colors duration-300 group"
+                className="relative p-2 rounded-lg bg-[#1E253E]/40 hover:bg-[#6366F1]/20 text-[#8B92B3] hover:text-[#818CF8] transition-all duration-300 group border border-[#1E253E]/50 hover:border-[#6366F1]/30"
               >
                 <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 {activeAlertsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg">
                     {activeAlertsCount > 9 ? '9+' : activeAlertsCount}
                   </span>
                 )}
@@ -856,40 +858,42 @@ useEffect(() => {
                 type="button"
                 aria-label="Configure custom indicator alert"
                 onClick={handleIndicatorConfigOpen}
-                className="relative p-1 text-gray-400 hover:text-indigo-500 transition-colors duration-300 group ml-1"
+                className="relative p-2 rounded-lg bg-[#1E253E]/40 hover:bg-[#8B5CF6]/20 text-[#8B92B3] hover:text-[#A78BFA] transition-all duration-300 group border border-[#1E253E]/50 hover:border-[#8B5CF6]/30"
               >
                 <Sliders className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
               </button>
             </div>
           )}
           
-          {/* Symbol Dropdown */}
+          {/* Premium Symbol Dropdown */}
           <div className="flex items-center space-x-1">
             <div className="relative" ref={symbolDropdownRef}>
               <div className="relative">
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-3 pr-8 py-2 bg-[#1E253E]/40 text-[#E2E8F0] text-xs font-bold border border-[#1E253E]/50 rounded-lg transition-all duration-300 min-w-[90px] cursor-pointer hover:bg-[#1E253E]/60 hover:border-[#6366F1]/30 shadow-sm"
                 >
                   {dropdownOptions.find(opt => opt.value === currentSymbol)?.label || currentSymbol}
                 </button>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className={`w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className={`w-3 h-3 text-[#8B92B3] transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
                 
-                {/* Custom Dropdown Menu */}
+                {/* Premium Custom Dropdown Menu */}
                 {isSymbolDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border-0 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-2 w-full bg-[#13182E] border border-[#1E253E]/50 rounded-xl shadow-2xl z-50 max-h-48 overflow-y-auto custom-scrollbar backdrop-blur-xl">
                     {dropdownOptions.map(option => (
                       <button
                         key={option.value}
                         onClick={() => {
                           handleSymbolChange(option.value);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
-                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-semibold' : 'text-gray-700 dark:text-slate-300'
+                        className={`w-full text-left px-4 py-2.5 text-xs transition-all duration-200 ${
+                          option.value === currentSymbol 
+                            ? 'bg-gradient-to-r from-[#6366F1]/20 to-[#8B5CF6]/20 text-[#C4B5FD] font-bold border-l-2 border-[#6366F1]' 
+                            : 'text-[#8B92B3] hover:bg-[#1E253E]/60 hover:text-[#E2E8F0]'
                         }`}
                       >
                         {option.label}
@@ -901,7 +905,7 @@ useEffect(() => {
             </div>
           </div>
           
-          {/* Style Dropdown */}
+          {/* Premium Style Dropdown */}
           <div className="flex items-center space-x-1">
             <div className="relative">
               <div 
@@ -913,13 +917,13 @@ useEffect(() => {
                 <select
                   value={tradingStyle}
                   onChange={(e) => handleTradingStyleChange(e.target.value)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-3 pr-8 py-2 bg-[#1E253E]/40 text-[#E2E8F0] text-xs font-bold border border-[#1E253E]/50 rounded-lg transition-all duration-300 min-w-[110px] cursor-pointer hover:bg-[#1E253E]/60 hover:border-[#6366F1]/30 shadow-sm"
                 >
-                <option value="scalper">Scalper</option>
-                <option value="swingTrader">Swing Trader</option>
+                <option value="scalper" className="bg-[#13182E] text-[#E2E8F0]">Scalper</option>
+                <option value="swingTrader" className="bg-[#13182E] text-[#E2E8F0]">Swing Trader</option>
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className="w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className="w-3 h-3 text-[#8B92B3] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -1081,25 +1085,25 @@ useEffect(() => {
             </div>
           )}
       
-      {/* Heatmap Table - Full Height */}
-      <div className="overflow-x-auto overflow-y-hidden lg:overflow-y-auto flex-1 min-w-0 min-h-0">
+      {/* Premium Heatmap Table - Full Height */}
+      <div className="overflow-x-auto overflow-y-hidden lg:overflow-y-auto flex-1 min-w-0 min-h-0 custom-scrollbar">
         <table className="w-full border-collapse min-w-[600px]">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-slate-600">
-              <th className="text-left py-0.5 sm:py-1 px-1 font-bold text-gray-700 dark:text-slate-300 text-sm w-20"></th>
+            <tr className="border-b-2 border-[#1E253E]/60">
+              <th className="text-left py-2 sm:py-3 px-2 font-bold text-[#8B92B3] text-sm w-20"></th>
               {indicators.map(indicator => (
-                <th key={indicator} className="text-center py-0.5 sm:py-1 px-0.5 text-gray-700 dark:text-slate-300">
-                  <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
+                <th key={indicator} className="text-center py-2 sm:py-3 px-1 text-[#8B92B3]">
+                  <span className="text-xs font-extrabold tracking-wide">{formatIndicatorDisplay(indicator)}</span>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {[...new Set(timeframes)].filter(tf => tf !== '1W').map((timeframe) => (
-              <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                <td className="py-0.5 sm:py-1 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
+              <tr key={timeframe} className="border-b border-[#1E253E]/30 hover:bg-[#1E253E]/20 transition-colors duration-200">
+                <td className="py-2 sm:py-2.5 px-2 font-semibold text-[#C4B5FD] text-xs">
                   <div className="flex items-center space-x-1 ml-2">
-                    <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>
+                    <span className="text-sm font-bold tracking-wide">{formatTimeframeDisplay(timeframe)}</span>
                   </div>
                 </td>
                 {indicators.map(indicator => {
@@ -1187,46 +1191,48 @@ useEffect(() => {
               </tr>
             ))}
             
-            {/* Buy/Sell Progress Bar Row */}
-            <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
-              <td className="py-0.5 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
+            {/* Premium Buy/Sell Progress Bar Row */}
+            <tr className="border-b-0 bg-[#1E253E]/20" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
+              <td className="py-2 px-2 font-medium text-[#8B92B3] text-xs">
                 <div className="flex items-center space-x-1 ml-2">
                 </div>
               </td>
-              <td colSpan={indicators.length} className="py-1 px-1">
+              <td colSpan={indicators.length} className="py-3 px-2">
                 <div className="flex items-center justify-center">
                   {(() => {
                     const buyPct = finalResults.buyNowPercent;
                     const sellPct = finalResults.sellNowPercent;
                     
                     return (
-                      <div className="flex items-center gap-3 w-full">
+                      <div className="flex items-center gap-4 w-full">
                         <span 
-                          className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap -ml-16"
+                          className="text-sm font-extrabold bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent whitespace-nowrap -ml-16 tracking-wide"
                         >BUY {buyPct.toFixed(1)}%</span>
                         <div className="flex-1 relative">
-                          <div className="w-full h-4 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
+                          <div className="w-full h-5 bg-[#1E253E]/60 rounded-full overflow-hidden border border-[#1E253E]/40 shadow-inner">
                             <div 
-                              className="h-full transition-all duration-500 ease-out"
+                              className="h-full transition-all duration-500 ease-out shadow-lg"
                               style={{ 
                                 width: `${buyPct}%`,
-                                background: '#03c05d',
-                                borderRadius: '8px 0 0 8px'
+                                background: 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
+                                borderRadius: '12px 0 0 12px',
+                                boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
                               }}
                             />
                             <div 
-                              className="absolute top-0 h-full transition-all duration-500 ease-out"
+                              className="absolute top-0 h-full transition-all duration-500 ease-out shadow-lg"
                               style={{ 
                                 left: `${buyPct}%`,
                                 width: `${sellPct}%`,
-                                background: '#dc2626',
-                                borderRadius: '0 8px 8px 0'
+                                background: 'linear-gradient(90deg, #EF4444 0%, #DC2626 100%)',
+                                borderRadius: '0 12px 12px 0',
+                                boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)'
                               }}
                             />
                           </div>
                         </div>
                         <span 
-                          className="text-xs font-bold text-red-600 dark:text-red-400 whitespace-nowrap m-2"
+                          className="text-sm font-extrabold bg-gradient-to-r from-[#EF4444] to-[#DC2626] bg-clip-text text-transparent whitespace-nowrap m-2 tracking-wide"
                         >SELL {sellPct.toFixed(1)}%</span>
                       </div>
                     );
