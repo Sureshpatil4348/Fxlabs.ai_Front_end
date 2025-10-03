@@ -67,10 +67,12 @@ class WebSocketService {
         };
 
         this.ws.onmessage = (event) => {
-          // Parse and route message via router (no per-message logging)
+          // Log full payload of every message, then parse and route
           if (event?.data instanceof Blob) {
             event.data.text().then((text) => {
               try {
+                // Full raw payload (Blob -> text)
+                console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, text);
                 const message = JSON.parse(text);
                 websocketMessageRouter.routeMessage(message, text);
               } catch (error) {
@@ -81,6 +83,16 @@ class WebSocketService {
             });
           } else {
             try {
+              // Full raw payload (string or other)
+              if (typeof event?.data === 'string') {
+                console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, event.data);
+              } else {
+                try {
+                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, JSON.stringify(event?.data));
+                } catch (_e) {
+                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received (non-string)`, event?.data);
+                }
+              }
               const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
               websocketMessageRouter.routeMessage(message, event?.data);
             } catch (error) {
