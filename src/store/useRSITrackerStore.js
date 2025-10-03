@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import useBaseMarketStore from './useBaseMarketStore';
 import websocketService from '../services/websocketService';
+import indicatorService from '../services/indicatorService';
 // Note: All calculations are now performed server-side
 // RSI, RFI, and other indicators should be received from WebSocket/API
 
@@ -444,6 +445,34 @@ const useRSITrackerStore = create(
         setTimeout(() => {
           get().recalculateAllRsi();
         }, 1500);
+
+        // Fire-and-forget REST snapshot fetch to pre-populate RSI values quickly
+        (async () => {
+          try {
+            const symbols = (updatedSettings.autoSubscribeSymbols || state.settings.autoSubscribeSymbols || []).slice(0, 32);
+            if (symbols.length === 0) return;
+            const res = await indicatorService.fetchIndicatorSnapshot({
+              indicator: 'rsi',
+              timeframe: updatedSettings.timeframe,
+              pairs: symbols
+            });
+            const pairs = res?.pairs || [];
+            if (pairs.length > 0) {
+              const newRsiData = new Map(get().rsiData);
+              pairs.forEach((p) => {
+                newRsiData.set(p.symbol, {
+                  value: p.value,
+                  period: 14,
+                  timeframe: p.timeframe,
+                  updatedAt: new Date(p.ts || Date.now())
+                });
+              });
+              set({ rsiData: newRsiData });
+            }
+          } catch (_e) {
+            // Silent fail; websocket will populate shortly
+          }
+        })();
       }
       
       // If RSI thresholds changed, recalculate (period is fixed)

@@ -271,6 +271,44 @@ const RSICorrelationDashboard = () => {
     }
   }, [subscriptions.size, localSettings.calculationMode, recalculateAllRsi, calculateAllCorrelations]);
 
+  // Fetch initial RSI snapshot for correlation pairs on mount and when timeframe changes
+  useEffect(() => {
+    let cancelled = false;
+    const fetchInitial = async () => {
+      try {
+        const pairs = correlationPairs ? [...(correlationPairs.positive||[]), ...(correlationPairs.negative||[])] : [];
+        const symbols = Array.from(new Set(pairs.flat().map((s) => s + 'm'))).slice(0, 32);
+        if (symbols.length === 0 || !settings?.timeframe) return;
+        const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
+        const res = await fetchIndicatorSnapshot({
+          indicator: 'rsi',
+          timeframe: settings.timeframe,
+          pairs: symbols
+        });
+        if (cancelled) return;
+        const entries = res?.pairs || [];
+        if (entries.length > 0) {
+          // Push into rsiData map in store via updateSettings noop; use direct store set to avoid resets
+          const { rsiData } = useRSICorrelationStore.getState();
+          const next = new Map(rsiData);
+          entries.forEach((p) => {
+            next.set(p.symbol, {
+              value: p.value,
+              period: 14,
+              timeframe: p.timeframe,
+              updatedAt: new Date(p.ts || Date.now())
+            });
+          });
+          useRSICorrelationStore.setState({ rsiData: next });
+        }
+      } catch (_e) {
+        // silent; websocket will fill
+      }
+    };
+    fetchInitial();
+    return () => { cancelled = true; };
+  }, [settings?.timeframe, correlationPairs]);
+
   // React to data changes to ensure UI updates
   useEffect(() => {
   }, [correlationStatus, realCorrelationData]);

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import websocketService from '../services/websocketService';
+import indicatorService from '../services/indicatorService';
 
 // Note: All calculations are now performed server-side
 // RSI, correlations, and other indicators should be received from WebSocket/API
@@ -422,6 +423,36 @@ const useRSICorrelationStore = create(
             get().calculateAllCorrelations();
           }
         }, 1500);
+
+        // Fire-and-forget REST snapshot fetch for RSI across correlation pairs
+        (async () => {
+          try {
+            const stateNow = get();
+            const allPairs = [...stateNow.correlationPairs.positive, ...stateNow.correlationPairs.negative];
+            const symbols = Array.from(new Set(allPairs.flat().map((s) => s + 'm'))).slice(0, 32);
+            if (symbols.length === 0) return;
+            const res = await indicatorService.fetchIndicatorSnapshot({
+              indicator: 'rsi',
+              timeframe: updatedSettings.timeframe,
+              pairs: symbols
+            });
+            const pairs = res?.pairs || [];
+            if (pairs.length > 0) {
+              const newRsiData = new Map(get().rsiData);
+              pairs.forEach((p) => {
+                newRsiData.set(p.symbol, {
+                  value: p.value,
+                  period: 14,
+                  timeframe: p.timeframe,
+                  updatedAt: new Date(p.ts || Date.now())
+                });
+              });
+              set({ rsiData: newRsiData });
+            }
+          } catch (_e) {
+            // Silent fail; websocket will populate shortly
+          }
+        })();
       }
       
       // If RSI thresholds changed, recalculate (period is fixed)

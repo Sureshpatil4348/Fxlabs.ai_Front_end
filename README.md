@@ -1712,3 +1712,15 @@ This project is licensed under the MIT License.
   - `src/store/useRSICorrelationStore.js` (timeframe change resets `correlationStatus`, `realCorrelationData`, `rsiData`, `rsiDataByTimeframe`, `indicatorData`, `tickData`)
   - `src/components/RSIOverboughtOversoldTracker.js` (TODO note on settings save)
   - `src/components/RSICorrelationDashboard.js` (TODO note on settings save and mode toggle)
+
+### REST Snapshot + WebSocket Merge (Initial Load Pattern)
+- On mount and on configuration changes (e.g., timeframe), fetch initial closed‑bar indicator values via REST:
+  - Service: `src/services/indicatorService.js` → `GET https://api.fxlabs.ai/api/indicator?indicator=rsi&timeframe=<TF>&pairs=...`
+  - Stores/components merge the snapshot into `rsiData` to render immediately, then live `indicator_update` pushes keep it fresh.
+- Implementations:
+  - `src/store/useRSITrackerStore.js`: fires REST snapshot on timeframe change; populates `rsiData`.
+  - `src/store/useRSICorrelationStore.js`: fires REST snapshot on timeframe change for correlation pairs; populates `rsiData`.
+  - `src/components/RSIOverboughtOversoldTracker.js`: fetches on mount/timeframe change.
+  - `src/components/RSICorrelationDashboard.js`: fetches on mount/timeframe change.
+- Notes:
+  - REST base is fixed: `https://api.fxlabs.ai` (no env vars required).

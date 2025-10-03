@@ -276,6 +276,42 @@ const RSIOverboughtOversoldTracker = () => {
     loadSettings();
   }, [user, updateSettings]);
 
+  // Fetch initial RSI snapshot on mount and whenever timeframe or autosubscribe symbols change
+  useEffect(() => {
+    let cancelled = false;
+    const fetchInitial = async () => {
+      try {
+        const symbols = (settings?.autoSubscribeSymbols || []).slice(0, 32);
+        if (symbols.length === 0 || !settings?.timeframe) return;
+        const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
+        const res = await fetchIndicatorSnapshot({
+          indicator: 'rsi',
+          timeframe: settings.timeframe,
+          pairs: symbols
+        });
+        if (cancelled) return;
+        const pairs = res?.pairs || [];
+        if (pairs.length > 0) {
+          const newRsiData = new Map(rsiData);
+          pairs.forEach((p) => {
+            newRsiData.set(p.symbol, {
+              value: p.value,
+              period: 14,
+              timeframe: p.timeframe,
+              updatedAt: new Date(p.ts || Date.now())
+            });
+          });
+          // Update store
+          useRSITrackerStore.setState({ rsiData: newRsiData });
+        }
+      } catch (_e) {
+        // silent; websocket will fill
+      }
+    };
+    fetchInitial();
+    return () => { cancelled = true; };
+  }, [settings.timeframe, settings?.autoSubscribeSymbols]);
+
   const handleAddToWishlist = (symbol) => {
     addToWishlist(symbol);
     try {
