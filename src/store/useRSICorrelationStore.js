@@ -49,7 +49,8 @@ const useRSICorrelationStore = create(
     indicatorData: new Map(), // symbol -> indicator snapshots
     
     // RSI Data
-    rsiData: new Map(), // symbol -> RSI values
+    rsiData: new Map(), // symbol -> RSI values (active timeframe only)
+    rsiDataByTimeframe: new Map(), // symbol -> Map(timeframe -> { value, period, timeframe, updatedAt })
     
     // Dashboard-specific settings
     settings: {
@@ -81,8 +82,13 @@ const useRSICorrelationStore = create(
       
       // Register with centralized message router
       websocketService.registerStore('rsiCorrelation', {
-        messageHandler: (_message, _rawData) => {
-          // v2 probe: no logging - handled by router
+        messageHandler: (message, _rawData) => {
+          try {
+            get().handleMessage(message);
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('[RSICorrelation] handleMessage error:', e);
+          }
         },
         connectionCallback: () => {
           set({ isConnected: true, isConnecting: false });
@@ -212,31 +218,66 @@ const useRSICorrelationStore = create(
           break;
           
         case 'initial_indicators':
-          // Handle initial indicator snapshots
-          const initialIndicatorData = new Map(state.indicatorData || new Map());
-          if (message.data && message.data.symbol) {
-            initialIndicatorData.set(message.data.symbol, {
-              symbol: message.data.symbol,
-              timeframe: message.data.timeframe,
-              indicators: message.data.indicators,
-              barTime: message.data.bar_time,
-              lastUpdate: new Date()
-            });
-            set({ indicatorData: initialIndicatorData });
-            get().addLog(`Received initial indicators for ${message.data.symbol}`, 'info');
-            
-            // Update RSI data if available
-            if (message.data.indicators && message.data.indicators.rsi) {
-              const newRsiData = new Map(state.rsiData);
-              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+          {
+            const symbol = message.symbol || message?.data?.symbol;
+            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
+            const indicators = message?.data?.indicators || message?.indicators;
+            const barTime = message?.data?.bar_time ?? message?.bar_time;
+
+            if (!symbol || !indicators) break;
+
+            const indicatorDataMap = new Map(state.indicatorData || new Map());
+            const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
+            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+
+            if (timeframe) {
+              tfMap.set(timeframe, {
+                indicators,
+                barTime,
+                lastUpdate: new Date()
+              });
+            }
+
+            existing.symbol = symbol;
+            if (timeframe) existing.timeframe = timeframe;
+            existing.indicators = indicators;
+            existing.barTime = barTime;
+            existing.lastUpdate = new Date();
+            existing.timeframes = tfMap;
+
+            indicatorDataMap.set(symbol, existing);
+            set({ indicatorData: indicatorDataMap });
+            get().addLog(`Received initial indicators for ${symbol}${timeframe ? ' (' + timeframe + ')' : ''}`, 'info');
+
+            if (indicators && indicators.rsi) {
+              const rsiPeriodKey = Object.keys(indicators.rsi)[0];
+              const rsiValue = indicators.rsi[rsiPeriodKey];
               if (typeof rsiValue === 'number') {
-                newRsiData.set(message.data.symbol, {
-                  value: rsiValue,
-                  period: Object.keys(message.data.indicators.rsi)[0],
-                  timeframe: message.data.timeframe,
-                  updatedAt: new Date()
-                });
-                set({ rsiData: newRsiData });
+                // Store per-timeframe RSI
+                const byTf = new Map(state.rsiDataByTimeframe || new Map());
+                const symTfMap = byTf.get(symbol) instanceof Map ? byTf.get(symbol) : new Map(byTf.get(symbol) || []);
+                if (timeframe) {
+                  symTfMap.set(timeframe, {
+                    value: rsiValue,
+                    period: rsiPeriodKey,
+                    timeframe,
+                    updatedAt: new Date()
+                  });
+                }
+                byTf.set(symbol, symTfMap);
+                set({ rsiDataByTimeframe: byTf });
+
+                // Update flat RSI only if this timeframe matches current dashboard setting
+                if (!timeframe || timeframe === state.settings.timeframe) {
+                  const newRsiData = new Map(state.rsiData);
+                  newRsiData.set(symbol, {
+                    value: rsiValue,
+                    period: rsiPeriodKey,
+                    timeframe: timeframe || state.settings.timeframe,
+                    updatedAt: new Date()
+                  });
+                  set({ rsiData: newRsiData });
+                }
               }
             }
           }
@@ -254,30 +295,65 @@ const useRSICorrelationStore = create(
           break;
           
         case 'indicator_update':
-          // Handle live indicator updates
-          const currentIndicatorData = new Map(state.indicatorData || new Map());
-          if (message.data && message.data.symbol) {
-            currentIndicatorData.set(message.data.symbol, {
-              symbol: message.data.symbol,
-              timeframe: message.data.timeframe,
-              indicators: message.data.indicators,
-              barTime: message.data.bar_time,
-              lastUpdate: new Date()
-            });
-            set({ indicatorData: currentIndicatorData });
+          {
+            const symbol = message.symbol || message?.data?.symbol;
+            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
+            const indicators = message?.data?.indicators || message?.indicators;
+            const barTime = message?.data?.bar_time ?? message?.bar_time;
+
+            if (!symbol || !indicators) break;
+
+            const indicatorDataMap = new Map(state.indicatorData || new Map());
+            const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
+            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+
+            if (timeframe) {
+              tfMap.set(timeframe, {
+                indicators,
+                barTime,
+                lastUpdate: new Date()
+              });
+            }
+
+            existing.symbol = symbol;
+            if (timeframe) existing.timeframe = timeframe;
+            existing.indicators = indicators;
+            existing.barTime = barTime;
+            existing.lastUpdate = new Date();
+            existing.timeframes = tfMap;
+
+            indicatorDataMap.set(symbol, existing);
+            set({ indicatorData: indicatorDataMap });
             
-            // Update RSI data if available
-            if (message.data.indicators && message.data.indicators.rsi) {
-              const newRsiData = new Map(state.rsiData);
-              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
+            if (indicators && indicators.rsi) {
+              const rsiPeriodKey = Object.keys(indicators.rsi)[0];
+              const rsiValue = indicators.rsi[rsiPeriodKey];
               if (typeof rsiValue === 'number') {
-                newRsiData.set(message.data.symbol, {
-                  value: rsiValue,
-                  period: Object.keys(message.data.indicators.rsi)[0],
-                  timeframe: message.data.timeframe,
-                  updatedAt: new Date()
-                });
-                set({ rsiData: newRsiData });
+                // Store per-timeframe RSI
+                const byTf = new Map(state.rsiDataByTimeframe || new Map());
+                const symTfMap = byTf.get(symbol) instanceof Map ? byTf.get(symbol) : new Map(byTf.get(symbol) || []);
+                if (timeframe) {
+                  symTfMap.set(timeframe, {
+                    value: rsiValue,
+                    period: rsiPeriodKey,
+                    timeframe,
+                    updatedAt: new Date()
+                  });
+                }
+                byTf.set(symbol, symTfMap);
+                set({ rsiDataByTimeframe: byTf });
+
+                // Update flat RSI only if this timeframe matches current dashboard setting
+                if (!timeframe || timeframe === state.settings.timeframe) {
+                  const newRsiData = new Map(state.rsiData);
+                  newRsiData.set(symbol, {
+                    value: rsiValue,
+                    period: rsiPeriodKey,
+                    timeframe: timeframe || state.settings.timeframe,
+                    updatedAt: new Date()
+                  });
+                  set({ rsiData: newRsiData });
+                }
               }
             }
           }

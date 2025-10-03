@@ -12,6 +12,10 @@ class WebSocketMessageRouter {
     this.connectionCallbacks = new Map(); // storeName -> callback
     this.disconnectionCallbacks = new Map(); // storeName -> callback
     this.errorCallbacks = new Map(); // storeName -> callback
+    // Debug logging flag (env driven)
+    this.enableDebugLogs = (
+      (process.env.REACT_APP_ENABLE_WS_ROUTER_DEBUG || 'false')
+    ).toString().toLowerCase() === 'true';
   }
 
   /**
@@ -55,7 +59,7 @@ class WebSocketMessageRouter {
       this.routes.get(messageType).add(storeName);
     });
 
-    console.log(`[Router] Registered store: ${storeName} for message types: ${subscribedMessageTypes.join(', ')}`);
+    console.log(`[Router][${new Date().toISOString()}] Registered store: ${storeName} for message types: ${subscribedMessageTypes.join(', ')}`);
   }
 
   /**
@@ -77,7 +81,7 @@ class WebSocketMessageRouter {
     this.disconnectionCallbacks.delete(storeName);
     this.errorCallbacks.delete(storeName);
 
-    console.log(`[Router] Unregistered store: ${storeName}`);
+    console.log(`[Router][${new Date().toISOString()}] Unregistered store: ${storeName}`);
   }
 
   /**
@@ -87,13 +91,13 @@ class WebSocketMessageRouter {
    */
   routeMessage(message, rawData) {
     if (!message || typeof message !== 'object') {
-      console.warn('[Router] Invalid message format:', message);
+      console.warn(`[Router][${new Date().toISOString()}] Invalid message format:`, message);
       return;
     }
 
     const messageType = message.type;
     if (!messageType) {
-      console.warn('[Router] Message missing type field:', message);
+      console.warn(`[Router][${new Date().toISOString()}] Message missing type field:`, message);
       return;
     }
 
@@ -121,22 +125,21 @@ class WebSocketMessageRouter {
         try {
           handler(message, rawData);
         } catch (error) {
-          console.error(`[Router] Error in ${storeName} handler:`, error);
+          console.error(`[Router][${new Date().toISOString()}] Error in ${storeName} handler:`, error);
         }
       }
     });
 
-    // Log routing info for debugging (skip noisy types like 'ticks')
-    if (messageType !== 'connected' && messageType !== 'ticks') {
+    // Always log indicator updates verbosely
+    if (messageType === 'indicator_update') {
+      console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
+      console.log(`[Router][${new Date().toISOString()}] Full ${messageType} message:`, JSON.stringify(message, null, 2));
+    } else if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'ticks') {
+      // Log other message types only when debug flag is enabled (skip noisy types like 'ticks')
       if (targetStores.size > 0) {
-        console.log(`[Router] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
-        
-        // Log full message content for specific message types
-        if (messageType === 'indicator_update') {
-          console.log(`[Router] Full ${messageType} message:`, JSON.stringify(message, null, 2));
-        }
+        console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
       } else {
-        console.log(`[Router] No stores registered for message type: ${messageType}`);
+        console.log(`[Router][${new Date().toISOString()}] No stores registered for message type: ${messageType}`);
       }
     }
   }
@@ -145,12 +148,12 @@ class WebSocketMessageRouter {
    * Notify all stores of connection
    */
   notifyConnection() {
-    console.log(`[Router] Connected - ${this.connectionCallbacks.size} stores registered`);
+    console.log(`[Router][${new Date().toISOString()}] Connected - ${this.connectionCallbacks.size} stores registered`);
     this.connectionCallbacks.forEach((callback, storeName) => {
       try {
         callback();
       } catch (error) {
-        console.error(`[Router] Error in ${storeName} connection callback:`, error);
+        console.error(`[Router][${new Date().toISOString()}] Error in ${storeName} connection callback:`, error);
       }
     });
   }
@@ -160,12 +163,12 @@ class WebSocketMessageRouter {
    * @param {object} event - Disconnection event
    */
   notifyDisconnection(event) {
-    console.log(`[Router] Notifying ${this.disconnectionCallbacks.size} stores of disconnection`);
+    console.log(`[Router][${new Date().toISOString()}] Notifying ${this.disconnectionCallbacks.size} stores of disconnection`);
     this.disconnectionCallbacks.forEach((callback, storeName) => {
       try {
         callback(event);
       } catch (error) {
-        console.error(`[Router] Error in ${storeName} disconnection callback:`, error);
+        console.error(`[Router][${new Date().toISOString()}] Error in ${storeName} disconnection callback:`, error);
       }
     });
   }
@@ -175,12 +178,12 @@ class WebSocketMessageRouter {
    * @param {object} error - Error object
    */
   notifyError(error) {
-    console.log(`[Router] Notifying ${this.errorCallbacks.size} stores of error`);
+    console.log(`[Router][${new Date().toISOString()}] Notifying ${this.errorCallbacks.size} stores of error`);
     this.errorCallbacks.forEach((callback, storeName) => {
       try {
         callback(error);
       } catch (err) {
-        console.error(`[Router] Error in ${storeName} error callback:`, err);
+        console.error(`[Router][${new Date().toISOString()}] Error in ${storeName} error callback:`, err);
       }
     });
   }
@@ -210,7 +213,7 @@ class WebSocketMessageRouter {
     this.connectionCallbacks.clear();
     this.disconnectionCallbacks.clear();
     this.errorCallbacks.clear();
-    console.log('[Router] Cleaned up all routes and handlers');
+    console.log(`[Router][${new Date().toISOString()}] Cleaned up all routes and handlers`);
   }
 }
 

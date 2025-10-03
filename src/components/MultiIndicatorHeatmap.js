@@ -566,11 +566,25 @@ useEffect(() => {
       return { error: 'NO_DATA', message: `No indicator data available for ${currentSymbol}` };
     }
 
-    // Get indicators from server data
-    const indicators = symbolIndicatorData.indicators || {};
-    
-    // Process each timeframe (using same data for all timeframes for now)
+    // Process each timeframe using per-timeframe data when available
     tfs.forEach(timeframe => {
+      const tfData = (symbolIndicatorData.timeframes instanceof Map)
+        ? symbolIndicatorData.timeframes.get(timeframe)
+        : null;
+      const indicators = (tfData && tfData.indicators) || symbolIndicatorData.indicators || {};
+      const rsiValue = (() => {
+        // Server may send RSI as object keyed by period (e.g., { '14': 56.7 })
+        if (indicators.rsi && typeof indicators.rsi === 'object' && !Array.isArray(indicators.rsi)) {
+          const periodKey = Object.keys(indicators.rsi)[0];
+          const v = indicators.rsi[periodKey];
+          return typeof v === 'number' ? v : 50;
+        }
+        // or sometimes as a direct number
+        if (typeof indicators.rsi === 'number') {
+          return indicators.rsi;
+        }
+        return 50;
+      })();
       data[timeframe] = {
         EMA21: { 
           hasData: indicators.ema && indicators.ema['21'] !== undefined, 
@@ -614,7 +628,7 @@ useEffect(() => {
         },
         RSI: { 
           hasData: indicators.rsi !== undefined, 
-          value: indicators.rsi || 50,
+          value: rsiValue,
           signal: 'neutral',
           new: false,
           reason: 'Server calculated',

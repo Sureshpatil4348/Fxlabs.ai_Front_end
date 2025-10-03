@@ -78,9 +78,9 @@ All technical indicator calculations are now performed server-side:
 - `src/services/websocketService.js` - Updated to use `/market-v2` endpoint
 - `src/services/websocketMessageRouter.js` - Routes `indicator_update` messages
 - `src/store/useMarketStore.js` - Handles `initial_indicators` and `indicator_update` messages
-- `src/store/useRSITrackerStore.js` - Updated to use indicator data instead of OHLC
-- `src/store/useRSICorrelationStore.js` - Updated to use indicator data instead of OHLC
-- `src/store/useCurrencyStrengthStore.js` - Updated to use tick data instead of OHLC
+- `src/store/useRSITrackerStore.js` - Uses server indicator data; now stores per-timeframe snapshots per symbol
+- `src/store/useRSICorrelationStore.js` - Uses server indicator data; now stores per-timeframe snapshots per symbol
+- `src/store/useCurrencyStrengthStore.js` - Uses server indicator data; now stores per-timeframe snapshots per symbol
 - `src/components/OHLCDataView.js` - Renamed to `IndicatorDataView.js` and updated to display indicators
 - `src/components/TradingViewChart.js` - Updated to use tick data for line charts
 - `src/components/RSIOverboughtOversoldTracker.js` - Updated to use tick data for price display
@@ -92,7 +92,10 @@ All technical indicator calculations are now performed server-side:
 3. **Server sends** `initial_indicators` snapshots for all subscribed symbols
 4. **Server streams** `ticks` for real-time price updates
 5. **Server streams** `indicator_update` when new closed-bar indicators are computed
-6. **Frontend stores** receive and process indicator data for display
+6. **Frontend stores** receive and process indicator data for display (normalized)
+   - Normalization: payloads may include `symbol`/`timeframe` at top-level or under `data`. Stores accept both.
+   - Storage format: `indicatorData` keeps both backward-compatible flat fields and a `timeframes: Map<tf, { indicators, barTime, lastUpdate }>` per symbol.
+   - UI reads per-timeframe indicators when available; otherwise falls back to latest flat indicators.
 
 ### Migration Notes
 - **No OHLC data**: Components that previously used OHLC data now use tick data or indicator data
@@ -101,6 +104,9 @@ All technical indicator calculations are now performed server-side:
 - **Performance**: Reduced client-side processing and improved real-time responsiveness
 
 ### Console Warning Cleanup (Latest)
+### WebSocket Router Logging
+- `indicator_update` messages are always logged with routing summary and full payload (for verification during live updates).
+- Other message types are logged only when `REACT_APP_ENABLE_WS_ROUTER_DEBUG=true` (default `false`).
 - Removed all console warnings related to disabled WebSocket subscribe/unsubscribe functions in probe mode
 - Removed all console warnings about server-side RSI calculations being called
 - Cleaned up warning messages in all store files to reduce console noise during development
@@ -214,14 +220,13 @@ Usage notes (WebSocket):
 - Ensured RSI recalculation does not depend on subscription ACKs: after reconnect, RSI is computed for all symbols present in OHLC buffers so cards populate immediately even if `subscribed` messages are delayed.
 - Affected file: `src/store/useRSICorrelationStore.js`
 
-### WebSocket Connection Logs (Latest) - OPTIMIZED
+### WebSocket Connection Logs (Latest) - OPTIMIZED WITH TIMESTAMPS
 - **Single Connection**: All stores now share one WebSocket connection via `websocketService.js`
 - Added explicit browser console logs on WebSocket connect/disconnect for faster debugging:
-  - `[WS][Shared-v2] Connected/Disconnected ...`
-  - `[WS][Market-v2][message]` (routed to market store)
-  - `[WS][RSI-Tracker-v2][message]` (routed to RSI tracker store)
-  - `[WS][RSI-Correlation-v2][message]` (routed to RSI correlation store)
-  - `[WS][CurrencyStrength-v2][message]` (routed to currency strength store)
+  - `[WS][Market-v2] Connected/Disconnected ...` with ISO timestamps
+  - `[Router][timestamp]` for all message routing logs with browser timestamps
+  - `[WS][Market-v2][timestamp]` for connection errors and reconnection attempts
+- **Enhanced Logging**: All WebSocket message logs now include browser timestamps for better debugging and performance analysis
 - Includes timestamp, close code, and reason (when available).
 - **Optimized Architecture**:
   - `src/services/websocketService.js` (NEW - shared connection manager)

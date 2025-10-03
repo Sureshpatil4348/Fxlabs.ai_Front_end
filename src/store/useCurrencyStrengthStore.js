@@ -91,8 +91,13 @@ const useCurrencyStrengthStore = create(
       
       // Register with centralized message router
       websocketService.registerStore('currencyStrength', {
-        messageHandler: (_message, _rawData) => {
-          // v2 probe: no logging - handled by router
+        messageHandler: (message, _rawData) => {
+          try {
+            get().handleMessage(message);
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('[CurrencyStrength] handleMessage error:', e);
+          }
         },
         connectionCallback: () => {
           set({ isConnected: true, isConnecting: false });
@@ -216,19 +221,38 @@ const useCurrencyStrengthStore = create(
           break;
           
         case 'initial_indicators':
-          const indicatorData = new Map(state.indicatorData || new Map());
-          if (message.data && message.data.symbol) {
-            indicatorData.set(message.data.symbol, {
-              symbol: message.data.symbol,
-              timeframe: message.data.timeframe,
-              indicators: message.data.indicators,
-              barTime: message.data.bar_time,
-              lastUpdate: new Date()
-            });
-            set({ indicatorData });
-            get().addLog(`Received initial indicators for ${message.data.symbol}`, 'info');
-            
-            // Trigger calculations when initial data is received
+          {
+            const symbol = message.symbol || message?.data?.symbol;
+            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
+            const indicators = message?.data?.indicators || message?.indicators;
+            const barTime = message?.data?.bar_time ?? message?.bar_time;
+
+            if (!symbol || !indicators) break;
+
+            const indicatorDataMap = new Map(state.indicatorData || new Map());
+            const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
+            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+
+            if (timeframe) {
+              tfMap.set(timeframe, {
+                indicators,
+                barTime,
+                lastUpdate: new Date()
+              });
+            }
+
+            existing.symbol = symbol;
+            if (timeframe) existing.timeframe = timeframe;
+            existing.indicators = indicators;
+            existing.barTime = barTime;
+            existing.lastUpdate = new Date();
+            existing.timeframes = tfMap;
+
+            indicatorDataMap.set(symbol, existing);
+            set({ indicatorData: indicatorDataMap });
+            get().addLog(`Received initial indicators for ${symbol}${timeframe ? ' (' + timeframe + ')' : ''}`, 'info');
+
+            // Optional: trigger calculation lightly after initial snapshot
             setTimeout(() => {
               get().calculateCurrencyStrength();
             }, 200);
@@ -253,22 +277,37 @@ const useCurrencyStrengthStore = create(
           break;
           
         case 'indicator_update':
-          const currentIndicatorData = new Map(state.indicatorData || new Map());
-          if (message.data && message.data.symbol) {
-            currentIndicatorData.set(message.data.symbol, {
-              symbol: message.data.symbol,
-              timeframe: message.data.timeframe,
-              indicators: message.data.indicators,
-              barTime: message.data.bar_time,
-              lastUpdate: new Date()
-            });
-            set({ indicatorData: currentIndicatorData });
+          {
+            const symbol = message.symbol || message?.data?.symbol;
+            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
+            const indicators = message?.data?.indicators || message?.indicators;
+            const barTime = message?.data?.bar_time ?? message?.bar_time;
+
+            if (!symbol || !indicators) break;
+
+            const indicatorDataMap = new Map(state.indicatorData || new Map());
+            const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
+            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+
+            if (timeframe) {
+              tfMap.set(timeframe, {
+                indicators,
+                barTime,
+                lastUpdate: new Date()
+              });
+            }
+
+            existing.symbol = symbol;
+            if (timeframe) existing.timeframe = timeframe;
+            existing.indicators = indicators;
+            existing.barTime = barTime;
+            existing.lastUpdate = new Date();
+            existing.timeframes = tfMap;
+
+            indicatorDataMap.set(symbol, existing);
+            set({ indicatorData: indicatorDataMap });
             
-            // Remove automatic strength recalculation to prevent flickering
-            // Currency strength will only update on manual refresh or scheduled intervals
-            // setTimeout(() => {
-            //   get().calculateCurrencyStrength();
-            // }, 100);
+            // Keep recalculation manual/scheduled to avoid flickering
           }
           break;
           
