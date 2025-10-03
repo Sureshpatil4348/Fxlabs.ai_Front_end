@@ -126,8 +126,8 @@ class WebSocketMessageRouter {
       }
     });
 
-    // Log routing info for debugging (only for non-connected messages to reduce noise)
-    if (messageType !== 'connected') {
+    // Log routing info for debugging (skip noisy types like 'ticks')
+    if (messageType !== 'connected' && messageType !== 'ticks') {
       if (targetStores.size > 0) {
         console.log(`[Router] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
       } else {

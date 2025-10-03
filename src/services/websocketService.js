@@ -67,12 +67,9 @@ class WebSocketService {
         };
 
         this.ws.onmessage = (event) => {
-          // v2 probe: log raw frames only, no state updates
+          // Parse and route message via router (no per-message logging)
           if (event?.data instanceof Blob) {
             event.data.text().then((text) => {
-              console.log('[WS][Shared-v2][message][blob->text]', text);
-              
-              // Parse and route message via router
               try {
                 const message = JSON.parse(text);
                 websocketMessageRouter.routeMessage(message, text);
@@ -83,9 +80,6 @@ class WebSocketService {
               console.error('[WS][Shared-v2] Failed to read blob data:', e);
             });
           } else {
-            console.log('[WS][Shared-v2][message]', event?.data);
-            
-            // Parse and route message via router
             try {
               const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
               websocketMessageRouter.routeMessage(message, event?.data);

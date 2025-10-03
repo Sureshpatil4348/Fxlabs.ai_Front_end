@@ -41,16 +41,26 @@ All features that relied on client-side calculations now expect server-provided 
 - Currency Strength Meter (calculations)
 - RFI Score Cards (RFI components)
 
-## Migration Notice: Market v2 Probe (Step 1) - OPTIMIZED
+## Market v2 WebSocket Integration (Latest)
 
 - **WebSocket Optimization**: Consolidated 4 separate WebSocket connections into a single shared connection
 - **Performance Improvement**: Reduced connection overhead and improved resource efficiency
 - **Architecture**: All stores now use `src/services/websocketService.js` for centralized connection management
-- Legacy WebSocket data flows for market ticks/OHLC have been disabled temporarily.
-- Frontend now connects to the new WebSocket endpoint and logs raw frames only (no subscriptions, no state updates):
-  - Default endpoint: `wss://api.fxlabs.ai/market-v2`
-  - Override via `REACT_APP_WEBSOCKET_URL`
-- Purpose: verify integration connectivity and handshake while backend v2 is in progress.
+- Default endpoint: `wss://api.fxlabs.ai/market-v2` (override via `REACT_APP_WEBSOCKET_URL`).
+- Message router now actively routes and updates stores instead of logging only.
+- Handled message types (frontend):
+  - `connected`
+  - `ticks` (includes `daily_change_pct` per tick; preferred for Daily %)
+  - `ohlc_live` (forming candle stream)
+  - `initial_ohlc` (bootstrap bars)
+  - `ohlc_update` (update/append bars; closed-minute emissions)
+  - `indicator_update` (server-calculated indicators; e.g., RSI)
+  - `subscribed` / `unsubscribed` / `pong` / `error`
+- Affected files:
+  - `src/services/websocketService.js` (routes messages to stores)
+  - `src/services/websocketMessageRouter.js` (store/type routing)
+  - `src/store/useRSITrackerStore.js` (ticks/ohlc_live/ohlc_update/indicator_update handling; daily % uses tick.daily_change_pct when present)
+  - `src/components/RSIOverboughtOversoldTracker.js` (self-initiates connection on mount)
 - **Optimized files** (now using shared WebSocket service):
   - `src/services/websocketService.js` (NEW - shared connection manager)
   - `src/store/useMarketStore.js`

@@ -81,8 +81,13 @@ const useRSITrackerStore = create(
       
       // Register with centralized message router
       websocketService.registerStore('rsiTracker', {
-        messageHandler: (_message, _rawData) => {
-          // v2 probe: no logging - handled by router
+        messageHandler: (message, _rawData) => {
+          try {
+            get().handleMessage(message);
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('[RSITracker] handleMessage error:', e);
+          }
         },
         connectionCallback: () => {
           set({ isConnected: true, isConnecting: false });
@@ -129,7 +134,7 @@ const useRSITrackerStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_ohlc', 'ticks', 'ohlc_update', 'ohlc_live', 'indicator_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -333,6 +338,57 @@ const useRSITrackerStore = create(
             tickData.set(tick.symbol, existing);
           });
           set({ tickData });
+          break;
+
+        case 'ohlc_live':
+          // Treat similar to ohlc_update, but without assuming closure
+          {
+            const currentByTfLive = new Map(state.ohlcByTimeframe);
+            const perSymbolTfLive = new Map(currentByTfLive.get(message.data.symbol) || new Map());
+            const existingTfDataLive = perSymbolTfLive.get(message.data.timeframe) || perSymbolTfLive.get(((t)=>{
+              const u=(t||'').toUpperCase();
+              return ({M1:'1M',M5:'5M',M15:'15M',M30:'30M',H1:'1H',H4:'4H',D1:'1D',W1:'1W'})[u]||u;
+            })(message.data.timeframe));
+            const tfBarsLive = existingTfDataLive ? [...existingTfDataLive.bars] : [];
+            const toTimeLive = (t) => { const n = Number(t); return Number.isFinite(n) ? n : Date.parse(t); };
+            const tfLastLive = tfBarsLive[tfBarsLive.length - 1];
+            if (tfLastLive && toTimeLive(tfLastLive.time) === toTimeLive(message.data.time)) {
+              tfBarsLive[tfBarsLive.length - 1] = message.data;
+            } else {
+              tfBarsLive.push(message.data);
+              if (tfBarsLive.length > 100) tfBarsLive.shift();
+            }
+            const tfEntryLive = { symbol: message.data.symbol, timeframe: message.data.timeframe, bars: tfBarsLive, lastUpdate: new Date() };
+            const toUiAliasLive = (t) => { const u=(t||'').toUpperCase(); return ({M1:'1M',M5:'5M',M15:'15M',M30:'30M',H1:'1H',H4:'4H',D1:'1D',W1:'1W'})[u]||u; };
+            perSymbolTfLive.set(message.data.timeframe, tfEntryLive);
+            perSymbolTfLive.set(toUiAliasLive(message.data.timeframe), tfEntryLive);
+            currentByTfLive.set(message.data.symbol, perSymbolTfLive);
+            set({ ohlcByTimeframe: currentByTfLive });
+          }
+          break;
+
+        case 'indicator_update':
+          // Structure expected: { type: 'indicator_update', data: { symbol, timeframe, indicators: { rsi: { period, value }, ... } } }
+          try {
+            const { data } = message;
+            if (data && data.symbol) {
+              const newRsiData = new Map(state.rsiData);
+              const rsiPayload = data.indicators?.rsi;
+              if (rsiPayload && typeof rsiPayload.value === 'number') {
+                newRsiData.set(data.symbol, { value: rsiPayload.value, period: rsiPayload.period || get().settings.rsiPeriod, timeframe: data.timeframe, updatedAt: new Date() });
+                set({ rsiData: newRsiData });
+                // Maintain minimal RSI history per symbol for event tracking (optional)
+                const historyMap = new Map(get().rsiHistory);
+                const hist = [...(historyMap.get(data.symbol) || [])];
+                hist.push({ time: Date.now(), value: rsiPayload.value });
+                if (hist.length > 200) hist.shift();
+                historyMap.set(data.symbol, hist);
+                set({ rsiHistory: historyMap });
+              }
+            }
+          } catch (_e) {
+            // ignore
+          }
           break;
           
         case 'ohlc_update':
@@ -842,6 +898,10 @@ const useRSITrackerStore = create(
 
     getDailyChangePercent: (symbol) => {
       const latestTick = get().getLatestTickForSymbol(symbol);
+      // Prefer server-provided daily_change_pct when available
+      if (latestTick && typeof latestTick.daily_change_pct === 'number') {
+        return latestTick.daily_change_pct;
+      }
       const latestBar = get().getLatestOhlcForSymbol(symbol);
       const currentPrice = latestTick?.bid || latestBar?.close;
       if (typeof currentPrice !== 'number') return 0;

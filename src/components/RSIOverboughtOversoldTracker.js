@@ -104,6 +104,7 @@ const RSIOverboughtOversoldTracker = () => {
     settings,
     rsiData,
     isConnected,
+    connect,
     updateSettings,
     timeframes,
     getLatestTickForSymbol,
@@ -216,6 +217,13 @@ const RSIOverboughtOversoldTracker = () => {
       setHasAutoSubscribed(true);
     }
   }, [isConnected, hasAutoSubscribed]);
+
+  // Ensure WebSocket connection on mount for real-time RSI/ticks/OHLC
+  useEffect(() => {
+    if (!isConnected) {
+      try { connect(); } catch (_e) {}
+    }
+  }, [isConnected, connect]);
 
   // Get fresh data every time RSI data updates
   const rawOversoldPairs = getOversoldPairs();
