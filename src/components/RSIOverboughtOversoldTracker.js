@@ -310,7 +310,7 @@ const RSIOverboughtOversoldTracker = () => {
     };
     fetchInitial();
     return () => { cancelled = true; };
-  }, [settings.timeframe, settings?.autoSubscribeSymbols]);
+  }, [settings.timeframe, settings?.autoSubscribeSymbols, rsiData]);
 
   const handleAddToWishlist = (symbol) => {
     addToWishlist(symbol);

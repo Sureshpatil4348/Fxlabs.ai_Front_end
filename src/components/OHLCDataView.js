@@ -1,4 +1,4 @@
-import { BarChart3, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import useMarketStore from '../store/useMarketStore';
