@@ -409,6 +409,15 @@ const useRSITrackerStore = create(
       
       // If timeframe changed, update all subscriptions
       if (updatedSettings.timeframe && updatedSettings.timeframe !== oldSettings.timeframe) {
+        // TODO: Fetch initial snapshot for the new timeframe to pre-populate UI while waiting for websocket
+        // Reset relevant data to show blank values until new data arrives
+        set({
+          rsiData: new Map(),
+          rsiDataByTimeframe: new Map(),
+          indicatorData: new Map(),
+          // Optional: clear tickData as well to avoid showing stale prices
+          tickData: new Map()
+        });
         
         const { subscribe } = get();
         const currentSubscriptions = Array.from(state.subscriptions.entries());
@@ -754,6 +763,8 @@ const useRSITrackerStore = create(
       if (state.isConnected && !state.subscriptions.has(normalized)) {
         // Subscribe immediately if connected
         get().subscribe(normalized, state.settings.timeframe, ['ticks', 'indicators']);
+        // TODO: Fetch initial indicator/tick snapshot for {normalized, timeframe}
+        // UI will show placeholders until websocket updates arrive
       } else if (!state.isConnected) {
         // Add to pending subscriptions if not connected
         const pending = new Set(state.pendingWatchlistSubscriptions);

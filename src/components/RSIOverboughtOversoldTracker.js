@@ -110,7 +110,7 @@ const RSIOverboughtOversoldTracker = () => {
     getDailyChangePercent
   } = useRSITrackerStore();
   // Read correlation settings to keep tracker in sync (timeframe only)
-  const { settings: corrSettings } = useRSICorrelationStore();
+  const { settings: _corrSettings } = useRSICorrelationStore();
   
   // Get tab state from base market store
   const { 
@@ -362,6 +362,8 @@ const RSIOverboughtOversoldTracker = () => {
         rsiOverbought: validatedOverbought,
         rsiOversold: validatedOversold
       });
+      // TODO: Trigger an API fetch for RSI snapshot for the new configuration
+      // UI will remain in blank/placeholder state until websocket updates arrive
 
       // Persist to database
       await userStateService.updateUserDashboardSettings({

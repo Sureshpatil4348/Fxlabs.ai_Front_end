@@ -383,6 +383,16 @@ const useRSICorrelationStore = create(
       
       // If timeframe changed, update all subscriptions
       if (newSettings.timeframe && newSettings.timeframe !== oldSettings.timeframe) {
+        // TODO: Fetch correlation snapshot for the new timeframe to pre-populate UI while waiting for websocket
+        // Reset correlation and RSI maps to blank state until new data arrives
+        set({
+          correlationStatus: new Map(),
+          realCorrelationData: new Map(),
+          rsiData: new Map(),
+          rsiDataByTimeframe: new Map(),
+          indicatorData: new Map(),
+          tickData: new Map()
+        });
         
         const { subscribe } = get();
         const currentSubscriptions = Array.from(state.subscriptions.entries());
@@ -530,9 +540,11 @@ const useRSICorrelationStore = create(
         
         if (force || !state.subscriptions.has(sym1)) {
           subscribe(sym1, state.settings.timeframe, ['ticks', 'indicators']);
+          // TODO: Fetch initial indicator snapshot for {sym1, timeframe}
         }
         if (force || !state.subscriptions.has(sym2)) {
           subscribe(sym2, state.settings.timeframe, ['ticks', 'indicators']);
+          // TODO: Fetch initial indicator snapshot for {sym2, timeframe}
         }
       });
       

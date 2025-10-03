@@ -379,6 +379,8 @@ const RSICorrelationDashboard = () => {
         rsiOversold: localSettings.rsiOversold,
         calculationMode: localSettings.calculationMode
       });
+      // TODO: Trigger an API fetch for correlation/RSI snapshot for the new configuration
+      // UI will remain in blank/placeholder state until websocket updates arrive
 
       // Persist to database (only if user is logged in)
       if (user) {
@@ -413,6 +415,8 @@ const RSICorrelationDashboard = () => {
     try {
       // Update local store immediately
       updateSettings({ calculationMode: newMode });
+      // TODO: Trigger an API fetch for correlation/RSI snapshot for the toggled mode
+      // UI will remain in blank/placeholder state until websocket updates arrive
       // Persist lightweight tab state for quick restore
       await updateTabState('rsiCorrelation', { calculationMode: newMode });
       // Persist to comprehensive settings if user is logged in

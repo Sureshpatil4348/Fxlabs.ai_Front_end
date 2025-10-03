@@ -155,7 +155,7 @@ Frontend config only; backend evaluates and sends notifications.
 
 - Applied price: Close (canonical MT5 default). We do not use Bid/Ask‑only variants for RSI math.
 - Bar policy: Closed bars only. The forming candle is never used for RSI.
-- Smoothing: Wilder’s method (not SMA/EMA).
+- Smoothing: Wilder's method (not SMA/EMA).
 - Symbols: Always request with the broker suffix (e.g., `EURUSDm`, `XAUUSDm`, `BTCUSDm`).
 - Timeframes: `1M, 5M, 15M, 30M, 1H, 4H, 1D, 1W` (alerts remain 5M+).
 - Rounding: UI renders to 2 decimals; internal state keeps full precision.
@@ -206,7 +206,7 @@ Troubleshooting: If you encounter similar errors, search for `.get(` on possibly
 - Fixed issue where RSI values appeared stuck on the previous timeframe (e.g., showing 1M while switching to 4H).
  - Root causes:
    - Alias mismatch: recalc gated lookups used only UI keys (e.g., `4H`) while data arrived under server aliases (e.g., `H4`).
-   - Forced syncs: debug hard-lock and cross-store sync overwrote the user’s chosen timeframe.
+   - Forced syncs: debug hard-lock and cross-store sync overwrote the user's chosen timeframe.
  - Fixes:
    - All timeframe lookups now consider aliases (e.g., `4H`/`H4`, `1M`/`M1`).
    - Per-timeframe OHLC buffers are saved under both server key and UI alias for direct keyed access.
@@ -374,7 +374,7 @@ Usage notes (WebSocket):
 
 ### Subscription Scope (Updated)
 - Correlation subscribes only the configured correlation pairs for the active timeframe.
-- Tracker limits subscriptions to watchlist/user actions instead of auto-subscribing a broad major set, keeping updates scoped to what’s visible and relevant.
+- Tracker limits subscriptions to watchlist/user actions instead of auto-subscribing a broad major set, keeping updates scoped to what's visible and relevant.
 - Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
 
 ### RSI Tracker Display Rules (Oversold/Overbought)
@@ -1702,3 +1702,13 @@ The application follows web accessibility best practices to ensure an inclusive 
 ## License
 
 This project is licensed under the MIT License.
+
+### Interim: Config Changes Show Blank Until Data Arrives (Temporary)
+- When configuration changes (e.g., timeframe or calculation mode), RSI widgets reset their in-memory maps to avoid stale values.
+- UI will show placeholders (e.g., "--" or "Calculating…") until fresh data arrives via WebSocket.
+- TODO in code: a future API snapshot fetch will pre-populate data immediately after config changes while the stream catches up.
+- Affected files:
+  - `src/store/useRSITrackerStore.js` (timeframe change resets `rsiData`, `rsiDataByTimeframe`, `indicatorData`, `tickData`)
+  - `src/store/useRSICorrelationStore.js` (timeframe change resets `correlationStatus`, `realCorrelationData`, `rsiData`, `rsiDataByTimeframe`, `indicatorData`, `tickData`)
+  - `src/components/RSIOverboughtOversoldTracker.js` (TODO note on settings save)
+  - `src/components/RSICorrelationDashboard.js` (TODO note on settings save and mode toggle)
