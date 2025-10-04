@@ -311,6 +311,55 @@ const RSICorrelationDashboard = () => {
     return () => { cancelled = true; };
   }, [settings?.timeframe, correlationPairs]);
 
+  // Fetch initial real correlation snapshot on load and when timeframe changes (same pattern as RSI)
+  useEffect(() => {
+    let cancelled = false;
+    const fetchInitialCorrelation = async () => {
+      try {
+        const pairsList = correlationPairs ? [...(correlationPairs.positive||[]), ...(correlationPairs.negative||[])] : [];
+        const pairKeys = Array.from(new Set(pairsList.map(([a,b]) => `${a}m_${b}m`))).slice(0, 32);
+        if (pairKeys.length === 0 || !settings?.timeframe) return;
+        const { fetchCorrelationSnapshot } = (await import('../services/correlationService.js')).default;
+        const res = await fetchCorrelationSnapshot({
+          timeframe: settings.timeframe,
+          pairs: pairKeys,
+          window: 50
+        });
+        if (cancelled) return;
+        const entries = res?.pairs || [];
+        if (entries.length > 0) {
+          const next = new Map(useRSICorrelationStore.getState().realCorrelationData);
+          entries.forEach((p) => {
+            // Normalize unsuffixed key for store/UI
+            const [ra, rb] = String(p.pair_key || '').split('_');
+            const unsuffix = (s) => (s || '').replace(/m$/i, '');
+            const key = `${unsuffix(ra)}_${unsuffix(rb)}`;
+            // Determine type from configured pairs
+            const isPos = (correlationPairs?.positive || []).some(([x,y]) => (x === unsuffix(ra) && y === unsuffix(rb)) || (x === unsuffix(rb) && y === unsuffix(ra)));
+            const isNeg = (correlationPairs?.negative || []).some(([x,y]) => (x === unsuffix(ra) && y === unsuffix(rb)) || (x === unsuffix(rb) && y === unsuffix(ra)));
+            const type = isPos ? 'positive' : (isNeg ? 'negative' : (p.pair_sign || 'positive'));
+            const corr = p.value;
+            const isMismatch = type === 'positive' ? (corr < 0.25) : (corr > -0.15);
+            next.set(key, {
+              correlation: corr,
+              strength: p.strength,
+              window: p.window ?? 50,
+              timeframe: p.timeframe || settings.timeframe,
+              ts: p.ts,
+              isMismatch,
+              type
+            });
+          });
+          useRSICorrelationStore.setState({ realCorrelationData: next });
+        }
+      } catch (_e) {
+        // silent; websocket will fill
+      }
+    };
+    fetchInitialCorrelation();
+    return () => { cancelled = true; };
+  }, [settings?.timeframe, correlationPairs]);
+
   // React to data changes to ensure UI updates
   useEffect(() => {
   }, [correlationStatus, realCorrelationData]);

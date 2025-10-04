@@ -142,7 +142,7 @@ const useRSICorrelationStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'correlation_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -362,6 +362,55 @@ const useRSICorrelationStore = create(
                 }
               }
             }
+          }
+          break;
+
+        case 'correlation_update':
+          {
+            // Message shape per docs:
+            // { type: 'correlation_update', pair_key: 'EURUSDm_GBPUSDm', timeframe: '1H', data: { bar_time, window, value, strength, pair_sign } }
+            const pairKey = message.pair_key || message?.data?.pair_key;
+            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
+            const data = message.data || {};
+            const value = data?.value;
+            const strength = data?.strength;
+            const window = data?.window;
+            const barTime = data?.bar_time;
+            const pairSign = data?.pair_sign;
+
+            if (!pairKey || typeof value !== 'number') break;
+
+            // Normalize to unsuffixed key used by UI/store: 'EURUSD_GBPUSD'
+            const [rawA, rawB] = String(pairKey).split('_');
+            const unsuffix = (s) => (s || '').replace(/m$/i, '');
+            const a = unsuffix(rawA);
+            const b = unsuffix(rawB);
+            const storePairKey = `${a}_${b}`;
+
+            // Determine pair type (positive/negative) from configured correlationPairs or fallback to pair_sign
+            const isInList = (list, s1, s2) => (list || []).some(([x, y]) => (x === s1 && y === s2) || (x === s2 && y === s1));
+            let type = pairSign;
+            if (!type) {
+              if (isInList(state.correlationPairs.positive, a, b)) type = 'positive';
+              else if (isInList(state.correlationPairs.negative, a, b)) type = 'negative';
+            }
+            if (type !== 'positive' && type !== 'negative') type = 'positive';
+
+            // Mismatch policy per docs
+            const isMismatch = type === 'positive' ? (value < 0.25) : (value > -0.15);
+
+            const next = new Map(state.realCorrelationData || new Map());
+            next.set(storePairKey, {
+              correlation: value,
+              strength: strength || undefined,
+              window: Number.isFinite(window) ? window : 50,
+              timeframe,
+              ts: barTime || undefined,
+              isMismatch,
+              type
+            });
+            set({ realCorrelationData: next });
+            get().addLog(`Correlation update ${storePairKey} @ ${timeframe}: ${(value * 100).toFixed(1)}% (${type}${isMismatch ? ', mismatch' : ''})`, 'info');
           }
           break;
           

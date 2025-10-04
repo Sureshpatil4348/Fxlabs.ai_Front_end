@@ -277,6 +277,20 @@ Usage notes (WebSocket):
 
 ### RSI Correlation Dashboard Real-time Connection (Latest)
 - RSICorrelationDashboard now self-initializes its WebSocket connection on mount.
+- Initial state now hydrates via REST `/api/indicator` (RSI) and `/api/correlation` (real correlation) and then merges live WebSocket pushes.
+
+#### Integration details (Frontend)
+
+- REST initial fetches
+  - RSI snapshot: `src/services/indicatorService.js -> fetchIndicatorSnapshot({ indicator:'rsi', timeframe, pairs })`
+  - Real correlation snapshot: `src/services/correlationService.js -> fetchCorrelationSnapshot({ timeframe, pairs, window:50 })`
+- WebSocket v2 (broadcast-only)
+  - `indicator_update`: updates RSI per symbol/timeframe in `src/store/useRSICorrelationStore.js`
+  - `correlation_update`: handled and merged into `realCorrelationData` with mismatch policy per docs
+- UI wiring
+  - `src/components/RSICorrelationDashboard.js` triggers both initial REST snapshots (RSI and, when in Real mode, correlation) and renders placeholders until data arrives.
+
+Auth headers: When `API_TOKEN` is required server-side, configure the deployment proxy/CDN to inject `X-API-Key` or wrap fetch to include it.
 - Ensures real-time updates even when the global connection initiator is not mounted.
 - Auto-subscription and on-update recalculations remain unchanged and continue to run on each `ohlc_update`.
 
