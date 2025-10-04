@@ -187,3 +187,21 @@
 .button-31:focus {
   opacity: .75;
 }
+
+/* Forex Ticker Animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+.ticker-tape:hover .animate-scroll {
+  animation-play-state: paused;
+}

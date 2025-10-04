@@ -1,11 +1,20 @@
 import { Mail, Phone, MapPin, Hexagon, Twitter, Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useTheme } from '../contexts/ThemeContext'
+import { formatPrice } from '../utils/formatters'
 
 const InteractiveFooter = () => {
   const { isDarkMode } = useTheme()
+  const [loading, setLoading] = useState(true)
+  const [forexData, setForexData] = useState({
+    EURUSD: { ask: 1.0850, bid: 1.0848, spread: 0.0002 },
+    GBPUSD: { ask: 1.2650, bid: 1.2648, spread: 0.0002 },
+    USDJPY: { ask: 149.25, bid: 149.23, spread: 0.02 },
+    USDCHF: { ask: 0.8750, bid: 0.8748, spread: 0.0002 },
+    XAUUSD: { ask: 2025.50, bid: 2025.30, spread: 0.20 }
+  })
   
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
@@ -13,10 +22,222 @@ const InteractiveFooter = () => {
       element.scrollIntoView({ behavior: 'smooth' })
     }
   }
+
+  // Simulate loading and data updates
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 1000)
+
+    // Simulate real-time updates
+    const updateInterval = setInterval(() => {
+      setForexData(prev => ({
+        EURUSD: { 
+          ask: prev.EURUSD.ask + (Math.random() - 0.5) * 0.0001, 
+          bid: prev.EURUSD.bid + (Math.random() - 0.5) * 0.0001, 
+          spread: 0.0002 
+        },
+        GBPUSD: { 
+          ask: prev.GBPUSD.ask + (Math.random() - 0.5) * 0.0001, 
+          bid: prev.GBPUSD.bid + (Math.random() - 0.5) * 0.0001, 
+          spread: 0.0002 
+        },
+        USDJPY: { 
+          ask: prev.USDJPY.ask + (Math.random() - 0.5) * 0.01, 
+          bid: prev.USDJPY.bid + (Math.random() - 0.5) * 0.01, 
+          spread: 0.02 
+        },
+        USDCHF: { 
+          ask: prev.USDCHF.ask + (Math.random() - 0.5) * 0.0001, 
+          bid: prev.USDCHF.bid + (Math.random() - 0.5) * 0.0001, 
+          spread: 0.0002 
+        },
+        XAUUSD: { 
+          ask: prev.XAUUSD.ask + (Math.random() - 0.5) * 0.1, 
+          bid: prev.XAUUSD.bid + (Math.random() - 0.5) * 0.1, 
+          spread: 0.20 
+        }
+      }))
+    }, 3000)
+
+    return () => {
+      clearTimeout(timer)
+      clearInterval(updateInterval)
+    }
+  }, [])
   
   return (
-    <footer className={`relative py-8 sm:py-12 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className={`relative py-8 sm:py-12 w-full ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        
+        {/* Forex Ticker Tape */}
+        <div className="ticker-tape border-y border-gray-200 dark:border-gray-700 py-2 md:py-3 overflow-hidden w-full transition-colors duration-300 mb-8">
+          <div className="ticker-content flex items-center animate-scroll">
+            {/* First Set */}
+            {/* EUR/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="EURUSD">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-800 dark:text-blue-300 transition-colors duration-300">€</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">EUR/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.EURUSD?.ask || 0, 4)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.EURUSD?.bid || 0, 4)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.EURUSD?.spread || 0, 4)}
+                </span>
+              </div>
+            </div>
+            {/* GBP/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="GBPUSD">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-xs font-bold text-red-800 dark:text-red-300 transition-colors duration-300">£</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">GBP/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.GBPUSD?.ask || 0, 4)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.GBPUSD?.bid || 0, 4)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.GBPUSD?.spread || 0, 4)}
+                </span>
+              </div>
+            </div>
+            {/* USD/JPY */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="USDJPY">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xs font-bold text-green-800 dark:text-green-300 transition-colors duration-300">¥</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">USD/JPY</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.00' : formatPrice(forexData.USDJPY?.ask || 0, 2)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.00' : formatPrice(forexData.USDJPY?.bid || 0, 2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.USDJPY?.spread || 0, 2)}
+                </span>
+              </div>
+            </div>
+            {/* USD/CHF */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="USDCHF">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-bold text-purple-800 dark:text-purple-300 transition-colors duration-300">₣</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">USD/CHF</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USDCHF?.ask || 0, 4)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USDCHF?.bid || 0, 4)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.USDCHF?.spread || 0, 4)}
+                </span>
+              </div>
+            </div>
+            {/* XAU/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="XAUUSD">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-xs font-bold text-yellow-800 dark:text-yellow-300 transition-colors duration-300">Au</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">XAU/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.XAUUSD?.ask || 0, 2)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.XAUUSD?.bid || 0, 2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.XAUUSD?.spread || 0, 2)}
+                </span>
+              </div>
+            </div>
+            
+            {/* Duplicate Set for Seamless Loop */}
+            {/* EUR/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="EURUSD">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-800 dark:text-blue-300 transition-colors duration-300">€</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">EUR/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.EURUSD?.ask || 0, 4)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.EURUSD?.bid || 0, 4)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.EURUSD?.spread || 0, 4)}
+                </span>
+              </div>
+            </div>
+            {/* GBP/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="GBPUSD">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-xs font-bold text-red-800 dark:text-red-300 transition-colors duration-300">£</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">GBP/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.GBPUSD?.ask || 0, 4)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.GBPUSD?.bid || 0, 4)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.GBPUSD?.spread || 0, 4)}
+                </span>
+              </div>
+            </div>
+            {/* USD/JPY */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="USDJPY">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xs font-bold text-green-800 dark:text-green-300 transition-colors duration-300">¥</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">USD/JPY</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.00' : formatPrice(forexData.USDJPY?.ask || 0, 2)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.00' : formatPrice(forexData.USDJPY?.bid || 0, 2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.USDJPY?.spread || 0, 2)}
+                </span>
+              </div>
+            </div>
+            {/* USD/CHF */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="USDCHF">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-bold text-purple-800 dark:text-purple-300 transition-colors duration-300">₣</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">USD/CHF</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USDCHF?.ask || 0, 4)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USDCHF?.bid || 0, 4)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.USDCHF?.spread || 0, 4)}
+                </span>
+              </div>
+            </div>
+            {/* XAU/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="XAUUSD">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-xs font-bold text-yellow-800 dark:text-yellow-300 transition-colors duration-300">Au</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-gray-900 dark:text-white transition-colors duration-300">XAU/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.XAUUSD?.ask || 0, 2)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.XAUUSD?.bid || 0, 2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.XAUUSD?.spread || 0, 2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
         
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
