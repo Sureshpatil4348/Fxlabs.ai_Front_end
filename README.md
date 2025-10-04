@@ -183,6 +183,12 @@ Example:
 ```
 
 ## Recent Updates
+### Fix: Resolved infinite API loop in RSI Tracker causing excessive calls to fxlabs.ai/indicator (Latest)
+- **Problem**: The RSI Tracker component was making API calls to `https://api.fxlabs.ai/api/indicator` every second due to an infinite loop.
+- **Root Cause**: The `useEffect` hook in `RSIOverboughtOversoldTracker.js` had `rsiData` in its dependency array, causing it to re-run every time WebSocket messages updated the RSI data, creating a loop: WebSocket → rsiData update → useEffect → API call → rsiData update → useEffect → API call...
+- **Fix**: Removed `rsiData` from the `useEffect` dependency array in `src/components/RSIOverboughtOversoldTracker.js` line 313. The effect only needs to run when `settings.timeframe` or `settings?.autoSubscribeSymbols` change.
+- **Impact**: Eliminates excessive API calls (was calling every second), reduces server load, improves performance, and prevents potential rate limiting.
+
 ### Fix: Removed legacy ohlcData.get usage causing mount errors (Latest)
 - Removed references to `ohlcData.get(...)` that could throw "Cannot read properties of undefined (reading 'get')" during initial mount.
 - Components now rely on `tickData` and `indicatorData` maps provided by the live stores:

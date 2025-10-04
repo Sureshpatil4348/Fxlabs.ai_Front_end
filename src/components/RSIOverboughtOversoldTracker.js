@@ -292,7 +292,9 @@ const RSIOverboughtOversoldTracker = () => {
         if (cancelled) return;
         const pairs = res?.pairs || [];
         if (pairs.length > 0) {
-          const newRsiData = new Map(rsiData);
+          // Get current rsiData from store to merge with fetched data
+          const currentRsiData = useRSITrackerStore.getState().rsiData;
+          const newRsiData = new Map(currentRsiData);
           pairs.forEach((p) => {
             newRsiData.set(p.symbol, {
               value: p.value,
@@ -310,7 +312,7 @@ const RSIOverboughtOversoldTracker = () => {
     };
     fetchInitial();
     return () => { cancelled = true; };
-  }, [settings.timeframe, settings?.autoSubscribeSymbols, rsiData]);
+  }, [settings.timeframe, settings?.autoSubscribeSymbols]);
 
   const handleAddToWishlist = (symbol) => {
     addToWishlist(symbol);
