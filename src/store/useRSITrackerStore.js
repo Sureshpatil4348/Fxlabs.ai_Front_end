@@ -4,6 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import useBaseMarketStore from './useBaseMarketStore';
 import indicatorService from '../services/indicatorService';
 import websocketService from '../services/websocketService';
+import useMarketCacheStore from './useMarketCacheStore';
 // Note: All calculations are now performed server-side
 // RSI, RFI, and other indicators should be received from WebSocket/API
 
@@ -410,15 +411,50 @@ const useRSITrackerStore = create(
       
       // If timeframe changed, update all subscriptions
       if (updatedSettings.timeframe && updatedSettings.timeframe !== oldSettings.timeframe) {
-        // TODO: Fetch initial snapshot for the new timeframe to pre-populate UI while waiting for websocket
-        // Reset relevant data to show blank values until new data arrives
-        set({
-          rsiData: new Map(),
-          rsiDataByTimeframe: new Map(),
-          indicatorData: new Map(),
-          // Optional: clear tickData as well to avoid showing stale prices
-          tickData: new Map()
-        });
+        // Hydrate immediately from centralized cache for new timeframe
+        try {
+          const cache = useMarketCacheStore.getState();
+          const symbols = (updatedSettings.autoSubscribeSymbols || state.settings.autoSubscribeSymbols || []).slice(0, 32);
+          const tf = String(updatedSettings.timeframe).toUpperCase();
+
+          // Build rsiData from cache
+          const rsiData = new Map();
+          symbols.forEach((sym) => {
+            const tfMap = cache.rsiBySymbolTimeframe.get(sym);
+            const entry = tfMap && tfMap.get(tf);
+            if (entry && typeof entry.value === 'number') {
+              rsiData.set(sym, { value: entry.value, period: entry.period, timeframe: entry.timeframe, updatedAt: entry.updatedAt });
+            }
+          });
+
+          // Build indicatorData from cache
+          const indicatorData = new Map();
+          symbols.forEach((sym) => {
+            const base = cache.indicatorsBySymbol.get(sym);
+            if (!base) return;
+            const tfMap = base.timeframes instanceof Map ? base.timeframes : new Map(base.timeframes || []);
+            const latest = tfMap.get(tf) || null;
+            indicatorData.set(sym, {
+              symbol: sym,
+              timeframe: latest ? tf : undefined,
+              indicators: latest ? latest.indicators : undefined,
+              barTime: latest ? latest.barTime : undefined,
+              lastUpdate: latest ? latest.lastUpdate : undefined,
+              timeframes: tfMap
+            });
+          });
+
+          // Apply immediately so UI doesn't blank out
+          set({ rsiData, indicatorData });
+        } catch (_e) {
+          // fallback to clearing
+          set({
+            rsiData: new Map(),
+            rsiDataByTimeframe: new Map(),
+            indicatorData: new Map(),
+            tickData: new Map()
+          });
+        }
         
         const { subscribe } = get();
         const currentSubscriptions = Array.from(state.subscriptions.entries());
@@ -446,33 +482,7 @@ const useRSITrackerStore = create(
           get().recalculateAllRsi();
         }, 1500);
 
-        // Fire-and-forget REST snapshot fetch to pre-populate RSI values quickly
-        (async () => {
-          try {
-            const symbols = (updatedSettings.autoSubscribeSymbols || state.settings.autoSubscribeSymbols || []).slice(0, 32);
-            if (symbols.length === 0) return;
-            const res = await indicatorService.fetchIndicatorSnapshot({
-              indicator: 'rsi',
-              timeframe: updatedSettings.timeframe,
-              pairs: symbols
-            });
-            const pairs = res?.pairs || [];
-            if (pairs.length > 0) {
-              const newRsiData = new Map(get().rsiData);
-              pairs.forEach((p) => {
-                newRsiData.set(p.symbol, {
-                  value: p.value,
-                  period: 14,
-                  timeframe: p.timeframe,
-                  updatedAt: new Date(p.ts || Date.now())
-                });
-              });
-              set({ rsiData: newRsiData });
-            }
-          } catch (_e) {
-            // Silent fail; websocket will populate shortly
-          }
-        })();
+        // No REST snapshot needed; centralized cache hydrates itself and broadcasts
       }
       
       // If RSI thresholds changed, recalculate (period is fixed)

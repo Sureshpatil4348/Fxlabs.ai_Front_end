@@ -1751,3 +1751,27 @@ This project is licensed under the MIT License.
 - Ensure WebSocket connection established (see console `[WS][Market-v2] Connected`).
 - The dashboard now derives pair statuses from `rsiData`; placeholders will show until initial snapshot or first `indicator_update` arrives.
 - After timeframe/mode changes, a REST snapshot is fetched and `recalculateAllRsi()` runs to populate statuses immediately.
+
+## Centralized Market Cache (2025-10)
+
+We introduced a centralized cache to ensure instant, consistent data across all widgets and timeframes:
+
+- Store: `src/store/useMarketCacheStore.js`
+- Behavior:
+  - On dashboard launch, it prefetches RSI snapshots for all supported pairs across supported timeframes and fetches pricing for all supported pairs (single REST round for each timeframe + pricing).
+  - It registers to the shared WebSocket and continuously updates the cache on `initial_indicators`, `indicator_update`, and `ticks` messages.
+  - Cache is persisted into `sessionStorage` for instant reloads and minimized REST usage.
+  - It broadcasts hydrated snapshots into existing RSI stores so current widgets render directly from the cache without extra API calls.
+
+Consumers continue using existing selectors in `useRSITrackerStore` and `useRSICorrelationStore`, while the cache keeps them up-to-date.
+
+Wiring:
+
+- `src/pages/Dashboard.jsx` initializes the market cache on mount.
+- `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` hydrate from the cache immediately on timeframe changes instead of issuing new REST calls.
+
+Benefits:
+
+- Faster UI when switching timeframes/indicators
+- Reduced REST chatter; one-time hydration then live WS updates
+- Consistent data across widgets from a single source of truth

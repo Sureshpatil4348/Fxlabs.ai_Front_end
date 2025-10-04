@@ -9,6 +9,7 @@
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketStore from '../store/useMarketStore'
+  import useMarketCacheStore from '../store/useMarketCacheStore'
 
   const Dashboard = () => {
     const { user } = useAuth()
@@ -27,6 +28,8 @@
       if (user?.id && connectionInitiated.current !== user.id) {
         connectionInitiated.current = user.id
         useMarketStore.getState().initiateGlobalConnection()
+        // Initialize centralized market cache (REST + WS)
+        useMarketCacheStore.getState().initialize()
       }
     }, [user?.id])
 
