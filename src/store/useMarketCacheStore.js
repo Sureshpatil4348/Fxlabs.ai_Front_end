@@ -53,6 +53,8 @@ const useMarketCacheStore = create(
     indicatorsBySymbol: new Map(),
     // rsiBySymbolTimeframe: symbol -> Map(tf -> { value, period, timeframe, updatedAt })
     rsiBySymbolTimeframe: new Map(),
+    // quantumBySymbol: symbol -> { per_timeframe, overall, bar_times, lastUpdate }
+    quantumBySymbol: new Map(),
     // pricingBySymbol: symbol -> { bid, ask, time, time_iso, daily_change_pct, lastUpdate }
     pricingBySymbol: new Map(),
     // ticksBySymbol: symbol -> { ticks: [..], lastUpdate }
@@ -83,7 +85,7 @@ const useMarketCacheStore = create(
         errorCallback: () => {
           // keep cache
         },
-        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'ticks', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'quantum_update', 'ticks', 'pong', 'error']
       });
 
       // Ensure WS connection
@@ -106,6 +108,7 @@ const useMarketCacheStore = create(
         const parsed = safeParse(raw, {});
         const indicatorsBySymbol = new Map();
         const rsiBySymbolTimeframe = new Map();
+        const quantumBySymbol = new Map();
         const pricingBySymbol = new Map();
         const ticksBySymbol = new Map();
 
@@ -133,9 +136,19 @@ const useMarketCacheStore = create(
           ticksBySymbol.set(symbol, v);
         });
 
+        Object.entries(parsed.quantumBySymbol || {}).forEach(([symbol, val]) => {
+          quantumBySymbol.set(symbol, {
+            per_timeframe: (val && val.per_timeframe) || {},
+            overall: (val && val.overall) || {},
+            bar_times: (val && val.bar_times) || {},
+            lastUpdate: val && val.lastUpdate ? new Date(val.lastUpdate) : null
+          });
+        });
+
         set({
           indicatorsBySymbol,
           rsiBySymbolTimeframe,
+          quantumBySymbol,
           pricingBySymbol,
           ticksBySymbol,
           supportedTimeframes: Array.isArray(parsed.supportedTimeframes) && parsed.supportedTimeframes.length > 0 ? parsed.supportedTimeframes : DEFAULT_TIMEFRAMES
@@ -164,6 +177,18 @@ const useMarketCacheStore = create(
           });
           return out;
         })(),
+        quantumBySymbol: (() => {
+          const out = {};
+          state.quantumBySymbol.forEach((val, symbol) => {
+            out[symbol] = {
+              per_timeframe: val.per_timeframe || {},
+              overall: val.overall || {},
+              bar_times: val.bar_times || {},
+              lastUpdate: val.lastUpdate || null
+            };
+          });
+          return out;
+        })(),
         pricingBySymbol: mapToObject(state.pricingBySymbol),
         ticksBySymbol: mapToObject(state.ticksBySymbol)
       };
@@ -179,9 +204,10 @@ const useMarketCacheStore = create(
       const timeframes = Array.isArray(get().supportedTimeframes) && get().supportedTimeframes.length > 0 ? get().supportedTimeframes : DEFAULT_TIMEFRAMES;
 
       const indicatorCalls = timeframes.map((tf) => indicatorService.fetchIndicatorSnapshot({ indicator: 'rsi', timeframe: tf, pairs }));
+      const quantumCall = indicatorService.fetchIndicatorSnapshot({ indicator: 'quantum', timeframe: '5M', pairs });
       const pricingCall = pricingService.fetchPricingSnapshot({ pairs });
 
-      const results = await Promise.allSettled([...indicatorCalls, pricingCall]);
+      const results = await Promise.allSettled([...indicatorCalls, quantumCall, pricingCall]);
 
       // Process indicator snapshots per timeframe
       results.slice(0, timeframes.length).forEach((res, idx) => {
@@ -220,8 +246,28 @@ const useMarketCacheStore = create(
         set({ rsiBySymbolTimeframe: rsiMap, indicatorsBySymbol: indiMap });
       });
 
+      // Process quantum snapshot (next result)
+      const quantumRes = results[timeframes.length];
+      if (quantumRes && quantumRes.status === 'fulfilled') {
+        const entries = (quantumRes.value && Array.isArray(quantumRes.value.pairs)) ? quantumRes.value.pairs : [];
+        if (entries.length > 0) {
+          const quantumBySymbol = new Map(get().quantumBySymbol);
+          entries.forEach((p) => {
+            if (!p || !p.symbol || !p.quantum) return;
+            const q = p.quantum;
+            quantumBySymbol.set(p.symbol, {
+              per_timeframe: q.per_timeframe || {},
+              overall: q.overall || {},
+              bar_times: q.bar_times || {},
+              lastUpdate: new Date()
+            });
+          });
+          set({ quantumBySymbol });
+        }
+      }
+
       // Process pricing snapshot (last result)
-      const pricingRes = results[timeframes.length];
+      const pricingRes = results[timeframes.length + 1];
       if (pricingRes && pricingRes.status === 'fulfilled') {
         const entries = (pricingRes.value && Array.isArray(pricingRes.value.pairs)) ? pricingRes.value.pairs : [];
         if (entries.length > 0) {
@@ -309,6 +355,23 @@ const useMarketCacheStore = create(
 
           get().persistToSession();
           get().broadcastToLegacyStoresDebounced();
+          break;
+        }
+        case 'quantum_update': {
+          const symbol = message.symbol || message?.data?.symbol;
+          const data = message?.data || {};
+          if (!symbol || !data) break;
+
+          const quantumBySymbol = new Map(get().quantumBySymbol || new Map());
+          const prev = quantumBySymbol.get(symbol) || {};
+          quantumBySymbol.set(symbol, {
+            per_timeframe: data.per_timeframe || prev.per_timeframe || {},
+            overall: data.overall || prev.overall || {},
+            bar_times: data.bar_times || prev.bar_times || {},
+            lastUpdate: new Date()
+          });
+          set({ quantumBySymbol });
+          get().persistToSession();
           break;
         }
         case 'ticks': {

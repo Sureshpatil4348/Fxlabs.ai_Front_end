@@ -1,5 +1,4 @@
 import { 
-  Activity,
   Bell,
   Sliders
 } from 'lucide-react';
@@ -12,10 +11,8 @@ import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
 import userStateService from '../services/userStateService';
+import useMarketCacheStore from '../store/useMarketCacheStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
-import { 
-  QUIET_MARKET_PARAMETERS
-} from '../utils/calculations';
 // Note: All indicator calculations are now performed server-side
 // EMA, MACD, RSI, UTBOT, Ichimoku signals should be received from WebSocket/API
 // import { formatSymbolDisplay, formatCurrency } from '../utils/formatters';
@@ -41,7 +38,8 @@ const formatIndicatorDisplay = (indicator) => {
     'EMA50': 'EMA 50',
     'EMA200': 'EMA 200',
     'UTBOT': 'UT BOT',
-    'IchimokuClone': 'Ichimoku'
+    'IchimokuClone': 'Ichimoku',
+    'ICHIMOKU': 'Ichimoku'
   };
   return indicatorMap[indicator] || indicator;
 };
@@ -93,182 +91,18 @@ const formatIndicatorDisplay = (indicator) => {
 //   };
 // };
 
-// Trading Style Timeframe Weights (sum to 1.0 for each style)
-const TRADING_STYLE_WEIGHTS = {
-  scalper: {
-    '5M': 0.30,
-    '15M': 0.30,
-    '30M': 0.20,
-    '1H': 0.15,
-    '4H': 0.05,
-    '1D': 0.00
-  },
-  swingTrader: {
-    '5M': 0.00,
-    '15M': 0.00,
-    '30M': 0.10,
-    '1H': 0.25,
-    '4H': 0.35,
-    '1D': 0.30
-  }
-};
-
 // Default trading style
 const DEFAULT_TRADING_STYLE = 'swingTrader';
 
-// Indicator Weights (sum to 1.0 for each option)
-const INDICATOR_WEIGHTS = {
-  equal: {
-    EMA21: 0.1429,
-    EMA50: 0.1429,
-    EMA200: 0.1429,
-    MACD: 0.1429,
-    RSI: 0.1429,
-    UTBOT: 0.1429,
-    IchimokuClone: 0.1429
-  },
-  trendTilted: {
-    EMA21: 0.10,
-    EMA50: 0.10,
-    EMA200: 0.15,
-    MACD: 0.15,
-    RSI: 0.10,
-    UTBOT: 0.15,
-    IchimokuClone: 0.25
-  }
-};
-
-// Default indicator weight option
-const DEFAULT_INDICATOR_WEIGHT = 'equal';
-
 // Dropdown options will be derived from RSI store settings
 
-// Per-Cell Scoring Function with New-Signal Boost, Quiet-Market Safety, and Clamping
-const getIndicatorScore = (indicator, value, signal, isNew = false, isQuietMarket = false) => {
-  let baseScore = 0;
-  
-  // Convert signal to numeric score: Buy = +1, Sell = -1, Neutral = 0
-  switch (signal) {
-    case 'buy':
-      baseScore = 1;
-      break;
-    case 'sell':
-      baseScore = -1;
-      break;
-    case 'neutral':
-    default:
-      baseScore = 0;
-      break;
-  }
-  
-  // New-signal boost: add ±0.25 in the direction of the signal
-  if (isNew && baseScore !== 0) {
-    const boost = baseScore > 0 ? 0.25 : -0.25;
-    baseScore += boost;
-  }
-  
-  // Quiet-Market Safety: halve MACD and UTBOT scores when ATR is extremely low
-  if (isQuietMarket && (indicator === 'MACD' || indicator === 'UTBOT')) {
-    baseScore *= QUIET_MARKET_PARAMETERS.QUIET_MARKET_MULTIPLIER;
-  }
-  
-  // Clamp per-cell score to [-1.25, +1.25]
-  baseScore = Math.max(-1.25, Math.min(1.25, baseScore));
-  
-  return baseScore;
-};
-
-// Calculate final score using exact aggregation formula
-// Raw aggregate: Σ over timeframes Σ over indicators [ S(tf, ind) × W_tf(tf) × W_ind(ind) ]
-// Final Score = 100 × ( Raw / 1.25 )
-// Buy Now % = (Final Score + 100) / 2
-const calculateFinalScore = (scores, tradingStyle = DEFAULT_TRADING_STYLE, indicatorWeight = DEFAULT_INDICATOR_WEIGHT) => {
-  const timeframeWeights = TRADING_STYLE_WEIGHTS[tradingStyle] || TRADING_STYLE_WEIGHTS[DEFAULT_TRADING_STYLE];
-  const indicatorWeights = INDICATOR_WEIGHTS[indicatorWeight] || INDICATOR_WEIGHTS[DEFAULT_INDICATOR_WEIGHT];
-  
-  // Calculation debug info available if needed
-  
-  let rawAggregate = 0;
-  let totalCells = 0;
-  let newSignalCount = 0;
-  let positiveNewSignals = 0;
-  
-  // Calculate raw aggregate: Σ over timeframes Σ over indicators [ S(tf, ind) × W_tf(tf) × W_ind(ind) ]
-  Object.entries(scores).forEach(([timeframe, timeframeScores]) => {
-    const timeframeWeight = timeframeWeights[timeframe] || 0;
-    
-    Object.entries(timeframeScores).forEach(([indicator, score]) => {
-      const indicatorWeight = indicatorWeights[indicator] || 0;
-      
-      const contribution = score * timeframeWeight * indicatorWeight;
-      rawAggregate += contribution;
-      totalCells++;
-      
-      // Track new signals for boost badge
-      if (Math.abs(score) > 1.0) { // New signal (score > 1.0 or < -1.0)
-        newSignalCount++;
-        if (score > 0) {
-          positiveNewSignals++;
-        }
-      }
-    });
-  });
-  
-  // Normalize to human-readable -100...+100
-  // Final Score = 100 × ( Raw / 1.25 )
-  const finalScore = 100 * (rawAggregate / 1.25);
-  
-  // Buy Now % = (Final Score + 100) / 2
-  const buyNowPercent = (finalScore + 100) / 2;
-  const sellNowPercent = 100 - buyNowPercent;
-  
-  // Check for new signal boost (≥25% of all positive cells are 'NEW')
-  const newSignalBoost = totalCells > 0 && (positiveNewSignals / totalCells) >= 0.25;
-  
-  // Final calculation results
-  
-    // Enhanced debug logging with detailed breakdown (disabled to avoid lint warnings)
-    // console.group('🎯 Final Score Calculation');
-    // console.log('📊 Raw Data:', {
-    //   rawAggregate: rawAggregate.toFixed(4),
-    //   finalScore,
-    //   tradingStyle,
-    //   indicatorWeight
-    // });
-    // 
-    // console.log('📈 Results:', {
-    //   buyNowPercent,
-    //   sellNowPercent,
-    //   zone: finalScore >= 25 ? '🟢 BUY' : finalScore <= -25 ? '🔴 SELL' : '🟡 WAIT'
-    // });
-    // 
-    // console.log('🆕 Signal Analysis:', {
-    //   totalCells,
-    //   newSignalCount,
-    //   positiveNewSignals,
-    //   newSignalBoost,
-    //   boostThreshold: '25% of positive cells must be NEW'
-    // });
-    // 
-    // console.groupEnd();
-  
-  return {
-    finalScore: Math.round(finalScore * 100) / 100, // Round to 2 decimal places
-    buyNowPercent: Math.round(buyNowPercent * 100) / 100, // Round to 2 decimal places
-    sellNowPercent: Math.round(sellNowPercent * 100) / 100, // Round to 2 decimal places
-    newSignalBoost,
-    rawAggregate,
-    totalCells,
-    newSignalCount,
-    positiveNewSignals
-  };
-};
+// No local calculations; rely solely on server quantum data
 
 const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   // const [selectedTimeframe, setSelectedTimeframe] = useState('1H'); // Unused for now
-  const [showNewSignals, setShowNewSignals] = useState(true);
+  const [_showNewSignals, _setShowNewSignals] = useState(true);
   const [tradingStyle, setTradingStyle] = useState(DEFAULT_TRADING_STYLE);
-  const [indicatorWeight, setIndicatorWeight] = useState('equal');
+  const [_indicatorWeight, _setIndicatorWeight] = useState('equal');
   const [currentSymbol, setCurrentSymbol] = useState(selectedSymbol);
   const [isSymbolDropdownOpen, setIsSymbolDropdownOpen] = useState(false);
   
@@ -287,7 +121,6 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   });
   
   const { 
-    indicatorData, 
     timeframes,
     isConnected,
     autoSubscribeToMajorPairs,
@@ -358,8 +191,8 @@ const symbolDropdownRef = useRef(null);
           // Update component state
           setCurrentSymbol(symbol || selectedSymbol);
           setTradingStyle(normalizedStyle || DEFAULT_TRADING_STYLE);
-          setIndicatorWeight(indicatorWeight || 'equal');
-          setShowNewSignals(showNewSignals !== undefined ? showNewSignals : true);
+          _setIndicatorWeight(indicatorWeight || 'equal');
+          _setShowNewSignals(showNewSignals !== undefined ? showNewSignals : true);
         }
       } catch (error) {
         // console.error('❌ Failed to load Multi-Indicator Heatmap settings:', error);
@@ -404,13 +237,13 @@ const symbolDropdownRef = useRef(null);
 
   // Handle indicator weight change with persistence
   const _handleIndicatorWeightChange = async (weight) => {
-    setIndicatorWeight(weight);
+    _setIndicatorWeight(weight);
     await saveSettings({ indicatorWeight: weight });
   };
 
   // Handle show new signals change with persistence
   const _handleShowNewSignalsChange = async (show) => {
-    setShowNewSignals(show);
+    _setShowNewSignals(show);
     await saveSettings({ showNewSignals: show });
   };
 
@@ -511,230 +344,10 @@ useEffect(() => {
     });
   }, [isConnected, currentSymbol, subscribe, timeframes]);
 
-  // Enhanced Debug: Monitor connection and data status
-  useEffect(() => {
-    // const subscriptions = Array.from(useRSITrackerStore.getState().subscriptions.keys());
-    const symbolData = indicatorData.get(currentSymbol);
-    
-    // console.group('🔍 MultiIndicatorHeatmap Debug Status');
-    // console.log('🔗 Connection:', {
-    //   isConnected,
-    //   hasAutoSubscribed,
-    //   subscriptionsCount: subscriptions.length,
-    //   subscriptions: subscriptions.slice(0, 5) // Show first 5 to avoid spam
-    // });
-    // 
-    // console.log('📊 Data Status:', {
-    //   currentSymbol,
-    //   hasSymbolData: indicatorData.has(currentSymbol),
-    //   dataSize: symbolData?.indicators ? Object.keys(symbolData.indicators).length : 0,
-    //   timeframe: symbolData?.timeframe,
-    //   lastUpdate: symbolData?.lastUpdate ? new Date(symbolData.lastUpdate).toLocaleTimeString() : 'N/A',
-    //   totalSymbols: indicatorData.size,
-    //   availableSymbols: Array.from(indicatorData.keys()).slice(0, 5) // Show first 5
-    // });
-    // 
-    // console.log('⚙️ Settings:', {
-    //   tradingStyle,
-    //   indicatorWeight,
-    //   showNewSignals,
-    //   timeframesCount: timeframes.length
-    // });
-    
-    // Data quality assessment
-    if (symbolData?.bars?.length) {
-      // const bars = symbolData.bars.length;
-      // const quality = bars >= 200 ? '🟢 EXCELLENT' : 
-      //                bars >= 100 ? '🟡 GOOD' : 
-      //                bars >= 50 ? '🟠 FAIR' : '🔴 POOR';
-      // console.log('🎯 Data Quality:', quality, `(${bars} bars)`);
-    }
-    
-    // console.groupEnd();
-  }, [isConnected, currentSymbol, indicatorData, timeframes, hasAutoSubscribed, showNewSignals, tradingStyle, indicatorWeight]);
-  // Calculate indicators using per-timeframe data for all columns
-  const calculatedIndicators = useMemo(() => {
-    const data = {};
-    
-    const desiredTimeframes = ['1M', '5M', '15M', '30M', '1H', '4H', '1D'];
-    const supported = Array.isArray(timeframes) && timeframes.length > 0 ? timeframes : desiredTimeframes;
-    const tfs = desiredTimeframes.filter(tf => supported.includes(tf));
-
-    // Ensure we have indicator data for symbol
-    const symbolIndicatorData = indicatorData.get(currentSymbol);
-    if (!symbolIndicatorData) {
-      return { error: 'NO_DATA', message: `No indicator data available for ${currentSymbol}` };
-    }
-
-    // Process each timeframe using per-timeframe data when available
-    tfs.forEach(timeframe => {
-      const tfData = (symbolIndicatorData.timeframes instanceof Map)
-        ? symbolIndicatorData.timeframes.get(timeframe)
-        : null;
-      const indicators = (tfData && tfData.indicators) || symbolIndicatorData.indicators || {};
-      const rsiValue = (() => {
-        // Server may send RSI as object keyed by period (e.g., { '14': 56.7 })
-        if (indicators.rsi && typeof indicators.rsi === 'object' && !Array.isArray(indicators.rsi)) {
-          const periodKey = Object.keys(indicators.rsi)[0];
-          const v = indicators.rsi[periodKey];
-          return typeof v === 'number' ? v : 50;
-        }
-        // or sometimes as a direct number
-        if (typeof indicators.rsi === 'number') {
-          return indicators.rsi;
-        }
-        return 50;
-      })();
-      data[timeframe] = {
-        EMA21: { 
-          hasData: indicators.ema && indicators.ema['21'] !== undefined, 
-          value: indicators.ema?.['21'] || 0,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        },
-        EMA50: { 
-          hasData: indicators.ema && indicators.ema['50'] !== undefined, 
-          value: indicators.ema?.['50'] || 0,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        },
-        EMA200: { 
-          hasData: indicators.ema && indicators.ema['200'] !== undefined, 
-          value: indicators.ema?.['200'] || 0,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        },
-        MACD: { 
-          hasData: indicators.macd !== undefined, 
-          value: indicators.macd || 0,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        },
-        RSI: { 
-          hasData: indicators.rsi !== undefined, 
-          value: rsiValue,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        },
-        UTBOT: { 
-          hasData: indicators.utbot !== undefined, 
-          value: indicators.utbot || 0,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        },
-        IchimokuClone: { 
-          hasData: indicators.ichimoku !== undefined, 
-          value: indicators.ichimoku || 0,
-          signal: 'neutral',
-          new: false,
-          reason: 'Server calculated',
-          quietMarket: false,
-          error: null,
-          fallback: false
-        }
-      };
-    });
-
-    data._metadata = {
-      symbol: currentSymbol,
-      dataCount: 1, // Server provides current values
-      calculationErrors: [],
-      calculationWarnings: [],
-      hasQuietMarket: false,
-      timestamp: new Date().toISOString()
-    };
-    
-    return data;
-  }, [currentSymbol, indicatorData, timeframes]);
+  // Remove heavy debug effect to reduce overhead
+  // Remove local indicator calculations; use server quantum below
   
-  // Calculate scores and final results with error handling
-  const { scores, finalResults, dataStatus } = useMemo(() => {
-    // Check for data errors first
-    if (indicatorData.error) {
-      return {
-        scores: {},
-        finalResults: {
-          finalScore: 0,
-          buyNowPercent: 50,
-          sellNowPercent: 50,
-          newSignalBoost: false,
-          rawAggregate: 0,
-          totalCells: 0,
-          newSignalCount: 0,
-          positiveNewSignals: 0
-        },
-        dataStatus: {
-          hasError: true,
-          error: indicatorData.error,
-          message: indicatorData.message,
-          dataCount: indicatorData.dataCount || 0,
-          required: indicatorData.required || 50
-        }
-      };
-    }
-    
-    const scores = {};
-    const metadata = indicatorData._metadata || {};
-    let totalIndicators = 0;
-    let workingIndicators = 0;
-    
-    Object.entries(indicatorData).forEach(([timeframe, indicators]) => {
-      if (timeframe === '_metadata') return; // Skip metadata
-      
-      scores[timeframe] = {};
-      
-      Object.entries(indicators).forEach(([indicator, data]) => {
-        totalIndicators++;
-        if (data.hasData) workingIndicators++;
-        
-        const score = getIndicatorScore(indicator, data.value, data.signal, data.new, data.quietMarket);
-        scores[timeframe][indicator] = score;
-      });
-    });
-    
-    const finalResults = calculateFinalScore(scores, tradingStyle, indicatorWeight);
-    
-    // Final results calculation completed
-    
-    return {
-      scores,
-      finalResults,
-      dataStatus: {
-        hasError: false,
-        dataCount: metadata.dataCount || 0,
-        dataQuality: metadata.dataQuality,
-        calculationErrors: metadata.calculationErrors || [],
-        workingIndicators,
-        totalIndicators,
-        workingPercentage: totalIndicators > 0 ? Math.round((workingIndicators / totalIndicators) * 100) : 0,
-        hasQuietMarket: metadata.hasQuietMarket || false
-      }
-    };
-  }, [indicatorData, tradingStyle, indicatorWeight]);
+  // No local scoring; values are taken from server quantum only
   
   // Get cell color based on score (updated for new scoring range [-1.25, +1.25])
   // const getCellColor = (score) => {
@@ -743,14 +356,14 @@ useEffect(() => {
   //   return 'bg-gray-300 text-gray-600 border-0 shadow-sm';
   // };
   
-  // Get signal text (updated for new scoring range [-1.25, +1.25])
-  const getSignalText = (score) => {
-    if (score > 0) return <span className="font-bold">BUY</span>;
-    if (score < 0) return <span className="font-bold">SELL</span>;
+  // Server signal label
+  const getSignalTextFromServer = (signal) => {
+    if (signal === 'buy') return <span className="font-bold">BUY</span>;
+    if (signal === 'sell') return <span className="font-bold">SELL</span>;
     return 'Neutral';
   };
 
-  // Get actionable zone based on final score
+  // Get actionable zone based on server final_score
   const getActionableZone = (finalScore, tradingStyle = 'swingTrader') => {
     // Style-specific sensitivity thresholds
     const thresholds = {
@@ -760,14 +373,10 @@ useEffect(() => {
     
     const threshold = thresholds[tradingStyle] || 20;
     
-    let zone;
-    if (finalScore >= threshold) zone = 'buy';
-    else if (finalScore <= -threshold) zone = 'sell';
-    else zone = 'wait';
-    
-    // Debug logging removed - was too verbose
-    
-    return zone;
+    if (typeof finalScore !== 'number') return 'wait';
+    if (finalScore >= threshold) return 'buy';
+    if (finalScore <= -threshold) return 'sell';
+    return 'wait';
   };
 
   // Get zone colors and styling - Premium Light Colors
@@ -808,7 +417,7 @@ useEffect(() => {
   // The 'new' property is set by calculateEMASignals, calculateMACDSignals, etc.
   // This function is not used in the current implementation
   
-  const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'IchimokuClone'];
+  const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'ICHIMOKU'];
   
   // Component rendering with trading style
   
@@ -983,96 +592,33 @@ useEffect(() => {
         </div>
       )} */}
 
-      {/* Quiet Market Safety Badge - Compact */}
-      {(() => {
-        // Check if any timeframe has quiet market conditions
-        const hasQuietMarket = Object.values(indicatorData).some(timeframeData => 
-          Object.values(timeframeData).some(indicator => indicator.quietMarket)
-        );
-        
-        if (!hasQuietMarket) return null;
-        
-        return (
-          <div className="mb-0.5 p-0.5 bg-blue-100 border border-blue-300 rounded text-xs">
-            <div className="flex items-center">
-              <Activity className="w-2 h-2 text-blue-600 mr-1" />
-              <span className="text-blue-800 font-medium">Quiet Market Safety Active</span>
-            </div>
-          </div>
-        );
-      })()}
+      {/* Server-driven only; remove quiet-market client badge */}
 
-      {/* Current Actionable Zone Indicator - Only show for high probability zones */}
+      {/* Current Actionable Zone Indicator - Only show for high probability zones (server-based) */}
       {(() => {
-        const zone = getActionableZone(finalResults.finalScore, tradingStyle);
+        const mcState = useMarketCacheStore.getState();
+        const qEntry = mcState.quantumBySymbol.get(currentSymbol);
+        const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
+        const overall = qEntry && qEntry.overall ? qEntry.overall[styleKey] : null;
+        const zone = getActionableZone(overall?.final_score, tradingStyle);
         const _styling = getZoneStyling(zone);
-        const thresholds = {
-          'scalper': 25,
-          'swing-trader': 15
-        };
-        const _threshold = thresholds[tradingStyle] || 20;
         
         // Only show if it's a high probability zone (Buy or Sell), not Wait/Neutral
-        if (zone === 'wait') {
-          return null;
-        }
-        
-        
+        if (zone === 'wait') return null;
+        return (
+          <div className={`mb-1 p-1 rounded-lg border ${_styling.bgClass} ${_styling.borderClass}`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-xs font-semibold ${_styling.textClass}`}>{_styling.label}</span>
+              {overall && (
+                <span className={`text-xs ${_styling.valueClass}`}>{Math.round((overall.final_score || 0) * 10) / 10}</span>
+              )}
+            </div>
+          </div>
+        );
       })()}
 
       
-      {/* Data Status and Error Handling */}
-      {dataStatus.hasError ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-            <Activity className="w-8 h-8 text-red-500" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
-            {dataStatus.error === 'NO_DATA' ? 'No Market Data' : 
-             dataStatus.error === 'NO_BARS' ? 'No OHLC Data' : 
-             dataStatus.error === 'INSUFFICIENT_DATA' ? 'Insufficient Data' : 'Data Error'}
-          </h3>
-          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
-            {dataStatus.message}
-          </p>
-          {dataStatus.error === 'INSUFFICIENT_DATA' && (
-            <div className="bg-blue-50 dark:bg-slate-700 border border-blue-200 dark:border-slate-600 rounded-lg p-4 max-w-md mx-auto">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-blue-700 dark:text-slate-300">Data Progress:</span>
-                <span className="text-sm font-medium text-blue-800 dark:text-slate-200">
-                  {dataStatus.dataCount}/{dataStatus.required} bars
-                </span>
-              </div>
-              <div className="w-full bg-blue-200 dark:bg-slate-600 rounded-full h-2">
-                <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${Math.min(100, (dataStatus.dataCount / dataStatus.required) * 100)}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-blue-600 dark:text-slate-400 mt-2">
-                Market data is still loading. Indicators will activate as more data becomes available.
-              </p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <>
-          {/* Data Quality Indicator - Compact */}
-          {dataStatus.workingPercentage < 100 && (
-            <div className="mb-0.5 p-0.5 bg-yellow-100 border border-yellow-300 rounded text-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Activity className="w-2 h-2 text-yellow-600 mr-1" />
-                  <span className="text-yellow-800 font-medium">Partial Data</span>
-                </div>
-                <span className="text-yellow-700 text-xs">
-                  {dataStatus.workingIndicators}/{dataStatus.totalIndicators} ({dataStatus.workingPercentage}%)
-                </span>
-              </div>
-            </div>
-          )}
-      
-      {/* Heatmap Table - Full Height */}
+      {/* Heatmap Table - Full Height (server quantum only) */}
       <div className="overflow-x-auto overflow-y-hidden lg:overflow-y-auto flex-1 min-w-0 min-h-0">
         <table className="w-full border-collapse min-w-[600px]">
           <thead>
@@ -1086,7 +632,11 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-            {[...new Set(timeframes)].filter(tf => tf !== '1W').map((timeframe) => (
+            {(() => {
+              const mcState = useMarketCacheStore.getState();
+              const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
+              const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
+              return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
               <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
                 <td className="py-0.5 sm:py-1 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
                   <div className="flex items-center space-x-1 ml-2">
@@ -1094,9 +644,11 @@ useEffect(() => {
                   </div>
                 </td>
                 {indicators.map(indicator => {
-                  const score = scores[timeframe]?.[indicator] || 0;
-                  const data = calculatedIndicators[timeframe]?.[indicator];
-                  const hasData = data?.hasData || false;
+                  const tfData = perTf && perTf[timeframe];
+                  const indData = tfData && tfData.indicators && tfData.indicators[indicator];
+                  const hasData = !!indData;
+                  const signal = (indData && indData.signal) || 'neutral';
+                  const bgColor = signal === 'buy' ? '#03c05d' : signal === 'sell' ? '#e03f4c' : '#9ca3af';
                   
                   return (
                     <td key={indicator} className="text-center py-1 px-1">
@@ -1104,7 +656,7 @@ useEffect(() => {
                         <button 
                           className=""
                           style={hasData ? {
-                            backgroundColor: score > 0 ? '#03c05d' : score < 0 ? '#e03f4c' : '#9ca3af',
+                            backgroundColor: bgColor,
                             borderRadius: '4px',
                             // Avoid mixing shorthand/non-shorthand border props across renders
                             borderWidth: '0px',
@@ -1164,22 +716,25 @@ useEffect(() => {
                             width: '64px',
                             height: '32px'
                           }}
-                          title={
-                            hasData ? `Signal: ${data.signal}, Score: ${score.toFixed(2)}` : data?.error || 'No data'
-                          }
+                          title={hasData ? `Signal: ${signal}` : 'No data'}
                           disabled={!hasData}
                         >
-                          {hasData ? getSignalText(score) : <span className="text-xs">⋯</span>}
+                          {hasData ? getSignalTextFromServer(signal) : <span className="text-xs">⋯</span>}
                         </button>
                       </div>
                     </td>
                   );
                 })}
               </tr>
-            ))}
+              ));
+            })()}
             
             {/* Buy/Sell Progress Bar Row */}
-            <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(timeframes)].filter(tf => tf !== '1W').length + 1) + ')' }}>
+            {(() => {
+              const mcState = useMarketCacheStore.getState();
+              const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
+              return (
+                <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(supportedTfs)].filter(tf => tf !== '1W').length + 1) + ')' }}>
               <td className="py-0.5 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
                 <div className="flex items-center space-x-1 ml-2">
                 </div>
@@ -1187,8 +742,11 @@ useEffect(() => {
               <td colSpan={indicators.length} className="py-1 px-1">
                 <div className="flex items-center justify-center">
                   {(() => {
-                    const buyPct = finalResults.buyNowPercent;
-                    const sellPct = finalResults.sellNowPercent;
+                    const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
+                    const qe = mcState.quantumBySymbol.get(currentSymbol);
+                    const ov = qe && qe.overall ? qe.overall[styleKey] : null;
+                    const buyPct = typeof ov?.buy_percent === 'number' ? ov.buy_percent : 50;
+                    const sellPct = typeof ov?.sell_percent === 'number' ? ov.sell_percent : (100 - buyPct);
                     
                     return (
                       <div className="flex items-center gap-3 w-full">
@@ -1225,11 +783,11 @@ useEffect(() => {
                 </div>
               </td>
             </tr>
+              );
+            })()}
           </tbody>
         </table>
       </div>
-        </>
-      )}
       
       
       </div>

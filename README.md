@@ -1778,6 +1778,15 @@ This project is licensed under the MIT License.
 - Notes:
   - REST base is fixed: `https://api.fxlabs.ai` (no env vars required).
 
+### Quantum Analysis Integration (Server‑only)
+- Quantum values are sourced solely from the backend; no client‑side calculations.
+- REST: `GET /api/indicator?indicator=quantum&timeframe=5M&pairs=...` is called during cache hydration.
+- WebSocket: `quantum_update` messages are processed and stored under `useMarketCacheStore.quantumBySymbol`.
+- UI:
+  - `src/components/MultiIndicatorHeatmap.js` reads `overall[scalper|swingtrader]` for Buy/Sell percentages.
+  - Per‑timeframe cells use `per_timeframe[TF].indicators[EMA21|EMA50|EMA200|MACD|RSI|UTBOT|ICHIMOKU].signal`.
+  - No fallback computations; if data is missing, the cell shows a placeholder.
+
 ### RSI Correlation Dashboard: Blank/Neutral Render Troubleshooting
 - Ensure WebSocket connection established (see console `[WS][Market-v2] Connected`).
 - The dashboard now derives pair statuses from `rsiData`; placeholders will show until initial snapshot or first `indicator_update` arrives.
