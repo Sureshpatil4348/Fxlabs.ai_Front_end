@@ -5,7 +5,7 @@
   import LoadingOverlay from '../components/LoadingOverlay'
   import MultiIndicatorHeatmap from '../components/MultiIndicatorHeatmap'
   import Navbar from '../components/Navbar'
-  import RSICorrelationDashboard from '../components/RSICorrelationDashboard'
+  // RSICorrelationDashboard removed per requirements; keep blank space instead
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketCacheStore from '../store/useMarketCacheStore'
@@ -76,10 +76,8 @@
               <AINewsAnalysis />
             </div>
 
-            {/* Section 3 - RSI Correlation Dashboard */}
-            <div className="h-80">
-              <RSICorrelationDashboard />
-            </div>
+            {/* Section 3 - Blank placeholder (RSI Correlation removed) */}
+            <div className="h-80" />
 
             {/* Section 4 - RSI Tracker */}
             <div className="h-64">
@@ -100,10 +98,8 @@
               <AINewsAnalysis />
             </div>
 
-            {/* Section 2nd - RSI Correlation Dashboard (bottom left) */}
-            <div className="col-span-7 row-span-5 row-start-8">
-              <RSICorrelationDashboard />
-            </div>
+            {/* Section 2nd - Blank placeholder (bottom left) */}
+            <div className="col-span-7 row-span-5 row-start-8" />
 
             {/* Section 5th - RSI Tracker (bottom right) - Further reduced height */}
             <div className="col-span-5 row-span-5 row-start-8">

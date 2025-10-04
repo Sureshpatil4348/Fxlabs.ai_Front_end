@@ -480,63 +480,7 @@ const useMarketCacheStore = create(
         } catch (_e) { /* ignore */ }
       });
 
-      // Sync to RSI Correlation store
-      import('./useRSICorrelationStore').then(({ default: useRSICorrelationStore }) => {
-        try {
-          const corrState = useRSICorrelationStore.getState();
-          const tf = corrState?.settings?.timeframe || '4H';
-          const allPairs = [...(corrState?.correlationPairs?.positive || []), ...(corrState?.correlationPairs?.negative || [])];
-          const symbols = Array.from(new Set(allPairs.flat().map((s) => `${s}m`)));
-
-          const rsiData = new Map();
-          symbols.forEach((sym) => {
-            const tfMap = state.rsiBySymbolTimeframe.get(sym);
-            const entry = tfMap && tfMap.get(String(tf).toUpperCase());
-            if (entry && typeof entry.value === 'number') {
-              rsiData.set(sym, { value: entry.value, period: entry.period, timeframe: entry.timeframe, updatedAt: entry.updatedAt });
-            }
-          });
-
-          const indicatorData = new Map();
-          symbols.forEach((sym) => {
-            const base = state.indicatorsBySymbol.get(sym);
-            if (!base) return;
-            const tfMap = base.timeframes instanceof Map ? base.timeframes : new Map(base.timeframes || []);
-            const latestTf = String(tf).toUpperCase();
-            const latest = tfMap.get(latestTf) || null;
-            indicatorData.set(sym, {
-              symbol: sym,
-              timeframe: latest ? latestTf : undefined,
-              indicators: latest ? latest.indicators : undefined,
-              barTime: latest ? latest.barTime : undefined,
-              lastUpdate: latest ? latest.lastUpdate : undefined,
-              timeframes: tfMap
-            });
-          });
-
-          useRSICorrelationStore.setState({ rsiData, indicatorData });
-
-          // Pricing into tickData
-          if (typeof corrState.ingestPricingSnapshot === 'function' && pricingEntries.length > 0) {
-            corrState.ingestPricingSnapshot(pricingEntries);
-          } else {
-            // Fallback: set minimal tickData directly
-            const tickData = new Map();
-            pricingEntries.forEach((p) => {
-              tickData.set(p.symbol, { ticks: [{
-                symbol: p.symbol,
-                time: p.time || Date.now(),
-                time_iso: p.time_iso || new Date().toISOString(),
-                bid: p.bid,
-                ask: p.ask,
-                volume: p.volume || 0,
-                daily_change_pct: p.daily_change_pct || 0
-              }], lastUpdate: new Date() });
-            });
-            useRSICorrelationStore.setState({ tickData });
-          }
-        } catch (_e) { /* ignore */ }
-      });
+      // Correlation store removed; no broadcast
     },
 
     // Query helpers

@@ -601,19 +601,16 @@ const useMarketStore = create(
       const initConnections = async () => {
         try {
           const [
-            { default: useRSICorrelationStore },
             { default: useRSITrackerStore },
             { default: useCurrencyStrengthStore }
           ] = await Promise.all([
-            import('./useRSICorrelationStore'),
             import('./useRSITrackerStore'),
             import('./useCurrencyStrengthStore')
           ]);
 
-          // Initiate connections with staggered timing
-          setTimeout(() => useRSICorrelationStore.getState().connect(), 100);
-          setTimeout(() => useRSITrackerStore.getState().connect(), 300);
-          setTimeout(() => useCurrencyStrengthStore.getState().connect(), 500);
+          // Initiate connections with staggered timing (correlation removed)
+          setTimeout(() => useRSITrackerStore.getState().connect(), 200);
+          setTimeout(() => useCurrencyStrengthStore.getState().connect(), 400);
 
           // Set timeout for connection attempts
           const timeoutId = setTimeout(() => {

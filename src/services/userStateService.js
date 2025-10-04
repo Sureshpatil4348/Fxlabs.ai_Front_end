@@ -116,15 +116,7 @@ class UserStateService {
         timeframe: '1H'
       },
       
-      // RSI Correlation Settings
-      rsiCorrelation: {
-        timeframe: '1H',
-        rsiPeriod: 14,
-        rsiOverbought: 70,
-        rsiOversold: 30,
-        correlationWindow: 50,
-        calculationMode: 'rsi_threshold' // 'rsi_threshold' | 'real_correlation'
-      },
+      // RSI Correlation removed
       
       // RSI Tracker Settings
       rsiTracker: {
@@ -219,7 +211,6 @@ class UserStateService {
     // Allow partial updates: each section may be omitted in `settings`
     const mergedSettings = {
       global: { ...currentSettings.global, ...(settings?.global || {}) },
-      rsiCorrelation: { ...currentSettings.rsiCorrelation, ...(settings?.rsiCorrelation || {}) },
       rsiTracker: { ...currentSettings.rsiTracker, ...(settings?.rsiTracker || {}) },
       currencyStrength: { ...currentSettings.currencyStrength, ...(settings?.currencyStrength || {}) },
       multiIndicatorHeatmap: { ...currentSettings.multiIndicatorHeatmap, ...(settings?.multiIndicatorHeatmap || {}) }
@@ -307,14 +298,14 @@ class UserStateService {
    * Update RSI Correlation Settings
    */
   async updateRSICorrelationSettings(settings) {
-    return await this.updateDashboardSettingsSection('rsiCorrelation', settings);
+    // Removed
   }
 
   /**
    * Get RSI Correlation Settings
    */
   async getRSICorrelationSettings() {
-    return await this.getDashboardSettingsSection('rsiCorrelation');
+    // Removed
   }
 
   /**
@@ -355,7 +346,6 @@ class UserStateService {
     };
 
     // Update both RSI Correlation and RSI Tracker settings
-    await this.updateRSICorrelationSettings(rsiSettings);
     await this.updateRSITrackerSettings(rsiSettings);
     
     return await this.updateTabState('rsiThreshold', { overbought, oversold });

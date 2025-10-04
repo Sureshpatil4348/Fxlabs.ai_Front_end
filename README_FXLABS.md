@@ -2,19 +2,12 @@
 
 ## Overview
 
-The FXLabs.AI Dashboard is a comprehensive forex analysis platform that transforms the original MT5 React Frontend into an advanced trading intelligence system. It provides real-time RSI correlation analysis, currency strength monitoring, and AI-powered news analysis.
+The FXLabs.AI Dashboard is a comprehensive forex analysis platform that transforms the original MT5 React Frontend into an advanced trading intelligence system. It provides currency strength monitoring and AI-powered news analysis.
 
 ## 🚀 New Features
 
-### 1. RSI Correlation Dashboard (Section 1)
-- **4x4 Grid Display**: Visual representation of 15-16 correlation pairs
-- **Real-time RSI Calculations**: Dynamic RSI computation for all subscribed pairs
-- **Correlation Analysis**: 
-  - Positive correlations (e.g., EURUSD ↔ GBPUSD)
-  - Negative correlations (e.g., GBPUSD ↔ USDCHF)
-- **Mismatch Detection**: Automatically identifies when correlations break down
-- **Traffic Light System**: ✅ Match | ❌ Mismatch | ⚪ Neutral
-- **Configurable Settings**: Adjustable RSI period, overbought/oversold levels, timeframes
+### 1. Correlation Section (Removed)
+This section has been removed. The dashboard reserves a blank placeholder in its slot.
 
 ### 2. RSI Oversold/Overbought Tracker (Section 2)
 - **Dual Tab Interface**: Separate views for oversold and overbought pairs
@@ -70,7 +63,7 @@ The FXLabs.AI Dashboard is a comprehensive forex analysis platform that transfor
 ```
 src/
 ├── components/
-│   ├── RSICorrelationDashboard.js     # Section 1
+│   ├── (Removed) RSICorrelationDashboard.js     # Section 1 (blank placeholder)
 │   ├── RSIOverboughtOversoldTracker.js # Section 2
 │   ├── CurrencyStrengthMeter.js       # Section 3
 │   ├── AINewsAnalysis.js              # Section 4

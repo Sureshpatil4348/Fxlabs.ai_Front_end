@@ -8,7 +8,6 @@ import { useAuth } from '../auth/AuthProvider';
 import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
-import useRSICorrelationStore from '../store/useRSICorrelationStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
 
@@ -109,8 +108,7 @@ const RSIOverboughtOversoldTracker = () => {
     getLatestTickForSymbol,
     getDailyChangePercent
   } = useRSITrackerStore();
-  // Read correlation settings to keep tracker in sync (timeframe only)
-  const { settings: _corrSettings } = useRSICorrelationStore();
+  // Correlation feature removed; no cross-sync needed
   
   // Get tab state from base market store
   const { 

@@ -15,7 +15,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - `src/utils/dataFormulasExample.js` - Deleted (was example/demo file)
 - **Stores updated**: All calculation calls in stores are now placeholder functions that log warnings
   - `src/store/useRSITrackerStore.js`
-  - `src/store/useRSICorrelationStore.js`
+  - (Removed) `src/store/useRSICorrelationStore.js`
   - `src/store/useMarketStore.js`
 - **Components updated**: `src/components/MultiIndicatorHeatmap.js` now uses neutral fallback values instead of calculating indicators
 
@@ -79,7 +79,7 @@ All technical indicator calculations are now performed server-side:
 - `src/services/websocketMessageRouter.js` - Routes `indicator_update` messages
 - `src/store/useMarketStore.js` - Handles `initial_indicators` and `indicator_update` messages
 - `src/store/useRSITrackerStore.js` - Uses server indicator data; now stores per-timeframe snapshots per symbol
-- `src/store/useRSICorrelationStore.js` - Uses server indicator data; now stores per-timeframe snapshots per symbol
+- (Removed) `src/store/useRSICorrelationStore.js`
 - `src/store/useCurrencyStrengthStore.js` - Uses server indicator data; now stores per-timeframe snapshots per symbol
 - `src/components/OHLCDataView.js` - Renamed to `IndicatorDataView.js` and updated to display indicators
 - `src/components/TradingViewChart.js` - Updated to use tick data for line charts
@@ -197,7 +197,7 @@ Example:
   - REST (Indicators): `src/services/indicatorService.js` after successful fetch.
   - REST (Correlation): `src/services/correlationService.js` after successful fetch.
   - WebSocket (Indicator push): `src/services/websocketMessageRouter.js` when `type === 'indicator_update'` and `symbol === 'BTCUSDm'`.
-  - WebSocket (Correlation push): `src/services/websocketMessageRouter.js` when `type === 'correlation_update'` and `pair_key` includes `BTCUSDm`.
+  - WebSocket (Correlation push): removed (correlation feature removed)
 - Log format samples:
   - REST Indicator: `[REST][Indicator][BTCUSDm] indicator=rsi timeframe=4H { requestPairsCount, hasBTCUSDmInRequest, responseItem, responseTs, url }`
   - REST Correlation: `[REST][Correlation][BTCUSDm] timeframe=4H window=50 { requestPairsCount, hasBTCUSDmInRequest, btcPairsInResponse, url }`
@@ -277,7 +277,7 @@ Usage notes (WebSocket):
 - Includes timestamp, close code, and reason (when available).
 - **Optimized Architecture**:
   - `src/services/websocketService.js` (NEW - shared connection manager)
-  - `src/store/useRSICorrelationStore.js` (updated to use shared service)
+  - (Removed) `src/store/useRSICorrelationStore.js`
   - `src/store/useRSITrackerStore.js` (updated to use shared service)
   - `src/store/useMarketStore.js` (updated to use shared service)
   - `src/store/useCurrencyStrengthStore.js` (updated to use shared service)
@@ -293,7 +293,7 @@ Usage notes (WebSocket):
 - Affected UI: heatmap symbol dropdown, alert pair chips, watchlist/RSI add modals, OHLC/Tick views, TradingView chart watermark/header
 
 ### RSI Correlation Dashboard Real-time Connection (Latest)
-- RSICorrelationDashboard now self-initializes its WebSocket connection on mount.
+RSICorrelationDashboard removed; dashboard shows a blank placeholder in its grid slot.
 - Initial state now hydrates via REST `/api/indicator` (RSI) and `/api/correlation` (real correlation) and then merges live WebSocket pushes.
 
 #### Integration details (Frontend)
@@ -302,8 +302,8 @@ Usage notes (WebSocket):
   - RSI snapshot: `src/services/indicatorService.js -> fetchIndicatorSnapshot({ indicator:'rsi', timeframe, pairs })`
   - Real correlation snapshot: `src/services/correlationService.js -> fetchCorrelationSnapshot({ timeframe, pairs, window:50 })`
 - WebSocket v2 (broadcast-only)
-  - `indicator_update`: updates RSI per symbol/timeframe in `src/store/useRSICorrelationStore.js`
-  - `correlation_update`: handled and merged into `realCorrelationData` with mismatch policy per docs
+  - `indicator_update`: unchanged for remaining widgets
+  - `correlation_update`: removed/unhandled
 - UI wiring
   - `src/components/RSICorrelationDashboard.js` triggers both initial REST snapshots (RSI and, when in Real mode, correlation) and renders placeholders until data arrives.
 
@@ -316,8 +316,7 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 - UI dropdowns exclude 1M; stores also omit 1M from their `timeframes` arrays.
 - If previously saved user settings contain `1M`/`M1`, the UI normalizes to `5M` on load to keep selections valid.
 - Affected files:
-  - `src/store/useRSICorrelationStore.js:82`
-  - `src/components/RSICorrelationDashboard.js:663`
+  - (Removed) RSICorrelation references
   - `src/store/useRSITrackerStore.js:81`
   - `src/components/RSIOverboughtOversoldTracker.js:719`
 
@@ -394,7 +393,7 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
   - `src/services/heatmapIndicatorTrackerAlertService.js`
 - `supabase_heatmap_indicator_tracker_alerts_schema.sql` to create the simplified heatmap indicator tracker alert tables
   - `src/services/rsiTrackerAlertService.js`
-  - `src/services/rsiCorrelationTrackerAlertService.js` (mapping generalized for correlation pairs)
+- (Removed) `src/services/rsiCorrelationTrackerAlertService.js`
   - `src/constants/pairs.js` (new shared constants and helpers)
 
 ### RSI Calculation: MT5 Parity (Latest)
@@ -984,7 +983,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **WatchlistService**: Handles watchlist database operations
 - **NewsService**: Fetches and analyzes forex news with AI
 - **RSITrackerAlertService**: Manages single RSI Tracker alert configuration (CRUD only)
-- **RSICorrelationTrackerAlertService**: Manages single RSI Correlation alert configuration (CRUD only)
+- (Removed) RSICorrelationTrackerAlertService
 - **HeatmapTrackerAlertService**: Manages All-in-One heatmap alert configuration (CRUD only)
 - **HeatmapIndicatorTrackerAlertService**: Manages custom indicator alert configuration (CRUD only)
   - Note: Custom Indicator Alert timeframe options exclude `1M` (1 minute).
@@ -997,7 +996,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **AI News Analysis**: Intelligent news filtering and analysis
 - **HeatmapAlertConfig**: Alert configuration modal for multi-indicator heatmap alerts
 - **RSITrackerAlertConfig**: Alert configuration modal for RSI Tracker alert (single)
-- **RSICorrelationTrackerAlertConfig**: Alert configuration modal for RSI Correlation alert (single)
+- (Removed) RSICorrelationTrackerAlertConfig
 - **HeatmapTrackerAlertConfig**: Alert configuration modal for heatmap tracker alert (single)
 
 ## Multi-Indicator Heatmap
@@ -1772,9 +1771,9 @@ This project is licensed under the MIT License.
   - Stores/components merge the snapshot into `rsiData` to render immediately, then live `indicator_update` pushes keep it fresh.
 - Implementations:
   - `src/store/useRSITrackerStore.js`: fires REST snapshot on timeframe change; populates `rsiData`.
-  - `src/store/useRSICorrelationStore.js`: fires REST snapshot on timeframe change for correlation pairs; populates `rsiData` and immediately derives `correlationStatus`.
+  - (Removed) correlation store behavior
   - `src/components/RSIOverboughtOversoldTracker.js`: fetches on mount/timeframe change.
-  - `src/components/RSICorrelationDashboard.js`: fetches on mount/timeframe change and triggers `recalculateAllRsi()` to derive statuses.
+  - (Removed) correlation dashboard component
 - Notes:
   - REST base is fixed: `https://api.fxlabs.ai` (no env vars required).
 
@@ -1803,12 +1802,12 @@ We introduced a centralized cache to ensure instant, consistent data across all 
   - Cache is persisted into `sessionStorage` for instant reloads and minimized REST usage.
   - It broadcasts hydrated snapshots into existing RSI stores so current widgets render directly from the cache without extra API calls.
 
-Consumers continue using existing selectors in `useRSITrackerStore` and `useRSICorrelationStore`, while the cache keeps them up-to-date.
+Consumers continue using existing selectors in `useRSITrackerStore`.
 
 Wiring:
 
 - `src/pages/Dashboard.jsx` initializes the market cache on mount.
-- `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` hydrate from the cache immediately on timeframe changes instead of issuing new REST calls.
+- `src/store/useRSITrackerStore.js` hydrates from the cache immediately on timeframe changes instead of issuing new REST calls.
 
 Benefits:
 

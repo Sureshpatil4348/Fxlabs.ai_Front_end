@@ -16,17 +16,7 @@ import React from 'react'
 
 const TradingFeaturesSection = () => {
   const tradingFeatures = [
-    {
-      id: 1,
-      icon: BarChart3,
-      title: "RSI Correlation Dashboard",
-      description: "Advanced RSI analysis with correlation insights to identify market trends and opportunities with 95% accuracy.",
-      color: "from-green-500 to-emerald-600",
-      bgColor: "from-green-50 to-emerald-50",
-      borderColor: "border-green-200",
-      features: ["Multi-timeframe Analysis", "Correlation Detection", "Signal Confirmation", "Real-time Updates"],
-      stats: "95% Accuracy"
-    },
+    // Removed RSI Correlation Dashboard feature
     {
       id: 2,
       icon: Target,

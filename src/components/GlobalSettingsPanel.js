@@ -24,8 +24,8 @@ const GlobalSettingsPanel = () => {
       // Update local settings state
       const newLocalSettings = {
         timeframe: settings.global.timeframe,
-        rsiOverbought: settings.rsiCorrelation.rsiOverbought,
-        rsiOversold: settings.rsiCorrelation.rsiOversold,
+        rsiOverbought: settings.rsiTracker.rsiOverbought,
+        rsiOversold: settings.rsiTracker.rsiOversold,
         strengthMode: settings.currencyStrength.mode
       };
       
@@ -35,8 +35,8 @@ const GlobalSettingsPanel = () => {
       updateGlobalSettings({ timeframe: settings.global.timeframe });
       updateRsiSettings({
         // period fixed at 14
-        overbought: settings.rsiCorrelation.rsiOverbought,
-        oversold: settings.rsiCorrelation.rsiOversold
+        overbought: settings.rsiTracker.rsiOverbought,
+        oversold: settings.rsiTracker.rsiOversold
       });
       updateStrengthSettings({ mode: settings.currencyStrength.mode });
       
@@ -68,11 +68,6 @@ const GlobalSettingsPanel = () => {
       // Persist to database
       const settingsToSave = {
         global: { timeframe: localSettings.timeframe },
-        rsiCorrelation: {
-          timeframe: localSettings.timeframe,
-          rsiOverbought: localSettings.rsiOverbought,
-          rsiOversold: localSettings.rsiOversold
-        },
         rsiTracker: {
           timeframe: localSettings.timeframe,
           rsiOverbought: localSettings.rsiOverbought,

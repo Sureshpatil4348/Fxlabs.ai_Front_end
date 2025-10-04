@@ -12,9 +12,12 @@ This document summarizes the comprehensive enhancements made to the FXLabs Dashb
 4. **Correlation Coefficients**: Display actual correlation values (-1 to +1) instead of discrete statuses
 
 ### **Technical Changes:**
-- **File**: `src/store/useRSICorrelationStore.js`
-- **New Functions**: 
-  - `calculateRollingCorrelation()` - Implements the mathematical formula
+- RSI Correlation feature removed entirely. Files deleted:
+  - `src/store/useRSICorrelationStore.js`
+  - `src/components/RSICorrelationDashboard.js`
+  - `src/components/RSICorrelationTrackerAlertConfig.jsx`
+  - `src/services/correlationService.js`
+  - `src/services/rsiCorrelationTrackerAlertService.js`
   - `calculateAllCorrelations()` - Processes all correlation pairs
 - **Enhanced Data Structure**: Added `realCorrelationData` Map for correlation coefficients
 
