@@ -1,18 +1,19 @@
 import React from 'react'
 
 import { useAuth } from '../auth/AuthProvider'
-import BenefitsSection from '../components/BenefitsSection'
+import AfterPurchaseSection from '../components/AfterPurchaseSection'
+import AutomationAlertsSection from '../components/AutomationAlert'
+import CommunitySection from '../components/CommunitySection'
 import FAQSection from '../components/FAQSection'
 // import GetInTouchSection from '../components/GetInTouchSection'
 import HeroSection from '../components/HeroSection'
 import InteractiveFooter from '../components/InteractiveFooter'
 import Navbar from '../components/Navbar'
-import PartnersSection from '../components/PartnerSection'
+import PsychologicalBenefitsSection from '../components/PsychologicalBenefitsSection'
 import SubscriptionSection from '../components/SubscriptionSection'
-import SuccessStories from '../components/SuccessStories'
-import TradingDashboardSection from '../components/TradingDashboardSection'
+import TradingToolsShowcase from '../components/TradingToolsShowcase'
 import VideoExplanationSection from '../components/VideoExplanationSection'
-
+import WhySystemWorks from '../components/WhySystemWorks'
 const Home = () => {
   const { user: _user } = useAuth()
 
@@ -103,16 +104,29 @@ const Home = () => {
         </div>
 
         
-        {/* Trading Dashboard Section */}
-        <div id="trading-dashboard">
-          <TradingDashboardSection />
+        {/* Trading Tools Showcase Section */}
+        <div id="trading-tools-showcase">
+          <TradingToolsShowcase />
         </div>
 
-        
-
-        <div id="benefits">
-          <BenefitsSection />
+        {/* Automation Alerts Section */}
+        <div id="automation-alerts">
+          <AutomationAlertsSection />
         </div>
+
+
+
+        {/* Psychological Benefits Section */}
+        <div id="psychological-benefits">
+          <PsychologicalBenefitsSection />
+        </div>
+
+          {/* Why System Works Section */}
+          <div id="why-system-works">
+            <WhySystemWorks />
+          </div>
+
+       
 
         {/* Video Explanation Section */}
         <div id="video-explanation">
@@ -124,15 +138,16 @@ const Home = () => {
           <SubscriptionSection />
         </div>
 
-        {/* Success Stories Section */}
-        <div id="success-stories">
-          <SuccessStories />
-        </div>
 
 
+          {/* After Purchase Section */}
+          <div id="after-purchase">
+            <AfterPurchaseSection />
+          </div>
 
-        <div id="partner">
-          <PartnersSection />
+        {/* Community Section */}
+        <div id="community">
+          <CommunitySection />
         </div>
 
 
