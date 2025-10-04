@@ -1771,3 +1771,21 @@ Benefits:
 - Faster UI when switching timeframes/indicators
 - Reduced REST chatter; one-time hydration then live WS updates
 - Consistent data across widgets from a single source of truth
+
+## Optimized Startup Sequence (Latest)
+- WebSocket first: a single shared connection is established via `src/services/websocketService.js` and routed by `src/services/websocketMessageRouter.js`.
+- Restore state from Supabase: user tab and dashboard settings are restored early via `src/services/userStateService.js` through `useBaseMarketStore`.
+- Minimal REST hydration only when needed:
+  - `useMarketCacheStore.initialize()` no longer triggers bulk REST hydration on startup.
+  - A new method `hydrateQuantumForSymbol(symbol)` fetches a tiny quantum snapshot for the currently viewed symbol to quickly power `MultiIndicatorHeatmap`.
+  - Additional data is filled by live WebSocket updates.
+- Defer AI News fetches: news polling starts after the global connection state is CONNECTED (see `src/pages/Dashboard.jsx`). Duplicate news fetches in `TradingDashboardSection.jsx` have been removed to avoid redundant network calls.
+
+### Files touched
+- `src/store/useMarketCacheStore.js`: removed heavy startup REST hydration; added `hydrateQuantumForSymbol`.
+- `src/components/MultiIndicatorHeatmap.js`: triggers minimal quantum hydration when the current symbol has no cached quantum data.
+- `src/pages/Dashboard.jsx`: delays news polling until after connection is established.
+- `src/components/TradingDashboardSection.jsx`: removed duplicate news polling.
+
+### Environment hints
+- `REACT_APP_WEBSOCKET_URL` can override the default WS endpoint. Router debug: `REACT_APP_ENABLE_WS_ROUTER_DEBUG=true`.

@@ -92,13 +92,7 @@ const useMarketCacheStore = create(
       websocketService.connect().catch(() => {});
 
       set({ initialized: true });
-
-      // Kick off hydration from REST
-      try {
-        await get().hydrateFromREST();
-      } catch (_e) {
-        // Silent; live WS will fill
-      }
+      // Defer REST hydration. Components should request minimal snapshots as needed.
     },
 
     hydrateFromSession: () => {
@@ -193,6 +187,32 @@ const useMarketCacheStore = create(
         ticksBySymbol: mapToObject(state.ticksBySymbol)
       };
       try { sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload)); } catch (_e) { /* ignore */ }
+    },
+
+    // Minimal REST hydration for a single symbol's quantum snapshot (powers heatmap quickly)
+    hydrateQuantumForSymbol: async (symbol) => {
+      const sym = (symbol || '').trim();
+      if (!sym) return;
+      try {
+        const res = await indicatorService.fetchIndicatorSnapshot({ indicator: 'quantum', timeframe: '5M', pairs: [sym] });
+        const entries = (res && Array.isArray(res.pairs)) ? res.pairs : [];
+        if (entries.length === 0) return;
+        const quantumBySymbol = new Map(get().quantumBySymbol);
+        entries.forEach((p) => {
+          if (!p || !p.symbol || !p.quantum) return;
+          const q = p.quantum;
+          quantumBySymbol.set(p.symbol, {
+            per_timeframe: q.per_timeframe || {},
+            overall: q.overall || {},
+            bar_times: q.bar_times || {},
+            lastUpdate: new Date()
+          });
+        });
+        set({ quantumBySymbol });
+        get().persistToSession();
+      } catch (_e) {
+        // Silent; websocket will fill
+      }
     },
 
     hydrateFromREST: async () => {
@@ -470,8 +490,22 @@ const useMarketCacheStore = create(
             });
           });
 
-          // Apply to store
-          useRSITrackerStore.setState({ rsiData, indicatorData });
+          // Merge into store instead of replacing to avoid wiping existing RSI data
+          const prevRsi = trackerState?.rsiData instanceof Map ? trackerState.rsiData : new Map(trackerState?.rsiData || []);
+          const prevIndicator = trackerState?.indicatorData instanceof Map ? trackerState.indicatorData : new Map(trackerState?.indicatorData || []);
+
+          // Only update when we actually have entries to merge
+          const hasRsiUpdates = rsiData.size > 0;
+          const hasIndicatorUpdates = indicatorData.size > 0;
+          if (hasRsiUpdates) {
+            rsiData.forEach((val, key) => { prevRsi.set(key, val); });
+          }
+          if (hasIndicatorUpdates) {
+            indicatorData.forEach((val, key) => { prevIndicator.set(key, val); });
+          }
+          if (hasRsiUpdates || hasIndicatorUpdates) {
+            useRSITrackerStore.setState({ rsiData: prevRsi, indicatorData: prevIndicator });
+          }
 
           // Pricing into tickData as synthetic ticks
           if (typeof trackerState.ingestPricingSnapshot === 'function' && pricingEntries.length > 0) {

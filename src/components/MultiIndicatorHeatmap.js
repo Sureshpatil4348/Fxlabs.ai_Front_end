@@ -148,6 +148,19 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
       setCurrentSymbol(availableSymbols[0]);
     }
   }, [availableSymbols, currentSymbol]);
+
+  // Minimal REST snapshot: hydrate server quantum for current symbol once if missing
+  useEffect(() => {
+    try {
+      const mc = useMarketCacheStore.getState();
+      const hasQuantum = !!mc.quantumBySymbol.get(currentSymbol);
+      if (!hasQuantum && currentSymbol) {
+        mc.hydrateQuantumForSymbol(currentSymbol);
+      }
+    } catch (_e) {
+      // silent
+    }
+  }, [currentSymbol]);
   
   // Add this state
 const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
@@ -162,11 +175,12 @@ const symbolDropdownRef = useRef(null);
         setIsSymbolDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleOutside, true);
-    document.addEventListener('touchstart', handleOutside, true);
+    const listenerOptions = { capture: true, passive: true };
+    document.addEventListener('mousedown', handleOutside, listenerOptions);
+    document.addEventListener('touchstart', handleOutside, listenerOptions);
     return () => {
-      document.removeEventListener('mousedown', handleOutside, true);
-      document.removeEventListener('touchstart', handleOutside, true);
+      document.removeEventListener('mousedown', handleOutside, listenerOptions);
+      document.removeEventListener('touchstart', handleOutside, listenerOptions);
     };
   }, [isSymbolDropdownOpen]);
 

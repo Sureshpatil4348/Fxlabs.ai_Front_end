@@ -33,13 +33,23 @@
       }
     }, [user?.id])
 
-    React.useEffect(() => {
-      useBaseMarketStore.getState().fetchNews()
-      const newsInterval = setInterval(() => {
-        useBaseMarketStore.getState().fetchNews()
-      }, 5 * 60 * 1000)
-      return () => clearInterval(newsInterval)
-    }, [])
+  // Defer AI news fetch until after WS + state ready to reduce startup load
+  React.useEffect(() => {
+    let intervalId;
+    const startNewsPolling = () => {
+      useBaseMarketStore.getState().fetchNews();
+      intervalId = setInterval(() => {
+        useBaseMarketStore.getState().fetchNews();
+      }, 5 * 60 * 1000);
+    };
+    // Start when global connection is CONNECTED and tab state loaded
+    if (connectionStatus === 'CONNECTED') {
+      startNewsPolling();
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [connectionStatus])
 
     // Load user tab states on dashboard mount (optional)
     React.useEffect(() => {

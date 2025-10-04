@@ -75,13 +75,7 @@ const TradingDashboardSection = () => {
     }
   }, [isConnected, subscribe])
 
-  useEffect(() => {
-    useBaseMarketStore.getState().fetchNews()
-    const newsInterval = setInterval(() => {
-      useBaseMarketStore.getState().fetchNews()
-    }, 5 * 60 * 1000)
-    return () => clearInterval(newsInterval)
-  }, [])
+  // News fetching centralized in Dashboard; remove duplicate here
 
   // Console log real data for TradingDashboardSection (tick-only)
   useEffect(() => {
