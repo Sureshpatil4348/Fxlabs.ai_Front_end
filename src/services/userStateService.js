@@ -192,7 +192,6 @@ class UserStateService {
     
     return {
       global: { ...defaults.global, ...userSettings.global },
-      rsiCorrelation: { ...defaults.rsiCorrelation, ...userSettings.rsiCorrelation },
       rsiTracker: { ...defaults.rsiTracker, ...userSettings.rsiTracker },
       currencyStrength: { ...defaults.currencyStrength, ...userSettings.currencyStrength },
       multiIndicatorHeatmap: { ...defaults.multiIndicatorHeatmap, ...userSettings.multiIndicatorHeatmap }
@@ -294,19 +293,7 @@ class UserStateService {
     return await this.getDashboardSettingsSection('global');
   }
 
-  /**
-   * Update RSI Correlation Settings
-   */
-  async updateRSICorrelationSettings(settings) {
-    // Removed
-  }
 
-  /**
-   * Get RSI Correlation Settings
-   */
-  async getRSICorrelationSettings() {
-    // Removed
-  }
 
   /**
    * Update RSI Tracker Settings

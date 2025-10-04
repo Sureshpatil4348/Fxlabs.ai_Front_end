@@ -63,7 +63,7 @@ Evaluation and trigger insertion are performed by the backend only. The frontend
 1. Run `supabase_rsi_tracker_alerts_schema.sql` in your Supabase project.
 2. Remove reliance on legacy multi-alert UIs:
    - RSI Tracker: use `RSITrackerAlertConfig.jsx` (old `RSIAlertConfig.jsx` removed)
-   - RSI Correlation: use `RSICorrelationTrackerAlertConfig.jsx` (old `RSICorrelationAlertConfig.jsx` removed)
+   - RSI Correlation: removed (feature no longer supported)
 3. Ensure env vars for Supabase are configured (see `README_SUPABASE_SETUP.md`).
 
 ## RSI Correlation Tracker Alert (Removed)

@@ -37,7 +37,7 @@ If you're integrating with this frontend:
 All features that relied on client-side calculations now expect server-provided data:
 - Multi-Indicator Heatmap (EMA, MACD, RSI, UTBOT, Ichimoku)
 - RSI Tracker (RSI values)
-- RSI Correlation Dashboard (RSI values and correlation coefficients)
+- (Removed) RSI Correlation Dashboard
 - Currency Strength Meter (calculations)
 - RFI Score Cards (RFI components)
 
@@ -190,19 +190,16 @@ Example:
 [BTCUSDm][1M][OPEN]  2025-09-30 12:04:00 | O:65080 H:65090 L:65070 C:65085 | RSI14(curr): 57.90 | RSI14(closed): 58.32 { …payload }
 ```
 
-### BTCUSDm REST and WebSocket Logging (Indicators & Correlations)
+### BTCUSDm REST and WebSocket Logging (Indicators)
 
 - Purpose: Help verify initial REST snapshots and subsequent WebSocket push updates for `BTCUSDm`.
 - Where it logs:
   - REST (Indicators): `src/services/indicatorService.js` after successful fetch.
-  - REST (Correlation): `src/services/correlationService.js` after successful fetch.
   - WebSocket (Indicator push): `src/services/websocketMessageRouter.js` when `type === 'indicator_update'` and `symbol === 'BTCUSDm'`.
   - WebSocket (Correlation push): removed (correlation feature removed)
 - Log format samples:
   - REST Indicator: `[REST][Indicator][BTCUSDm] indicator=rsi timeframe=4H { requestPairsCount, hasBTCUSDmInRequest, responseItem, responseTs, url }`
-  - REST Correlation: `[REST][Correlation][BTCUSDm] timeframe=4H window=50 { requestPairsCount, hasBTCUSDmInRequest, btcPairsInResponse, url }`
   - WS Indicator: `[WS][Indicator][BTCUSDm] timeframe=4H { indicators, barTime, rsi, raw }`
-  - WS Correlation: `[WS][Correlation][BTCUSDm] timeframe=4H { pairKey, value, strength, window, raw }`
 - Notes:
   - These logs are lightweight and only trigger when `BTCUSDm` is in the request or present in the response/push.
   - General WS routing logs remain controlled by `REACT_APP_ENABLE_WS_ROUTER_DEBUG` (see `src/services/websocketMessageRouter.js`).
@@ -254,18 +251,6 @@ Usage notes (WebSocket):
 - Unsubscribe all timeframes for a symbol
   - `{ "action": "unsubscribe", "symbol": "EURUSDm" }`
 
-### RSI Correlation Live Update Reliability (Latest)
-- Fixed intermittent stalls where RSI Correlation values stopped updating or lagged behind RSI Tracker.
-- Root causes:
-  - Store did not maintain per-timeframe OHLC buffers; RSI calculations could miss the active timeframe or use stale bars.
-  - On reconnect, stale in-memory maps could persist and subscriptions were not always re-sent.
-- Fixes:
-  - Added `ohlcByTimeframe` buffer and updated `getOhlcForSymbol` to prefer the active timeframe (with proper aliasing like H1/1H).
-  - Made `ohlc_update` robust even without a prior `initial_ohlc` by creating buffers on the fly and updating both top-level and per-timeframe maps.
-  - On connect, force auto-subscribe to all correlation pairs with a brief delay to batch sends.
-  - On close/disconnect, clear `subscriptions`, `tickData`, `ohlcData`, `ohlcByTimeframe`, and `initialOhlcReceived` to guarantee clean resubscription.
-- Ensured RSI recalculation does not depend on subscription ACKs: after reconnect, RSI is computed for all symbols present in OHLC buffers so cards populate immediately even if `subscribed` messages are delayed.
-- Affected file: `src/store/useRSICorrelationStore.js`
 
 ### WebSocket Connection Logs (Latest) - OPTIMIZED WITH TIMESTAMPS
 - **Single Connection**: All stores now share one WebSocket connection via `websocketService.js`
@@ -282,41 +267,22 @@ Usage notes (WebSocket):
   - `src/store/useMarketStore.js` (updated to use shared service)
   - `src/store/useCurrencyStrengthStore.js` (updated to use shared service)
 
-### RSI Correlation Dashboard Pair Rendering Reliability (Latest)
-- Fixed an issue where some correlation pairs intermittently disappeared a second after load.
-- The dashboard now always renders the full configured pair list and shows placeholders (e.g., "Calculating…" or "--") until data arrives.
-- Root cause: UI previously derived the grid from computed data only, so pairs without immediate data would vanish during early recalculations or timeframe switches. The grid is now based on the configured pair list with data merged in.
 
 ### Pair Display Formatting (Latest)
 - All user-facing pair symbols now display as ABC/DEF (e.g., EUR/USD) for clarity
 - Non-breaking UI-only change; internal symbols/storage remain unchanged (e.g., EURUSD, EURUSDm)
 - Affected UI: heatmap symbol dropdown, alert pair chips, watchlist/RSI add modals, OHLC/Tick views, TradingView chart watermark/header
 
-### RSI Correlation Dashboard Real-time Connection (Latest)
-RSICorrelationDashboard removed; dashboard shows a blank placeholder in its grid slot.
-- Initial state now hydrates via REST `/api/indicator` (RSI) and `/api/correlation` (real correlation) and then merges live WebSocket pushes.
-
-#### Integration details (Frontend)
-
-- REST initial fetches
-  - RSI snapshot: `src/services/indicatorService.js -> fetchIndicatorSnapshot({ indicator:'rsi', timeframe, pairs })`
-  - Real correlation snapshot: `src/services/correlationService.js -> fetchCorrelationSnapshot({ timeframe, pairs, window:50 })`
-- WebSocket v2 (broadcast-only)
-  - `indicator_update`: unchanged for remaining widgets
-  - `correlation_update`: removed/unhandled
-- UI wiring
-  - `src/components/RSICorrelationDashboard.js` triggers both initial REST snapshots (RSI and, when in Real mode, correlation) and renders placeholders until data arrives.
 
 Auth headers: When `API_TOKEN` is required server-side, configure the deployment proxy/CDN to inject `X-API-Key` or wrap fetch to include it.
 - Ensures real-time updates even when the global connection initiator is not mounted.
 - Auto-subscription and on-update recalculations remain unchanged and continue to run on each `ohlc_update`.
 
 ### Timeframe Options Update (Latest)
-- Removed 1M timeframe from RSI Correlation Dashboard and RSI Tracker widgets.
+- Removed 1M timeframe from RSI Tracker widgets.
 - UI dropdowns exclude 1M; stores also omit 1M from their `timeframes` arrays.
 - If previously saved user settings contain `1M`/`M1`, the UI normalizes to `5M` on load to keep selections valid.
 - Affected files:
-  - (Removed) RSICorrelation references
   - `src/store/useRSITrackerStore.js:81`
   - `src/components/RSIOverboughtOversoldTracker.js:719`
 
@@ -397,11 +363,11 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
   - `src/constants/pairs.js` (new shared constants and helpers)
 
 ### RSI Calculation: MT5 Parity (Latest)
-- RSI in both RSI Tracker and RSI Correlation now matches MetaTrader 5 more closely.
+- RSI in RSI Tracker now matches MetaTrader 5 more closely.
 - We use Wilder's RSI (RMA smoothing) computed on CLOSED candles only, mirroring typical MT5 display values.
 - Previously we used a simple-average (Cutler's) approach over the last N bars, which could diverge; we also included the forming candle which further skewed values.
 - Implementation details:
-  - `src/store/useRSITrackerStore.js` and `src/store/useRSICorrelationStore.js` now call `src/utils/calculations.js` `calculateRSI`.
+  - `src/store/useRSITrackerStore.js` now calls `src/utils/calculations.js` `calculateRSI`.
   - Recalc only when a NEW bar is appended (not on in-place updates), eliminating mid-candle churn and cross-widget drift.
   - Require at least `period + 2` raw bars; then drop the last (forming) bar so we always compute with `period + 1` closed candles.
   - Applied price: Close. Timeframe must match (e.g., `4H` vs MT5 `H4`). Symbols map to broker suffixes (e.g., `BTCUSDm`).
@@ -417,7 +383,6 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 - Closed-candle parity (with graceful fallback): RSI calculations prefer the last completed candle. Now both stores wait for at least `period + 2` raw bars before dropping the last (forming) one; else they return null to avoid inconsistent intrabar values. RSI period is fixed at 14.
 
 ### Subscription Scope (Updated)
-- Correlation subscribes only the configured correlation pairs for the active timeframe.
 - Tracker limits subscriptions to watchlist/user actions instead of auto-subscribing a broad major set, keeping updates scoped to what's visible and relevant.
 - Minor residual differences can arise from feed and timestamp alignment; in normal conditions the values should be very close to MT5.
 
@@ -443,11 +408,6 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 - Uses existing watchlist store for persistence and auto-subscription
 - Keeps UI consistent with existing modals and dark mode styling
 
-### RSI Correlation Dashboard: Real Correlation Stabilization (Latest)
-- Fixed issue where Real Correlation initially showed many mismatches with very low percentages that corrected after a few seconds or refresh.
-- Root cause: correlation was computed on unaligned OHLC series immediately after subscribe, leading to spurious low values.
-- Change: rolling correlation now aligns candles by timestamp across both symbols and uses only overlapping, time-aligned candles for log-return correlation.
-- Result: stable, accurate correlation percentages on first render; mismatch highlighting now reflects true relationships without needing a refresh.
 
 ### Navbar Mobile Menu Spacing Fix (Latest)
 - **MOBILE MENU SPACING**: Added responsive right margin to mobile menu icon for better spacing from screen edge
@@ -533,15 +493,15 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
   - Dark mode styling for empty states and loading indicators
   - Consistent dark mode styling across RSI tracker UI elements
   - Maintained all existing functionality including RSI calculations, watchlist management, and alert configuration
-- **RSI CORRELATION DARK MODE**: Updated RSI Correlation Dashboard settings modal with comprehensive dark mode support:
+- **RSI TRACKER DARK MODE**: Updated RSI Tracker settings modal with comprehensive dark mode support:
   - Dark mode styling for settings modal background and title
   - Dark mode text colors for all form labels and input fields
   - Dark mode backgrounds and borders for all form inputs and select dropdowns
   - Dark mode styling for calculation mode toggle and header buttons
   - Dark mode hover states for all interactive elements
   - Dark mode styling for modal action buttons (Reset, Cancel, Save)
-  - Consistent dark mode styling across RSI correlation settings UI
-  - Maintained all existing functionality including correlation calculations, mode switching, and settings persistence
+  - Consistent dark mode styling across RSI tracker settings UI
+  - Maintained all existing functionality including watchlist management, alert configuration, and settings persistence
 - **HERO SECTION MATRIX CONTAINER**: Completely redesigned Matrix-Style Trading Visual Container to match modern trading dashboard design:
   - Replaced complex chart system with clean "Master Trader AI" dashboard layout
   - Added cryptocurrency analysis cards for Bitcoin and Ethereum with real-time pricing
@@ -630,7 +590,7 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 ### Symbol Formatting Fix: Alert Creation and Updates
 - **SYMBOL MAPPING FIX**: Fixed critical issue where UI symbols (EURUSD) were not being converted to broker-specific symbols (EURUSDm) during alert updates
 - Updated all three alert services to apply symbol mapping in both `createAlert` and `updateAlert` methods
-- **Affected Services**: HeatmapAlertService, RSIAlertService, RSICorrelationTrackerAlertService
+- **Affected Services**: HeatmapAlertService, RSIAlertService
 - **Implementation**: Added symbol mapping logic to `updateAlert` methods to ensure consistency between creation and updates
 - **Symbol Mapping**: EURUSD → EURUSDm, GBPUSD → GBPUSDm, USDJPY → USDJPYm, etc.
 - **Impact**: Ensures alerts work correctly with backend MT5 data regardless of whether they're created or updated
@@ -688,17 +648,14 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 - Updated all public methods to return consistent camelCase format
 - Ensures validation and business logic always work with camelCase
 - Prevents database field name mismatches in RSI alert operations
-- Fixed numeric validation security issue in `rsiCorrelationTrackerAlertService.js`
 - Added Number.isFinite guards to prevent NaN/Infinity bypassing validation
-- Protected RSI overbought/oversold thresholds, and correlation thresholds (RSI period fixed at 14)
+- Protected RSI overbought/oversold thresholds (RSI period fixed at 14)
 - Ensures proper validation of all numeric range and ordering comparisons
 - Prevents silent failures from non-finite numeric values
-- Fixed snake_case to camelCase field mapping issue in `rsiCorrelationTrackerAlertService.js`
-- Added bidirectional field conversion utilities for RSI correlation alert service
 - Implemented proper field normalization before validation
 - Updated all public methods to return consistent camelCase format
 - Ensures validation and business logic always work with camelCase
-- Prevents database field name mismatches in RSI correlation alert operations
+- Prevents database field name mismatches in RSI alert operations
 
 ## Supported Trading Pairs
 
