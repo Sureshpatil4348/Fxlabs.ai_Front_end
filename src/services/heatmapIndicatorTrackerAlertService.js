@@ -100,19 +100,6 @@ class HeatmapIndicatorTrackerAlertService {
     return true;
   }
 
-  async createTrigger({ alertId, symbol, timeframe, indicator, signal }) {
-    const user = await this.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
-    const payload = { alert_id: alertId, symbol, timeframe, indicator, signal };
-    const { data, error } = await supabase
-      .from('heatmap_indicator_tracker_alert_triggers')
-      .insert([payload])
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  }
-
   _toCamel(row) {
     return {
       id: row.id,

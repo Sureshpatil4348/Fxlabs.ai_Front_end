@@ -15,38 +15,11 @@ CREATE TABLE IF NOT EXISTS public.heatmap_indicator_tracker_alerts (
 
 CREATE UNIQUE INDEX IF NOT EXISTS heatmap_indicator_tracker_alerts_user_id_unique ON public.heatmap_indicator_tracker_alerts(user_id);
 
-CREATE TABLE IF NOT EXISTS public.heatmap_indicator_tracker_alert_triggers (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  alert_id uuid NOT NULL REFERENCES public.heatmap_indicator_tracker_alerts(id) ON DELETE CASCADE,
-  triggered_at timestamptz NOT NULL DEFAULT now(),
-  symbol text NOT NULL,
-  timeframe text NOT NULL,
-  indicator text NOT NULL,
-  signal text NOT NULL CHECK (signal IN ('buy','sell')),
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
 ALTER TABLE public.heatmap_indicator_tracker_alerts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.heatmap_indicator_tracker_alert_triggers ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users manage own heatmap_indicator_tracker_alerts" ON public.heatmap_indicator_tracker_alerts
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users read own heatmap_indicator_tracker_alert_triggers" ON public.heatmap_indicator_tracker_alert_triggers
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.heatmap_indicator_tracker_alerts a
-      WHERE a.id = heatmap_indicator_tracker_alert_triggers.alert_id AND a.user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users insert own heatmap_indicator_tracker_alert_triggers" ON public.heatmap_indicator_tracker_alert_triggers
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.heatmap_indicator_tracker_alerts a
-      WHERE a.id = heatmap_indicator_tracker_alert_triggers.alert_id AND a.user_id = auth.uid()
-    )
-  );
 
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$

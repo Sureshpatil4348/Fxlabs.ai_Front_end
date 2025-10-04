@@ -114,20 +114,6 @@ class RSICorrelationTrackerAlertService {
     return true;
   }
 
-  async createTrigger({ alertId, pairKey, timeframe, mode, triggerType, value }) {
-    // triggerType: 'rsi_mismatch' | 'real_mismatch'
-    const user = await this.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
-    const payload = { alert_id: alertId, pair_key: pairKey, timeframe, mode, trigger_type: triggerType, value };
-    const { data, error } = await supabase
-      .from('rsi_correlation_tracker_alert_triggers')
-      .insert([payload])
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  }
-
   _toCamel(row) {
     return {
       id: row.id,

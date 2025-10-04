@@ -102,19 +102,6 @@ class HeatmapTrackerAlertService {
     return true;
   }
 
-  async createTrigger({ alertId, symbol, triggerType, buyPercent, sellPercent, finalScore }) {
-    const user = await this.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
-    const payload = { alert_id: alertId, symbol, trigger_type: triggerType, buy_percent: buyPercent, sell_percent: sellPercent, final_score: finalScore };
-    const { data, error } = await supabase
-      .from('heatmap_tracker_alert_triggers')
-      .insert([payload])
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  }
-
   _toCamel(row) {
     return {
       id: row.id,

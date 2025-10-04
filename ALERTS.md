@@ -1,12 +1,12 @@
 ## RSI Tracker Alert (Simplified)
 
-Frontend config only. Backend evaluates and sends notifications.
+Frontend config only. Backend evaluates and sends notifications. No trigger tables are used.
 
 Users can configure exactly one alert per account with:
 
 - Timeframe: choose exactly one (e.g., `5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
 - RSI Settings: `Overbought`, `Oversold` (RSI period fixed at 14).
-- Backend behavior: No pair selection is required; the system checks all pairs. If any pair crosses into overbought (>= threshold) or oversold (<= threshold) on closed candles at the selected timeframe, a trigger is recorded and notification is delivered by the backend.
+- Backend behavior: No pair selection is required; the system checks all pairs and sends notifications externally.
 
 Notes:
 - Only one alert can be active for the RSI Tracker (unique per user).
@@ -52,18 +52,7 @@ Tables:
 - `created_at`, `updated_at`
 - Constraints: `rsi_ob_gt_os` and unique `user_id` (one alert per user)
 
-2) `public.rsi_tracker_alert_triggers`
-- `id uuid PK`
-- `alert_id uuid` FK → `rsi_tracker_alerts(id)`
-- `triggered_at timestamptz`
-- `trigger_condition text` in (`overbought`,`oversold`)
-- `symbol text`
-- `timeframe text`
-- `rsi_value numeric(5,2)` 0–100
-- `created_at timestamptz`
-
-RLS Policies:
-- Users can manage their own `rsi_tracker_alerts`; can read/insert triggers only for their own alerts.
+No trigger tables.
 
 ### How Alerts Are Evaluated
 
@@ -79,7 +68,7 @@ Evaluation and trigger insertion are performed by the backend only. The frontend
 
 ## RSI Correlation Tracker Alert (Simplified)
 
-Frontend config only. Backend evaluates and sends notifications.
+Frontend config only. Backend evaluates and sends notifications. No trigger tables are used.
 
 Single per-user alert for the RSI Correlation dashboard. User can select either RSI Threshold mode or Real Correlation mode, and one timeframe.
 
@@ -87,7 +76,7 @@ Single per-user alert for the RSI Correlation dashboard. User can select either 
 - Timeframe: choose exactly one (`5M`, `15M`, `30M`, `1H`, `4H`, `1D`, `1W`).
 - RSI Threshold mode: `Overbought`, `Oversold` (RSI period fixed at 14).
 - Real Correlation mode: `Correlation Window` (fixed at 50).
-- Backend behavior: No pair selection is required; the system checks all correlation pairs. When any pair transitions into a mismatch based on the chosen mode, a trigger is recorded and notification is sent.
+- Backend behavior: No pair selection is required; the system checks all correlation pairs and sends notifications externally.
 
 Notification template: “RSI correlation alert”
 
@@ -125,24 +114,18 @@ Tables:
 - `is_active boolean`, timestamps, constraint `rsi_overbought > rsi_oversold`
 - Unique `user_id` (one alert per user)
 
-2) `public.rsi_correlation_tracker_alert_triggers`
-- `id uuid PK`, `alert_id uuid` FK → `rsi_correlation_tracker_alerts(id)`
-- `triggered_at timestamptz`, `mode text`, `trigger_type text` ('rsi_mismatch'|'real_mismatch')
-- `pair_key text` (e.g., `EURUSD_GBPUSD`), `timeframe text`, `value numeric(6,3)`
-- `created_at timestamptz`
-
-RLS Policies: Same pattern as RSI tracker alert; only owners can manage and read triggers for their alerts.
+No trigger tables.
 
 ## Quantum Analysis (Heatmap) Tracker Alert (Simplified)
 
-Frontend config only. Backend evaluates and sends notifications.
+Frontend config only. Backend evaluates and sends notifications. No trigger tables are used.
 
 Single per-user alert for the All-in-One/Quantum Analysis heatmap. Users select up to 3 currency pairs, a mode (trading style), and thresholds.
 
 - Pairs: up to 3 (base symbols, e.g., `EURUSD`, `GBPUSD`).
 - Mode: `scalper` or `swingTrader` (timeframe weights).
 - Thresholds: `Buy Threshold %`, `Sell Threshold %` (0–100).
-- Backend behavior: When Buy% or Sell% crosses its threshold for any selected pair, a trigger is recorded and notification is sent.
+- Backend behavior: When Buy% or Sell% crosses its threshold for any selected pair, notifications are sent externally.
 
 Notification template: “all in one”
 
@@ -175,17 +158,11 @@ Tables:
 - `is_active boolean`, timestamps
 - Unique `user_id` (one alert per user)
 
-2) `public.heatmap_tracker_alert_triggers`
-- `id uuid PK`, `alert_id uuid` FK → `heatmap_tracker_alerts(id)`
-- `triggered_at timestamptz`, `symbol text`, `trigger_type` ('buy'|'sell')
-- `buy_percent numeric(5,2)`, `sell_percent numeric(5,2)`, `final_score numeric(6,2)`
-- `created_at timestamptz`
-
-RLS Policies: Only owners can manage the alert and read/insert triggers for their alert.
+No trigger tables.
 
 ## Quantum Analysis: Custom Indicator Tracker Alert (Simplified)
 
-Frontend config only. Backend evaluates and sends notifications.
+Frontend config only. Backend evaluates and sends notifications. No trigger tables are used.
 
 Single per-user alert targeting one indicator on one timeframe across up to 3 pairs. Notifications are sent when the selected indicator flips its signal (Buy/Sell).
 
@@ -222,12 +199,7 @@ Tables:
 - `is_active boolean`, timestamps
 - Unique `user_id` (one alert per user)
 
-2) `public.heatmap_indicator_tracker_alert_triggers`
-- `id uuid PK`, `alert_id uuid` FK → `heatmap_indicator_tracker_alerts(id)`
-- `triggered_at timestamptz`, `symbol text`, `timeframe text`, `indicator text`, `signal text` ('buy'|'sell')
-- `created_at timestamptz`
-
-RLS Policies: Only owners can manage their alert and read triggers. Trigger insertion is performed by backend service accounts or edge functions.
+No trigger tables.
 
 
 

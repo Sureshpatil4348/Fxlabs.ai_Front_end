@@ -121,27 +121,6 @@ class RSITrackerAlertService {
     return true;
   }
 
-  async createTrigger({ alertId, symbol, timeframe, rsiValue, triggerCondition }) {
-    const user = await this.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
-
-    const payload = {
-      alert_id: alertId,
-      symbol,
-      timeframe,
-      rsi_value: rsiValue,
-      trigger_condition: triggerCondition
-    };
-
-    const { data, error } = await supabase
-      .from('rsi_tracker_alert_triggers')
-      .insert([payload])
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  }
-
   _toCamel(row) {
     return {
       id: row.id,

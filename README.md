@@ -901,19 +901,17 @@ The application now includes comprehensive dashboard settings persistence:
 2. **user_state**: Stores user's tab states and preferences
 3. **user_settings**: Stores comprehensive dashboard settings and configurations
 4. **heatmap_alerts**: Stores multi-indicator heatmap alert configurations
-5. **heatmap_alert_triggers**: Tracks when heatmap alerts are triggered
-6. **rsi_tracker_alerts** and **rsi_tracker_alert_triggers**: Simplified RSI Tracker alert tables
-7. **rsi_correlation_tracker_alerts**: Stores RSI Correlation Dashboard alert configurations
-8. **rsi_correlation_tracker_alert_triggers**: Tracks when RSI correlation alerts are triggered
+5. **rsi_tracker_alerts**: Simplified RSI Tracker alert table (single per user)
+6. **rsi_correlation_tracker_alerts**: RSI Correlation Dashboard alert table (single per user)
 
 Run the SQL scripts provided:
 - `supabase_watchlist_table.sql` to create the watchlist table with proper security policies and `(user_id, symbol)` unique index for upsert
 - `supabase_user_state_table.sql` to create the user_state table with proper security policies
 - `user_settings_table.sql` to create the user_settings table with proper security policies
-- `supabase_heatmap_alerts_schema.sql` to create the heatmap alerts tables with proper security policies
-- `supabase_heatmap_tracker_alerts_schema.sql` to create the simplified heatmap tracker alert tables with proper security policies
-- `supabase_rsi_tracker_alerts_schema.sql` to create the simplified RSI tracker alert tables with proper security policies
-- `supabase_rsi_correlation_tracker_alerts_schema.sql` to create the simplified RSI correlation tracker alert tables with proper security policies
+- `supabase_heatmap_alerts_schema.sql` to create the heatmap alerts table with proper security policies
+- `supabase_heatmap_tracker_alerts_schema.sql` to create the simplified heatmap tracker alert table with proper security policies
+- `supabase_rsi_tracker_alerts_schema.sql` to create the simplified RSI tracker alert table with proper security policies
+- `supabase_rsi_correlation_tracker_alerts_schema.sql` to create the simplified RSI correlation tracker alert table with proper security policies
 
 ## Watchlist Persistence
 
@@ -1225,7 +1223,7 @@ The Multi-Indicator Heatmap Alerts system allows users to create intelligent tra
 - last_triggered_at: TIMESTAMP - Last trigger time
 ```
 
-#### heatmap_alert_triggers Table
+#### heatmap_alerts Table
 ```sql
 - id: UUID (Primary Key)
 - alert_id: UUID (Foreign Key to heatmap_alerts)
@@ -1383,7 +1381,7 @@ The RSI Tracker Alert is simplified to a single per-user alert. Users choose exa
 - last_triggered_at: TIMESTAMP - Last trigger time
 ```
 
-#### rsi_tracker_alert_triggers Table
+#### rsi_tracker_alerts Table
 ```sql
 - id: UUID (Primary Key)
 - alert_id: UUID (Foreign Key to rsi_tracker_alerts)
@@ -1404,7 +1402,7 @@ The RSI Tracker Alert is simplified to a single per-user alert. Users choose exa
 
 The `RSITrackerAlertService` provides a minimal API for the single RSI tracker alert:
 
-`saveAlert(config)` (upsert), `getAlert()`, `getActiveAlert()`, `toggleActive(isActive)`, `deleteAlert()`, `createTrigger(payload)`
+`saveAlert(config)` (upsert), `getAlert()`, `getActiveAlert()`, `toggleActive(isActive)`, `deleteAlert()`
 
 ### Security Features
 
@@ -1531,7 +1529,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 - last_triggered_at: TIMESTAMP - Last trigger time
 ```
 
-#### rsi_correlation_tracker_alert_triggers Table
+#### rsi_correlation_tracker_alerts Table
 ```sql
 - id: UUID (Primary Key)
 - alert_id: UUID (Foreign Key to rsi_correlation_tracker_alerts)
@@ -1555,7 +1553,7 @@ The RSI Correlation Alert is simplified to a single per-user alert. Users choose
 
 The `RSICorrelationTrackerAlertService` provides a minimal API for the single RSI correlation tracker alert:
 
-`saveAlert(config)` (upsert), `getAlert()`, `getActiveAlert()`, `toggleActive(isActive)`, `deleteAlert()`, `createTrigger(payload)`
+`saveAlert(config)` (upsert), `getAlert()`, `getActiveAlert()`, `toggleActive(isActive)`, `deleteAlert()`
 
 ### Security Features
 
