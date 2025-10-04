@@ -24,7 +24,46 @@ export async function fetchIndicatorSnapshot({ indicator, timeframe, pairs }) {
     const text = await resp.text().catch(() => '');
     throw new Error(`indicator fetch failed (${resp.status}): ${text || resp.statusText}`);
   }
-  return resp.json();
+  const data = await resp.json();
+
+  // Targeted debug log for BTCUSDm initial REST snapshot
+  try {
+    const requestedPairs = Array.isArray(pairs) ? pairs : [];
+    if (requestedPairs.some((p) => String(p).toUpperCase() === 'BTCUSDm'.toUpperCase())) {
+      const entries = Array.isArray(data?.pairs) ? data.pairs : [];
+      const btc = entries.find((e) => (e?.symbol || '').toUpperCase() === 'BTCUSDm'.toUpperCase());
+      console.log(
+        `[REST][Indicator][BTCUSDm] indicator=${indicator} timeframe=${String(timeframe).toUpperCase()}`,
+        {
+          requestPairsCount: requestedPairs.length,
+          hasBTCUSDmInRequest: true,
+          responseItem: btc || null,
+          responseTs: btc?.ts || null,
+          url
+        }
+      );
+    } else {
+      // If not explicitly requested, still log when response contains BTCUSDm
+      const entries = Array.isArray(data?.pairs) ? data.pairs : [];
+      const btc = entries.find((e) => (e?.symbol || '').toUpperCase() === 'BTCUSDm'.toUpperCase());
+      if (btc) {
+        console.log(
+          `[REST][Indicator][BTCUSDm] indicator=${indicator} timeframe=${String(timeframe).toUpperCase()} (found in response)`,
+          {
+            requestPairsCount: Array.isArray(pairs) ? pairs.length : 0,
+            hasBTCUSDmInRequest: false,
+            responseItem: btc,
+            responseTs: btc?.ts || null,
+            url
+          }
+        );
+      }
+    }
+  } catch (_e) {
+    // best-effort logging only
+  }
+
+  return data;
 }
 
 const indicatorService = {

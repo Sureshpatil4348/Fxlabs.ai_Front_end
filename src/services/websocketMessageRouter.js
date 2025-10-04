@@ -130,6 +130,45 @@ class WebSocketMessageRouter {
       }
     });
 
+    // Targeted BTCUSDm logging for indicator and correlation pushes
+    try {
+      if (messageType === 'indicator_update') {
+        const sym = (message?.symbol || message?.data?.symbol || '').toString().toUpperCase();
+        if (sym === 'BTCUSDm'.toUpperCase()) {
+          const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
+          const rsiVal = message?.data?.indicators?.rsi ?? message?.indicators?.rsi;
+          console.log(
+            `[WS][Indicator][BTCUSDm] timeframe=${tf}`,
+            {
+              indicators: message?.data?.indicators || message?.indicators || null,
+              barTime: message?.data?.bar_time ?? message?.bar_time ?? null,
+              rsi: rsiVal ?? null,
+              raw: message
+            }
+          );
+        }
+      }
+
+      if (messageType === 'correlation_update') {
+        const key = (message?.pair_key || message?.data?.pair_key || '').toString().toUpperCase();
+        if (key.includes('BTCUSDm'.toUpperCase()) || key.includes('BTCUSD'.toUpperCase())) {
+          const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
+          console.log(
+            `[WS][Correlation][BTCUSDm] timeframe=${tf}`,
+            {
+              pairKey: message?.pair_key || message?.data?.pair_key || null,
+              value: message?.data?.value ?? null,
+              strength: message?.data?.strength ?? null,
+              window: message?.data?.window ?? null,
+              raw: message
+            }
+          );
+        }
+      }
+    } catch (_e) {
+      // best-effort logging only
+    }
+
     // Always log indicator updates verbosely
     if (messageType === 'indicator_update') {
       console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);

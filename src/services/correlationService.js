@@ -25,7 +25,36 @@ export async function fetchCorrelationSnapshot({ timeframe, pairs, window = 50 }
     const text = await resp.text().catch(() => '');
     throw new Error(`correlation fetch failed (${resp.status}): ${text || resp.statusText}`);
   }
-  return resp.json();
+  const data = await resp.json();
+
+  // Targeted debug log for BTCUSDm correlation in initial REST snapshot
+  try {
+    const requestedPairs = Array.isArray(pairs) ? pairs : [];
+    const includesBTCUSDm = requestedPairs.some((p) => String(p).toUpperCase().includes('BTCUSDm'.toUpperCase()))
+      || requestedPairs.some((p) => String(p).toUpperCase().includes('BTCUSD'.toUpperCase()));
+
+    const entries = Array.isArray(data?.pairs) ? data.pairs : [];
+    const btcRelated = entries.filter((e) => {
+      const key = String(e?.pair_key || '').toUpperCase();
+      return key.includes('BTCUSDm'.toUpperCase()) || key.includes('BTCUSD'.toUpperCase());
+    });
+
+    if (includesBTCUSDm || btcRelated.length > 0) {
+      console.log(
+        `[REST][Correlation][BTCUSDm] timeframe=${String(timeframe).toUpperCase()} window=${window}`,
+        {
+          requestPairsCount: requestedPairs.length,
+          hasBTCUSDmInRequest: includesBTCUSDm,
+          btcPairsInResponse: btcRelated,
+          url
+        }
+      );
+    }
+  } catch (_e) {
+    // best-effort logging only
+  }
+
+  return data;
 }
 
 const correlationService = {

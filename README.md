@@ -190,6 +190,23 @@ Example:
 [BTCUSDm][1M][OPEN]  2025-09-30 12:04:00 | O:65080 H:65090 L:65070 C:65085 | RSI14(curr): 57.90 | RSI14(closed): 58.32 { …payload }
 ```
 
+### BTCUSDm REST and WebSocket Logging (Indicators & Correlations)
+
+- Purpose: Help verify initial REST snapshots and subsequent WebSocket push updates for `BTCUSDm`.
+- Where it logs:
+  - REST (Indicators): `src/services/indicatorService.js` after successful fetch.
+  - REST (Correlation): `src/services/correlationService.js` after successful fetch.
+  - WebSocket (Indicator push): `src/services/websocketMessageRouter.js` when `type === 'indicator_update'` and `symbol === 'BTCUSDm'`.
+  - WebSocket (Correlation push): `src/services/websocketMessageRouter.js` when `type === 'correlation_update'` and `pair_key` includes `BTCUSDm`.
+- Log format samples:
+  - REST Indicator: `[REST][Indicator][BTCUSDm] indicator=rsi timeframe=4H { requestPairsCount, hasBTCUSDmInRequest, responseItem, responseTs, url }`
+  - REST Correlation: `[REST][Correlation][BTCUSDm] timeframe=4H window=50 { requestPairsCount, hasBTCUSDmInRequest, btcPairsInResponse, url }`
+  - WS Indicator: `[WS][Indicator][BTCUSDm] timeframe=4H { indicators, barTime, rsi, raw }`
+  - WS Correlation: `[WS][Correlation][BTCUSDm] timeframe=4H { pairKey, value, strength, window, raw }`
+- Notes:
+  - These logs are lightweight and only trigger when `BTCUSDm` is in the request or present in the response/push.
+  - General WS routing logs remain controlled by `REACT_APP_ENABLE_WS_ROUTER_DEBUG` (see `src/services/websocketMessageRouter.js`).
+
 ## Recent Updates
 ### Fix: Resolved infinite API loop in RSI Tracker causing excessive calls to fxlabs.ai/indicator (Latest)
 - **Problem**: The RSI Tracker component was making API calls to `https://api.fxlabs.ai/api/indicator` every second due to an infinite loop.
