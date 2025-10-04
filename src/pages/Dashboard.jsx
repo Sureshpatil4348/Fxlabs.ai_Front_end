@@ -8,8 +8,8 @@
   import RSICorrelationDashboard from '../components/RSICorrelationDashboard'
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
   import useBaseMarketStore from '../store/useBaseMarketStore'
-  import useMarketStore from '../store/useMarketStore'
   import useMarketCacheStore from '../store/useMarketCacheStore'
+  import useMarketStore from '../store/useMarketStore'
 
   const Dashboard = () => {
     const { user } = useAuth()

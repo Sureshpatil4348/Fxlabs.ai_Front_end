@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import indicatorService from '../services/indicatorService';
-import websocketService from '../services/websocketService';
 import useMarketCacheStore from './useMarketCacheStore';
+import _indicatorService from '../services/indicatorService';
+import websocketService from '../services/websocketService';
 
 // Note: All calculations are now performed server-side
 // RSI, correlations, and other indicators should be received from WebSocket/API

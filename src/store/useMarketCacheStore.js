@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import websocketService from '../services/websocketService';
+import { SUPPORTED_PAIRS, BROKER_SUFFIX } from '../constants/pairs';
 import indicatorService from '../services/indicatorService';
 import pricingService from '../services/pricingService';
-import { SUPPORTED_PAIRS, BROKER_SUFFIX } from '../constants/pairs';
+import websocketService from '../services/websocketService';
 
 // Utility: safe JSON parse
 const safeParse = (text, fallback) => {
@@ -12,7 +12,7 @@ const safeParse = (text, fallback) => {
 };
 
 // Utility: convert plain objects to Maps recursively (for known keys)
-const toMap = (obj) => {
+const _toMap = (obj) => {
   if (!obj) return new Map();
   if (obj instanceof Map) return obj;
   const map = new Map();
