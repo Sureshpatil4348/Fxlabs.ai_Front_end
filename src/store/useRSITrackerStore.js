@@ -622,6 +622,30 @@ const useRSITrackerStore = create(
       set({ logs: [] });
     },
 
+    // Merge REST pricing snapshot entries into tickData as synthetic ticks
+    ingestPricingSnapshot: (entries) => {
+      if (!Array.isArray(entries) || entries.length === 0) return;
+      const state = get();
+      const tickData = new Map(state.tickData);
+      entries.forEach((p) => {
+        if (!p || !p.symbol) return;
+        const syntheticTick = {
+          symbol: p.symbol,
+          time: typeof p.time === 'number' ? p.time : Date.now(),
+          time_iso: p.time_iso || new Date().toISOString(),
+          bid: p.bid,
+          ask: p.ask,
+          volume: typeof p.volume === 'number' ? p.volume : 0,
+          daily_change_pct: typeof p.daily_change_pct === 'number' ? p.daily_change_pct : 0
+        };
+        const existing = tickData.get(p.symbol) || { ticks: [], lastUpdate: null };
+        existing.ticks = [syntheticTick, ...existing.ticks.slice(0, 49)];
+        existing.lastUpdate = new Date(syntheticTick.time);
+        tickData.set(p.symbol, existing);
+      });
+      set({ tickData });
+    },
+
     // Data Getters
     getIndicatorsForSymbol: (symbol) => {
       const indicatorData = get().indicatorData.get(symbol);

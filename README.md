@@ -97,6 +97,14 @@ All technical indicator calculations are now performed server-side:
    - Storage format: `indicatorData` keeps both backward-compatible flat fields and a `timeframes: Map<tf, { indicators, barTime, lastUpdate }>` per symbol.
    - UI reads per-timeframe indicators when available; otherwise falls back to latest flat indicators.
 
+### Pricing Snapshots (Latest)
+- Initial price display for RSI Tracker uses REST `GET /api/pricing` for the currently visible pairs (including watchlist view).
+- Subsequent price updates come from WebSocket `ticks` broadcasts.
+- Implementation:
+  - `src/services/pricingService.js` provides `fetchPricingSnapshot({ pairs })`.
+  - `src/store/useRSITrackerStore.js` exposes `ingestPricingSnapshot(entries)` to merge REST snapshots into `tickData` as synthetic ticks.
+  - `src/components/RSIOverboughtOversoldTracker.js` fetches pricing on mount and whenever the visible pair set changes (RSI lists or Watchlist), then relies on `ticks` for live updates.
+
 ### Migration Notes
 - **No OHLC data**: Components that previously used OHLC data now use tick data or indicator data
 - **No client-side calculations**: All technical indicators are provided by the server

@@ -145,6 +145,7 @@ const RSIOverboughtOversoldTracker = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [addingSymbol, setAddingSymbol] = useState(null);
+  const lastPricingKeyRef = React.useRef('');
 
   // Load tab state on component mount
   useEffect(() => {
@@ -275,6 +276,8 @@ const RSIOverboughtOversoldTracker = () => {
 
     loadSettings();
   }, [user, updateSettings]);
+
+  
 
   // Fetch initial RSI snapshot on mount and whenever timeframe or autosubscribe symbols change
   useEffect(() => {
@@ -454,6 +457,44 @@ const RSIOverboughtOversoldTracker = () => {
   ];
 
   const currentPairs = activeTab === 'oversold' ? oversoldPairs : overboughtPairs;
+
+  // Compute visible RSI symbols for pricing snapshots (after dependencies are defined)
+  const visibleRsiSymbols = React.useMemo(() => {
+    if (showWatchlist) {
+      const bases = (watchlistSymbols || []).map((s) => (s || '').toUpperCase());
+      return Array.from(new Set(bases.map((b) => (b.endsWith('M') || b.endsWith('m') ? b.slice(0, -1) : b).concat('m')))).slice(0, 32);
+    }
+    const symbols = (currentPairs || []).map((p) => p.symbol).filter(Boolean);
+    return Array.from(new Set(symbols)).slice(0, 32);
+  }, [showWatchlist, watchlistSymbols, currentPairs]);
+
+  // Stable key for deduping pricing fetches
+  const visiblePricingKey = React.useMemo(() => {
+    const sorted = [...visibleRsiSymbols].sort();
+    return sorted.join(',');
+  }, [visibleRsiSymbols]);
+
+  // Fetch initial pricing snapshots for visible pairs; subsequent updates via WebSocket ticks
+  useEffect(() => {
+    let cancelled = false;
+    const fetchPricing = async () => {
+      try {
+        if (!visiblePricingKey || visiblePricingKey === lastPricingKeyRef.current) return;
+        lastPricingKeyRef.current = visiblePricingKey;
+        const { fetchPricingSnapshot } = (await import('../services/pricingService.js')).default;
+        const res = await fetchPricingSnapshot({ pairs: visibleRsiSymbols });
+        if (cancelled) return;
+        const entries = res?.pairs || [];
+        if (entries.length > 0) {
+          try { useRSITrackerStore.getState().ingestPricingSnapshot(entries); } catch (_e) {}
+        }
+      } catch (_e) {
+        // Silent; websocket ticks will fill in
+      }
+    };
+    fetchPricing();
+    return () => { cancelled = true; };
+  }, [visiblePricingKey, visibleRsiSymbols]);
 
   return (
     <>
