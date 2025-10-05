@@ -133,6 +133,33 @@ All technical indicator calculations are now performed server-side:
 
 - Calculations reference and source of truth for all formulas, static symbol lists, correlation pairs, thresholds, and percentages: see `CALCULATIONS.md`.
 
+### Dashboard Layout Update (Latest)
+
+- The RSI Correlation placeholder has been replaced with `CurrencyStrengthMeter` on the Dashboard.
+- Mobile: placed in Section 3 between AI News and RSI Tracker.
+- Desktop: placed in the bottom-left area (row-start 8, col-span 7, row-span 5).
+- Component: `src/components/CurrencyStrengthMeter.js`.
+
+#### Trending Pairs Addition
+
+- Added `TrendingPairs` to the desktop top-right column above the RSI Tracker.
+- Moved `AINewsAnalysis` to the bottom-right area to balance the layout.
+- Component file: `src/components/TrendingParis.jsx` (default export `TrendingPairs`).
+
+#### TradingView Widget replaces Heatmap (Latest)
+
+- Replaced `MultiIndicatorHeatmap` with `TradingViewWidget` on Dashboard.
+- Mobile: TradingView shown in the first section (h-96).
+- Desktop: TradingView occupies the top-left large area (col-span 8, row-span 7).
+- Component: `src/components/TradingViewWidget.jsx`.
+
+#### Layout Width Adjustment (Latest)
+
+- Increased desktop widths for analysis sections:
+  - TradingViewWidget: `col-span 9` (was 8 → 7 originally)
+  - CurrencyStrengthMeter: `col-span 9` (was 8 → 7 originally)
+  - Right column (TrendingPairs/RSI and AI News): `col-span 3` (was 4 → 5 originally)
+
 ## Code Quality & Linting
 
 - All ESLint warnings are treated as errors. The project is configured to fail on any warning.

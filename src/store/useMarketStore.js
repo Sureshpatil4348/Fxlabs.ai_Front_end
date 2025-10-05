@@ -521,13 +521,12 @@ const useMarketStore = create(
       state.rsiData.forEach((rsiInfo, symbol) => {
         if (rsiInfo.value < state.rsiSettings.oversold) {
           const latestTick = get().getLatestTickForSymbol(symbol);
-          const latestBar = get().getLatestOhlcForSymbol(symbol);
           
           oversold.push({
             symbol,
             rsi: rsiInfo.value,
-            price: latestTick?.bid || latestBar?.close || 0,
-            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0
+            price: latestTick?.bid || 0,
+            change: get().getDailyChangePercent ? get().getDailyChangePercent(symbol) : 0
           });
         }
       });
@@ -542,13 +541,12 @@ const useMarketStore = create(
       state.rsiData.forEach((rsiInfo, symbol) => {
         if (rsiInfo.value > state.rsiSettings.overbought) {
           const latestTick = get().getLatestTickForSymbol(symbol);
-          const latestBar = get().getLatestOhlcForSymbol(symbol);
           
           overbought.push({
             symbol,
             rsi: rsiInfo.value,
-            price: latestTick?.bid || latestBar?.close || 0,
-            change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0
+            price: latestTick?.bid || 0,
+            change: get().getDailyChangePercent ? get().getDailyChangePercent(symbol) : 0
           });
         }
       });
@@ -562,13 +560,12 @@ const useMarketStore = create(
       
       state.wishlist.forEach(symbol => {
         const latestTick = get().getLatestTickForSymbol(symbol);
-        const latestBar = get().getLatestOhlcForSymbol(symbol);
         const rsiInfo = state.rsiData.get(symbol);
         
         wishlistData.push({
           symbol,
-          price: latestTick?.bid || latestBar?.close || 0,
-          change: latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : 0,
+          price: latestTick?.bid || 0,
+          change: get().getDailyChangePercent ? get().getDailyChangePercent(symbol) : 0,
           rsi: rsiInfo?.value || null
         });
       });
