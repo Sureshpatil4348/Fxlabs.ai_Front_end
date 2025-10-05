@@ -19,16 +19,16 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
 
   return (
     <tr className={`hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer ${isInWishlist ? 'bg-gray-100 dark:bg-slate-600' : ''}`} onClick={() => onAddToWishlist(symbol)}>
-      <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-slate-100 text-center">
+      <td className="px-2 py-1 text-[11px] font-medium text-gray-900 dark:text-slate-100 text-center">
         {formatSymbolDisplay(symbol)}
       </td>
-      <td className={`px-3 py-2 text-xs font-bold text-center ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
+      <td className={`px-2 py-1 text-[11px] font-bold text-center ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
         {formatRsi(rsi)}
       </td>
-      <td className="px-3 py-2 text-xs text-gray-900 dark:text-slate-100 font-mono text-center">
+      <td className="px-2 py-1 text-[11px] text-gray-900 dark:text-slate-100 font-mono text-center">
         {symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5)}
       </td>
-      <td className={`px-3 py-2 text-xs font-medium text-center ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
+      <td className={`px-2 py-1 text-[11px] font-medium text-center ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
         {formatPercentage(change)}
       </td>
     </tr>
@@ -52,16 +52,16 @@ const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLate
 
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-slate-700">
-      <td className="px-3 py-2 text-xs font-medium text-gray-900 dark:text-slate-100 text-center">
+      <td className="px-2 py-1 text-[11px] font-medium text-gray-900 dark:text-slate-100 text-center">
         {formatSymbolDisplay(symbol)}
       </td>
-      <td className={`px-3 py-2 text-xs font-bold text-center ${rsiValue != null ? getRsiColor(rsiValue, settings.rsiOverbought, settings.rsiOversold) : 'text-gray-400 dark:text-slate-500'}`}>
+      <td className={`px-2 py-1 text-[11px] font-bold text-center ${rsiValue != null ? getRsiColor(rsiValue, settings.rsiOverbought, settings.rsiOversold) : 'text-gray-400 dark:text-slate-500'}`}>
         {rsiText}
       </td>
-      <td className="px-3 py-2 text-xs text-gray-900 dark:text-slate-100 font-mono text-center">
+      <td className="px-2 py-1 text-[11px] text-gray-900 dark:text-slate-100 font-mono text-center">
         {priceText}
       </td>
-      <td className={`px-3 py-2 text-xs font-medium text-center ${change != null ? (change >= 0 ? 'text-success-600' : 'text-danger-600') : 'text-gray-400 dark:text-slate-500'}`}>
+      <td className={`px-2 py-1 text-[11px] font-medium text-center ${change != null ? (change >= 0 ? 'text-success-600' : 'text-danger-600') : 'text-gray-400 dark:text-slate-500'}`}>
         {changeText}
       </td>
       <td className="px-3 py-2 text-center">
@@ -71,7 +71,7 @@ const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLate
             onRemoveFromWishlist(symbol);
           }}
           disabled={isRemoving}
-          className="p-1 text-gray-400 dark:text-slate-400 hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 rounded-md transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-1 text-gray-400 dark:text-slate-400 hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 rounded-md transition-colors text-[11px] disabled:opacity-50 disabled:cursor-not-allowed"
           title="Remove from watchlist"
         >
           {isRemoving ? (
@@ -501,17 +501,17 @@ const RSIOverboughtOversoldTracker = () => {
       <div className="flex-shrink-0">
         {/* Header */}
         <div className="mb-2">
-        <div className="widget-header flex items-center justify-between">
+        <div className="widget-header flex items-center justify-between text-[12px]">
           <div>
             <div className="flex items-center space-x-2">
-              <Activity className="w-5 h-5 text-purple-600" />
+              <Activity className="w-4 h-4 text-purple-600" />
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">RSI Tracker</h2>
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-slate-100">RSI Tracker</h2>
               </div>
               {/* Connection status pill removed; status shown as top-right dot */}
             </div>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 text-[12px]">
             {/* Watchlist Toggle Button */}
             <button
               onClick={async () => {
@@ -525,7 +525,7 @@ const RSIOverboughtOversoldTracker = () => {
                   console.error('Failed to persist watchlist toggle:', e);
                 }
               }}
-              className={`px-3 py-1.5 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1.5 ${
+              className={`px-2 py-1 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1 ${
                 showWatchlist 
                   ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200' 
                   : 'text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-gray-200'
@@ -533,7 +533,7 @@ const RSIOverboughtOversoldTracker = () => {
               title={showWatchlist ? "Switch to RSI Tracker mode" : "Switch to Watchlist mode"}
             >
               {showWatchlist ? <List className="w-4 h-4" /> : <Star className="w-4 h-4" />}
-              <span className="text-xs font-medium">{showWatchlist ? 'Watchlist' : 'RSI Tracker'}</span>
+              <span className="text-[11px] font-medium">{showWatchlist ? 'Watchlist' : 'RSI Tracker'}</span>
             </button>
 
             {/* Add Pair (visible in Watchlist mode) */}
@@ -557,9 +557,9 @@ const RSIOverboughtOversoldTracker = () => {
                 onClick={handleRSIBellClick}
                 className="relative p-1 text-gray-400 dark:text-slate-400 hover:text-orange-500 transition-colors duration-300 group"
               >
-                <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <Bell className="w-3 h-3 group-hover:scale-110 transition-transform duration-300" />
                 {activeRSIAlertsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-orange-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">
                     {activeRSIAlertsCount > 9 ? '9+' : activeRSIAlertsCount}
                   </span>
                 )}
@@ -570,7 +570,7 @@ const RSIOverboughtOversoldTracker = () => {
               className="p-1 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors"
               title="Dashboard Settings"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -579,12 +579,12 @@ const RSIOverboughtOversoldTracker = () => {
 
         {/* Tab Navigation - Only show when not in watchlist mode */}
         {!showWatchlist && (
-          <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg">
+          <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg text-[12px]">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[11px] font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
                   : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'

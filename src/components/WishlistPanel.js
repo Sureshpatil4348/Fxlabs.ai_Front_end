@@ -31,13 +31,11 @@ const WishlistPanel = () => {
     rsiData, 
     settings, 
     getLatestTickForSymbol, 
-    getLatestOhlcForSymbol,
     getDailyChangePercent
   } = useRSITrackerStore((state) => ({
       rsiData: state.rsiData,
       settings: state.settings,
       getLatestTickForSymbol: state.getLatestTickForSymbol,
-      getLatestOhlcForSymbol: state.getLatestOhlcForSymbol,
       getDailyChangePercent: state.getDailyChangePercent,
       getRsiHistory: state.getRsiHistory,
       getPriceHistory: state.getPriceHistory,
@@ -210,11 +208,10 @@ const WishlistPanel = () => {
                   const rsiSymbol = symbol + 'm';
                   
                   const latestTick = getLatestTickForSymbol(rsiSymbol);
-                  const latestBar = getLatestOhlcForSymbol(rsiSymbol);
                   const rsiValue = rsiData.get(rsiSymbol)?.value ?? null;
                   
-                  const price = latestTick?.bid || latestBar?.close || null;
-                  const change = getDailyChangePercent ? getDailyChangePercent(rsiSymbol) : (latestBar ? ((latestBar.close - latestBar.open) / latestBar.open * 100) : null);
+                  const price = latestTick?.bid || null;
+                  const change = getDailyChangePercent ? getDailyChangePercent(rsiSymbol) : null;
                   const priceText = price != null
                     ? (symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5))
                     : '--';

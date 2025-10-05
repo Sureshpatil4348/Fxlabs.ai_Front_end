@@ -143,23 +143,23 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
     >
       <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between py-2 px-6 border-b dark:border-slate-600">
-          <div className="flex items-center space-x-3">
-            <span className="text-2xl">{currencyInfo.flag}</span>
+        <div className="flex items-center justify-between py-2 px-4 border-b dark:border-slate-600">
+          <div className="flex items-center space-x-2">
+            <span className="text-xl">{currencyInfo.flag}</span>
             <div className="flex flex-row items-center w-full justify-between">
-              <h2 id="news-modal-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">{news.title.split('(')[0]}</h2>
+              <h2 id="news-modal-title" className="text-sm font-semibold text-gray-900 dark:text-slate-100">{news.title.split('(')[0]}</h2>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors"
+            className="p-1.5 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-2 00 transition-colors"
             aria-label="Close news modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-center space-x-2 mt-1 px-6">
+        <div className="flex items-center space-x-2 mt-1 px-4">
           <Clock className="w-3 h-3 text-gray-500" />
           <span className="text-xs text-gray-600 dark:text-slate-400">{date} {time}</span>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(news.impact)}`}>
@@ -174,28 +174,28 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
         </div>
 
         {/* Modal Content */}
-        <div id="news-modal-content" className="p-6 space-y-6">
+        <div id="news-modal-content" className="p-4 space-y-4">
           {/* AI Analysis - Moved to top */}
           {analysis && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center space-x-2">
-                <Brain className="w-5 h-5 text-primary-600" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 flex items-center space-x-2">
+                <Brain className="w-4 h-4 text-primary-600" />
                 <span>AI Analysis</span>
               </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Effect */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                  <span className="text-gray-700 dark:text-slate-300 font-medium">Expected Effect:</span>
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                  <span className="text-gray-700 dark:text-slate-300 font-medium text-sm">Expected Effect:</span>
                   <div className="flex items-center space-x-2">
                     {analysis.effect === 'Bullish' ? (
-                      <TrendingUp className="w-5 h-5 text-success-600" />
+                      <TrendingUp className="w-4 h-4 text-success-600" />
                     ) : analysis.effect === 'Bearish' ? (
-                      <TrendingDown className="w-5 h-5 text-danger-600" />
+                      <TrendingDown className="w-4 h-4 text-danger-600" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-gray-600" />
+                      <AlertCircle className="w-4 h-4 text-gray-600" />
                     )}
-                    <span className={`text-lg font-semibold ${
+                    <span className={`text-sm font-semibold ${
                       analysis.effect === 'Bullish' ? 'text-success-600' :
                       analysis.effect === 'Bearish' ? 'text-danger-600' :
                       'text-gray-600'
@@ -207,16 +207,16 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 
                 {/* Suggested Pairs - Moved to second position in AI Analysis */}
                 {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
-                  <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div className="text-gray-700 dark:text-slate-300 font-medium mb-3 flex items-center space-x-2">
+                  <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                    <div className="text-gray-700 dark:text-slate-300 font-medium mb-2 flex items-center space-x-2 text-sm">
                       <Target className="w-4 h-4 text-primary-600" />
                       <span>Suggested Pairs to Watch:</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {analysis.suggestedPairs.map(pair => (
                         <span 
                           key={pair}
-                          className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium"
+                          className="px-2.5 py-1.5 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm"
                         >
                           {formatSymbolDisplay(pair)}
                         </span>
@@ -226,15 +226,15 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                 )}
 
                 {/* Impacted Currency - Moved to third position */}
-                <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                  <div className="text-gray-700 dark:text-slate-300 font-medium mb-3">Impacted Currency:</div>
-                  <div className="flex flex-wrap gap-2">
+                <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-gray-700 dark:text-slate-300 font-medium mb-2 text-sm">Impacted Currency:</div>
+                  <div className="flex flex-wrap gap-1.5">
                     {analysis.impactedCurrencies.map(currency => {
                       const info = formatCurrency(currency);
                       return (
-                        <span key={currency} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-slate-600 rounded-lg border dark:border-slate-500">
-                          <span className="text-lg">{info.flag}</span>
-                          <span className="font-medium">{currency}</span>
+                        <span key={currency} className="flex items-center space-x-2 px-2.5 py-1.5 bg-white dark:bg-slate-600 rounded-lg border dark:border-slate-500">
+                          <span className="text-base">{info.flag}</span>
+                          <span className="font-medium text-sm">{currency}</span>
                         </span>
                       );
                     })}
@@ -248,18 +248,18 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* Economic Data - Moved to third position */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Economic Data</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div className="text-center p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                <div className="text-gray-600 dark:text-slate-400 mb-2">Previous</div>
-                <div className="text-lg font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
+                <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Previous</div>
+                <div className="text-sm font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
               </div>
               <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="text-gray-600 dark:text-slate-400 mb-2">Forecast</div>
-                <div className="text-lg font-bold text-blue-900 dark:text-blue-300">{news.forecast || '--'}</div>
+                <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Forecast</div>
+                <div className="text-sm font-bold text-blue-900 dark:text-blue-300">{news.forecast || '--'}</div>
               </div>
               <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div className="text-gray-600 dark:text-slate-400 mb-2">Actual</div>
-                <div className="text-lg font-bold text-green-900 dark:text-green-300">
+                <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Actual</div>
+                <div className="text-sm font-bold text-green-900 dark:text-green-300">
                   {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
                 </div>
               </div>
@@ -269,9 +269,9 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* Detailed Analysis - Moved to bottom */}
           {analysis && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3">Detailed Analysis</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Detailed Analysis</h3>
               <div 
-                className="text-gray-700 dark:text-slate-300 leading-relaxed p-4 bg-gray-50 dark:bg-slate-700 rounded-lg"
+                className="text-gray-700 dark:text-slate-300 leading-relaxed p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-sm"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(analysis.explanation)
                 }}
@@ -316,13 +316,13 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
       tabIndex={0}
       onClick={() => onShowDetails(news)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onShowDetails(news); } }}
-      className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer ${borderClass} ${backgroundClass}`}
+      className={`border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer ${borderClass} ${backgroundClass}`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-1">
-            <span className="text-lg">{currencyInfo.flag}</span>
+            <span className="text-base">{currencyInfo.flag}</span>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
               {news.impact?.toUpperCase() || 'MEDIUM'}
             </span>
@@ -342,7 +342,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
             {news.title.split('(')[0]}
           </h3>
           
-          <div className="flex items-center space-x-4 text-xs text-gray-600 dark:text-slate-400">
+          <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-slate-400">
             <div className="flex items-center space-x-1">
               <Clock className="w-3 h-3" />
               <span>{date} {time}</span>
@@ -364,16 +364,16 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
 
       {/* Suggested Pairs to Watch */}
       {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
-        <div className="mb-3">
+        <div className="mb-2">
           <div className="flex items-center space-x-2 mb-2">
             <Target className="w-4 h-4 text-primary-600" />
             <span className="text-xs font-semibold text-gray-900 dark:text-slate-100">Suggested Pairs to Watch</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {analysis.suggestedPairs.map(pair => (
               <span 
                 key={pair}
-                className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
+                className="px-2.5 py-1.5 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
               >
                 {formatSymbolDisplay(pair)}
               </span>
@@ -384,7 +384,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
 
       {/* Quick Analysis Preview */}
       {analysis && (
-        <div className="border-t pt-3 space-y-2">
+        <div className="border-t pt-2 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />
@@ -562,15 +562,15 @@ const AINewsAnalysis = () => {
   };
 
   return (
-    <div className="widget-card px-4 pb-2 z-1 relative h-full flex flex-col">
+    <div className="widget-card px-3 pb-2 z-1 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="widget-header flex items-center justify-between mb-2">
+        <div className="widget-header flex items-center justify-between mb-2 text-[12px]">
         <div className="flex items-center space-x-2">
-          <Newspaper className="w-5 h-5 text-primary-600" />
+          <Newspaper className="w-4 h-4 text-primary-600" />
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">AI News Analysis</h2>
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-slate-100">AI News Analysis</h2>
           </div>
         </div>
         {!apiAvailable && (
@@ -581,12 +581,12 @@ const AINewsAnalysis = () => {
         </div>
 
         {/* Filter Tabs (match RSI Tracker styles) */}
-        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg">
+        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg text-[12px]">
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
             onClick={() => handleFilterChange(filterOption.id)}
-            className={`flex-1 flex items-center justify-center py-1.5 px-0.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[11px] font-medium transition-colors ${
               newsFilter === filterOption.id
                 ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
                 : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
@@ -604,9 +604,9 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-2">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1.5">
         {/* News Feed */}
-        <div className="space-y-3">
+        <div className="space-y-2">
         
         {sortedNews.length > 0 ? (
           sortedNews.map((news) => (
