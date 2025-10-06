@@ -191,10 +191,8 @@
                 </div>
 
                 {/* Bottom Section - Multi-Indicator Heatmap */}
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex-shrink-0 p-2" style={{ height: 'calc(60vh - 0.5rem)' }}>
-                  <div className="h-full overflow-x-auto">
-                    <MultiIndicatorHeatmap />
-                  </div>
+                <div className="flex-shrink-0" style={{ height: 'calc(60vh - 0.5rem)' }}>
+                  <MultiIndicatorHeatmap />
                 </div>
               </div>
             </>

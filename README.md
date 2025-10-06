@@ -41,6 +41,14 @@ All features that relied on client-side calculations now expect server-provided 
 - Currency Strength Meter (calculations)
 - RFI Score Cards (RFI components)
 
+## Recent Fixes (Latest)
+
+### UI Layout Fixes
+- **Fixed Quantum Analysis card-in-card issue**: Removed duplicate card wrapper in Dashboard.jsx for MultiIndicatorHeatmap component
+  - Issue: MultiIndicatorHeatmap had its own `widget-card` styling but was also wrapped in another card container
+  - Solution: Removed outer card wrapper, kept inner `widget-card` styling for consistent appearance
+  - Files affected: `src/pages/Dashboard.jsx`
+
 ## Market v2 WebSocket Integration (Latest)
 
 **IMPORTANT ARCHITECTURAL CHANGE**: The server has removed OHLC streaming and now provides polling-based market data with indicator streaming.
