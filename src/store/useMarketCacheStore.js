@@ -4,6 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { SUPPORTED_PAIRS, BROKER_SUFFIX } from '../constants/pairs';
 import indicatorService from '../services/indicatorService';
 import pricingService from '../services/pricingService';
+import trendingService from '../services/trendingService';
 import websocketService from '../services/websocketService';
 
 // Utility: safe JSON parse
@@ -60,6 +61,12 @@ const useMarketCacheStore = create(
     // ticksBySymbol: symbol -> { ticks: [..], lastUpdate }
     ticksBySymbol: new Map(),
 
+    // Trending pairs
+    // trendingSymbols: ordered list from backend (already ranked)
+    trendingSymbols: [],
+    // trendingMetaBySymbol: symbol -> { score?, reason? } (optional extras)
+    trendingMetaBySymbol: new Map(),
+
     // Internal debounce for legacy broadcast
     _broadcastTimer: null,
 
@@ -85,7 +92,7 @@ const useMarketCacheStore = create(
         errorCallback: () => {
           // keep cache
         },
-        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'quantum_update', 'ticks', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'quantum_update', 'ticks', 'trending_pairs', 'trending_update', 'trending_snapshot', 'pong', 'error']
       });
 
       // Ensure WS connection
@@ -93,6 +100,9 @@ const useMarketCacheStore = create(
 
       set({ initialized: true });
       // Defer REST hydration. Components should request minimal snapshots as needed.
+
+      // Fetch initial trending pairs snapshot (small payload; okay at startup)
+      try { get().hydrateTrendingFromREST(); } catch (_e) { /* ignore */ }
     },
 
     hydrateFromSession: () => {
@@ -105,6 +115,7 @@ const useMarketCacheStore = create(
         const quantumBySymbol = new Map();
         const pricingBySymbol = new Map();
         const ticksBySymbol = new Map();
+        const trendingMetaBySymbol = new Map();
 
         Object.entries(parsed.indicatorsBySymbol || {}).forEach(([symbol, val]) => {
           const tfMap = new Map();
@@ -139,12 +150,18 @@ const useMarketCacheStore = create(
           });
         });
 
+        Object.entries(parsed.trendingMetaBySymbol || {}).forEach(([symbol, v]) => {
+          trendingMetaBySymbol.set(symbol, v || {});
+        });
+
         set({
           indicatorsBySymbol,
           rsiBySymbolTimeframe,
           quantumBySymbol,
           pricingBySymbol,
           ticksBySymbol,
+          trendingSymbols: Array.isArray(parsed.trendingSymbols) ? parsed.trendingSymbols : [],
+          trendingMetaBySymbol,
           supportedTimeframes: Array.isArray(parsed.supportedTimeframes) && parsed.supportedTimeframes.length > 0 ? parsed.supportedTimeframes : DEFAULT_TIMEFRAMES
         });
       } catch (_e) {
@@ -184,7 +201,9 @@ const useMarketCacheStore = create(
           return out;
         })(),
         pricingBySymbol: mapToObject(state.pricingBySymbol),
-        ticksBySymbol: mapToObject(state.ticksBySymbol)
+        ticksBySymbol: mapToObject(state.ticksBySymbol),
+        trendingSymbols: Array.isArray(state.trendingSymbols) ? state.trendingSymbols : [],
+        trendingMetaBySymbol: mapToObject(state.trendingMetaBySymbol)
       };
       try { sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload)); } catch (_e) { /* ignore */ }
     },
@@ -326,6 +345,38 @@ const useMarketCacheStore = create(
       get().broadcastToLegacyStoresDebounced();
     },
 
+    // Load trending pairs via REST
+    hydrateTrendingFromREST: async (opts = {}) => {
+      try {
+        const res = await trendingService.fetchTrendingPairs({ limit: opts.limit });
+        const items = Array.isArray(res?.pairs) ? res.pairs : Array.isArray(res) ? res : [];
+        const normalized = items
+          .map((it) => {
+            if (!it) return null;
+            // Support both string symbol entries and objects { symbol, score }
+            const sym = typeof it === 'string' ? it : it.symbol;
+            if (!sym) return null;
+            let s = String(sym).trim();
+            const upper = s.toUpperCase();
+            // Ensure broker suffix 'm'
+            if (!upper.endsWith('M')) s = upper + 'm'; else s = upper;
+            return { symbol: s, meta: typeof it === 'object' ? { score: it.score, reason: it.reason } : {} };
+          })
+          .filter(Boolean);
+        const trendingSymbols = normalized.map((x) => x.symbol);
+        const trendingMetaBySymbol = new Map(get().trendingMetaBySymbol || new Map());
+        normalized.forEach(({ symbol, meta }) => { trendingMetaBySymbol.set(symbol, meta || {}); });
+        set({ trendingSymbols, trendingMetaBySymbol });
+
+        // Proactively ensure subscriptions for indicators/ticks on these symbols
+        try { get().ensureSubscriptionsForTrending(trendingSymbols); } catch (_e) {}
+
+        get().persistToSession();
+      } catch (_e) {
+        // ignore; will be filled by websocket if available
+      }
+    },
+
     // --- WebSocket message handling ---
     handleMessage: (message) => {
       switch (message?.type) {
@@ -421,9 +472,59 @@ const useMarketCacheStore = create(
           get().broadcastToLegacyStoresDebounced();
           break;
         }
+        case 'trending_pairs':
+        case 'trending_update':
+        case 'trending_snapshot': {
+          // Flexible payload handling
+          const payload = message?.data || message;
+          const list = Array.isArray(payload?.pairs) ? payload.pairs
+            : Array.isArray(payload?.symbols) ? payload.symbols
+            : Array.isArray(payload) ? payload
+            : [];
+          if (list.length === 0) break;
+
+          const normalized = list
+            .map((it) => {
+              const sym = typeof it === 'string' ? it : it?.symbol;
+              if (!sym) return null;
+              let s = String(sym).trim();
+              const upper = s.toUpperCase();
+              if (!upper.endsWith('M')) s = upper + 'm'; else s = upper;
+              return { symbol: s, meta: typeof it === 'object' ? { score: it.score, reason: it.reason } : {} };
+            })
+            .filter(Boolean);
+          const trendingSymbols = normalized.map((x) => x.symbol);
+          const trendingMetaBySymbol = new Map(get().trendingMetaBySymbol || new Map());
+          normalized.forEach(({ symbol, meta }) => { trendingMetaBySymbol.set(symbol, meta || {}); });
+          set({ trendingSymbols, trendingMetaBySymbol });
+
+          // Ensure live subscriptions for trending symbols
+          try { get().ensureSubscriptionsForTrending(trendingSymbols); } catch (_e) {}
+
+          get().persistToSession();
+          get().broadcastToLegacyStoresDebounced();
+          break;
+        }
         default:
           break;
       }
+    },
+
+    // Subscribe to indicators/ticks for trending symbols via RSI tracker store
+    ensureSubscriptionsForTrending: (symbols) => {
+      const list = Array.isArray(symbols) ? symbols : get().trendingSymbols;
+      if (!list || list.length === 0) return;
+      try {
+        import('./useRSITrackerStore').then(({ default: useRSITrackerStore }) => {
+          const tracker = useRSITrackerStore.getState();
+          const tf = tracker?.settings?.timeframe || '1H';
+          list.forEach((sym) => {
+            if (!tracker.subscriptions.has(sym)) {
+              tracker.subscribe(sym, tf, ['ticks', 'indicators']);
+            }
+          });
+        }).catch(() => {});
+      } catch (_e) { /* ignore */ }
     },
 
     // --- Legacy store sync & getters ---

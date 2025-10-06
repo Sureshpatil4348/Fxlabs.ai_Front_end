@@ -153,6 +153,13 @@ All technical indicator calculations are now performed server-side:
 - Added `TrendingPairs` to the desktop top-right column above the RSI Tracker.
 - Moved `AINewsAnalysis` to the bottom-right area to balance the layout.
 - Component file: `src/components/TrendingParis.jsx` (default export `TrendingPairs`).
+- Backend‑driven list: trending symbols are hydrated at startup via REST and updated live via WebSocket.
+  - REST: `GET https://api.fxlabs.ai/trending-pairs?limit=N` (client helper: `trendingService.fetchTrendingPairs`).
+  - WS types handled: `trending_pairs`, `trending_update`, `trending_snapshot`.
+  - Central cache: `useMarketCacheStore` keeps `trendingSymbols` (ordered) and ensures live subscriptions for those symbols.
+  - Display data is pulled live from cache: RSI (current timeframe), Price (bid), Daily %.
+  - Manual refresh uses `hydrateTrendingFromREST()`.
+  - Display format: Pairs are rendered as `ABC/DEF` (e.g., `BTC/USD`, `EUR/USD`). Broker suffixes like `m` are stripped for UI display only; internal symbols remain unchanged.
 
 #### TradingView Widget replaces Heatmap (Latest)
 

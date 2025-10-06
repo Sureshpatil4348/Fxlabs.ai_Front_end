@@ -33,7 +33,7 @@ export const formatCurrency = (currency) => {
 
 export const formatSymbolDisplay = (symbol) => {
   // Remove 'm' suffix and format as currency pair
-  const cleanSymbol = symbol.replace(/m$/, '');
+  const cleanSymbol = String(symbol || '').replace(/m$/i, '');
   if (cleanSymbol.length === 6) {
     return `${cleanSymbol.slice(0, 3)}/${cleanSymbol.slice(3)}`;
   }
