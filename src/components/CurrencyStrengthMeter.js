@@ -160,28 +160,29 @@ const CurrencyStrengthMeter = () => {
     }
   }, [subscriptions.size, calculateCurrencyStrength]);
 
+  // Memoized fetch function to handle initial server snapshot
+  const fetchInitialSnapshot = useCallback(async () => {
+    try {
+      const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
+      const res = await fetchIndicatorSnapshot({
+        indicator: 'currency_strength',
+        timeframe: settings.timeframe
+      });
+      const strength = res?.strength || res?.data?.strength;
+      if (strength) {
+        memoizedSetCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
+      }
+    } catch (_e) {
+      // silent; websocket will fill or local calc can be used on demand
+    }
+  }, [settings.timeframe, memoizedSetCurrencyStrengthSnapshot]);
+
   // Fetch initial server snapshot on mount/timeframe change
   useEffect(() => {
     let cancelled = false;
-    const fetchInitial = async () => {
-      try {
-        const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
-        const res = await fetchIndicatorSnapshot({
-          indicator: 'currency_strength',
-          timeframe: settings.timeframe
-        });
-        if (cancelled) return;
-        const strength = res?.strength || res?.data?.strength;
-        if (strength) {
-          memoizedSetCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
-        }
-      } catch (_e) {
-        // silent; websocket will fill or local calc can be used on demand
-      }
-    };
-    fetchInitial();
+    fetchInitialSnapshot();
     return () => { cancelled = true; };
-  }, [settings.timeframe, memoizedSetCurrencyStrengthSnapshot]);
+  }, [fetchInitialSnapshot]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
