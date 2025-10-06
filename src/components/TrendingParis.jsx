@@ -7,28 +7,19 @@ import {
     formatSymbolDisplay,
     formatPrice,
     formatPercentage,
-    formatRsi,
-    getRsiColor,
 } from "../utils/formatters";
 
 const TrendingPairs = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     // From centralized cache
-    const {
-        trendingSymbols,
-        rsiBySymbolTimeframe,
-        pricingBySymbol,
-        hydrateTrendingFromREST,
-    } = useMarketCacheStore();
+    const { trendingSymbols, pricingBySymbol, hydrateTrendingFromREST } =
+        useMarketCacheStore();
 
     // For connection status and timeframe
     const isConnected = useRSITrackerStore((state) => state.isConnected);
-    const settings = useRSITrackerStore((state) => state.settings);
-    const timeframe = settings.timeframe;
 
     const rows = useMemo(() => {
-        const tf = String(timeframe || "").toUpperCase();
         return (Array.isArray(trendingSymbols) ? trendingSymbols : []).map(
             (symbol) => {
                 // Fix symbol case - trending symbols come as 'ETHUSDM' but data uses 'ETHUSDm'
@@ -39,13 +30,6 @@ const TrendingPairs = () => {
                     key = `${key}m`;
                 }
 
-                const tfMap = rsiBySymbolTimeframe.get(key);
-                const rsiEntry = tfMap && tfMap.get(tf);
-                const rsiVal =
-                    rsiEntry && typeof rsiEntry.value === "number"
-                        ? rsiEntry.value
-                        : null;
-
                 const pricing = pricingBySymbol.get(key) || {};
                 const price =
                     typeof pricing.bid === "number" ? pricing.bid : null;
@@ -54,10 +38,10 @@ const TrendingPairs = () => {
                         ? pricing.daily_change_pct
                         : 0;
 
-                return { symbol, rsi: rsiVal, price, change: dailyPct };
+                return { symbol, price, change: dailyPct };
             }
         );
-    }, [trendingSymbols, rsiBySymbolTimeframe, pricingBySymbol, timeframe]);
+    }, [trendingSymbols, pricingBySymbol]);
 
     const handleRefresh = useCallback(async () => {
         try {
@@ -123,9 +107,6 @@ const TrendingPairs = () => {
                                     Pair
                                 </th>
                                 <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                                    RSI
-                                </th>
-                                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
                                     Price
                                 </th>
                                 <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -141,21 +122,6 @@ const TrendingPairs = () => {
                                 >
                                     <td className="px-2 py-1 text-[11px] font-medium text-gray-900 dark:text-slate-100 text-center">
                                         {formatSymbolDisplay(row.symbol)}
-                                    </td>
-                                    <td
-                                        className={`px-2 py-1 text-[11px] font-bold text-center ${
-                                            row.rsi != null
-                                                ? getRsiColor(
-                                                      row.rsi,
-                                                      settings.rsiOverbought,
-                                                      settings.rsiOversold
-                                                  )
-                                                : "text-gray-400 dark:text-slate-500"
-                                        }`}
-                                    >
-                                        {row.rsi != null
-                                            ? formatRsi(row.rsi)
-                                            : "--"}
                                     </td>
                                     <td className="px-2 py-1 text-[11px] text-gray-900 dark:text-slate-100 font-mono text-center">
                                         {row.price != null
