@@ -54,6 +54,9 @@ const CurrencyStrengthMeter = () => {
     useEnhancedCalculation: settings.useEnhancedCalculation
   });
 
+  // Memoize snapshot setter to prevent dependency warnings
+  const memoizedSetCurrencyStrengthSnapshot = useCallback(setCurrencyStrengthSnapshot, [setCurrencyStrengthSnapshot]);
+
 
   // Auto-subscribe to major pairs when connection is established
   useEffect(() => {
@@ -170,7 +173,7 @@ const CurrencyStrengthMeter = () => {
         if (cancelled) return;
         const strength = res?.strength || res?.data?.strength;
         if (strength) {
-          setCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
+          memoizedSetCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
         }
       } catch (_e) {
         // silent; websocket will fill or local calc can be used on demand
@@ -178,7 +181,7 @@ const CurrencyStrengthMeter = () => {
     };
     fetchInitial();
     return () => { cancelled = true; };
-  }, [settings.timeframe, setCurrencyStrengthSnapshot]);
+  }, [settings.timeframe, memoizedSetCurrencyStrengthSnapshot]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
