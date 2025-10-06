@@ -82,7 +82,7 @@ const CurrencyStrengthMeter = () => {
     }, 500); // 500ms debounce
     
     return () => clearTimeout(timeoutId);
-  }, [subscriptions.size, settings.timeframe, setCurrencyStrengthSnapshot, calculateCurrencyStrength]);
+  }, [subscriptions.size, calculateCurrencyStrength]);
 
   // Calculate currency strength when subscriptions change or settings change (debounced)
   useEffect(() => {
@@ -155,7 +155,7 @@ const CurrencyStrengthMeter = () => {
       }, 120000); // 2 minutes instead of 60 seconds
       return () => clearInterval(interval);
     }
-  }, [subscriptions.size, calculateCurrencyStrength]);
+  }, [subscriptions.size, settings.timeframe, setCurrencyStrengthSnapshot, calculateCurrencyStrength]);
 
   // Fetch initial server snapshot on mount/timeframe change
   useEffect(() => {
