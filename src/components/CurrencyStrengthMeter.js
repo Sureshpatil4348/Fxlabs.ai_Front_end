@@ -39,8 +39,10 @@ const CurrencyStrengthMeter = () => {
     subscriptions,
     isConnected,
     autoSubscribeToMajorPairs,
+    connect,
     updateSettings,
-    timeframes
+    timeframes,
+    setCurrencyStrengthSnapshot
   } = useCurrencyStrengthStore();
   
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -52,6 +54,12 @@ const CurrencyStrengthMeter = () => {
     useEnhancedCalculation: settings.useEnhancedCalculation
   });
 
+
+  // Auto-subscribe to major pairs when connection is established
+  useEffect(() => {
+    // Ensure WebSocket connection and store registration on mount
+    connect();
+  }, [connect]);
 
   // Auto-subscribe to major pairs when connection is established
   useEffect(() => {
@@ -124,13 +132,53 @@ const CurrencyStrengthMeter = () => {
   useEffect(() => {
     if (subscriptions.size > 0) {
       const interval = setInterval(() => {
-        // eslint-disable-next-line no-console
-        console.log('Auto-refreshing currency strength (2min interval)');
-        calculateCurrencyStrength();
+        // Prefer server snapshot refresh to keep in sync with backend
+        (async () => {
+          try {
+            const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
+            const res = await fetchIndicatorSnapshot({
+              indicator: 'currency_strength',
+              timeframe: settings.timeframe
+            });
+            const strength = res?.strength || res?.data?.strength;
+            if (strength) {
+              setCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
+            } else {
+              // Fallback to local calculation if snapshot missing
+              calculateCurrencyStrength();
+            }
+          } catch (_e) {
+            // Fallback to local calculation on failure
+            calculateCurrencyStrength();
+          }
+        })();
       }, 120000); // 2 minutes instead of 60 seconds
       return () => clearInterval(interval);
     }
   }, [subscriptions.size, calculateCurrencyStrength]);
+
+  // Fetch initial server snapshot on mount/timeframe change
+  useEffect(() => {
+    let cancelled = false;
+    const fetchInitial = async () => {
+      try {
+        const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
+        const res = await fetchIndicatorSnapshot({
+          indicator: 'currency_strength',
+          timeframe: settings.timeframe
+        });
+        if (cancelled) return;
+        const strength = res?.strength || res?.data?.strength;
+        if (strength) {
+          setCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
+        }
+      } catch (_e) {
+        // silent; websocket will fill or local calc can be used on demand
+      }
+    };
+    fetchInitial();
+    return () => { cancelled = true; };
+  }, [settings.timeframe, setCurrencyStrengthSnapshot]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -173,12 +221,20 @@ const CurrencyStrengthMeter = () => {
 
   // Memoize strength data conversion to prevent recalculation on every render
   const strengthData = useMemo(() => {
-    return Array.from(currencyStrength.entries())
-      .map(([currency, strength]) => ({ 
-        currency, 
-        strength: strength || 50 // Fallback to 50 if strength is undefined/null/0
-      }))
-      .sort((a, b) => b.strength - a.strength);
+    try {
+      const entries = Array.from(currencyStrength.entries());
+      return entries
+        .map(([currency, strength]) => {
+          const num = Number(strength);
+          return {
+            currency,
+            strength: Number.isFinite(num) ? num : 50
+          };
+        })
+        .sort((a, b) => b.strength - a.strength);
+    } catch (_e) {
+      return [];
+    }
   }, [currencyStrength]);
 
   

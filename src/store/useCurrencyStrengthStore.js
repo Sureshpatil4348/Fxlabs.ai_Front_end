@@ -144,7 +144,7 @@ const useCurrencyStrengthStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'currency_strength_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -169,16 +169,26 @@ const useCurrencyStrengthStore = create(
       });
     },
     
-    // v2 probe: disable legacy subscribe; log intent only
+    // Maintain local subscriptions (server is broadcast-only in v2)
     subscribe: (symbol, timeframe, dataTypes) => {
-      get().addLog(`(probe) Subscribe skipped for ${symbol} @ ${timeframe} [${(dataTypes||[]).join(', ')}]`, 'warning');
-      // Note: subscribe() is disabled in probe mode - no console warning needed
+      const state = get();
+      const subscriptions = new Map(state.subscriptions);
+      subscriptions.set(symbol, {
+        symbol,
+        timeframe: timeframe || state.settings.timeframe,
+        dataTypes: Array.isArray(dataTypes) ? dataTypes : ['ticks', 'indicators'],
+        subscribedAt: new Date()
+      });
+      set({ subscriptions });
+      get().addLog(`Subscribed (local) ${symbol} @ ${timeframe || state.settings.timeframe}`, 'info');
     },
     
-    // v2 probe: disable legacy unsubscribe; log intent only
     unsubscribe: (symbol) => {
-      get().addLog(`(probe) Unsubscribe skipped for ${symbol}`, 'warning');
-      // Note: unsubscribe() is disabled in probe mode - no console warning needed
+      const state = get();
+      const subscriptions = new Map(state.subscriptions);
+      subscriptions.delete(symbol);
+      set({ subscriptions });
+      get().addLog(`Unsubscribed (local) ${symbol}`, 'warning');
     },
     
     handleMessage: (message) => {
@@ -310,6 +320,31 @@ const useCurrencyStrengthStore = create(
             // Keep recalculation manual/scheduled to avoid flickering
           }
           break;
+
+        case 'currency_strength_update':
+          {
+            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
+            const barTime = message?.data?.bar_time ?? message?.bar_time;
+            const strength = message?.data?.strength || message?.strength || null;
+
+            if (!strength || typeof strength !== 'object') break;
+
+            // Only update current view if timeframe matches selected timeframe
+            const currentTf = (state.settings?.timeframe || '').toUpperCase();
+            if (!currentTf || !timeframe || currentTf === timeframe) {
+              const entries = Object.entries(strength).map(([k, v]) => {
+                const num = Number(v);
+                return [k, Number.isFinite(num) ? num : 50];
+              });
+              const strengthMap = new Map(entries);
+              set({ currencyStrength: strengthMap });
+              if (barTime) {
+                // Best-effort log to help trace updates
+                get().addLog(`Currency strength updated (${timeframe})`, 'info');
+              }
+            }
+          }
+          break;
           
         case 'pong':
           get().addLog('Pong received', 'info');
@@ -380,6 +415,26 @@ const useCurrencyStrengthStore = create(
         get().calculateEnhancedCurrencyStrength();
       } else {
         get().calculateLegacyCurrencyStrength();
+      }
+    },
+
+    // Server snapshot setter for REST fetches
+    setCurrencyStrengthSnapshot: (strengthObject, timeframe) => {
+      try {
+        if (!strengthObject || typeof strengthObject !== 'object') return;
+        const entries = Object.entries(strengthObject).map(([k, v]) => {
+          const num = Number(v);
+          return [k, Number.isFinite(num) ? num : 50];
+        });
+        const strengthMap = new Map(entries);
+        const state = get();
+        const currentTf = (state.settings?.timeframe || '').toUpperCase();
+        if (!timeframe || (currentTf && String(timeframe).toUpperCase() === currentTf)) {
+          set({ currencyStrength: strengthMap });
+          get().addLog(`Applied currency strength snapshot${timeframe ? ' (' + String(timeframe).toUpperCase() + ')' : ''}`, 'success');
+        }
+      } catch (_e) {
+        // ignore snapshot errors
       }
     },
     

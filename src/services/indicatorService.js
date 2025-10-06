@@ -63,6 +63,20 @@ export async function fetchIndicatorSnapshot({ indicator, timeframe, pairs }) {
     // best-effort logging only
   }
 
+  // Debug for currency_strength responses as well
+  try {
+    if (String(indicator).toLowerCase() === 'currency_strength') {
+      console.log('[REST][Indicator][currency_strength]', {
+        timeframe: String(timeframe).toUpperCase(),
+        hasStrength: !!(data?.strength || data?.data?.strength),
+        keys: data?.strength ? Object.keys(data.strength) : (data?.data?.strength ? Object.keys(data.data.strength) : []),
+        url
+      });
+    }
+  } catch (_e) {
+    // best-effort logging only
+  }
+
   return data;
 }
 

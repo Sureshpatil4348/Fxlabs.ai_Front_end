@@ -1776,6 +1776,21 @@ This project is licensed under the MIT License.
 - Notes:
   - REST base is fixed: `https://api.fxlabs.ai` (no env vars required).
 
+#### Currency Strength Heatmap (Server‑driven)
+- WebSocket v2 additionally broadcasts `currency_strength_update` per timeframe:
+  - Sample payload:
+    ```json
+    { "type": "currency_strength_update", "timeframe": "5M", "data": { "bar_time": 1696229940000, "strength": { "USD": 62.3, "EUR": 47.8, "GBP": 55.1, "JPY": 41.2, "AUD": 58.9, "CAD": 52.4, "CHF": 44.7, "NZD": 37.5 } } }
+    ```
+- Store: `src/store/useCurrencyStrengthStore.js`
+  - Subscribes to `currency_strength_update` and updates `currencyStrength` when the incoming timeframe matches the selected timeframe.
+  - Exposes `setCurrencyStrengthSnapshot(strengthObject, timeframe)` to apply REST snapshots.
+- Widget: `src/components/CurrencyStrengthMeter.js`
+  - Ensures WS connection on mount via `connect()`.
+  - On mount and timeframe change, fetches REST snapshot:
+    `GET /api/indicator?indicator=currency_strength&timeframe=<TF>` and applies via `setCurrencyStrengthSnapshot`.
+  - Auto-refresh every 2 minutes prefers REST snapshot; falls back to local calculation if unavailable.
+
 ### Quantum Analysis Integration (Server‑only)
 - Quantum values are sourced solely from the backend; no client‑side calculations.
 - REST: `GET /api/indicator?indicator=quantum&timeframe=5M&pairs=...` is called during cache hydration.
