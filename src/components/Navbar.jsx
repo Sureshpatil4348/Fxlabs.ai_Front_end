@@ -7,7 +7,7 @@ import UserProfileDropdown from './UserProfileDropdown'
 import { useAuth } from '../auth/AuthProvider'
 import { useTheme } from '../contexts/ThemeContext'
 
-const Navbar = () => {
+const Navbar = ({ activeTab, onChangeTab }) => {
   const { user } = useAuth()
   const { isDarkMode, toggleTheme } = useTheme()
   const location = useLocation()
@@ -57,14 +57,14 @@ const Navbar = () => {
                     <img 
                       src={isDarkMode ? require('../assets/main.png') : require('../assets/blacklogo.png')} 
                       alt="FXLabs Logo" 
-                      className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-18 lg:h-18 object-contain transition-all duration-300 group-hover:scale-105"
+                      className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain transition-all duration-300 group-hover:scale-105"
                     />
                   </a>
                 </div>
             
-                {/* Center Section - Navigation Links */}
+                {/* Center Section - Navigation Links / Dashboard Tabs */}
                 <div className="hidden lg:flex flex-1 justify-center items-center space-x-6 xl:space-x-8">
-                  {/* Only show these navigation items when NOT on dashboard */}
+                  {/* Show landing links when NOT on dashboard */}
                   {!isOnDashboard && (
                     <>
                       {/* Technology */}
@@ -93,18 +93,46 @@ const Navbar = () => {
                         <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-sm">Pricing</span>
                       </button>
+
+                      {/* Dashboard (for logged in users) */}
+                      {user && (
+                        <Link
+                          to="/dashboard"
+                          className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        >
+                          <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                          <span className="font-medium text-sm">Dashboard</span>
+                        </Link>
+                      )}
                     </>
                   )}
 
-                  {/* Dashboard (for logged in users) - only show when NOT on dashboard */}
-                  {user && !isOnDashboard && (
-                    <Link
-                      to="/dashboard"
-                      className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
-                    >
-                      <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="font-medium text-sm">Dashboard</span>
-                    </Link>
+                  {/* Show Analysis/Tools tabs centered when ON dashboard */}
+                  {isOnDashboard && (
+                    <div className="flex items-center gap-2 bg-emerald-500/15 dark:bg-emerald-400/15 border border-emerald-500/30 dark:border-emerald-400/30 rounded-full p-1 backdrop-blur-md shadow-sm">
+                      <button
+                        onClick={() => onChangeTab && onChangeTab('analysis')}
+                        className={`px-5 py-1.5 rounded-full transition-all duration-200 ${
+                          activeTab === 'analysis'
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                        }`}
+                        style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
+                      >
+                        Analysis
+                      </button>
+                      <button
+                        onClick={() => onChangeTab && onChangeTab('tools')}
+                        className={`px-5 py-1.5 rounded-full transition-all duration-200 ${
+                          activeTab === 'tools'
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                        }`}
+                        style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
+                      >
+                        Tools
+                      </button>
+                    </div>
                   )}
                 </div>
             
@@ -123,6 +151,7 @@ const Navbar = () => {
 
                   {/* Theme Toggle Button */}
                   <button
+                    hidden
                     onClick={toggleTheme}
                     className="p-2 rounded-xl bg-white/50 dark:bg-gray-800/50 hover:bg-white/70 dark:hover:bg-gray-700/70 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 border border-white/20 dark:border-gray-600/30 backdrop-blur-sm"
                     title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}

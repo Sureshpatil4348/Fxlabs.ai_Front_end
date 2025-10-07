@@ -75,34 +75,12 @@
           />
         )}
 
-        {/* Navbar */}
-        <Navbar />
+        {/* Navbar - pass tab state for centered navbar buttons */}
+        <Navbar activeTab={activeTab} onChangeTab={setActiveTab} />
 
         {/* Main Content - Takes remaining screen height */}
         <main className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-3 mt-10">
-          {/* Tabs - centered */}
-          <div className="mb-3 flex items-center gap-2 justify-center">
-            <button
-              onClick={() => setActiveTab('analysis')}
-              className={`px-4 py-2 rounded-full border transition-all duration-200 ${
-                activeTab === 'analysis'
-                  ? 'bg-blue-500/30 text-blue-800 dark:text-blue-300 border-blue-400/50'
-                  : 'bg-white/20 dark:bg-gray-800/20 text-black dark:text-white hover:bg-white/30 dark:hover:bg-gray-700/30 border-white/30 dark:border-gray-700/40'
-              }`}
-            >
-              Analysis
-            </button>
-            <button
-              onClick={() => setActiveTab('tools')}
-              className={`px-4 py-2 rounded-full border transition-all duration-200 ${
-                activeTab === 'tools'
-                  ? 'bg-purple-500/30 text-purple-800 dark:text-purple-300 border-purple-400/50'
-                  : 'bg-white/20 dark:bg-gray-800/20 text-black dark:text-white hover:bg-white/30 dark:hover:bg-gray-700/30 border-white/30 dark:border-gray-700/40'
-              }`}
-            >
-              Tools
-            </button>
-          </div>
+          {/* Tabs moved to Navbar */}
 
           {activeTab === 'analysis' ? (
             <>
@@ -114,7 +92,6 @@
                     initialSymbol="OANDA:EURUSD"
                     initialInterval="60"
                     height="100%"
-                    showControls={true}
                     className="w-full"
                   />
                 </div>
@@ -143,7 +120,6 @@
                     initialSymbol="OANDA:EURUSD"
                     initialInterval="60"
                     height="100%"
-                    showControls={true}
                     className="w-full flex-1"
                   />
                 </div>
@@ -173,26 +149,28 @@
             <>
               {/* Tools Tab Content */}
               <div className="h-full flex flex-col gap-2">
-                {/* Grid Layout - Top Two Sections (Trending moved to Analysis) */}
+                {/* Two-column layout: Left stacks Lot Size + Heatmap; Right spans full height with Multi Time Analysis */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-0">
-                  {/* Top Left - Lot Size Calculator */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2">
-                    <div className="h-full overflow-y-auto">
-                      <LotSizeCalculator />
+                  {/* Left Column: Lot Size (top) + Heatmap (bottom) */}
+                  <div className="flex flex-col gap-2 min-h-0">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2">
+                      <div className="h-full overflow-y-auto">
+                        <LotSizeCalculator />
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 flex-1 min-h-0">
+                      <div className="h-full overflow-auto">
+                        <MultiIndicatorHeatmap />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Top Right - Multi Time Analysis */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2">
+                  {/* Right Column: Multi Time Analysis spanning full height */}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 min-h-0">
                     <div className="h-full overflow-y-auto overflow-x-hidden">
                       <MultiTimeAnalysis />
                     </div>
                   </div>
-                </div>
-
-                {/* Bottom Section - Multi-Indicator Heatmap */}
-                <div className="flex-shrink-0" style={{ height: 'calc(60vh - 0.5rem)' }}>
-                  <MultiIndicatorHeatmap />
                 </div>
               </div>
             </>

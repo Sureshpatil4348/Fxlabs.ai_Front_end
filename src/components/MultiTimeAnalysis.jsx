@@ -1,4 +1,4 @@
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Globe2 } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   ResponsiveContainer,
@@ -563,8 +563,9 @@ const ForexMarketTimeZone = () => {
 
       {/* Header */}
       <div className="mb-3 pr-16">
-        <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-          Forex Market Time Zone Converter
+        <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 tools-heading">
+          <Globe2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <span className="font-semibold"> Forex Market Time Zone Converter</span>
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400">
           Learn more about{" "}
@@ -717,7 +718,7 @@ const ForexMarketTimeZone = () => {
 
         {/* Current Trading Overlaps */}
         <div className="mt-4 mb-3">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Current Trading Overlaps:</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 tools-heading">Current Trading Overlaps:</h3>
           <div className="flex flex-wrap gap-2">
             {getTradingOverlaps().length > 0 ? (
               getTradingOverlaps().map((overlap, index) => (

@@ -44,6 +44,32 @@ const formatIndicatorDisplay = (indicator) => {
   return indicatorMap[indicator] || indicator;
 };
 
+// Map currency codes to flag emojis (best-effort for professional appearance)
+const currencyToFlag = (code) => {
+  const map = {
+    EUR: '🇪🇺',
+    USD: '🇺🇸',
+    GBP: '🇬🇧',
+    JPY: '🇯🇵',
+    CHF: '🇨🇭',
+    AUD: '🇦🇺',
+    CAD: '🇨🇦',
+    NZD: '🇳🇿',
+    XAU: '🥇', // Gold
+    XAG: '🥈', // Silver
+    BTC: '₿',
+    ETH: '◆',
+  };
+  return map[code] || '🏳️';
+};
+
+const getFlagsForPair = (symbolWithSuffix) => {
+  const clean = symbolWithSuffix.replace(/m$/, '').toUpperCase();
+  const base = clean.slice(0, 3);
+  const quote = clean.slice(3);
+  return { leftFlag: currencyToFlag(base), rightFlag: currencyToFlag(quote) };
+};
+
 // Ichimoku Clone calculation (simplified version) - keeping for potential future use
 // const calculateIchimokuClone = (bars) => {
 //   if (!bars || bars.length < 26) return null;
@@ -132,13 +158,13 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   // Available symbols from store (e.g., 32 pairs). Keep 'm' suffix for RSI tracker
   const availableSymbols = useMemo(() => settings?.autoSubscribeSymbols || [], [settings?.autoSubscribeSymbols]);
 
-  // Build dropdown options with simple text
+  // Build dropdown options with flags
   const dropdownOptions = useMemo(() => {
     return availableSymbols.map((sym) => {
       const clean = sym.replace(/m$/, '').toUpperCase();
-      // Display as ABC/DEF for user clarity
       const pretty = clean.length === 6 ? `${clean.slice(0, 3)}/${clean.slice(3)}` : clean;
-      return { value: sym, label: pretty };
+      const { leftFlag, rightFlag } = getFlagsForPair(sym);
+      return { value: sym, label: pretty, leftFlag, rightFlag };
     });
   }, [availableSymbols]);
 
@@ -445,7 +471,7 @@ useEffect(() => {
           {/* Title */}
           <div className="flex items-center space-x-2">
             <img src={quantImage} alt="Quantum" className="w-5 h-5" />
-            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">Quantum Analysis</h2>
+            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
@@ -483,9 +509,19 @@ useEffect(() => {
               <div className="relative">
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
-                  {dropdownOptions.find(opt => opt.value === currentSymbol)?.label || currentSymbol}
+                  {(() => {
+                    const opt = dropdownOptions.find(opt => opt.value === currentSymbol);
+                    if (!opt) return currentSymbol;
+                    return (
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="text-base leading-none">{opt.leftFlag}</span>
+                        <span>{opt.label}</span>
+                        <span className="text-base leading-none">{opt.rightFlag}</span>
+                      </span>
+                    );
+                  })()}
                 </button>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
                   <svg className={`w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -506,7 +542,11 @@ useEffect(() => {
                           option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-semibold' : 'text-gray-700 dark:text-slate-300'
                         }`}
                       >
-                        {option.label}
+                        <span className="inline-flex items-center gap-2">
+                          <span className="text-base leading-none">{option.leftFlag}</span>
+                          <span>{option.label}</span>
+                          <span className="text-base leading-none ml-auto">{option.rightFlag}</span>
+                        </span>
                       </button>
                     ))}
                   </div>

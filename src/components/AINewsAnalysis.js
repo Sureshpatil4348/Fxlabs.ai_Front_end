@@ -6,7 +6,6 @@ import {
   AlertCircle, 
   RefreshCw,
   Brain,
-  Target,
   X
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
@@ -205,18 +204,14 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Suggested Pairs - Moved to second position in AI Analysis */}
+                {/* Suggested Pairs - compact chips, heading removed */}
                 {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
                   <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div className="text-gray-700 dark:text-slate-300 font-medium mb-2 flex items-center space-x-2 text-sm">
-                      <Target className="w-4 h-4 text-primary-600" />
-                      <span>Suggested Pairs to Watch:</span>
-                    </div>
                     <div className="flex flex-wrap gap-1.5">
                       {analysis.suggestedPairs.map(pair => (
                         <span 
                           key={pair}
-                          className="px-2.5 py-1.5 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm"
+                          className="px-2.5 py-1.5 bg-white dark:bg-slate-600 border border-primary-200 dark:border-slate-500 text-primary-700 dark:text-primary-300 rounded-lg font-medium text-sm"
                         >
                           {formatSymbolDisplay(pair)}
                         </span>
@@ -362,18 +357,14 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
         </div>
       </div>
 
-      {/* Suggested Pairs to Watch */}
+      {/* Suggested Pairs - compact chips only */}
       {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
         <div className="mb-2">
-          <div className="flex items-center space-x-2 mb-2">
-            <Target className="w-4 h-4 text-primary-600" />
-            <span className="text-xs font-semibold text-gray-900 dark:text-slate-100">Suggested Pairs to Watch</span>
-          </div>
           <div className="flex flex-wrap gap-1.5">
             {analysis.suggestedPairs.map(pair => (
               <span 
                 key={pair}
-                className="px-2.5 py-1.5 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
+                className="px-2.5 py-1.5 bg-white dark:bg-slate-700 border border-primary-200 dark:border-slate-600 text-primary-700 dark:text-primary-300 rounded-lg font-medium text-xs"
               >
                 {formatSymbolDisplay(pair)}
               </span>

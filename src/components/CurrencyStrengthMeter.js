@@ -1,4 +1,4 @@
-import { RefreshCw, Settings } from 'lucide-react';
+import { Settings, BarChart3 } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import userStateService from '../services/userStateService';
@@ -45,7 +45,7 @@ const CurrencyStrengthMeter = () => {
     setCurrencyStrengthSnapshot
   } = useCurrencyStrengthStore();
   
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  // removed manual refresh state
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [localSettings, setLocalSettings] = useState({
@@ -180,11 +180,7 @@ const CurrencyStrengthMeter = () => {
     return () => { cancelled = true; };
   }, [settings.timeframe, setCurrencyStrengthSnapshot]);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    calculateCurrencyStrength();
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
+  // Manual refresh removed; strength updates automatically via snapshots/subscriptions
 
   const handleSaveSettings = async () => {
     try {
@@ -248,7 +244,10 @@ const CurrencyStrengthMeter = () => {
         {/* Header */}
         <div className="widget-header flex items-center justify-between mb-2">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Currency Strength Meter</h2>
+          <div className="flex items-center space-x-2">
+            <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Currency Strength Meter</h2>
+          </div>
           <div className="flex items-center space-x-2 mt-1">
             {/* Connection status pill removed; status shown as top-right dot */}
             {strengthData.length === 0 && subscriptions.size > 0 && (
@@ -267,14 +266,7 @@ const CurrencyStrengthMeter = () => {
           >
             <Settings className="w-4 h-4" />
           </button>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-            title="Refresh Data"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
+          {/* Refresh icon removed per requirements */}
         </div>
         </div>
 
@@ -331,9 +323,7 @@ const CurrencyStrengthMeter = () => {
           </>
         ) : (
           <div className="text-center py-12">
-            <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <RefreshCw className="w-6 h-6 text-gray-400" />
-            </div>
+            <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center"></div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No strength data available
             </h3>

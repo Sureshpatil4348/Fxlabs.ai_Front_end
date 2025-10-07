@@ -228,13 +228,13 @@ const LotSizeCalculator = () => {
     <div className=" h-full">
       <Card className="bg-transparent shadow-none border-none">
         <CardHeader className="pb-2 relative">
-          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
             <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
             Lot Size Calculator
           </CardTitle>
-          <CardDescription className="text-sm text-gray-600 dark:text-gray-300">
+          <CardDescription className="text-sm text-gray-600 dark:text-gray-300 ">
             Calculate optimal position size based on account balance, risk tolerance, and stop-loss level
           </CardDescription>
           {/* Live Status in top right corner */}
@@ -254,29 +254,20 @@ const LotSizeCalculator = () => {
         </CardHeader>
         
         <CardContent className="space-y-3">
-          {/* Instrument Type Selection */}
-          <div className="grid grid-cols-3 gap-2">
-            {Object.entries(instrumentConfigs).map(([key, config]) => (
+          {/* Instrument Type Selection - Compact pill segmented control */}
+          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-1 border border-gray-200 dark:border-gray-700">
+            {Object.entries(instrumentConfigs).map(([key, config], idx) => (
               <button
                 key={key}
                 onClick={() => handleInputChange('instrumentType', key)}
-                className={`relative p-2 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
+                className={`${
                   formData.instrumentType === key
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 shadow-lg shadow-blue-500/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800 hover:shadow-md'
-                }`}
+                    ? 'bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm'
+                    : 'bg-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                } px-3 py-1.5 text-xs font-medium rounded-full transition-colors duration-200 ${idx !== 0 ? 'ml-1' : ''}`}
+                title={`${config.name} (${config.resultUnit})`}
               >
-                <div className="text-center">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{config.name}</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 font-medium">
-                    {config.resultUnit}
-                  </p>
-                </div>
-                {formData.instrumentType === key && (
-                  <div className="absolute top-1 right-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                )}
+                {config.name}
               </button>
             ))}
           </div>

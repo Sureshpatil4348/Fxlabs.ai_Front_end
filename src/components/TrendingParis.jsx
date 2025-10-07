@@ -1,5 +1,5 @@
-import { TrendingUp, RefreshCw } from "lucide-react";
-import React, { useState, useMemo, useCallback } from "react";
+import { TrendingUp } from "lucide-react";
+import React, { useMemo } from "react";
 
 import useMarketCacheStore from "../store/useMarketCacheStore";
 import useRSITrackerStore from "../store/useRSITrackerStore";
@@ -10,10 +10,10 @@ import {
 } from "../utils/formatters";
 
 const TrendingPairs = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    // removed manual loading state for refresh
 
     // From centralized cache
-    const { trendingSymbols, pricingBySymbol, hydrateTrendingFromREST } =
+    const { trendingSymbols, pricingBySymbol } =
         useMarketCacheStore();
 
     // For connection status and timeframe
@@ -43,14 +43,7 @@ const TrendingPairs = () => {
         );
     }, [trendingSymbols, pricingBySymbol]);
 
-    const handleRefresh = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            await hydrateTrendingFromREST();
-        } finally {
-            setIsLoading(false);
-        }
-    }, [hydrateTrendingFromREST]);
+    // Manual refresh removed; trending updates driven by backend hydration elsewhere
 
     // Removed RFI from trending list view per spec
 
@@ -70,20 +63,7 @@ const TrendingPairs = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-1 text-[12px]">
-                            <button
-                                onClick={handleRefresh}
-                                disabled={isLoading}
-                                className="p-1 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors"
-                                title="Refresh Data"
-                            >
-                                <RefreshCw
-                                    className={`w-3 h-3 ${
-                                        isLoading ? "animate-spin" : ""
-                                    }`}
-                                />
-                            </button>
-                        </div>
+                        <div className="flex items-center space-x-1 text-[12px]"></div>
                     </div>
                 </div>
 
