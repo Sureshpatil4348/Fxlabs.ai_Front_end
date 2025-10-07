@@ -3,26 +3,26 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import userStateService from '../services/userStateService';
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
-import { formatCurrency, getCurrencyStrengthColor } from '../utils/formatters';
+import { getCurrencyStrengthColor } from '../utils/formatters';
 
 
 const CurrencyHeatmap = ({ strengthData }) => {
   const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
-  
+
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1">
       {currencies.map(currency => {
         const strength = strengthData.find(d => d.currency === currency)?.strength || 50;
-        const currencyInfo = formatCurrency(currency);
-        
+
         return (
           <div
             key={currency}
-            className={`p-3 rounded-lg text-center transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
+            className={`py-1 rounded-md transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
           >
-            <div className="text-lg mb-1">{currencyInfo.flag}</div>
-            <div className="text-xs font-medium">{currency}</div>
-            <div className="text-sm font-bold mt-1">{strength.toFixed(0)}</div>
+            <div className="flex items-center justify-between text-[10px] leading-none font-semibold px-2">
+              <span className="truncate pr-1">{currency}</span>
+              <span className="tabular-nums">{strength.toFixed(0)}</span>
+            </div>
           </div>
         );
       })}
@@ -238,59 +238,55 @@ const CurrencyStrengthMeter = () => {
 
 
   return (
-    <div className="card z-10 relative h-full flex flex-col">
+    <div className="widget-card px-3 pb-2 z-10 relative h-full flex flex-col">
       {/* Fixed Header Section */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 pt-1">
         {/* Header */}
-        <div className="widget-header flex items-center justify-between mb-2">
-        <div>
+        <div className="widget-header flex items-center justify-between mb-3">
+          <div>
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Currency Strength Meter</h2>
+            </div>
+            <div className="flex items-center space-x-2 mt-1">
+              {/* Connection status pill removed; status shown as top-right dot */}
+              {strengthData.length === 0 && subscriptions.size > 0 && (
+                <span className="text-xs text-blue-600">
+                  📊 Calculating strength for {settings.timeframe} timeframe...
+                </span>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Currency Strength Meter</h2>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              title="Dashboard Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            {/* Refresh icon removed per requirements */}
           </div>
-          <div className="flex items-center space-x-2 mt-1">
-            {/* Connection status pill removed; status shown as top-right dot */}
-            {strengthData.length === 0 && subscriptions.size > 0 && (
-              <span className="text-xs text-blue-600">
-                📊 Calculating strength for {settings.timeframe} timeframe...
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-            title="Dashboard Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-          {/* Refresh icon removed per requirements */}
-        </div>
         </div>
 
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-4">
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {strengthData.length > 0 ? (
           <>
             <CurrencyHeatmap strengthData={strengthData} />
 
             {/* Summary for heatmap mode */}
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="p-3 bg-success-50 rounded-lg">
-                <h4 className="text-sm font-medium text-success-700 mb-2">Strongest Currencies</h4>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="rounded-lg py-2 border border-green-300 dark:border-green-700 bg-transparent">
+                <h4 className="text-sm font-medium text-success-700 mb-2 px-2">Strongest Currencies</h4>
                 <div className="space-y-1">
                   {strengthData.slice(0, 2).map((item) => {
-                    const currencyInfo = formatCurrency(item.currency);
                     return (
-                      <div key={item.currency} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span>{currencyInfo.flag}</span>
-                          <span className="text-sm font-medium">{item.currency}</span>
-                        </div>
+                      <div key={item.currency} className="flex items-center justify-between px-2">
+                        <span className="text-sm font-medium">{item.currency}</span>
                         <span className="text-sm font-bold text-success-600">
                           {item.strength.toFixed(1)}
                         </span>
@@ -300,17 +296,13 @@ const CurrencyStrengthMeter = () => {
                 </div>
               </div>
 
-              <div className="p-3 bg-danger-50 rounded-lg">
-                <h4 className="text-sm font-medium text-danger-700 mb-2">Weakest Currencies</h4>
+              <div className="rounded-lg py-2 border border-red-300 dark:border-red-700 bg-transparent">
+                <h4 className="text-sm font-medium text-danger-700 mb-2 px-2">Weakest Currencies</h4>
                 <div className="space-y-1">
                   {strengthData.slice(-2).reverse().map((item) => {
-                    const currencyInfo = formatCurrency(item.currency);
                     return (
-                      <div key={item.currency} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span>{currencyInfo.flag}</span>
-                          <span className="text-sm font-medium">{item.currency}</span>
-                        </div>
+                      <div key={item.currency} className="flex items-center justify-between px-2">
+                        <span className="text-sm font-medium">{item.currency}</span>
                         <span className="text-sm font-bold text-danger-600">
                           {item.strength.toFixed(1)}
                         </span>

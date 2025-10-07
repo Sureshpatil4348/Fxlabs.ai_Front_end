@@ -237,20 +237,7 @@ const LotSizeCalculator = () => {
           <CardDescription className="text-sm text-gray-600 dark:text-gray-300 ">
             Calculate optimal position size based on account balance, risk tolerance, and stop-loss level
           </CardDescription>
-          {/* Live Status in top right corner */}
-          <div className="absolute top-2 right-2">
-            {isConnected ? (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></span>
-                Live
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-                <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1"></span>
-                Offline
-              </span>
-            )}
-          </div>
+          {/* Live/Offline status badge removed per request */}
         </CardHeader>
         
         <CardContent className="space-y-3">

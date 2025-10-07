@@ -502,7 +502,7 @@ const RSIOverboughtOversoldTracker = () => {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="mb-2">
+        <div className="mb-3">
         <div className="widget-header flex items-center justify-between text-[12px]">
           <div>
             <div className="flex items-center space-x-2">
@@ -614,7 +614,7 @@ const RSIOverboughtOversoldTracker = () => {
           // Watchlist View
           watchlistSymbols.length > 0 ? (
             <div>
-              <table className="w-full divide-y divide-gray-200">
+              <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-slate-700">
                   <tr>
                     <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -630,11 +630,11 @@ const RSIOverboughtOversoldTracker = () => {
                       Daily %
                     </th>
                     <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                      Action
+                      Delete
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-600 text-xs text-left">
+                <tbody className="bg-white dark:bg-slate-800 text-xs text-left">
                   {watchlistSymbols.map((symbol) => {
                     const isRemoving = removingSymbol === symbol;
                     return (
@@ -673,7 +673,7 @@ const RSIOverboughtOversoldTracker = () => {
           currentPairs.length > 0 ? (
             <div>
               {viewMode === 'table' ? (
-                <table className="w-full divide-y divide-gray-200 dark:divide-slate-600">
+                <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-slate-700">
                     <tr>
                       <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -690,7 +690,7 @@ const RSIOverboughtOversoldTracker = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-600 text-xs text-left">
+                  <tbody className="bg-white dark:bg-slate-800 text-xs text-left">
                     {currentPairs.map((pair) => (
                       <PairRow
                         key={pair.symbol}

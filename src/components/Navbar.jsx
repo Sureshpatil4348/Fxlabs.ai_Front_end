@@ -57,7 +57,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                     <img 
                       src={isDarkMode ? require('../assets/main.png') : require('../assets/blacklogo.png')} 
                       alt="FXLabs Logo" 
-                      className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain transition-all duration-300 group-hover:scale-105"
+                      className="w-16 h-16 sm:w-16 sm:h-16 md:w-16 md:h-16 object-contain transition-all duration-300 group-hover:scale-105"
                     />
                   </a>
                 </div>

@@ -51,7 +51,7 @@ const TrendingPairs = () => {
         <div className="widget-card px-4 pb-4 h-full flex flex-col z-1 relative">
             {/* Header */}
             <div className="flex-shrink-0">
-                <div className="mb-2">
+                <div className="mb-3">
                     <div className="widget-header flex items-center justify-between text-[12px]">
                         <div>
                             <div className="flex items-center space-x-2">
@@ -80,7 +80,7 @@ const TrendingPairs = () => {
             {/* Scrollable Content Area */}
             <div className="flex-1 overflow-y-auto min-h-0 p-1">
                 {rows.length > 0 ? (
-                    <table className="w-full divide-y divide-gray-200 dark:divide-slate-600">
+                    <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-slate-700">
                             <tr>
                                 <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -94,7 +94,7 @@ const TrendingPairs = () => {
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-600 text-xs text-left">
+                        <tbody className="bg-white dark:bg-slate-800 text-xs text-left">
                             {rows.slice(0, 12).map((row) => (
                                 <tr
                                     key={row.symbol}

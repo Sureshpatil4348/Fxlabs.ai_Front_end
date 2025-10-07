@@ -557,7 +557,7 @@ const AINewsAnalysis = () => {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="widget-header flex items-center justify-between mb-2 text-[12px]">
+        <div className="widget-header flex items-center justify-between mb-3 text-[12px]">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-4 h-4 text-primary-600" />
           <div>

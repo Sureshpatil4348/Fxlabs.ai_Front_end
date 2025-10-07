@@ -463,9 +463,9 @@ useEffect(() => {
   
   return (
     <>
-    <div className="widget-card h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
+    <div className="h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
-      <div className="mb-2 px-4">
+      <div className="mb-3 px-4">
         {/* Top Row - Title, Trading Signals, and Controls */}
         <div className="widget-header flex items-center justify-between mb-2">
           {/* Title */}
