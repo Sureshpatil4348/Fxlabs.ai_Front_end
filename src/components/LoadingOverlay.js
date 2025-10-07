@@ -45,17 +45,17 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry }) => {
   const statusInfo = getStatusInfo();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[9999]">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="mb-4 flex justify-center">
             {statusInfo.icon}
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {statusInfo.title}
           </h2>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
             {statusInfo.message}
           </p>
         </div>
@@ -63,7 +63,7 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry }) => {
         {/* Progress Bar */}
         {statusInfo.showProgress && (
           <div className="mb-6">
-            <div className="flex justify-between text-xs text-gray-500 mb-2">
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
               <span>Connection Progress</span>
               <span>Connecting...</span>
             </div>
@@ -79,12 +79,12 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry }) => {
         {/* Dashboard Connection Status */}
         {statusInfo.showProgress && (
           <div className="space-y-3 mb-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Connection Status:</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Connection Status:</h3>
             
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center space-x-2">
                 <span className="text-sm">🔗</span>
-                <span className="text-sm font-medium text-gray-700">WebSocket Connection</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">WebSocket Connection</span>
               </div>
               <span className="text-xs font-medium text-blue-600">
                 {status === 'CONNECTING' ? 'Connecting...' : 

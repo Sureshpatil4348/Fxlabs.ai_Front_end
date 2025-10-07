@@ -349,18 +349,21 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
         </div>
       </div>
 
-       {/* Suggested Pairs - all pairs in compact style */}
+       {/* Suggested Pairs - optimized for 5 pairs in single line */}
        {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
          <div className="mb-2">
-           <div className="flex flex-wrap gap-1">
-             {analysis.suggestedPairs.map(pair => (
+           <div className="flex items-center gap-0.5">
+             {analysis.suggestedPairs.slice(0, 5).map(pair => (
                <span 
                  key={pair}
-                 className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-[10px] whitespace-nowrap"
+                 className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-[9px] whitespace-nowrap"
                >
                  {formatSymbolDisplay(pair)}
                </span>
              ))}
+             {analysis.suggestedPairs.length > 5 && (
+               <span className="text-blue-600 dark:text-blue-400 font-bold text-base ml-0.5">...</span>
+             )}
            </div>
          </div>
        )}

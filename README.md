@@ -44,10 +44,20 @@ All features that relied on client-side calculations now expect server-provided 
 ## Recent Fixes (Latest)
 
 ### UI Layout Fixes
+- **Loading Overlay Z-Index Fix**: Fixed loading overlay appearing behind navbar on page reload
+  - Increased z-index from `z-50` to `z-[9999]` to ensure overlay appears above all content including navbar
+  - Added dark mode support for loading overlay modal
+  - Enhanced text colors for better dark mode visibility
+  - Files affected: `src/components/LoadingOverlay.js`
+
 - **AI News Analysis - Compact Card Design**: Streamlined news cards for better readability
   - **Country codes**: Replaced country flags with styled 3-letter country codes (USD, EUR, GBP, JPY, etc.)
   - **Countdown timer integration**: Timer now displays directly as a badge instead of separate "Starting Soon" label
-  - **Suggested pairs**: Shows all pairs in compact style (10px font, minimal padding) with wrap
+  - **Suggested pairs single line**: Optimized to show 5 pairs in single horizontal line with "..." for more
+    - Displays first 5 pairs with compact spacing (gap-0.5, px-1 padding, 9px font)
+    - If more than 5 pairs exist, shows light blue "..." indicator at the end
+    - Reduced padding and gap between badges to fit more pairs without cutting off
+    - No wrapping or cutting off - ensures all visible content fits properly
   - **Cleaner layout**: Removed AI Analysis explanation preview text to reduce card clutter
   - **Simplified AI section**: Shows only effect badge (Bullish/Bearish) without lengthy text
   - Orange-colored countdown timer badge for better visibility
