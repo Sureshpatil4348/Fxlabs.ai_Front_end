@@ -49,6 +49,23 @@ All features that relied on client-side calculations now expect server-provided 
   - Solution: Removed outer card wrapper, kept inner `widget-card` styling for consistent appearance
   - Files affected: `src/pages/Dashboard.jsx`
 
+- **Fixed Forex Market Time Zone Converter UI issues**: Enhanced user experience in MultiTimeAnalysis component
+  - Removed "Learn more about..." text for cleaner interface
+  - Made time display (showing current time like "2:42 PM") draggable like the rest of the timeline bar
+  - Changed time display from `pointer-events-none` to `cursor-grab` with proper mouse event handlers
+  - Added proper accessibility support with ARIA attributes and keyboard navigation
+  - Fixed `e.currentTarget.closest is not a function` error by using useRef for timeline container
+  - Improved time display alignment: properly centered icon, time, and day labels with consistent spacing and minimum width
+  - Fixed time display text wrapping: added `whitespace-nowrap` to keep time and AM/PM on single line, increased minimum width to 140px
+  - Files affected: `src/components/MultiTimeAnalysis.jsx`
+
+- **Fixed mobile navigation for Analysis/Tools tabs**: Added dashboard tab switcher to mobile menu
+  - Analysis/Tools tabs now visible in mobile menu when on dashboard
+  - Maintains same styling and behavior as desktop version
+  - Automatically closes mobile menu after tab selection for better UX
+  - Fixed mobile menu border radius from `rounded-full` to `rounded-[2rem]` for properly rounded edges
+  - Files affected: `src/components/Navbar.jsx`
+
 ## Market v2 WebSocket Integration (Latest)
 
 **IMPORTANT ARCHITECTURAL CHANGE**: The server has removed OHLC streaming and now provides polling-based market data with indicator streaming.

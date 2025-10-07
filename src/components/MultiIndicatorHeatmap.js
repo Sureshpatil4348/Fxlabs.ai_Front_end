@@ -44,31 +44,7 @@ const formatIndicatorDisplay = (indicator) => {
   return indicatorMap[indicator] || indicator;
 };
 
-// Map currency codes to flag emojis (best-effort for professional appearance)
-const currencyToFlag = (code) => {
-  const map = {
-    EUR: '🇪🇺',
-    USD: '🇺🇸',
-    GBP: '🇬🇧',
-    JPY: '🇯🇵',
-    CHF: '🇨🇭',
-    AUD: '🇦🇺',
-    CAD: '🇨🇦',
-    NZD: '🇳🇿',
-    XAU: '🥇', // Gold
-    XAG: '🥈', // Silver
-    BTC: '₿',
-    ETH: '◆',
-  };
-  return map[code] || '🏳️';
-};
-
-const getFlagsForPair = (symbolWithSuffix) => {
-  const clean = symbolWithSuffix.replace(/m$/, '').toUpperCase();
-  const base = clean.slice(0, 3);
-  const quote = clean.slice(3);
-  return { leftFlag: currencyToFlag(base), rightFlag: currencyToFlag(quote) };
-};
+// flag utilities removed
 
 // Ichimoku Clone calculation (simplified version) - keeping for potential future use
 // const calculateIchimokuClone = (bars) => {
@@ -163,8 +139,7 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
     return availableSymbols.map((sym) => {
       const clean = sym.replace(/m$/, '').toUpperCase();
       const pretty = clean.length === 6 ? `${clean.slice(0, 3)}/${clean.slice(3)}` : clean;
-      const { leftFlag, rightFlag } = getFlagsForPair(sym);
-      return { value: sym, label: pretty, leftFlag, rightFlag };
+      return { value: sym, label: pretty };
     });
   }, [availableSymbols]);
 
@@ -516,9 +491,9 @@ useEffect(() => {
                     if (!opt) return currentSymbol;
                     return (
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="text-base leading-none">{opt.leftFlag}</span>
-                        <span>{opt.label}</span>
-                        <span className="text-base leading-none">{opt.rightFlag}</span>
+                        {/* flags removed */}
+                        <span className="text-xs font-semibold">{opt.label}</span>
+                        {/* flags removed */}
                       </span>
                     );
                   })()}
@@ -543,9 +518,9 @@ useEffect(() => {
                         }`}
                       >
                         <span className="inline-flex items-center gap-2">
-                          <span className="text-base leading-none">{option.leftFlag}</span>
-                          <span>{option.label}</span>
-                          <span className="text-base leading-none ml-auto">{option.rightFlag}</span>
+                          {/* flags removed */}
+                          <span className="text-xs font-semibold">{option.label}</span>
+                          {/* flags removed */}
                         </span>
                       </button>
                     ))}

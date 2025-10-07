@@ -1,5 +1,5 @@
 import { Sun, Moon, Globe2 } from "lucide-react";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   ResponsiveContainer,
   Tooltip,
@@ -61,6 +61,7 @@ const ForexMarketTimeZone = () => {
   const [sliderPosition, setSliderPosition] = useState(66.67); // Default position (2/3 of timeline)
   const [isDragging, setIsDragging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const timelineRef = useRef(null);
 
   // Real-time updates
   useEffect(() => {
@@ -100,12 +101,9 @@ const ForexMarketTimeZone = () => {
   };
 
   const handleMouseMove = useCallback((e) => {
-    if (!isDragging) return;
+    if (!isDragging || !timelineRef.current) return;
     
-    const timeline = e.currentTarget.closest('.timeline-container');
-    if (!timeline) return;
-    
-    const rect = timeline.getBoundingClientRect();
+    const rect = timelineRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPosition(percentage);
@@ -567,13 +565,6 @@ const ForexMarketTimeZone = () => {
           <Globe2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <span className="font-semibold"> Forex Market Time Zone Converter</span>
         </h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Learn more about{" "}
-          <button className="text-indigo-600 dark:text-indigo-400 underline bg-transparent border-none cursor-pointer p-0">
-            Forex Market Hours
-          </button>
-          .
-        </p>
       </div>
 
       {/* Timezone Selector */}
@@ -631,7 +622,7 @@ const ForexMarketTimeZone = () => {
       </div>
 
       {/* Timeline */}
-      <div className="relative timeline-container" onMouseMove={handleMouseMove}>
+      <div ref={timelineRef} className="relative timeline-container" onMouseMove={handleMouseMove}>
         {/* Top hours - Real-time */}
         <div className="flex text-xs text-gray-500 dark:text-gray-400 justify-between px-6 mb-2">
           {Array.from({ length: 24 }).map((_, i) => {
@@ -704,15 +695,31 @@ const ForexMarketTimeZone = () => {
         
         {/* Time Display */}
         <div 
-          className="absolute -top-12 flex flex-col items-center pointer-events-none"
+          className="absolute -top-14 flex flex-col items-center cursor-grab active:cursor-grabbing"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+          role="slider"
+          tabIndex={0}
+          aria-label="Time indicator slider"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={sliderPosition}
+          onMouseDown={handleMouseDown}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+              const increment = e.key === 'ArrowRight' ? 5 : -5;
+              setSliderPosition(prev => Math.max(0, Math.min(100, prev + increment)));
+            }
+          }}
         >
-          <div className="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg text-center">
-            <div className="flex items-center justify-center gap-2">
-              {getTimeIcon(getTimeFromSliderPosition(sliderPosition), selectedTimezone)}
-              {formatTime(getTimeFromSliderPosition(sliderPosition), selectedTimezone)}
+          <div className="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg min-w-[140px]">
+            <div className="flex flex-col items-center justify-center gap-1">
+              <div className="flex items-center justify-center gap-2 text-lg font-semibold whitespace-nowrap">
+                {getTimeIcon(getTimeFromSliderPosition(sliderPosition), selectedTimezone)}
+                <span className="inline-flex">{formatTime(getTimeFromSliderPosition(sliderPosition), selectedTimezone)}</span>
+              </div>
+              <span className="text-xs text-center whitespace-nowrap">{getTimeFromSliderPosition(sliderPosition).toLocaleDateString('en-US', { weekday: 'long', timeZone: selectedTimezone })}</span>
             </div>
-            <span className="text-xs">{getTimeFromSliderPosition(sliderPosition).toLocaleDateString('en-US', { weekday: 'long', timeZone: selectedTimezone })}</span>
           </div>
         </div>
 

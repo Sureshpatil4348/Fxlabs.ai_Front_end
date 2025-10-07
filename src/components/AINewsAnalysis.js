@@ -552,6 +552,8 @@ const AINewsAnalysis = () => {
     }
   };
 
+  const hasNews = sortedNews.length > 0; // enable scrolling only when there is content
+
   return (
     <div className="widget-card px-3 pb-2 z-1 relative h-full flex flex-col">
       {/* Fixed Header Section */}
@@ -595,11 +597,11 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-1.5">
+      <div className={`flex-1 min-h-0 p-1.5 ${hasNews ? 'overflow-y-auto' : 'overflow-visible'}`}>
         {/* News Feed */}
         <div className="space-y-2">
         
-        {sortedNews.length > 0 ? (
+        {hasNews ? (
           sortedNews.map((news) => (
             <NewsCard
               key={news.id}
@@ -614,7 +616,7 @@ const AINewsAnalysis = () => {
             <p className="text-gray-500 dark:text-slate-400">Loading news data...</p>
           </div>
         ) : (
-          <div className="text-center py-8">
+          <div className="text-center pt-3 pb-6">
             <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
               <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
             </div>

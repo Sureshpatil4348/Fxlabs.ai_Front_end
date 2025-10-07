@@ -46,7 +46,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-full shadow-2xl shadow-black/10 dark:shadow-black/20">
             <div className="px-4 sm:px-6 lg:px-8 relative">
-              <div className="flex justify-between items-center h-16 sm:h-18 gap-4 sm:gap-6 lg:gap-8">
+              <div className="flex justify-between items-center h-[55px] sm:h-[68px] gap-4 sm:gap-6 lg:gap-8">
                 {/* Logo Section - Raw Logo */}
                 <div className="flex items-center">
                   <a 
@@ -57,7 +57,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                     <img 
                       src={isDarkMode ? require('../assets/main.png') : require('../assets/blacklogo.png')} 
                       alt="FXLabs Logo" 
-                      className="w-16 h-16 sm:w-16 sm:h-16 md:w-16 md:h-16 object-contain transition-all duration-300 group-hover:scale-105"
+                      className="w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 object-contain transition-all duration-300 group-hover:scale-105"
                     />
                   </a>
                 </div>
@@ -200,10 +200,44 @@ const Navbar = ({ activeTab, onChangeTab }) => {
 
           {/* Mobile Menu Overlay */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden mt-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-full shadow-2xl shadow-black/10 dark:shadow-black/20">
+            <div className="lg:hidden mt-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-[2rem] shadow-2xl shadow-black/10 dark:shadow-black/20">
               <div className="px-6 py-4">
                 {/* Simple Menu List */}
                 <div className="space-y-2">
+                  {/* Show Analysis/Tools tabs when ON dashboard */}
+                  {isOnDashboard && (
+                    <div className="flex items-center justify-center gap-2 bg-emerald-500/15 dark:bg-emerald-400/15 border border-emerald-500/30 dark:border-emerald-400/30 rounded-full p-1 backdrop-blur-md shadow-sm mb-3">
+                      <button
+                        onClick={() => {
+                          onChangeTab && onChangeTab('analysis')
+                          setIsMobileMenuOpen(false)
+                        }}
+                        className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
+                          activeTab === 'analysis'
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                        }`}
+                        style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
+                      >
+                        Analysis
+                      </button>
+                      <button
+                        onClick={() => {
+                          onChangeTab && onChangeTab('tools')
+                          setIsMobileMenuOpen(false)
+                        }}
+                        className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
+                          activeTab === 'tools'
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                        }`}
+                        style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
+                      >
+                        Tools
+                      </button>
+                    </div>
+                  )}
+
                   {!isOnDashboard && (
                     <>
                       <button
