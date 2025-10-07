@@ -538,7 +538,7 @@ const ForexMarketTimeZone = () => {
   ];
 
   return (
-  <div className="bg-white dark:bg-gray-800 p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-md dark:shadow-lg overflow-x-hidden">
+  <div className="bg-white dark:bg-gray-800 p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-md dark:shadow-lg overflow-x-auto lg:overflow-x-hidden">
       {/* Time Format Toggle - Top Right */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <span className="text-xs text-gray-500 dark:text-gray-400">12h</span>
@@ -622,7 +622,7 @@ const ForexMarketTimeZone = () => {
       </div>
 
       {/* Timeline */}
-      <div ref={timelineRef} className="relative timeline-container" onMouseMove={handleMouseMove}>
+      <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
         {/* Top hours - Real-time */}
         <div className="flex text-xs text-gray-500 dark:text-gray-400 justify-between px-6 mb-2">
           {Array.from({ length: 24 }).map((_, i) => {
@@ -724,7 +724,7 @@ const ForexMarketTimeZone = () => {
         </div>
 
         {/* Current Trading Overlaps */}
-        <div className="mt-4 mb-3">
+        <div className="mt-4 mb-3 min-w-[700px] lg:min-w-0">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 tools-heading">Current Trading Overlaps:</h3>
           <div className="flex flex-wrap gap-2">
             {getTradingOverlaps().length > 0 ? (
@@ -740,7 +740,7 @@ const ForexMarketTimeZone = () => {
         </div>
 
         {/* Market Rows */}
-        <div className="space-y-3 mt-3">
+        <div className="space-y-3 mt-3 min-w-[800px] lg:min-w-0">
           {markets.map((m, i) => (
             <div
               key={i}

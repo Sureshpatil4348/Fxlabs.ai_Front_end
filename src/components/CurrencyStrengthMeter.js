@@ -17,7 +17,7 @@ const CurrencyHeatmap = ({ strengthData }) => {
         return (
           <div
             key={currency}
-            className={`py-1 rounded-md transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
+            className={`py-3 rounded-md transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
           >
             <div className="flex items-center justify-between text-[10px] leading-none font-semibold px-2">
               <span className="truncate pr-1">{currency}</span>

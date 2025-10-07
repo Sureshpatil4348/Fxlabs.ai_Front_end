@@ -44,6 +44,15 @@ All features that relied on client-side calculations now expect server-provided 
 ## Recent Fixes (Latest)
 
 ### UI Layout Fixes
+- **Mobile Tools Tab Improvements**: Enhanced mobile responsiveness for all tools widgets
+  - Added proper scrolling to all three widgets (Lot Size Calculator, Quantum Analysis, Multi Time Analysis) on mobile
+  - Reduced Multi Indicator Heatmap height from 700px to 550px on mobile for better viewability
+  - Fixed heading overlap issue in Quantum Analysis: header now wraps properly on mobile with flex-wrap
+  - All widgets now have fixed heights with internal scrolling on mobile, while desktop layout remains unchanged
+  - Desktop view completely unaffected - maintains original flex-based layout
+  - Files affected: `src/pages/Dashboard.jsx`, `src/components/MultiIndicatorHeatmap.js`
+
+- Adjusted Tools tab sizing: increased `LotSizeCalculator` height and reduced `MultiIndicatorHeatmap` height to improve readability and match visual balance in the left column. Files: `src/pages/Dashboard.jsx`, `src/components/MultiIndicatorHeatmap.js`.
 - **Fixed Quantum Analysis card-in-card issue**: Removed duplicate card wrapper in Dashboard.jsx for MultiIndicatorHeatmap component
   - Issue: MultiIndicatorHeatmap had its own `widget-card` styling but was also wrapped in another card container
   - Solution: Removed outer card wrapper, kept inner `widget-card` styling for consistent appearance
@@ -161,7 +170,12 @@ All technical indicator calculations are now performed server-side:
 ### Dashboard Layout Update (Latest)
 
 - The RSI Correlation placeholder has been replaced with `CurrencyStrengthMeter` on the Dashboard.
-- Mobile: placed in Section 3 between AI News and RSI Tracker.
+- Mobile (Analysis tab) order updated:
+  1. TradingView
+  2. Currency Strength Meter
+  3. Trending Pairs
+  4. RSI Tracker
+  5. AI News Analysis
 - Desktop: placed in the bottom-left area (row-start 8, col-span 7, row-span 5).
 - Component: `src/components/CurrencyStrengthMeter.js`.
 
@@ -280,6 +294,7 @@ Example:
 - **Left column**: `LotSizeCalculator` (top) and `MultiIndicatorHeatmap` (bottom) share the same column width
 - **Right column**: `MultiTimeAnalysis` now spans the full height for better use of space
 - **Files affected**: `src/pages/Dashboard.jsx`
+ - Mobile stacking fixed: removed full-height constraints on small screens, set a reasonable fixed height for `MultiIndicatorHeatmap`, and allowed `MultiTimeAnalysis` to shrink-to-fit on mobile while preserving desktop behavior.
 
 ### UI Polish: Lot Size Calculator segmented pills (Latest)
 - **Compact pills**: Instrument type options (Forex, Commodities, Crypto) redesigned as compact pill-style segmented controls

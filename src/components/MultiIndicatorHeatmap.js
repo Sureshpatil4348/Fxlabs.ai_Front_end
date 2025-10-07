@@ -442,15 +442,16 @@ useEffect(() => {
       {/* Header */}
       <div className="mb-3 px-4">
         {/* Top Row - Title, Trading Signals, and Controls */}
-        <div className="widget-header flex items-center justify-between mb-2">
+        {/* Mobile: wrap and stack, Desktop: single row */}
+        <div className="widget-header flex flex-wrap items-center justify-between gap-2 mb-2">
           {/* Title */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 shrink-0">
             <img src={quantImage} alt="Quantum" className="w-5 h-5" />
-            <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
+            <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-0.5 flex-wrap gap-1">
           {/* Alert Bell Icon */}
           {user && (
             <div className="flex items-center">
@@ -479,7 +480,7 @@ useEffect(() => {
           )}
           
           {/* Symbol Dropdown */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-0.5">
             <div className="relative" ref={symbolDropdownRef}>
               <div className="relative">
                 <button
@@ -531,7 +532,7 @@ useEffect(() => {
           </div>
           
           {/* Style Dropdown */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-0.5">
             <div className="relative">
               <div 
                 onMouseEnter={(e) => {
@@ -652,9 +653,9 @@ useEffect(() => {
         <table className="w-full border-collapse min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-200 dark:border-slate-600">
-              <th className="text-left py-0.5 sm:py-1 px-1 font-bold text-gray-700 dark:text-slate-300 text-sm w-20"></th>
+              <th className="text-left py-0.5 sm:py-0.5 px-0.5 font-bold text-gray-700 dark:text-slate-300 text-sm w-20"></th>
               {indicators.map(indicator => (
-                <th key={indicator} className="text-center py-0.5 sm:py-1 px-0.5 text-gray-700 dark:text-slate-300">
+                <th key={indicator} className="text-center py-0.5 sm:py-0.5 px-0.5 text-gray-700 dark:text-slate-300">
                   <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
                 </th>
               ))}
@@ -667,8 +668,8 @@ useEffect(() => {
               const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
               return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
               <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                <td className="py-0.5 sm:py-1 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
-                  <div className="flex items-center space-x-1 ml-2">
+                <td className="py-0.5 sm:py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
+                  <div className="flex items-center space-x-0.5 ml-2">
                     <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>
                   </div>
                 </td>
@@ -680,7 +681,7 @@ useEffect(() => {
                   const bgColor = signal === 'buy' ? '#03c05d' : signal === 'sell' ? '#e03f4c' : '#9ca3af';
                   
                   return (
-                    <td key={indicator} className="text-center py-1 px-1">
+                    <td key={indicator} className="text-center py-0.5 px-0.5">
                       <div className="relative h-full flex items-center justify-center">
                         <button 
                           className=""
@@ -705,7 +706,7 @@ useEffect(() => {
                             minWidth: window.innerWidth < 768 ? '48px' : '64px',
                             outline: 'none',
                             overflow: 'hidden',
-                            padding: window.innerWidth < 768 ? '4px 6px' : '6px 8px',
+                            padding: window.innerWidth < 768 ? '3px 5px' : '5px 7px',
                             position: 'relative',
                             textAlign: 'center',
                             textTransform: 'none',
@@ -735,7 +736,7 @@ useEffect(() => {
                             minWidth: window.innerWidth < 768 ? '48px' : '64px',
                             outline: 'none',
                             overflow: 'hidden',
-                            padding: window.innerWidth < 768 ? '4px 6px' : '6px 8px',
+                            padding: window.innerWidth < 768 ? '3px 5px' : '5px 7px',
                             position: 'relative',
                             textAlign: 'center',
                             textTransform: 'none',
@@ -764,11 +765,11 @@ useEffect(() => {
               const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
               return (
                 <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(supportedTfs)].filter(tf => tf !== '1W').length + 1) + ')' }}>
-              <td className="py-0.5 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs">
-                <div className="flex items-center space-x-1 ml-2">
+              <td className="py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
+                <div className="flex items-center space-x-0.5 ml-2">
                 </div>
               </td>
-              <td colSpan={indicators.length} className="py-1 px-1">
+              <td colSpan={indicators.length} className="py-0.5 px-0.5">
                 <div className="flex items-center justify-center">
                   {(() => {
                     const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
@@ -778,7 +779,7 @@ useEffect(() => {
                     const sellPct = typeof ov?.sell_percent === 'number' ? ov.sell_percent : (100 - buyPct);
                     
                     return (
-                      <div className="flex items-center gap-3 w-full">
+                      <div className="flex items-center gap-2.5 w-full">
                         <span 
                           className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap -ml-16"
                         >BUY {buyPct.toFixed(1)}%</span>

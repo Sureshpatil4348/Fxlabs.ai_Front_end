@@ -96,19 +96,24 @@
                   />
                 </div>
 
-                {/* Section 2 - AI News Analysis */}
-                <div className="h-80">
-                  <AINewsAnalysis />
-                </div>
-
-                {/* Section 3 - Currency Strength Meter */}
+                {/* Section 2 - Currency Strength Meter */}
                 <div className="h-80">
                   <CurrencyStrengthMeter />
+                </div>
+
+                {/* Section 3 - Trending Pairs */}
+                <div className="h-64">
+                  <TrendingPairs />
                 </div>
 
                 {/* Section 4 - RSI Tracker */}
                 <div className="h-64">
                   <RSIOverboughtOversoldTracker />
+                </div>
+
+                {/* Section 5 - AI News Analysis */}
+                <div className="h-80">
+                  <AINewsAnalysis />
                 </div>
               </div>
 
@@ -148,17 +153,21 @@
           ) : (
             <>
               {/* Tools Tab Content */}
-              <div className="h-full flex flex-col gap-2">
+              {/* Mobile: natural stacking, Desktop: h-full flex layout */}
+              <div className="lg:h-full flex flex-col gap-2">
                 {/* Two-column layout: Left stacks Lot Size + Heatmap; Right spans full height with Multi Time Analysis */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-0">
+                {/* Mobile: grid auto-flow, Desktop: grid with flex-1 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:flex-1 lg:min-h-0">
                   {/* Left Column: Lot Size (top) + Heatmap (bottom) */}
-                  <div className="flex flex-col gap-2 min-h-0">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-60">
+                  <div className="flex flex-col gap-2 lg:min-h-0">
+                    {/* Lot Size Calculator - Mobile: fixed height with internal scroll, Desktop: h-72 */}
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[450px] lg:h-72">
                       <div className="h-full overflow-y-auto">
                         <LotSizeCalculator />
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 flex-1 min-h-0">
+                    {/* Multi Indicator Heatmap - Mobile: reduced height with internal scroll, Desktop: flex-1 */}
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[420px] lg:h-[28rem] lg:flex-1 lg:min-h-0">
                       <div className="h-full overflow-auto">
                         <MultiIndicatorHeatmap />
                       </div>
@@ -166,8 +175,9 @@
                   </div>
 
                   {/* Right Column: Multi Time Analysis spanning full height */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 min-h-0">
-                    <div className="h-full overflow-y-auto overflow-x-hidden">
+                  {/* Mobile: fixed height with internal scroll, Desktop: min-h-0 flex behavior */}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[1100px] lg:h-auto lg:min-h-0">
+                    <div className="h-full overflow-y-auto overflow-x-auto lg:overflow-x-hidden">
                       <MultiTimeAnalysis />
                     </div>
                   </div>
