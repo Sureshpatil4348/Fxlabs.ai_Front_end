@@ -44,12 +44,13 @@ All features that relied on client-side calculations now expect server-provided 
 ## Recent Fixes (Latest)
 
 ### UI Layout Fixes
-- **AI News Analysis - Enhanced News Preview**: Multiple improvements for better user experience
+- **AI News Analysis - Compact Card Design**: Streamlined news cards for better readability
   - **Country codes**: Replaced country flags with styled 3-letter country codes (USD, EUR, GBP, JPY, etc.)
-  - **Suggested pairs styling**: Applied light blue fill color to suggested pairs badges
-  - **News preview with "Read more"**: Added truncated AI analysis explanation (120 chars) on news cards
-  - **Interactive "Read more" button**: Clicking the button with three dots (•••) opens the detailed modal
-  - Clean text preview removes markdown formatting for better readability
+  - **Countdown timer integration**: Timer now displays directly as a badge instead of separate "Starting Soon" label
+  - **Suggested pairs**: Shows all pairs in compact style (10px font, minimal padding) with wrap
+  - **Cleaner layout**: Removed AI Analysis explanation preview text to reduce card clutter
+  - **Simplified AI section**: Shows only effect badge (Bullish/Bearish) without lengthy text
+  - Orange-colored countdown timer badge for better visibility
   - Files affected: `src/components/AINewsAnalysis.js`
 
 - **Currency Strength Meter Improvements**: Increased currency card height

@@ -314,52 +314,46 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-1">
-            <span className="text-xs font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
-              {news.impact?.toUpperCase() || 'MEDIUM'}
-            </span>
-            {eventTiming.isUpcoming && (
-              <span className={"text-xs px-2 py-1 rounded-full font-medium bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200"}>
-                {eventTiming.isStartingSoon ? 'STARTING SOON' : 'UPCOMING'}
-              </span>
-            )}
-            {eventTiming.isPast && (
-              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
-                RELEASED
-              </span>
-            )}
-          </div>
+           <div className="flex items-center space-x-2 mb-1">
+             <span className="text-xs font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
+             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
+               {news.impact?.toUpperCase() || 'MEDIUM'}
+             </span>
+             {eventTiming.isUpcoming && (
+               <span className="text-xs px-2 py-1 rounded-full font-medium bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">
+                 <CountdownTimer newsItem={news} />
+               </span>
+             )}
+             {eventTiming.isPast && (
+               <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
+                 RELEASED
+               </span>
+             )}
+           </div>
           
           <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">
             {news.title.split('(')[0]}
           </h3>
           
-          <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-slate-400">
-            <div className="flex items-center space-x-1">
-              <Clock className="w-3 h-3" />
-              <span>{date} {time}</span>
-            </div>
-            {eventTiming.isUpcoming && (
-              <div className="flex items-center space-x-1">
-                <Clock className="w-3 h-3 text-orange-500" />
-                <CountdownTimer newsItem={news} />
-              </div>
-            )}
-            {eventTiming.isPast && (
-              <div className="text-gray-600 dark:text-slate-400 font-medium">
-                {eventTiming.timingText}
-              </div>
-            )}
-          </div>
+           <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-slate-400">
+             <div className="flex items-center space-x-1">
+               <Clock className="w-3 h-3" />
+               <span>{date} {time}</span>
+             </div>
+             {eventTiming.isPast && (
+               <div className="text-gray-600 dark:text-slate-400 font-medium">
+                 {eventTiming.timingText}
+               </div>
+             )}
+           </div>
         </div>
       </div>
 
-       {/* Suggested Pairs - compact single line, max 4 pairs */}
+       {/* Suggested Pairs - all pairs in compact style */}
        {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
          <div className="mb-2">
-           <div className="flex items-center gap-1 overflow-hidden">
-             {analysis.suggestedPairs.slice(0, 4).map(pair => (
+           <div className="flex flex-wrap gap-1">
+             {analysis.suggestedPairs.map(pair => (
                <span 
                  key={pair}
                  className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-[10px] whitespace-nowrap"
@@ -367,18 +361,13 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
                  {formatSymbolDisplay(pair)}
                </span>
              ))}
-             {analysis.suggestedPairs.length > 4 && (
-               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                 +{analysis.suggestedPairs.length - 4}
-               </span>
-             )}
            </div>
          </div>
        )}
 
-      {/* Quick Analysis Preview */}
+      {/* Quick Analysis Preview - Compact */}
       {analysis && (
-        <div className="border-t pt-2 space-y-2">
+        <div className="border-t pt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />
@@ -401,28 +390,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               </span>
             </div>
           </div>
-          
-          {/* Analysis Explanation Preview with Read More */}
-          {analysis.explanation && (
-            <div className="mt-2">
-              <p className="text-xs text-gray-700 dark:text-slate-300 line-clamp-2">
-                {analysis.explanation.replace(/\*\*/g, '').substring(0, 120)}
-                {analysis.explanation.length > 120 && '...'}
-              </p>
-              {analysis.explanation.length > 120 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShowDetails(news);
-                  }}
-                  className="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center space-x-1 transition-colors"
-                >
-                  <span>Read more</span>
-                  <span className="text-sm">•••</span>
-                </button>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
