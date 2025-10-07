@@ -44,9 +44,28 @@ All features that relied on client-side calculations now expect server-provided 
 ## Recent Fixes (Latest)
 
 ### UI Layout Fixes
+- **AI News Analysis - Enhanced News Preview**: Multiple improvements for better user experience
+  - **Country codes**: Replaced country flags with styled 3-letter country codes (USD, EUR, GBP, JPY, etc.)
+  - **Suggested pairs styling**: Applied light blue fill color to suggested pairs badges
+  - **News preview with "Read more"**: Added truncated AI analysis explanation (120 chars) on news cards
+  - **Interactive "Read more" button**: Clicking the button with three dots (•••) opens the detailed modal
+  - Clean text preview removes markdown formatting for better readability
+  - Files affected: `src/components/AINewsAnalysis.js`
+
+- **Currency Strength Meter Improvements**: Increased currency card height
+  - Currency card padding increased from `py-1` to `py-3` for better space utilization
+  - Reduces excessive bottom spacing in the component
+  - Files affected: `src/components/CurrencyStrengthMeter.js`
+
+- **Multi Time Analysis - Mobile Scroll Enhancement**: Added horizontal scroll for better mobile viewing
+  - Timeline and market rows now properly scroll horizontally on mobile
+  - Desktop view remains unchanged with no horizontal scroll
+  - Minimum width applied only on mobile (< lg breakpoint)
+  - Files affected: `src/components/MultiTimeAnalysis.jsx`
+
 - **Mobile Tools Tab Improvements**: Enhanced mobile responsiveness for all tools widgets
   - Added proper scrolling to all three widgets (Lot Size Calculator, Quantum Analysis, Multi Time Analysis) on mobile
-  - Reduced Multi Indicator Heatmap height from 700px to 550px on mobile for better viewability
+  - Multi Indicator Heatmap height optimized to 420px on mobile for better viewability
   - Fixed heading overlap issue in Quantum Analysis: header now wraps properly on mobile with flex-wrap
   - All widgets now have fixed heights with internal scrolling on mobile, while desktop layout remains unchanged
   - Desktop view completely unaffected - maintains original flex-based layout

@@ -129,7 +129,6 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const { time, date } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
-  const currencyInfo = formatCurrency(news.currency);
 
   return (
     <div 
@@ -144,7 +143,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
         {/* Modal Header */}
         <div className="flex items-center justify-between py-2 px-4 border-b dark:border-slate-600">
           <div className="flex items-center space-x-2">
-            <span className="text-xl">{currencyInfo.flag}</span>
+            <span className="text-sm font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
             <div className="flex flex-row items-center w-full justify-between">
               <h2 id="news-modal-title" className="text-sm font-semibold text-gray-900 dark:text-slate-100">{news.title.split('(')[0]}</h2>
             </div>
@@ -204,14 +203,14 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Suggested Pairs - compact chips, heading removed */}
+                {/* Suggested Pairs - all pairs with wrap in modal */}
                 {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
                   <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
                     <div className="flex flex-wrap gap-1.5">
                       {analysis.suggestedPairs.map(pair => (
                         <span 
                           key={pair}
-                          className="px-2.5 py-1.5 bg-white dark:bg-slate-600 border border-primary-200 dark:border-slate-500 text-primary-700 dark:text-primary-300 rounded-lg font-medium text-sm"
+                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-xs"
                         >
                           {formatSymbolDisplay(pair)}
                         </span>
@@ -281,7 +280,6 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 
 const NewsCard = ({ news, analysis, onShowDetails }) => {
   const { time, date } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
-  const currencyInfo = formatCurrency(news.currency);
   
   // Get event timing information
   const eventTiming = getEventTiming(news);
@@ -317,7 +315,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-1">
-            <span className="text-base">{currencyInfo.flag}</span>
+            <span className="text-xs font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
               {news.impact?.toUpperCase() || 'MEDIUM'}
             </span>
@@ -357,21 +355,26 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
         </div>
       </div>
 
-      {/* Suggested Pairs - compact chips only */}
-      {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
-        <div className="mb-2">
-          <div className="flex flex-wrap gap-1.5">
-            {analysis.suggestedPairs.map(pair => (
-              <span 
-                key={pair}
-                className="px-2.5 py-1.5 bg-white dark:bg-slate-700 border border-primary-200 dark:border-slate-600 text-primary-700 dark:text-primary-300 rounded-lg font-medium text-xs"
-              >
-                {formatSymbolDisplay(pair)}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+       {/* Suggested Pairs - compact single line, max 4 pairs */}
+       {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+         <div className="mb-2">
+           <div className="flex items-center gap-1 overflow-hidden">
+             {analysis.suggestedPairs.slice(0, 4).map(pair => (
+               <span 
+                 key={pair}
+                 className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-[10px] whitespace-nowrap"
+               >
+                 {formatSymbolDisplay(pair)}
+               </span>
+             ))}
+             {analysis.suggestedPairs.length > 4 && (
+               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                 +{analysis.suggestedPairs.length - 4}
+               </span>
+             )}
+           </div>
+         </div>
+       )}
 
       {/* Quick Analysis Preview */}
       {analysis && (
@@ -399,6 +402,27 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
             </div>
           </div>
           
+          {/* Analysis Explanation Preview with Read More */}
+          {analysis.explanation && (
+            <div className="mt-2">
+              <p className="text-xs text-gray-700 dark:text-slate-300 line-clamp-2">
+                {analysis.explanation.replace(/\*\*/g, '').substring(0, 120)}
+                {analysis.explanation.length > 120 && '...'}
+              </p>
+              {analysis.explanation.length > 120 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowDetails(news);
+                  }}
+                  className="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center space-x-1 transition-colors"
+                >
+                  <span>Read more</span>
+                  <span className="text-sm">•••</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
