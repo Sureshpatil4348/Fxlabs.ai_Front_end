@@ -6,7 +6,6 @@ import {
   AlertCircle, 
   RefreshCw,
   Brain,
-  Target,
   X
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
@@ -130,7 +129,6 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const { time, date } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
-  const currencyInfo = formatCurrency(news.currency);
 
   return (
     <div 
@@ -145,7 +143,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
         {/* Modal Header */}
         <div className="flex items-center justify-between py-2 px-4 border-b dark:border-slate-600">
           <div className="flex items-center space-x-2">
-            <span className="text-xl">{currencyInfo.flag}</span>
+            <span className="text-sm font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
             <div className="flex flex-row items-center w-full justify-between">
               <h2 id="news-modal-title" className="text-sm font-semibold text-gray-900 dark:text-slate-100">{news.title.split('(')[0]}</h2>
             </div>
@@ -205,18 +203,14 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Suggested Pairs - Moved to second position in AI Analysis */}
+                {/* Suggested Pairs - all pairs with wrap in modal */}
                 {analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
                   <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <div className="text-gray-700 dark:text-slate-300 font-medium mb-2 flex items-center space-x-2 text-sm">
-                      <Target className="w-4 h-4 text-primary-600" />
-                      <span>Suggested Pairs to Watch:</span>
-                    </div>
                     <div className="flex flex-wrap gap-1.5">
                       {analysis.suggestedPairs.map(pair => (
                         <span 
                           key={pair}
-                          className="px-2.5 py-1.5 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm"
+                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-xs"
                         >
                           {formatSymbolDisplay(pair)}
                         </span>
@@ -286,7 +280,6 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
 
 const NewsCard = ({ news, analysis, onShowDetails }) => {
   const { time, date } = formatNewsLocalDateTime({ dateIso: news.date, originalTime: news.originalTime });
-  const currencyInfo = formatCurrency(news.currency);
   
   // Get event timing information
   const eventTiming = getEventTiming(news);
@@ -321,70 +314,63 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-1">
-            <span className="text-base">{currencyInfo.flag}</span>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
-              {news.impact?.toUpperCase() || 'MEDIUM'}
-            </span>
-            {eventTiming.isUpcoming && (
-              <span className={"text-xs px-2 py-1 rounded-full font-medium bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200"}>
-                {eventTiming.isStartingSoon ? 'STARTING SOON' : 'UPCOMING'}
-              </span>
-            )}
-            {eventTiming.isPast && (
-              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
-                RELEASED
-              </span>
-            )}
-          </div>
+           <div className="flex items-center space-x-2 mb-1">
+             <span className="text-xs font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
+             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
+               {news.impact?.toUpperCase() || 'MEDIUM'}
+             </span>
+             {eventTiming.isUpcoming && (
+               <span className="text-xs px-2 py-1 rounded-full font-medium bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">
+                 <CountdownTimer newsItem={news} />
+               </span>
+             )}
+             {eventTiming.isPast && (
+               <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
+                 RELEASED
+               </span>
+             )}
+           </div>
           
           <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">
             {news.title.split('(')[0]}
           </h3>
           
-          <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-slate-400">
-            <div className="flex items-center space-x-1">
-              <Clock className="w-3 h-3" />
-              <span>{date} {time}</span>
-            </div>
-            {eventTiming.isUpcoming && (
-              <div className="flex items-center space-x-1">
-                <Clock className="w-3 h-3 text-orange-500" />
-                <CountdownTimer newsItem={news} />
-              </div>
-            )}
-            {eventTiming.isPast && (
-              <div className="text-gray-600 dark:text-slate-400 font-medium">
-                {eventTiming.timingText}
-              </div>
-            )}
-          </div>
+           <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-slate-400">
+             <div className="flex items-center space-x-1">
+               <Clock className="w-3 h-3" />
+               <span>{date} {time}</span>
+             </div>
+             {eventTiming.isPast && (
+               <div className="text-gray-600 dark:text-slate-400 font-medium">
+                 {eventTiming.timingText}
+               </div>
+             )}
+           </div>
         </div>
       </div>
 
-      {/* Suggested Pairs to Watch */}
-      {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
-        <div className="mb-2">
-          <div className="flex items-center space-x-2 mb-2">
-            <Target className="w-4 h-4 text-primary-600" />
-            <span className="text-xs font-semibold text-gray-900 dark:text-slate-100">Suggested Pairs to Watch</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {analysis.suggestedPairs.map(pair => (
-              <span 
-                key={pair}
-                className="px-2.5 py-1.5 bg-primary-100 text-primary-700 rounded-lg font-medium text-xs"
-              >
-                {formatSymbolDisplay(pair)}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+       {/* Suggested Pairs - optimized for 5 pairs in single line */}
+       {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
+         <div className="mb-2">
+           <div className="flex items-center gap-0.5">
+             {analysis.suggestedPairs.slice(0, 5).map(pair => (
+               <span 
+                 key={pair}
+                 className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-[9px] whitespace-nowrap"
+               >
+                 {formatSymbolDisplay(pair)}
+               </span>
+             ))}
+             {analysis.suggestedPairs.length > 5 && (
+               <span className="text-blue-600 dark:text-blue-400 font-bold text-base ml-0.5">...</span>
+             )}
+           </div>
+         </div>
+       )}
 
-      {/* Quick Analysis Preview */}
+      {/* Quick Analysis Preview - Compact */}
       {analysis && (
-        <div className="border-t pt-2 space-y-2">
+        <div className="border-t pt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />
@@ -407,7 +393,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               </span>
             </div>
           </div>
-          
         </div>
       )}
     </div>
@@ -561,12 +546,14 @@ const AINewsAnalysis = () => {
     }
   };
 
+  const hasNews = sortedNews.length > 0; // enable scrolling only when there is content
+
   return (
     <div className="widget-card px-3 pb-2 z-1 relative h-full flex flex-col">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="widget-header flex items-center justify-between mb-2 text-[12px]">
+        <div className="widget-header flex items-center justify-between mb-3 text-[12px]">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-4 h-4 text-primary-600" />
           <div>
@@ -604,11 +591,11 @@ const AINewsAnalysis = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-1.5">
+      <div className={`flex-1 min-h-0 p-1.5 ${hasNews ? 'overflow-y-auto' : 'overflow-visible'}`}>
         {/* News Feed */}
         <div className="space-y-2">
         
-        {sortedNews.length > 0 ? (
+        {hasNews ? (
           sortedNews.map((news) => (
             <NewsCard
               key={news.id}
@@ -623,7 +610,7 @@ const AINewsAnalysis = () => {
             <p className="text-gray-500 dark:text-slate-400">Loading news data...</p>
           </div>
         ) : (
-          <div className="text-center py-8">
+          <div className="text-center pt-3 pb-6">
             <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
               <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
             </div>

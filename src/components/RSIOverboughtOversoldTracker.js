@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, Settings, Activity, Bell, Star, List, Trash2, Loader2, Plus, Search, X } from 'lucide-react';
+import { TrendingDown, TrendingUp, Settings, Activity, Bell, Star, Trash2, Loader2 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
 import ExpandablePairRow from './ExpandablePairRow';
@@ -139,10 +139,10 @@ const RSIOverboughtOversoldTracker = () => {
     rsiOverbought: settings.rsiOverbought,
     rsiOversold: settings.rsiOversold
   });
-  // Manual add-to-watchlist modal state (Watchlist mode)
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [addingSymbol, setAddingSymbol] = useState(null);
+  // Manual add-to-watchlist modal state (Watchlist mode) - Commented out for future use
+  // const [showAddModal, setShowAddModal] = useState(false);
+  // const [searchTerm, setSearchTerm] = useState('');
+  // const [addingSymbol, setAddingSymbol] = useState(null);
   const lastPricingKeyRef = React.useRef('');
 
   // Load tab state on component mount
@@ -346,42 +346,44 @@ const RSIOverboughtOversoldTracker = () => {
   // Get watchlist symbols
   const watchlistSymbols = getWishlistArray();
 
-  // Derive available pairs from RSI Tracker store's autoSubscribeSymbols (convert 'EURUSDm' -> 'EURUSD')
-  const availablePairs = React.useMemo(() => {
-    const symbols = settings?.autoSubscribeSymbols || [];
-    return symbols
-      .map((s) => (s?.toUpperCase().endsWith('M') ? s.toUpperCase().slice(0, -1) : s.toUpperCase()))
-      .filter(Boolean);
-  }, [settings?.autoSubscribeSymbols]);
+  // Derive available pairs from RSI Tracker store's autoSubscribeSymbols (convert 'EURUSDm' -> 'EURUSD') - Commented out for future use
+  // const availablePairs = React.useMemo(() => {
+  //   const symbols = settings?.autoSubscribeSymbols || [];
+  //   return symbols
+  //     .map((s) => (s?.toUpperCase().endsWith('M') ? s.toUpperCase().slice(0, -1) : s.toUpperCase()))
+  //     .filter(Boolean);
+  // }, [settings?.autoSubscribeSymbols]);
 
   // Filter available pairs based on search term and existing wishlist
-  const filteredPairs = React.useMemo(() => {
-    const wl = watchlistSymbols || [];
-    const term = (searchTerm || '').toLowerCase();
-    return availablePairs.filter((pair) => {
-      const notInList = !wl.includes(pair);
-      const matches = pair.toLowerCase().includes(term) ||
-        formatSymbolDisplay(pair).toLowerCase().includes(term);
-      return notInList && matches;
-    });
-  }, [availablePairs, watchlistSymbols, searchTerm]);
+  // Filter available pairs based on search term and existing watchlist - Commented out for future use
+  // const filteredPairs = React.useMemo(() => {
+  //   const wl = watchlistSymbols || [];
+  //   const term = (searchTerm || '').toLowerCase();
+  //   return availablePairs.filter((pair) => {
+  //     const notInList = !wl.includes(pair);
+  //     const matches = pair.toLowerCase().includes(term) ||
+  //       formatSymbolDisplay(pair).toLowerCase().includes(term);
+  //     return notInList && matches;
+  //   });
+  // }, [availablePairs, watchlistSymbols, searchTerm]);
 
-  const handleAddPair = async (symbol) => {
-    if (!user) {
-      console.error('User not authenticated');
-      return;
-    }
-    setAddingSymbol(symbol);
-    try {
-      await addToWishlist(symbol);
-      setShowAddModal(false);
-      setSearchTerm('');
-    } catch (error) {
-      console.error('Failed to add to watchlist:', error);
-    } finally {
-      setAddingSymbol(null);
-    }
-  };
+  // Handle add pair function - Commented out for future use
+  // const handleAddPair = async (symbol) => {
+  //   if (!user) {
+  //     console.error('User not authenticated');
+  //     return;
+  //   }
+  //   setAddingSymbol(symbol);
+  //   try {
+  //     await addToWishlist(symbol);
+  //     setShowAddModal(false);
+  //     setSearchTerm('');
+  //   } catch (error) {
+  //     console.error('Failed to add to watchlist:', error);
+  //   } finally {
+  //     setAddingSymbol(null);
+  //   }
+  // };
 
   const handleSaveSettings = async () => {
     try {
@@ -500,7 +502,7 @@ const RSIOverboughtOversoldTracker = () => {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="mb-2">
+        <div className="mb-3">
         <div className="widget-header flex items-center justify-between text-[12px]">
           <div>
             <div className="flex items-center space-x-2">
@@ -512,7 +514,8 @@ const RSIOverboughtOversoldTracker = () => {
             </div>
           </div>
           <div className="flex items-center space-x-1 text-[12px]">
-            {/* Watchlist Toggle Button */}
+            {/* Watchlist Toggle Button - Commented out for future use */}
+            {/* 
             <button
               onClick={async () => {
                 const next = !showWatchlist;
@@ -535,8 +538,10 @@ const RSIOverboughtOversoldTracker = () => {
               {showWatchlist ? <List className="w-4 h-4" /> : <Star className="w-4 h-4" />}
               <span className="text-[11px] font-medium">{showWatchlist ? 'Watchlist' : 'RSI Tracker'}</span>
             </button>
+            */}
 
-            {/* Add Pair (visible in Watchlist mode) */}
+            {/* Add Pair (visible in Watchlist mode) - Commented out for future use */}
+            {/* 
             {showWatchlist && user && (
               <button
                 type="button"
@@ -548,6 +553,7 @@ const RSIOverboughtOversoldTracker = () => {
                 <Plus className="w-4 h-4" />
               </button>
             )}
+            */}
             
             {/* RSI Alert Bell Icon */}
             {user && (
@@ -608,7 +614,7 @@ const RSIOverboughtOversoldTracker = () => {
           // Watchlist View
           watchlistSymbols.length > 0 ? (
             <div>
-              <table className="w-full divide-y divide-gray-200">
+              <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-slate-700">
                   <tr>
                     <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -624,11 +630,11 @@ const RSIOverboughtOversoldTracker = () => {
                       Daily %
                     </th>
                     <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                      Action
+                      Delete
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-600 text-xs text-left">
+                <tbody className="bg-white dark:bg-slate-800 text-xs text-left">
                   {watchlistSymbols.map((symbol) => {
                     const isRemoving = removingSymbol === symbol;
                     return (
@@ -667,7 +673,7 @@ const RSIOverboughtOversoldTracker = () => {
           currentPairs.length > 0 ? (
             <div>
               {viewMode === 'table' ? (
-                <table className="w-full divide-y divide-gray-200 dark:divide-slate-600">
+                <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-slate-700">
                     <tr>
                       <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -684,7 +690,7 @@ const RSIOverboughtOversoldTracker = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-600 text-xs text-left">
+                  <tbody className="bg-white dark:bg-slate-800 text-xs text-left">
                     {currentPairs.map((pair) => (
                       <PairRow
                         key={pair.symbol}
@@ -893,11 +899,11 @@ const RSIOverboughtOversoldTracker = () => {
       </div>
     )}
 
-    {/* Add Currency Pair Modal (Watchlist mode) */}
+    {/* Add Currency Pair Modal (Watchlist mode) - Commented out for future use */}
+    {/*
     {showAddModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[5000]">
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
-          {/* Modal Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Add Currency Pair</h3>
             <button
@@ -908,8 +914,6 @@ const RSIOverboughtOversoldTracker = () => {
               <X className="w-5 h-5" />
             </button>
           </div>
-
-          {/* Search Input */}
           <div className="p-4 border-b border-gray-200 dark:border-slate-700">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -922,8 +926,6 @@ const RSIOverboughtOversoldTracker = () => {
               />
             </div>
           </div>
-
-          {/* Currency Pairs List */}
           <div className="flex-1 overflow-y-auto p-4">
             {filteredPairs.length > 0 ? (
               <div className="space-y-2">
@@ -954,8 +956,6 @@ const RSIOverboughtOversoldTracker = () => {
               </div>
             )}
           </div>
-
-          {/* Modal Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-slate-700">
             <div className="text-xs text-gray-500 dark:text-slate-400 text-center">
               {filteredPairs.length} of {availablePairs.length} pairs available
@@ -964,6 +964,7 @@ const RSIOverboughtOversoldTracker = () => {
         </div>
       </div>
     )}
+    */}
     </>
   );
 };

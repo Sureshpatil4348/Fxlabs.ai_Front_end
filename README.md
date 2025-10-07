@@ -44,10 +44,66 @@ All features that relied on client-side calculations now expect server-provided 
 ## Recent Fixes (Latest)
 
 ### UI Layout Fixes
+- **Loading Overlay Z-Index Fix**: Fixed loading overlay appearing behind navbar on page reload
+  - Increased z-index from `z-50` to `z-[9999]` to ensure overlay appears above all content including navbar
+  - Added dark mode support for loading overlay modal
+  - Enhanced text colors for better dark mode visibility
+  - Files affected: `src/components/LoadingOverlay.js`
+
+- **AI News Analysis - Compact Card Design**: Streamlined news cards for better readability
+  - **Country codes**: Replaced country flags with styled 3-letter country codes (USD, EUR, GBP, JPY, etc.)
+  - **Countdown timer integration**: Timer now displays directly as a badge instead of separate "Starting Soon" label
+  - **Suggested pairs single line**: Optimized to show 5 pairs in single horizontal line with "..." for more
+    - Displays first 5 pairs with compact spacing (gap-0.5, px-1 padding, 9px font)
+    - If more than 5 pairs exist, shows light blue "..." indicator at the end
+    - Reduced padding and gap between badges to fit more pairs without cutting off
+    - No wrapping or cutting off - ensures all visible content fits properly
+  - **Cleaner layout**: Removed AI Analysis explanation preview text to reduce card clutter
+  - **Simplified AI section**: Shows only effect badge (Bullish/Bearish) without lengthy text
+  - Orange-colored countdown timer badge for better visibility
+  - Files affected: `src/components/AINewsAnalysis.js`
+
+- **Currency Strength Meter Improvements**: Increased currency card height
+  - Currency card padding increased from `py-1` to `py-3` for better space utilization
+  - Reduces excessive bottom spacing in the component
+  - Files affected: `src/components/CurrencyStrengthMeter.js`
+
+- **Multi Time Analysis - Mobile Scroll Enhancement**: Added horizontal scroll for better mobile viewing
+  - Timeline and market rows now properly scroll horizontally on mobile
+  - Desktop view remains unchanged with no horizontal scroll
+  - Minimum width applied only on mobile (< lg breakpoint)
+  - Files affected: `src/components/MultiTimeAnalysis.jsx`
+
+- **Mobile Tools Tab Improvements**: Enhanced mobile responsiveness for all tools widgets
+  - Added proper scrolling to all three widgets (Lot Size Calculator, Quantum Analysis, Multi Time Analysis) on mobile
+  - Multi Indicator Heatmap height optimized to 420px on mobile for better viewability
+  - Fixed heading overlap issue in Quantum Analysis: header now wraps properly on mobile with flex-wrap
+  - All widgets now have fixed heights with internal scrolling on mobile, while desktop layout remains unchanged
+  - Desktop view completely unaffected - maintains original flex-based layout
+  - Files affected: `src/pages/Dashboard.jsx`, `src/components/MultiIndicatorHeatmap.js`
+
+- Adjusted Tools tab sizing: increased `LotSizeCalculator` height and reduced `MultiIndicatorHeatmap` height to improve readability and match visual balance in the left column. Files: `src/pages/Dashboard.jsx`, `src/components/MultiIndicatorHeatmap.js`.
 - **Fixed Quantum Analysis card-in-card issue**: Removed duplicate card wrapper in Dashboard.jsx for MultiIndicatorHeatmap component
   - Issue: MultiIndicatorHeatmap had its own `widget-card` styling but was also wrapped in another card container
   - Solution: Removed outer card wrapper, kept inner `widget-card` styling for consistent appearance
   - Files affected: `src/pages/Dashboard.jsx`
+
+- **Fixed Forex Market Time Zone Converter UI issues**: Enhanced user experience in MultiTimeAnalysis component
+  - Removed "Learn more about..." text for cleaner interface
+  - Made time display (showing current time like "2:42 PM") draggable like the rest of the timeline bar
+  - Changed time display from `pointer-events-none` to `cursor-grab` with proper mouse event handlers
+  - Added proper accessibility support with ARIA attributes and keyboard navigation
+  - Fixed `e.currentTarget.closest is not a function` error by using useRef for timeline container
+  - Improved time display alignment: properly centered icon, time, and day labels with consistent spacing and minimum width
+  - Fixed time display text wrapping: added `whitespace-nowrap` to keep time and AM/PM on single line, increased minimum width to 140px
+  - Files affected: `src/components/MultiTimeAnalysis.jsx`
+
+- **Fixed mobile navigation for Analysis/Tools tabs**: Added dashboard tab switcher to mobile menu
+  - Analysis/Tools tabs now visible in mobile menu when on dashboard
+  - Maintains same styling and behavior as desktop version
+  - Automatically closes mobile menu after tab selection for better UX
+  - Fixed mobile menu border radius from `rounded-full` to `rounded-[2rem]` for properly rounded edges
+  - Files affected: `src/components/Navbar.jsx`
 
 ## Market v2 WebSocket Integration (Latest)
 
@@ -144,7 +200,12 @@ All technical indicator calculations are now performed server-side:
 ### Dashboard Layout Update (Latest)
 
 - The RSI Correlation placeholder has been replaced with `CurrencyStrengthMeter` on the Dashboard.
-- Mobile: placed in Section 3 between AI News and RSI Tracker.
+- Mobile (Analysis tab) order updated:
+  1. TradingView
+  2. Currency Strength Meter
+  3. Trending Pairs
+  4. RSI Tracker
+  5. AI News Analysis
 - Desktop: placed in the bottom-left area (row-start 8, col-span 7, row-span 5).
 - Component: `src/components/CurrencyStrengthMeter.js`.
 
@@ -247,6 +308,59 @@ Example:
   - General WS routing logs remain controlled by `REACT_APP_ENABLE_WS_ROUTER_DEBUG` (see `src/services/websocketMessageRouter.js`).
 
 ## Recent Updates
+### Enhancement: Navbar centered Dashboard tabs (Latest)
+- **Tabs moved to Navbar**: The `Analysis` and `Tools` buttons are now centered in the navbar on the Dashboard
+- **Single source of truth**: Navbar receives `activeTab` and `onChangeTab` from `Dashboard` and updates the same state
+- **Duplicate removed**: The old tab buttons inside Dashboard content were removed to avoid duplication
+- **Files affected**: `src/components/Navbar.jsx`, `src/pages/Dashboard.jsx`
+
+### Cleanup: TradingView Widget built-in controls removed (Latest)
+- **Removed**: Currency symbol dropdown, timeframe dropdown, and manual Load button from `TradingViewWidget`
+- **Reason**: These controls are already available elsewhere in the app; widget now initializes from props only
+- **Behavior**: Widget auto-initializes when props or theme change; no user controls in the widget header
+- **Files affected**: `src/components/TradingViewWidget.jsx`, `src/pages/Dashboard.jsx`
+
+### UI Layout: Tools tab grid updated (Latest)
+- **Left column**: `LotSizeCalculator` (top) and `MultiIndicatorHeatmap` (bottom) share the same column width
+- **Right column**: `MultiTimeAnalysis` now spans the full height for better use of space
+- **Files affected**: `src/pages/Dashboard.jsx`
+ - Mobile stacking fixed: removed full-height constraints on small screens, set a reasonable fixed height for `MultiIndicatorHeatmap`, and allowed `MultiTimeAnalysis` to shrink-to-fit on mobile while preserving desktop behavior.
+
+### UI Polish: Lot Size Calculator segmented pills (Latest)
+- **Compact pills**: Instrument type options (Forex, Commodities, Crypto) redesigned as compact pill-style segmented controls
+- **Professional look**: Reduced inner spacing, rounded-full, clear active/hover states
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### UI Polish: Heatmap symbol dropdown with flags (Latest)
+- **Country flags**: The Multi-Indicator Heatmap symbol dropdown now shows flags for currency pairs (e.g., 🇪🇺 EUR/🇺🇸 USD)
+- **Professional look**: Increased min width, aligned flags on both sides of pair label, improved hover/active states
+- **Files affected**: `src/components/MultiIndicatorHeatmap.js`
+
+### Enhancement: RSI Tracker Watchlist Button Hidden (Latest)
+- **Hidden watchlist functionality**: Watchlist toggle button and add pair modal have been commented out for future use
+- **Clean UI**: RSI Tracker now shows only the core RSI analysis functionality without watchlist controls
+- **Preserved code**: All watchlist-related code is preserved in comments for future implementation
+- **Files affected**: `src/components/RSIOverboughtOversoldTracker.js`
+- **Changes**:
+  - Commented out watchlist toggle button
+  - Commented out add pair button (visible in watchlist mode)
+  - Commented out add currency pair modal
+  - Commented out related state variables and functions
+  - Removed unused imports (List, Plus, Search, X icons)
+  - All code preserved for future use
+
+### Enhancement: TradingView Widget Theme Support (Latest)
+- **Added dynamic theme support**: TradingView widget now properly adapts to light/dark mode themes
+- **Light mode improvements**: Widget displays with white background and proper contrast in light mode
+- **Theme integration**: Widget now uses the application's ThemeContext to automatically switch between light and dark themes
+- **UI consistency**: All widget controls (symbol selector, interval selector, load button) now match the current theme
+- **Files affected**: `src/components/TradingViewWidget.jsx`
+- **Features**:
+  - Dynamic theme switching based on user preference
+  - Proper toolbar background colors for both themes
+  - Theme-aware control styling
+  - Consistent loading overlay theming
+
 ### Fix: Resolved infinite API loop in RSI Tracker causing excessive calls to fxlabs.ai/indicator (Latest)
 - **Problem**: The RSI Tracker component was making API calls to `https://api.fxlabs.ai/api/indicator` every second due to an infinite loop.
 - **Root Cause**: The `useEffect` hook in `RSIOverboughtOversoldTracker.js` had `rsiData` in its dependency array, causing it to re-run every time WebSocket messages updated the RSI data, creating a loop: WebSocket → rsiData update → useEffect → API call → rsiData update → useEffect → API call...

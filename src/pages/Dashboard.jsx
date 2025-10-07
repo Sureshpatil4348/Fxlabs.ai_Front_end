@@ -75,34 +75,12 @@
           />
         )}
 
-        {/* Navbar */}
-        <Navbar />
+        {/* Navbar - pass tab state for centered navbar buttons */}
+        <Navbar activeTab={activeTab} onChangeTab={setActiveTab} />
 
         {/* Main Content - Takes remaining screen height */}
         <main className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-3 mt-10">
-          {/* Tabs - centered */}
-          <div className="mb-3 flex items-center gap-2 justify-center">
-            <button
-              onClick={() => setActiveTab('analysis')}
-              className={`px-4 py-2 rounded-full border transition-all duration-200 ${
-                activeTab === 'analysis'
-                  ? 'bg-blue-500/30 text-blue-800 dark:text-blue-300 border-blue-400/50'
-                  : 'bg-white/20 dark:bg-gray-800/20 text-black dark:text-white hover:bg-white/30 dark:hover:bg-gray-700/30 border-white/30 dark:border-gray-700/40'
-              }`}
-            >
-              Analysis
-            </button>
-            <button
-              onClick={() => setActiveTab('tools')}
-              className={`px-4 py-2 rounded-full border transition-all duration-200 ${
-                activeTab === 'tools'
-                  ? 'bg-purple-500/30 text-purple-800 dark:text-purple-300 border-purple-400/50'
-                  : 'bg-white/20 dark:bg-gray-800/20 text-black dark:text-white hover:bg-white/30 dark:hover:bg-gray-700/30 border-white/30 dark:border-gray-700/40'
-              }`}
-            >
-              Tools
-            </button>
-          </div>
+          {/* Tabs moved to Navbar */}
 
           {activeTab === 'analysis' ? (
             <>
@@ -114,24 +92,28 @@
                     initialSymbol="OANDA:EURUSD"
                     initialInterval="60"
                     height="100%"
-                    showControls={true}
                     className="w-full"
                   />
                 </div>
 
-                {/* Section 2 - AI News Analysis */}
-                <div className="h-80">
-                  <AINewsAnalysis />
-                </div>
-
-                {/* Section 3 - Currency Strength Meter */}
+                {/* Section 2 - Currency Strength Meter */}
                 <div className="h-80">
                   <CurrencyStrengthMeter />
+                </div>
+
+                {/* Section 3 - Trending Pairs */}
+                <div className="h-64">
+                  <TrendingPairs />
                 </div>
 
                 {/* Section 4 - RSI Tracker */}
                 <div className="h-64">
                   <RSIOverboughtOversoldTracker />
+                </div>
+
+                {/* Section 5 - AI News Analysis */}
+                <div className="h-80">
+                  <AINewsAnalysis />
                 </div>
               </div>
 
@@ -143,7 +125,6 @@
                     initialSymbol="OANDA:EURUSD"
                     initialInterval="60"
                     height="100%"
-                    showControls={true}
                     className="w-full flex-1"
                   />
                 </div>
@@ -172,27 +153,34 @@
           ) : (
             <>
               {/* Tools Tab Content */}
-              <div className="h-full flex flex-col gap-2">
-                {/* Grid Layout - Top Two Sections (Trending moved to Analysis) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 flex-1 min-h-0">
-                  {/* Top Left - Lot Size Calculator */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2">
-                    <div className="h-full overflow-y-auto">
-                      <LotSizeCalculator />
+              {/* Mobile: natural stacking, Desktop: h-full flex layout */}
+              <div className="lg:h-full flex flex-col gap-2">
+                {/* Two-column layout: Left stacks Lot Size + Heatmap; Right spans full height with Multi Time Analysis */}
+                {/* Mobile: grid auto-flow, Desktop: grid with flex-1 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:flex-1 lg:min-h-0">
+                  {/* Left Column: Lot Size (top) + Heatmap (bottom) */}
+                  <div className="flex flex-col gap-2 lg:min-h-0">
+                    {/* Lot Size Calculator - Mobile: fixed height with internal scroll, Desktop: h-72 */}
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[450px] lg:h-72">
+                      <div className="h-full overflow-y-auto">
+                        <LotSizeCalculator />
+                      </div>
+                    </div>
+                    {/* Multi Indicator Heatmap - Mobile: reduced height with internal scroll, Desktop: flex-1 */}
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[420px] lg:h-[28rem] lg:flex-1 lg:min-h-0">
+                      <div className="h-full overflow-auto">
+                        <MultiIndicatorHeatmap />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Top Right - Multi Time Analysis */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2">
-                    <div className="h-full overflow-y-auto overflow-x-hidden">
+                  {/* Right Column: Multi Time Analysis spanning full height */}
+                  {/* Mobile: fixed height with internal scroll, Desktop: min-h-0 flex behavior */}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[1100px] lg:h-auto lg:min-h-0">
+                    <div className="h-full overflow-y-auto overflow-x-auto lg:overflow-x-hidden">
                       <MultiTimeAnalysis />
                     </div>
                   </div>
-                </div>
-
-                {/* Bottom Section - Multi-Indicator Heatmap */}
-                <div className="flex-shrink-0" style={{ height: 'calc(60vh - 0.5rem)' }}>
-                  <MultiIndicatorHeatmap />
                 </div>
               </div>
             </>

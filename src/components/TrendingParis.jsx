@@ -1,5 +1,5 @@
-import { TrendingUp, RefreshCw } from "lucide-react";
-import React, { useState, useMemo, useCallback } from "react";
+import { TrendingUp } from "lucide-react";
+import React, { useMemo } from "react";
 
 import useMarketCacheStore from "../store/useMarketCacheStore";
 import useRSITrackerStore from "../store/useRSITrackerStore";
@@ -10,10 +10,10 @@ import {
 } from "../utils/formatters";
 
 const TrendingPairs = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    // removed manual loading state for refresh
 
     // From centralized cache
-    const { trendingSymbols, pricingBySymbol, hydrateTrendingFromREST } =
+    const { trendingSymbols, pricingBySymbol } =
         useMarketCacheStore();
 
     // For connection status and timeframe
@@ -43,14 +43,7 @@ const TrendingPairs = () => {
         );
     }, [trendingSymbols, pricingBySymbol]);
 
-    const handleRefresh = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            await hydrateTrendingFromREST();
-        } finally {
-            setIsLoading(false);
-        }
-    }, [hydrateTrendingFromREST]);
+    // Manual refresh removed; trending updates driven by backend hydration elsewhere
 
     // Removed RFI from trending list view per spec
 
@@ -58,7 +51,7 @@ const TrendingPairs = () => {
         <div className="widget-card px-4 pb-4 h-full flex flex-col z-1 relative">
             {/* Header */}
             <div className="flex-shrink-0">
-                <div className="mb-2">
+                <div className="mb-3">
                     <div className="widget-header flex items-center justify-between text-[12px]">
                         <div>
                             <div className="flex items-center space-x-2">
@@ -70,20 +63,7 @@ const TrendingPairs = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-1 text-[12px]">
-                            <button
-                                onClick={handleRefresh}
-                                disabled={isLoading}
-                                className="p-1 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors"
-                                title="Refresh Data"
-                            >
-                                <RefreshCw
-                                    className={`w-3 h-3 ${
-                                        isLoading ? "animate-spin" : ""
-                                    }`}
-                                />
-                            </button>
-                        </div>
+                        <div className="flex items-center space-x-1 text-[12px]"></div>
                     </div>
                 </div>
 
@@ -100,7 +80,7 @@ const TrendingPairs = () => {
             {/* Scrollable Content Area */}
             <div className="flex-1 overflow-y-auto min-h-0 p-1">
                 {rows.length > 0 ? (
-                    <table className="w-full divide-y divide-gray-200 dark:divide-slate-600">
+                    <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-slate-700">
                             <tr>
                                 <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
@@ -114,7 +94,7 @@ const TrendingPairs = () => {
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-600 text-xs text-left">
+                        <tbody className="bg-white dark:bg-slate-800 text-xs text-left">
                             {rows.slice(0, 12).map((row) => (
                                 <tr
                                     key={row.symbol}
