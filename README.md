@@ -2013,3 +2013,18 @@ Benefits:
 
 ### Environment hints
 - `REACT_APP_WEBSOCKET_URL` can override the default WS endpoint. Router debug: `REACT_APP_ENABLE_WS_ROUTER_DEBUG=true`.
+
+## Currency Strength Alerts (New)
+- Purpose: Adds alert support for the Currency Strength Meter with a simple, single configuration: `timeframe`.
+- UI:
+  - Open the Currency Strength widget and click the bell icon to configure.
+  - Component: `src/components/CurrencyStrengthAlertConfig.jsx`
+- Service:
+  - `src/services/currencyStrengthAlertService.js`
+  - Methods: `getAlert`, `getActiveAlert`, `saveAlert`, `toggleActive`, `deleteAlert`.
+  - Validation: timeframe must be one of `['5M','15M','30M','1H','4H','1D','1W']`.
+- Store integration:
+  - On save, the store timeframe in `useCurrencyStrengthStore` is updated to match alert config.
+- Schema (Supabase):
+  - `supabase_currency_strength_tracker_alerts_schema.sql`
+  - Table: `currency_strength_tracker_alerts(user_id, user_email, timeframe, is_active, created_at, updated_at)` with 1 row per user.

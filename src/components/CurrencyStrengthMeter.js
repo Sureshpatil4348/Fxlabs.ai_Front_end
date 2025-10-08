@@ -1,9 +1,12 @@
-import { Settings, BarChart3 } from 'lucide-react';
+import { Settings, BarChart3, Bell } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 import userStateService from '../services/userStateService';
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { getCurrencyStrengthColor } from '../utils/formatters';
+import { useAuth } from '../auth/AuthProvider';
+import CurrencyStrengthAlertConfig from './CurrencyStrengthAlertConfig';
+import currencyStrengthAlertService from '../services/currencyStrengthAlertService';
 
 
 const CurrencyHeatmap = ({ strengthData }) => {
@@ -44,6 +47,7 @@ const CurrencyStrengthMeter = () => {
     timeframes,
     setCurrencyStrengthSnapshot
   } = useCurrencyStrengthStore();
+  const { user } = useAuth();
   
   // removed manual refresh state
   const [showSettings, setShowSettings] = useState(false);
@@ -51,6 +55,8 @@ const CurrencyStrengthMeter = () => {
   const [localSettings, setLocalSettings] = useState({
     timeframe: settings.timeframe
   });
+  const [showCSAlertConfig, setShowCSAlertConfig] = useState(false);
+  const [activeCSAlertsCount, setActiveCSAlertsCount] = useState(0);
 
 
   // Auto-subscribe to major pairs when connection is established
@@ -121,6 +127,36 @@ const CurrencyStrengthMeter = () => {
 
     loadSettings();
   }, [settings.timeframe, updateSettings, normalizeTimeframe]);
+
+  // Currency Strength Alert handlers
+  const handleCSBellClick = () => {
+    setShowCSAlertConfig(true);
+  };
+  const handleCSAlertConfigClose = () => {
+    setShowCSAlertConfig(false);
+    // Refresh active alert count after closing
+    (async () => {
+      try {
+        const alert = await currencyStrengthAlertService.getActiveAlert();
+        setActiveCSAlertsCount(alert ? 1 : 0);
+      } catch (_e) {
+        // ignore
+      }
+    })();
+  };
+
+  // Load active Currency Strength alert count when user logs in
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const alert = await currencyStrengthAlertService.getActiveAlert();
+        setActiveCSAlertsCount(alert ? 1 : 0);
+      } catch (_e) {
+        setActiveCSAlertsCount(0);
+      }
+    })();
+  }, [user]);
 
   // Remove the OHLC data change effect that was causing frequent updates
   // useEffect(() => {
@@ -228,6 +264,22 @@ const CurrencyStrengthMeter = () => {
           </div>
 
           <div className="flex items-center space-x-2">
+            {user && (
+              <button 
+                type="button"
+                aria-label="Configure currency strength alerts"
+                onClick={handleCSBellClick}
+                className="relative p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors duration-300 group"
+                title="Configure Currency Strength Alert"
+              >
+                <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                {activeCSAlertsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    {activeCSAlertsCount > 9 ? '9+' : activeCSAlertsCount}
+                  </span>
+                )}
+              </button>
+            )}
             <button
               onClick={() => setShowSettings(true)}
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
@@ -294,6 +346,12 @@ const CurrencyStrengthMeter = () => {
           </div>
         )}
       </div>
+
+      {/* Currency Strength Alert Configuration */}
+      <CurrencyStrengthAlertConfig 
+        isOpen={showCSAlertConfig}
+        onClose={handleCSAlertConfigClose}
+      />
 
       {/* Settings Modal */}
       {showSettings && (
