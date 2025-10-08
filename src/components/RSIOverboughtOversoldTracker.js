@@ -561,14 +561,13 @@ const RSIOverboughtOversoldTracker = () => {
                 type="button"
                 aria-label="Configure RSI alerts"
                 onClick={handleRSIBellClick}
-                className="relative p-1 text-gray-400 dark:text-slate-400 hover:text-orange-500 transition-colors duration-300 group"
+                className={`relative p-1 transition-colors duration-300 group ${
+                  activeRSIAlertsCount > 0
+                    ? 'text-orange-600'
+                    : 'text-gray-400 dark:text-slate-400 hover:text-orange-500'
+                }`}
               >
                 <Bell className="w-3 h-3 group-hover:scale-110 transition-transform duration-300" />
-                {activeRSIAlertsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-orange-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">
-                    {activeRSIAlertsCount > 9 ? '9+' : activeRSIAlertsCount}
-                  </span>
-                )}
               </button>
             )}
             <button

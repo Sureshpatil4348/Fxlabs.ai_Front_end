@@ -1,12 +1,12 @@
 import { Settings, BarChart3, Bell } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-import userStateService from '../services/userStateService';
-import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
-import { getCurrencyStrengthColor } from '../utils/formatters';
 import { useAuth } from '../auth/AuthProvider';
 import CurrencyStrengthAlertConfig from './CurrencyStrengthAlertConfig';
 import currencyStrengthAlertService from '../services/currencyStrengthAlertService';
+import userStateService from '../services/userStateService';
+import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
+import { getCurrencyStrengthColor } from '../utils/formatters';
 
 
 const CurrencyHeatmap = ({ strengthData }) => {
@@ -269,15 +269,14 @@ const CurrencyStrengthMeter = () => {
                 type="button"
                 aria-label="Configure currency strength alerts"
                 onClick={handleCSBellClick}
-                className="relative p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors duration-300 group"
+                className={`relative p-2 transition-colors duration-300 group ${
+                  activeCSAlertsCount > 0
+                    ? 'text-emerald-600'
+                    : 'text-gray-400 hover:text-emerald-600'
+                }`}
                 title="Configure Currency Strength Alert"
               >
                 <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                {activeCSAlertsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-600 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                    {activeCSAlertsCount > 9 ? '9+' : activeCSAlertsCount}
-                  </span>
-                )}
               </button>
             )}
             <button

@@ -459,14 +459,13 @@ useEffect(() => {
                 type="button"
                 aria-label="Configure heatmap alerts"
                 onClick={handleBellClick}
-                className="relative p-1 text-gray-400 hover:text-blue-500 transition-colors duration-300 group"
+                className={`relative p-1 transition-colors duration-300 group ${
+                  activeAlertsCount > 0
+                    ? 'text-blue-600'
+                    : 'text-gray-400 hover:text-blue-500'
+                }`}
               >
                 <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                {activeAlertsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                    {activeAlertsCount > 9 ? '9+' : activeAlertsCount}
-                  </span>
-                )}
               </button>
               <button 
                 type="button"

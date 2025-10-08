@@ -470,14 +470,13 @@ const RSICorrelationDashboard = () => {
               type="button"
               aria-label="Configure RSI correlation alerts"
               onClick={handleRSICorrelationBellClick}
-              className="relative p-2 text-gray-400 hover:text-purple-500 transition-colors duration-300 group"
+              className={`relative p-2 transition-colors duration-300 group ${
+                activeRSICorrelationAlertsCount > 0
+                  ? 'text-purple-600'
+                  : 'text-gray-400 hover:text-purple-500'
+              }`}
             >
               <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-              {activeRSICorrelationAlertsCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                  {activeRSICorrelationAlertsCount > 9 ? '9+' : activeRSICorrelationAlertsCount}
-                </span>
-              )}
             </button>
           )}
           

@@ -67,6 +67,17 @@ All features that relied on client-side calculations now expect server-provided 
   - Currency card padding increased from `py-1` to `py-3` for better space utilization
   - Reduces excessive bottom spacing in the component
   - Files affected: `src/components/CurrencyStrengthMeter.js`
+  - Also fixed ESLint import/order in `src/components/CurrencyStrengthMeter.js`
+
+### Alert Bell UI
+- Replaced numeric alert badges on bell icons with colored bell outlines (icon stroke color) when any alert is configured (no count shown).
+  - Colors: Purple (RSI Correlation), Blue (Heatmap), Orange (RSI Tracker), Emerald (Currency Strength)
+  - No button borders or background circles are applied — only the bell icon color changes when alerts exist
+  - Files affected:
+    - `src/components/RSICorrelationDashboard.js`
+    - `src/components/MultiIndicatorHeatmap.js`
+    - `src/components/RSIOverboughtOversoldTracker.js`
+    - `src/components/CurrencyStrengthMeter.js`
 
 ### Currency Strength Stability (Latest)
 - Source of truth is now the server snapshot and websocket updates:
