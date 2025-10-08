@@ -67,7 +67,10 @@ const useCurrencyStrengthStore = create(
     indicatorData: new Map(), // symbol -> indicator snapshots
     
     // Currency Strength Data
-    currencyStrength: new Map(), // currency -> strength score (0-100)
+    currencyStrength: new Map(), // currency -> strength score (0-100), applied to UI
+    // Persisted/cached snapshots by timeframe to avoid flicker across refresh
+    lastServerStrengthByTimeframe: new Map(), // timeframe -> Map(currency -> strength)
+    lastServerBarTimeByTimeframe: new Map(),  // timeframe -> barTime (if provided)
     
     // Dashboard-specific settings
     settings: {
@@ -102,6 +105,13 @@ const useCurrencyStrengthStore = create(
         connectionCallback: () => {
           set({ isConnected: true, isConnecting: false });
           get().addLog('Connected to Market v2 (Currency Strength probe)', 'success');
+
+          // Hydrate last snapshot for current timeframe on (re)connect to stabilize UI
+          try {
+            get().hydrateStrengthSnapshot();
+          } catch (_e) {
+            // best-effort hydration only
+          }
           
           // Report to global connection manager
           import('./useMarketStore').then(({ default: useMarketStore }) => {
@@ -261,11 +271,8 @@ const useCurrencyStrengthStore = create(
             indicatorDataMap.set(symbol, existing);
             set({ indicatorData: indicatorDataMap });
             get().addLog(`Received initial indicators for ${symbol}${timeframe ? ' (' + timeframe + ')' : ''}`, 'info');
-
-            // Optional: trigger calculation lightly after initial snapshot
-            setTimeout(() => {
-              get().calculateCurrencyStrength();
-            }, 200);
+            // Do NOT trigger local recalculation here; rely on server snapshots for stability.
+            // If live mode is explicitly selected, local calc will be triggered by settings.
           }
           break;
           
@@ -316,7 +323,6 @@ const useCurrencyStrengthStore = create(
 
             indicatorDataMap.set(symbol, existing);
             set({ indicatorData: indicatorDataMap });
-            
             // Keep recalculation manual/scheduled to avoid flickering
           }
           break;
@@ -331,6 +337,26 @@ const useCurrencyStrengthStore = create(
 
             // Only update current view if timeframe matches selected timeframe
             const currentTf = (state.settings?.timeframe || '').toUpperCase();
+            // Persist latest server snapshot by timeframe
+            try {
+              const entries = Object.entries(strength).map(([k, v]) => {
+                const num = Number(v);
+                return [k, Number.isFinite(num) ? num : 50];
+              });
+              const snapshotMap = new Map(entries);
+              const mapByTf = new Map(get().lastServerStrengthByTimeframe);
+              const barByTf = new Map(get().lastServerBarTimeByTimeframe);
+              if (timeframe) {
+                mapByTf.set(timeframe, snapshotMap);
+                if (barTime) barByTf.set(timeframe, barTime);
+                set({ lastServerStrengthByTimeframe: mapByTf, lastServerBarTimeByTimeframe: barByTf });
+                // Save to localStorage for persistence across refresh
+                get().persistStrengthSnapshots(mapByTf, barByTf);
+              }
+            } catch (_e) {
+              // ignore
+            }
+
             if (!currentTf || !timeframe || currentTf === timeframe) {
               const entries = Object.entries(strength).map(([k, v]) => {
                 const num = Number(v);
@@ -389,21 +415,32 @@ const useCurrencyStrengthStore = create(
         
         // Update subscriptions map
         set({ subscriptions: updatedSubscriptions });
-        
-        // Recalculate strength with new timeframe data
-        setTimeout(() => {
-          get().calculateCurrencyStrength();
-        }, 1500);
+
+        // Apply cached snapshot immediately to avoid random changes on refresh/timeframe switch
+        const tf = String(newSettings.timeframe).toUpperCase();
+        const cached = get().lastServerStrengthByTimeframe.get(tf) || get().readStrengthSnapshotFromLocalStorage(tf);
+        if (cached && cached instanceof Map && cached.size > 0) {
+          set({ currencyStrength: cached });
+        } else if (updatedSettings.mode === 'live') {
+          // Only fall back to local calc in live mode
+          setTimeout(() => {
+            get().calculateCurrencyStrength();
+          }, 800);
+        }
       }
       
       // If mode changed, recalculate
       if (newSettings.mode && newSettings.mode !== oldSettings.mode) {
-        get().calculateCurrencyStrength();
+        if (newSettings.mode === 'live') {
+          get().calculateCurrencyStrength();
+        }
       }
       
       // If calculation method changed, recalculate
       if (newSettings.useEnhancedCalculation !== undefined && newSettings.useEnhancedCalculation !== oldSettings.useEnhancedCalculation) {
-        get().calculateCurrencyStrength();
+        if (updatedSettings.mode === 'live') {
+          get().calculateCurrencyStrength();
+        }
       }
     },
     
@@ -419,7 +456,7 @@ const useCurrencyStrengthStore = create(
     },
 
     // Server snapshot setter for REST fetches
-    setCurrencyStrengthSnapshot: (strengthObject, timeframe) => {
+    setCurrencyStrengthSnapshot: (strengthObject, timeframe, barTime) => {
       try {
         if (!strengthObject || typeof strengthObject !== 'object') return;
         const entries = Object.entries(strengthObject).map(([k, v]) => {
@@ -429,12 +466,67 @@ const useCurrencyStrengthStore = create(
         const strengthMap = new Map(entries);
         const state = get();
         const currentTf = (state.settings?.timeframe || '').toUpperCase();
+        const tf = String(timeframe || currentTf || '').toUpperCase();
+        // Persist by timeframe for stability across refresh
+        if (tf) {
+          const mapByTf = new Map(get().lastServerStrengthByTimeframe);
+          const barByTf = new Map(get().lastServerBarTimeByTimeframe);
+          mapByTf.set(tf, strengthMap);
+          if (barTime) barByTf.set(tf, barTime);
+          set({ lastServerStrengthByTimeframe: mapByTf, lastServerBarTimeByTimeframe: barByTf });
+          get().persistStrengthSnapshots(mapByTf, barByTf);
+        }
         if (!timeframe || (currentTf && String(timeframe).toUpperCase() === currentTf)) {
           set({ currencyStrength: strengthMap });
-          get().addLog(`Applied currency strength snapshot${timeframe ? ' (' + String(timeframe).toUpperCase() + ')' : ''}`, 'success');
+          get().addLog(`Applied currency strength snapshot${tf ? ' (' + tf + ')' : ''}`, 'success');
         }
       } catch (_e) {
         // ignore snapshot errors
+      }
+    },
+
+    // Persist snapshots to localStorage
+    persistStrengthSnapshots: (mapByTf, barByTf) => {
+      try {
+        const obj = {};
+        Array.from(mapByTf.entries()).forEach(([tf, map]) => {
+          obj[tf] = Object.fromEntries(map.entries());
+        });
+        const meta = {};
+        Array.from(barByTf.entries()).forEach(([tf, bar]) => {
+          meta[tf] = bar;
+        });
+        const payload = { strengths: obj, bars: meta };
+        localStorage.setItem('fxlabs.currencyStrength.snapshots', JSON.stringify(payload));
+      } catch (_e) {
+        // ignore persistence errors (e.g., SSR)
+      }
+    },
+
+    // Read a snapshot for a timeframe from localStorage
+    readStrengthSnapshotFromLocalStorage: (tf) => {
+      try {
+        const raw = localStorage.getItem('fxlabs.currencyStrength.snapshots');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        const strengths = parsed?.strengths || {};
+        const data = strengths?.[tf];
+        if (!data) return null;
+        return new Map(Object.entries(data).map(([k, v]) => [k, Number.isFinite(Number(v)) ? Number(v) : 50]));
+      } catch (_e) {
+        return null;
+      }
+    },
+
+    // Hydrate current timeframe snapshot to stabilize UI on refresh
+    hydrateStrengthSnapshot: () => {
+      const state = get();
+      const tf = (state?.settings?.timeframe || '').toUpperCase();
+      if (!tf) return;
+      const cached = state.lastServerStrengthByTimeframe.get(tf) || get().readStrengthSnapshotFromLocalStorage(tf);
+      if (cached && cached instanceof Map && cached.size > 0) {
+        set({ currencyStrength: cached });
+        get().addLog(`Hydrated currency strength from cache (${tf})`, 'info');
       }
     },
     

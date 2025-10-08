@@ -76,13 +76,13 @@ const CurrencyStrengthMeter = () => {
   // Debounced calculation to prevent excessive updates
   const debouncedCalculation = useCallback(() => {
     const timeoutId = setTimeout(() => {
-      if (subscriptions.size > 0) {
+      // Only perform local calc in live mode to avoid flicker across refresh
+      if (subscriptions.size > 0 && settings.mode === 'live') {
         calculateCurrencyStrength();
       }
     }, 500); // 500ms debounce
-    
     return () => clearTimeout(timeoutId);
-  }, [subscriptions.size, calculateCurrencyStrength]);
+  }, [subscriptions.size, settings.mode, calculateCurrencyStrength]);
 
   // Calculate currency strength when subscriptions change or settings change (debounced)
   useEffect(() => {

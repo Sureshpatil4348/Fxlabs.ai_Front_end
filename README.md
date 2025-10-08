@@ -68,6 +68,22 @@ All features that relied on client-side calculations now expect server-provided 
   - Reduces excessive bottom spacing in the component
   - Files affected: `src/components/CurrencyStrengthMeter.js`
 
+### Currency Strength Stability (Latest)
+- Source of truth is now the server snapshot and websocket updates:
+  - WebSocket `currency_strength_update` messages applied only when they match the selected timeframe
+  - REST `indicator=currency_strength` snapshot fetched on mount and when timeframe changes
+- Local (tick-based) calculations only run in `live` mode as a fallback. They are not triggered on initial indicator updates to avoid random values after refresh.
+- Per-timeframe snapshots are persisted to `localStorage` to keep values stable across refresh until the server pushes a new snapshot.
+  - Key: `fxlabs.currencyStrength.snapshots`
+  - Store maintains `lastServerStrengthByTimeframe` and applies cached value immediately on reconnect/timeframe switch.
+- Affected files:
+  - `src/store/useCurrencyStrengthStore.js`
+    - Added per-timeframe caching and hydration on connect
+    - Removed auto recalculation on `initial_indicators`
+    - Only recalculates locally in live mode
+  - `src/components/CurrencyStrengthMeter.js`
+    - Debounced local calc now gated by `settings.mode === 'live'`
+
 - **Multi Time Analysis - Mobile Scroll Enhancement**: Added horizontal scroll for better mobile viewing
   - Timeline and market rows now properly scroll horizontally on mobile
   - Desktop view remains unchanged with no horizontal scroll
