@@ -84,6 +84,11 @@ All features that relied on client-side calculations now expect server-provided 
   - `src/components/CurrencyStrengthMeter.js`
     - Debounced local calc now gated by `settings.mode === 'live'`
 
+### Currency Strength Settings Simplified (Latest)
+- Settings panel now includes only `Timeframe` for Currency Strength.
+- Removed from UI: `Calculation Method` and `Calculation Mode`.
+- The system still honors server-provided strength values; local calculation remains a live-mode fallback without user toggle.
+
 - **Multi Time Analysis - Mobile Scroll Enhancement**: Added horizontal scroll for better mobile viewing
   - Timeline and market rows now properly scroll horizontally on mobile
   - Desktop view remains unchanged with no horizontal scroll

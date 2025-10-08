@@ -49,9 +49,7 @@ const CurrencyStrengthMeter = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
   const [localSettings, setLocalSettings] = useState({
-    timeframe: settings.timeframe,
-    mode: settings.mode,
-    useEnhancedCalculation: settings.useEnhancedCalculation
+    timeframe: settings.timeframe
   });
 
 
@@ -96,20 +94,16 @@ const CurrencyStrengthMeter = () => {
       try {
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.currencyStrength) {
-          const { timeframe, mode, useEnhancedCalculation } = savedSettings.currencyStrength;
-          
+          const { timeframe } = savedSettings.currencyStrength;
+
           // Update local settings state
           setLocalSettings({
-            timeframe: timeframe || settings.timeframe,
-            mode: mode || settings.mode,
-            useEnhancedCalculation: useEnhancedCalculation !== undefined ? useEnhancedCalculation : settings.useEnhancedCalculation
+            timeframe: timeframe || settings.timeframe
           });
 
-          // Update store settings
+          // Update store settings (timeframe only)
           updateSettings({
-            timeframe: timeframe || settings.timeframe,
-            mode: mode || settings.mode,
-            useEnhancedCalculation: useEnhancedCalculation !== undefined ? useEnhancedCalculation : settings.useEnhancedCalculation
+            timeframe: timeframe || settings.timeframe
           });
 
         }
@@ -119,7 +113,7 @@ const CurrencyStrengthMeter = () => {
     };
 
     loadSettings();
-  }, [settings.mode, settings.timeframe, settings.useEnhancedCalculation, updateSettings]);
+  }, [settings.timeframe, updateSettings]);
 
   // Remove the OHLC data change effect that was causing frequent updates
   // useEffect(() => {
@@ -186,17 +180,13 @@ const CurrencyStrengthMeter = () => {
     try {
       // Update local store first
       updateSettings({
-        timeframe: localSettings.timeframe,
-        mode: localSettings.mode,
-        useEnhancedCalculation: localSettings.useEnhancedCalculation
+        timeframe: localSettings.timeframe
       });
 
       // Persist to database
       await userStateService.updateUserDashboardSettings({
         currencyStrength: {
-          timeframe: localSettings.timeframe,
-          mode: localSettings.mode,
-          useEnhancedCalculation: localSettings.useEnhancedCalculation
+          timeframe: localSettings.timeframe
         }
       });
 
@@ -208,9 +198,7 @@ const CurrencyStrengthMeter = () => {
 
   const handleResetSettings = () => {
     setLocalSettings({
-      timeframe: settings.timeframe,
-      mode: settings.mode,
-      useEnhancedCalculation: settings.useEnhancedCalculation
+      timeframe: settings.timeframe
     });
   };
 
@@ -333,31 +321,6 @@ const CurrencyStrengthMeter = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Currency Strength Settings</h3>
             
             <div className="space-y-4">
-              {/* Calculation Method */}
-              <div>
-                <label htmlFor="cs-calculation-method" className="block text-sm font-medium text-gray-700 mb-1">
-                  Calculation Method
-                </label>
-                <select
-                  id="cs-calculation-method"
-                  value={localSettings.useEnhancedCalculation ? 'enhanced' : 'legacy'}
-                  onChange={(e) => setLocalSettings(prev => ({ 
-                    ...prev, 
-                    useEnhancedCalculation: e.target.value === 'enhanced' 
-                  }))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="enhanced">Enhanced Formula (28 pairs, log returns)</option>
-                  <option value="legacy">Legacy Formula (24 pairs, price changes)</option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  {localSettings.useEnhancedCalculation 
-                    ? 'Uses all 28 major/minor pairs with log returns and proper averaging'
-                    : 'Uses 24 pairs with simple price change calculations'
-                  }
-                </p>
-              </div>
-
               {/* Timeframe */}
               <div>
                 <label htmlFor="cs-timeframe" className="block text-sm font-medium text-gray-700 mb-1">
@@ -373,28 +336,6 @@ const CurrencyStrengthMeter = () => {
                     <option key={tf} value={tf}>{tf}</option>
                   ))}
                 </select>
-              </div>
-
-              {/* Mode */}
-              <div>
-                <label htmlFor="cs-calculation-mode" className="block text-sm font-medium text-gray-700 mb-1">
-                  Calculation Mode
-                </label>
-                <select
-                  id="cs-calculation-mode"
-                  value={localSettings.mode}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, mode: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="closed">Closed Candles</option>
-                  <option value="live">Live Updates</option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  {localSettings.mode === 'live' 
-                    ? 'Updates with every tick (real-time)'
-                    : 'Uses completed candles only (more stable)'
-                  }
-                </p>
               </div>
             </div>
 
