@@ -3,6 +3,14 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import websocketService from '../services/websocketService';
 
+// Configurable WebSocket connection timeout (ms)
+// Defaults to 15000ms when not provided
+const WS_CONNECT_TIMEOUT_MS = (() => {
+  const raw = process.env.REACT_APP_WS_CONNECT_TIMEOUT_MS;
+  const parsed = raw ? parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 15000;
+})();
+
 // Note: All calculations are now performed server-side
 // RSI and other indicators should be received from WebSocket/API
 
@@ -87,7 +95,7 @@ const useMarketStore = create(
       status: 'INITIALIZING', // 'INITIALIZING' | 'CONNECTING' | 'RETRYING' | 'CONNECTED' | 'FAILED'
       connectionAttempts: 0,
       maxRetries: 2,
-      timeoutDuration: 5000,
+      timeoutDuration: WS_CONNECT_TIMEOUT_MS,
       startTime: null,
       showLoader: true,
       timeoutId: null
@@ -740,7 +748,7 @@ const useMarketStore = create(
           status: 'INITIALIZING',
           connectionAttempts: 0,
           maxRetries: 2,
-          timeoutDuration: 5000,
+          timeoutDuration: WS_CONNECT_TIMEOUT_MS,
           startTime: null,
           showLoader: false,
           timeoutId: null

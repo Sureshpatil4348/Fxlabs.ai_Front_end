@@ -193,6 +193,12 @@ All technical indicator calculations are now performed server-side:
 - **Environment Variable**: Set `REACT_APP_ENABLE_TICK_LOGGING=true` to enable tick logging for debugging purposes.
 - Note on performance/data: Full-payload logging can be verbose and may contain sensitive data. Use browser filters in DevTools when inspecting logs, and disable logging in production builds as needed.
 
+### WebSocket Connection Timeout (New)
+- The global dashboard connection now waits longer before declaring a timeout.
+- Default timeout is `15000ms` and can be configured via environment variable:
+  - `REACT_APP_WS_CONNECT_TIMEOUT_MS=20000` (example for 20s)
+- Affected code: `src/store/useMarketStore.js` (`globalConnectionState.timeoutDuration`).
+
 ## Documentation
 
 - Calculations reference and source of truth for all formulas, static symbol lists, correlation pairs, thresholds, and percentages: see `CALCULATIONS.md`.
