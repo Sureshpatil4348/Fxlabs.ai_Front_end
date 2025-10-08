@@ -149,6 +149,27 @@ class WebSocketMessageRouter {
         }
       }
 
+      // Targeted logging for currency strength pushes
+      if (messageType === 'currency_strength_update') {
+        const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
+        const barTime = message?.data?.bar_time ?? message?.bar_time ?? null;
+        const strength = message?.data?.strength || message?.strength || null;
+        const keys = strength && typeof strength === 'object' ? Object.keys(strength) : [];
+        const sample = keys.slice(0, 5).reduce((acc, k) => {
+          acc[k] = strength[k];
+          return acc;
+        }, {});
+        console.log(
+          `[WS][CurrencyStrength] timeframe=${tf}`,
+          {
+            barTime,
+            count: keys.length,
+            keys,
+            sample
+          }
+        );
+      }
+
       // correlation_update removed
     } catch (_e) {
       // best-effort logging only

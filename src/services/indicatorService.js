@@ -66,10 +66,15 @@ export async function fetchIndicatorSnapshot({ indicator, timeframe, pairs }) {
   // Debug for currency_strength responses as well
   try {
     if (String(indicator).toLowerCase() === 'currency_strength') {
+      const strengthObj = data?.strength || data?.data?.strength || null;
+      const keys = strengthObj ? Object.keys(strengthObj) : [];
+      const sample = keys.slice(0, 5).reduce((acc, k) => { acc[k] = strengthObj[k]; return acc; }, {});
       console.log('[REST][Indicator][currency_strength]', {
         timeframe: String(timeframe).toUpperCase(),
-        hasStrength: !!(data?.strength || data?.data?.strength),
-        keys: data?.strength ? Object.keys(data.strength) : (data?.data?.strength ? Object.keys(data.data.strength) : []),
+        hasStrength: !!strengthObj,
+        count: keys.length,
+        keys,
+        sample,
         url
       });
     }
@@ -85,5 +90,4 @@ const indicatorService = {
 };
 
 export default indicatorService;
-
 

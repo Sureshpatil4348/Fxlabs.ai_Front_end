@@ -205,6 +205,14 @@ All technical indicator calculations are now performed server-side:
 - Cleaned up warning messages in all store files to reduce console noise during development
 - Affected functions: `subscribe()`, `unsubscribe()`, `recalculateAllRsi()`, `calculateRsi()`, `calculateAllCorrelations()`, `recalculateAllRfi()`
 
+### Currency Strength Logging (New)
+- WebSocket pushes: every `currency_strength_update` is logged by the router with `[WS][CurrencyStrength]` including `timeframe`, `barTime`, total currency `count`, `keys`, and a `sample` of up to 5 entries.
+- REST snapshots: every `indicator=currency_strength` response is logged with `[REST][Indicator][currency_strength]` including `timeframe`, `count`, `keys`, and a `sample` of up to 5 entries.
+- Purpose: quick verification that pushes and snapshots align (timeframe consistency, presence of values) without noisy full-payload dumps.
+- Files:
+  - `src/services/websocketMessageRouter.js` (WS summary logs)
+  - `src/services/indicatorService.js` (REST summary logs)
+
 ### WebSocket Selective Logging (Latest)
 - The client now logs WebSocket messages selectively to reduce console noise from frequent tick data.
 - **Tick messages are NOT logged by default** to prevent console spam from high-frequency market data.
