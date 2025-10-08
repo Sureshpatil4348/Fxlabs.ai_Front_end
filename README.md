@@ -217,6 +217,14 @@ All technical indicator calculations are now performed server-side:
   - `src/services/websocketMessageRouter.js` (WS summary + full logs)
   - `src/services/indicatorService.js` (REST summary + full logs)
 
+### Currency Strength Snapshot Source (Design)
+- WebSocket pushes (`currency_strength_update`) are the sole source for periodic updates (closed-bar cadence per timeframe; e.g., ~every 5 minutes for `5M`).
+- REST is used only for initial hydration (on mount and timeframe changes) and cache-miss handling; no periodic REST polling.
+- REST payload formats supported: `strength` or `currencies` (both map currency->value); timestamp fields supported: `bar_time` or `ts`.
+- Files:
+  - `src/components/CurrencyStrengthMeter.js` (initial hydration only; no interval)
+  - `src/services/indicatorService.js` (snapshot fetch and logging; supports both payload shapes)
+
 ### WebSocket Selective Logging (Latest)
 - The client now logs WebSocket messages selectively to reduce console noise from frequent tick data.
 - **Tick messages are NOT logged by default** to prevent console spam from high-frequency market data.

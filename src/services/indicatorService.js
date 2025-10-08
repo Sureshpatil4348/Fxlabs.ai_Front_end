@@ -66,7 +66,7 @@ export async function fetchIndicatorSnapshot({ indicator, timeframe, pairs }) {
   // Debug for currency_strength responses as well
   try {
     if (String(indicator).toLowerCase() === 'currency_strength') {
-      const strengthObj = data?.strength || data?.data?.strength || null;
+      const strengthObj = data?.strength || data?.data?.strength || data?.currencies || data?.data?.currencies || null;
       const keys = strengthObj ? Object.keys(strengthObj) : [];
       const sample = keys.slice(0, 5).reduce((acc, k) => { acc[k] = strengthObj[k]; return acc; }, {});
       // Summary log

@@ -129,34 +129,7 @@ const CurrencyStrengthMeter = () => {
   //   }
   // }, [ohlcData, subscriptions.size]);
 
-  // Auto-refresh every 2 minutes if we have subscriptions (reduced frequency)
-  useEffect(() => {
-    if (subscriptions.size > 0) {
-      const interval = setInterval(() => {
-        // Prefer server snapshot refresh to keep in sync with backend
-        (async () => {
-          try {
-            const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
-            const res = await fetchIndicatorSnapshot({
-              indicator: 'currency_strength',
-              timeframe: settings.timeframe
-            });
-            const strength = res?.strength || res?.data?.strength;
-            if (strength) {
-              setCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
-            } else {
-              // Fallback to local calculation if snapshot missing
-              calculateCurrencyStrength();
-            }
-          } catch (_e) {
-            // Fallback to local calculation on failure
-            calculateCurrencyStrength();
-          }
-        })();
-      }, 120000); // 2 minutes instead of 60 seconds
-      return () => clearInterval(interval);
-    }
-  }, [subscriptions.size, settings.timeframe, setCurrencyStrengthSnapshot, calculateCurrencyStrength]);
+  // Removed periodic REST auto-refresh: rely on WS pushes for updates
 
   // Fetch initial server snapshot on mount/timeframe change
   useEffect(() => {
@@ -169,9 +142,10 @@ const CurrencyStrengthMeter = () => {
           timeframe: settings.timeframe
         });
         if (cancelled) return;
-        const strength = res?.strength || res?.data?.strength;
+        const strength = res?.strength || res?.data?.strength || res?.currencies || res?.data?.currencies;
+        const barTime = res?.bar_time || res?.data?.bar_time || res?.ts || res?.data?.ts;
         if (strength) {
-          setCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe);
+          setCurrencyStrengthSnapshot(strength, res?.timeframe || settings.timeframe, barTime);
         }
       } catch (_e) {
         // silent; websocket will fill or local calc can be used on demand
