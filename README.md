@@ -206,12 +206,16 @@ All technical indicator calculations are now performed server-side:
 - Affected functions: `subscribe()`, `unsubscribe()`, `recalculateAllRsi()`, `calculateRsi()`, `calculateAllCorrelations()`, `recalculateAllRfi()`
 
 ### Currency Strength Logging (New)
-- WebSocket pushes: every `currency_strength_update` is logged by the router with `[WS][CurrencyStrength]` including `timeframe`, `barTime`, total currency `count`, `keys`, and a `sample` of up to 5 entries.
-- REST snapshots: every `indicator=currency_strength` response is logged with `[REST][Indicator][currency_strength]` including `timeframe`, `count`, `keys`, and a `sample` of up to 5 entries.
-- Purpose: quick verification that pushes and snapshots align (timeframe consistency, presence of values) without noisy full-payload dumps.
+- WebSocket pushes: every `currency_strength_update` is logged by the router with a unified tag and both summary and full payload:
+  - Summary: `[WS][CurrencyStrength] timeframe=<TF>` with `{ barTime, count, keys, sample }`
+  - Full: `[WS][CurrencyStrength] Full message:` followed by the full JSON payload
+- REST snapshots: every `indicator=currency_strength` response logs with a matching unified tag:
+  - Summary: `[REST][CurrencyStrength]` with `{ timeframe, count, keys, sample, url }`
+  - Full: `[REST][CurrencyStrength] Full response:` followed by the full JSON payload
+- Purpose: verify that WS pushes and REST snapshots align for the same timeframe with easy-to-scan tags.
 - Files:
-  - `src/services/websocketMessageRouter.js` (WS summary logs)
-  - `src/services/indicatorService.js` (REST summary logs)
+  - `src/services/websocketMessageRouter.js` (WS summary + full logs)
+  - `src/services/indicatorService.js` (REST summary + full logs)
 
 ### WebSocket Selective Logging (Latest)
 - The client now logs WebSocket messages selectively to reduce console noise from frequent tick data.

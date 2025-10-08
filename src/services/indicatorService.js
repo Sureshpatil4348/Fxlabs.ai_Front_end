@@ -69,7 +69,8 @@ export async function fetchIndicatorSnapshot({ indicator, timeframe, pairs }) {
       const strengthObj = data?.strength || data?.data?.strength || null;
       const keys = strengthObj ? Object.keys(strengthObj) : [];
       const sample = keys.slice(0, 5).reduce((acc, k) => { acc[k] = strengthObj[k]; return acc; }, {});
-      console.log('[REST][Indicator][currency_strength]', {
+      // Summary log
+      console.log('[REST][CurrencyStrength]', {
         timeframe: String(timeframe).toUpperCase(),
         hasStrength: !!strengthObj,
         count: keys.length,
@@ -77,6 +78,12 @@ export async function fetchIndicatorSnapshot({ indicator, timeframe, pairs }) {
         sample,
         url
       });
+      // Full payload log
+      try {
+        console.log('[REST][CurrencyStrength] Full response:', JSON.stringify(data, null, 2));
+      } catch (_e2) {
+        // ignore stringify issues
+      }
     }
   } catch (_e) {
     // best-effort logging only
@@ -90,4 +97,3 @@ const indicatorService = {
 };
 
 export default indicatorService;
-

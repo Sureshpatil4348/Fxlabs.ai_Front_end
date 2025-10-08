@@ -159,6 +159,7 @@ class WebSocketMessageRouter {
           acc[k] = strength[k];
           return acc;
         }, {});
+        // Summary log
         console.log(
           `[WS][CurrencyStrength] timeframe=${tf}`,
           {
@@ -168,6 +169,12 @@ class WebSocketMessageRouter {
             sample
           }
         );
+        // Full payload log
+        try {
+          console.log(`[WS][CurrencyStrength] Full message:`, JSON.stringify(message, null, 2));
+        } catch (_e) {
+          // ignore stringify issues
+        }
       }
 
       // correlation_update removed
