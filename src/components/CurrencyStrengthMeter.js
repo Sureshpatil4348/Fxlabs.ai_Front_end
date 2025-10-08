@@ -1,8 +1,8 @@
 import { Settings, BarChart3, Bell } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { useAuth } from '../auth/AuthProvider';
 import CurrencyStrengthAlertConfig from './CurrencyStrengthAlertConfig';
+import { useAuth } from '../auth/AuthProvider';
 import currencyStrengthAlertService from '../services/currencyStrengthAlertService';
 import userStateService from '../services/userStateService';
 import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
