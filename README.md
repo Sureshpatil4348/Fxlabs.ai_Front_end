@@ -67,38 +67,6 @@ All features that relied on client-side calculations now expect server-provided 
   - Currency card padding increased from `py-1` to `py-3` for better space utilization
   - Reduces excessive bottom spacing in the component
   - Files affected: `src/components/CurrencyStrengthMeter.js`
-  - Also fixed ESLint import/order in `src/components/CurrencyStrengthMeter.js`
-
-### Alert Bell UI
-- Replaced numeric alert badges on bell icons with colored bell outlines (icon stroke color) when any alert is configured (no count shown).
-  - Colors: Purple (RSI Correlation), Blue (Heatmap), Orange (RSI Tracker), Emerald (Currency Strength)
-  - No button borders or background circles are applied — only the bell icon color changes when alerts exist
-  - Files affected:
-    - `src/components/RSICorrelationDashboard.js`
-    - `src/components/MultiIndicatorHeatmap.js`
-    - `src/components/RSIOverboughtOversoldTracker.js`
-    - `src/components/CurrencyStrengthMeter.js`
-
-### Currency Strength Stability (Latest)
-- Source of truth is now the server snapshot and websocket updates:
-  - WebSocket `currency_strength_update` messages applied only when they match the selected timeframe
-  - REST `indicator=currency_strength` snapshot fetched on mount and when timeframe changes
-- Local (tick-based) calculations only run in `live` mode as a fallback. They are not triggered on initial indicator updates to avoid random values after refresh.
-- Per-timeframe snapshots are persisted to `localStorage` to keep values stable across refresh until the server pushes a new snapshot.
-  - Key: `fxlabs.currencyStrength.snapshots`
-  - Store maintains `lastServerStrengthByTimeframe` and applies cached value immediately on reconnect/timeframe switch.
-- Affected files:
-  - `src/store/useCurrencyStrengthStore.js`
-    - Added per-timeframe caching and hydration on connect
-    - Removed auto recalculation on `initial_indicators`
-    - Only recalculates locally in live mode
-  - `src/components/CurrencyStrengthMeter.js`
-    - Debounced local calc now gated by `settings.mode === 'live'`
-
-### Currency Strength Settings Simplified (Latest)
-- Settings panel now includes only `Timeframe` for Currency Strength.
-- Removed from UI: `Calculation Method` and `Calculation Mode`.
-- The system still honors server-provided strength values; local calculation remains a live-mode fallback without user toggle.
 
 - **Multi Time Analysis - Mobile Scroll Enhancement**: Added horizontal scroll for better mobile viewing
   - Timeline and market rows now properly scroll horizontally on mobile
@@ -216,26 +184,6 @@ All technical indicator calculations are now performed server-side:
 - Cleaned up warning messages in all store files to reduce console noise during development
 - Affected functions: `subscribe()`, `unsubscribe()`, `recalculateAllRsi()`, `calculateRsi()`, `calculateAllCorrelations()`, `recalculateAllRfi()`
 
-### Currency Strength Logging (New)
-- WebSocket pushes: every `currency_strength_update` is logged by the router with a unified tag and both summary and full payload:
-  - Summary: `[WS][CurrencyStrength] timeframe=<TF>` with `{ barTime, count, keys, sample }`
-  - Full: `[WS][CurrencyStrength] Full message:` followed by the full JSON payload
-- REST snapshots: every `indicator=currency_strength` response logs with a matching unified tag:
-  - Summary: `[REST][CurrencyStrength]` with `{ timeframe, count, keys, sample, url }`
-  - Full: `[REST][CurrencyStrength] Full response:` followed by the full JSON payload
-- Purpose: verify that WS pushes and REST snapshots align for the same timeframe with easy-to-scan tags.
-- Files:
-  - `src/services/websocketMessageRouter.js` (WS summary + full logs)
-  - `src/services/indicatorService.js` (REST summary + full logs)
-
-### Currency Strength Snapshot Source (Design)
-- WebSocket pushes (`currency_strength_update`) are the sole source for periodic updates (closed-bar cadence per timeframe; e.g., ~every 5 minutes for `5M`).
-- REST is used only for initial hydration (on mount and timeframe changes) and cache-miss handling; no periodic REST polling.
-- REST payload formats supported: `strength` or `currencies` (both map currency->value); timestamp fields supported: `bar_time` or `ts`.
-- Files:
-  - `src/components/CurrencyStrengthMeter.js` (initial hydration only; no interval)
-  - `src/services/indicatorService.js` (snapshot fetch and logging; supports both payload shapes)
-
 ### WebSocket Selective Logging (Latest)
 - The client now logs WebSocket messages selectively to reduce console noise from frequent tick data.
 - **Tick messages are NOT logged by default** to prevent console spam from high-frequency market data.
@@ -244,12 +192,6 @@ All technical indicator calculations are now performed server-side:
 - This logging uses `console.log` with an ISO timestamp prefix like `[WS][Market-v2][timestamp] Received:` to aid debugging.
 - **Environment Variable**: Set `REACT_APP_ENABLE_TICK_LOGGING=true` to enable tick logging for debugging purposes.
 - Note on performance/data: Full-payload logging can be verbose and may contain sensitive data. Use browser filters in DevTools when inspecting logs, and disable logging in production builds as needed.
-
-### WebSocket Connection Timeout (New)
-- The global dashboard connection now waits longer before declaring a timeout.
-- Default timeout is `15000ms` and can be configured via environment variable:
-  - `REACT_APP_WS_CONNECT_TIMEOUT_MS=20000` (example for 20s)
-- Affected code: `src/store/useMarketStore.js` (`globalConnectionState.timeoutDuration`).
 
 ## Documentation
 
@@ -499,12 +441,6 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 - Affected files:
   - `src/store/useRSITrackerStore.js:81`
   - `src/components/RSIOverboughtOversoldTracker.js:719`
-
-- Removed 1M timeframe from Currency Strength Meter.
-- Currency Strength dropdown excludes 1M; store also omits 1M from its `timeframes` array, and saved `1M`/`M1` values normalize to `5M` on load.
-- Affected files:
-  - `src/store/useCurrencyStrengthStore.js`
-  - `src/components/CurrencyStrengthMeter.js`
 
 ### Success Stories Section Responsive Design (Latest)
 - **RESPONSIVE LAYOUT**: Made SuccessStories section fully responsive across all screen sizes
@@ -2024,18 +1960,3 @@ Benefits:
 
 ### Environment hints
 - `REACT_APP_WEBSOCKET_URL` can override the default WS endpoint. Router debug: `REACT_APP_ENABLE_WS_ROUTER_DEBUG=true`.
-
-## Currency Strength Alerts (New)
-- Purpose: Adds alert support for the Currency Strength Meter with a simple, single configuration: `timeframe`.
-- UI:
-  - Open the Currency Strength widget and click the bell icon to configure.
-  - Component: `src/components/CurrencyStrengthAlertConfig.jsx`
-- Service:
-  - `src/services/currencyStrengthAlertService.js`
-  - Methods: `getAlert`, `getActiveAlert`, `saveAlert`, `toggleActive`, `deleteAlert`.
-  - Validation: timeframe must be one of `['5M','15M','30M','1H','4H','1D','1W']`.
-- Store integration:
-  - On save, the store timeframe in `useCurrencyStrengthStore` is updated to match alert config.
-- Schema (Supabase):
-  - `supabase_currency_strength_tracker_alerts_schema.sql`
-  - Table: `currency_strength_tracker_alerts(user_id, user_email, timeframe, is_active, created_at, updated_at)` with 1 row per user.
