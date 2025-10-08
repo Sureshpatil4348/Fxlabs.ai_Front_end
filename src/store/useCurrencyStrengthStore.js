@@ -83,7 +83,8 @@ const useCurrencyStrengthStore = create(
     
     // UI state
     logs: [],
-    timeframes: ['1M', '5M', '15M', '30M', '1H', '4H', '1D'],
+    // Remove 1M from selectable timeframes for Currency Strength Meter
+    timeframes: ['5M', '15M', '30M', '1H', '4H', '1D', '1W'],
     
     // Connection Actions
     connect: () => {
@@ -208,7 +209,13 @@ const useCurrencyStrengthStore = create(
         case 'connected':
           get().addLog(`Welcome: ${message.message}`, 'success');
           if (message.supported_timeframes) {
-            set({ timeframes: message.supported_timeframes });
+            // Filter out 1M/M1 from supported timeframes for Currency Strength
+            const filtered = (message.supported_timeframes || [])
+              .map(tf => String(tf).toUpperCase())
+              .filter(tf => tf !== '1M' && tf !== 'M1');
+            if (filtered && filtered.length > 0) {
+              set({ timeframes: filtered });
+            }
           }
           break;
           
@@ -388,12 +395,19 @@ const useCurrencyStrengthStore = create(
     updateSettings: (newSettings) => {
       const state = get();
       const oldSettings = state.settings;
-      const updatedSettings = { ...oldSettings, ...newSettings };
+      // Normalize timeframe: exclude 1M/M1 by coercing to 5M
+      const normalized = { ...newSettings };
+      if (normalized.timeframe) {
+        let tf = String(normalized.timeframe).toUpperCase();
+        if (tf === '1M' || tf === 'M1') tf = '5M';
+        normalized.timeframe = tf;
+      }
+      const updatedSettings = { ...oldSettings, ...normalized };
       
       set({ settings: updatedSettings });
       
       // If timeframe changed, update all subscriptions
-      if (newSettings.timeframe && newSettings.timeframe !== oldSettings.timeframe) {
+      if (normalized.timeframe && normalized.timeframe !== oldSettings.timeframe) {
         
         const { subscribe } = get();
         const currentSubscriptions = Array.from(state.subscriptions.entries());
@@ -405,19 +419,19 @@ const useCurrencyStrengthStore = create(
           // Update subscription info with new timeframe
           const updatedSubscription = {
             ...subscription,
-            timeframe: newSettings.timeframe
+            timeframe: updatedSettings.timeframe
           };
           updatedSubscriptions.set(symbol, updatedSubscription);
           
           // Subscribe to new timeframe
-          subscribe(symbol, newSettings.timeframe, subscription.dataTypes || ['ticks', 'indicators']);
+          subscribe(symbol, updatedSettings.timeframe, subscription.dataTypes || ['ticks', 'indicators']);
         });
         
         // Update subscriptions map
         set({ subscriptions: updatedSubscriptions });
 
         // Apply cached snapshot immediately to avoid random changes on refresh/timeframe switch
-        const tf = String(newSettings.timeframe).toUpperCase();
+        const tf = String(updatedSettings.timeframe).toUpperCase();
         const cached = get().lastServerStrengthByTimeframe.get(tf) || get().readStrengthSnapshotFromLocalStorage(tf);
         if (cached && cached instanceof Map && cached.size > 0) {
           set({ currencyStrength: cached });

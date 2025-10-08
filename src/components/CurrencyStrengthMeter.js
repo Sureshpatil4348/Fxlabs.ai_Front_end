@@ -88,6 +88,12 @@ const CurrencyStrengthMeter = () => {
     return cleanup;
   }, [subscriptions.size, settings.timeframe, settings.mode, settings.useEnhancedCalculation, debouncedCalculation]);
 
+  // Helper to normalize disallowed timeframe values
+  const normalizeTimeframe = useCallback((tf) => {
+    const up = String(tf || '').toUpperCase();
+    return (up === '1M' || up === 'M1') ? '5M' : up || '5M';
+  }, []);
+
   // Load settings from database on component mount
   useEffect(() => {
     const loadSettings = async () => {
@@ -95,15 +101,16 @@ const CurrencyStrengthMeter = () => {
         const savedSettings = await userStateService.getUserDashboardSettings();
         if (savedSettings.currencyStrength) {
           const { timeframe } = savedSettings.currencyStrength;
+          const safeTf = normalizeTimeframe(timeframe || settings.timeframe);
 
           // Update local settings state
           setLocalSettings({
-            timeframe: timeframe || settings.timeframe
+            timeframe: safeTf
           });
 
           // Update store settings (timeframe only)
           updateSettings({
-            timeframe: timeframe || settings.timeframe
+            timeframe: safeTf
           });
 
         }
@@ -113,7 +120,7 @@ const CurrencyStrengthMeter = () => {
     };
 
     loadSettings();
-  }, [settings.timeframe, updateSettings]);
+  }, [settings.timeframe, updateSettings, normalizeTimeframe]);
 
   // Remove the OHLC data change effect that was causing frequent updates
   // useEffect(() => {
@@ -332,7 +339,9 @@ const CurrencyStrengthMeter = () => {
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  {timeframes.map(tf => (
+                  {timeframes
+                    .filter(tf => String(tf).toUpperCase() !== '1M' && String(tf).toUpperCase() !== 'M1')
+                    .map(tf => (
                     <option key={tf} value={tf}>{tf}</option>
                   ))}
                 </select>

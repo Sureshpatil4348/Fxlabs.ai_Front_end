@@ -469,6 +469,12 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
   - `src/store/useRSITrackerStore.js:81`
   - `src/components/RSIOverboughtOversoldTracker.js:719`
 
+- Removed 1M timeframe from Currency Strength Meter.
+- Currency Strength dropdown excludes 1M; store also omits 1M from its `timeframes` array, and saved `1M`/`M1` values normalize to `5M` on load.
+- Affected files:
+  - `src/store/useCurrencyStrengthStore.js`
+  - `src/components/CurrencyStrengthMeter.js`
+
 ### Success Stories Section Responsive Design (Latest)
 - **RESPONSIVE LAYOUT**: Made SuccessStories section fully responsive across all screen sizes
 - **BANNER IMPROVEMENTS**: Updated banner with responsive padding, text sizes, and icon sizes
