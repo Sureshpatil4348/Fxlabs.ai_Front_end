@@ -3,10 +3,12 @@
 -- =====================================================================
 -- Purpose: Store user-specific widget states, configurations, and preferences
 --          for tools tab widgets (LotSizeCalculator, MultiTimeAnalysis, MultiIndicatorHeatmap)
+--          and dashboard-level settings (active tab retention)
 -- 
 -- Features:
 -- - Per-user widget state persistence
 -- - Support for multiple widgets with individual configurations
+-- - Dashboard active tab (Analysis/Tools) retention
 -- - Versioning support for schema evolution
 -- - Automatic timestamp tracking
 -- - Row Level Security (RLS) for data isolation
@@ -102,12 +104,9 @@ CREATE POLICY "widget_tab_retention_delete_own"
 --
 -- MultiTimeAnalysis:
 -- {
---   "selectedSymbol": "EURUSDm",
---   "selectedTimeframes": ["1H", "4H", "1D"],
---   "viewMode": "table",
---   "showOnlyActive": false,
---   "sortBy": "timeframe",
---   "sortOrder": "asc"
+--   "selectedTimezone": "Asia/Kolkata",
+--   "is24Hour": false,
+--   "sliderPosition": 66.67
 -- }
 --
 -- MultiIndicatorHeatmap:
@@ -119,6 +118,13 @@ CREATE POLICY "widget_tab_retention_delete_own"
 --   "visibleIndicators": ["rsi", "macd", "ema", "sma"],
 --   "timeframeFilter": "all"
 -- }
+--
+-- DashboardSettings (Dashboard-level settings):
+-- {
+--   "activeTab": "analysis",
+--   "lastVisited": "2025-10-09T12:00:00.000Z"
+-- }
+-- Note: activeTab can be "analysis" or "tools"
 -- =====================================================================
 
 -- =====================================================================
@@ -187,14 +193,24 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- SELECT * FROM public.widget_tab_retention 
 -- WHERE user_id = auth.uid() AND widget_name = 'LotSizeCalculator';
 --
+-- Get dashboard settings (active tab):
+-- SELECT * FROM public.widget_tab_retention 
+-- WHERE user_id = auth.uid() AND widget_name = 'DashboardSettings';
+--
 -- Get using helper function:
 -- SELECT * FROM public.get_user_widget_states(auth.uid());
+--
+-- Manually set active tab (for testing):
+-- INSERT INTO public.widget_tab_retention (user_id, widget_name, widget_state)
+-- VALUES (auth.uid(), 'DashboardSettings', '{"activeTab": "tools", "lastVisited": "2025-10-09T12:00:00.000Z"}'::jsonb)
+-- ON CONFLICT (user_id, widget_name) 
+-- DO UPDATE SET widget_state = EXCLUDED.widget_state, updated_at = NOW();
 -- =====================================================================
 
-COMMENT ON TABLE public.widget_tab_retention IS 'Stores user-specific widget states and configurations for dashboard tools';
-COMMENT ON COLUMN public.widget_tab_retention.widget_name IS 'Unique identifier for the widget (e.g., LotSizeCalculator, MultiTimeAnalysis)';
-COMMENT ON COLUMN public.widget_tab_retention.widget_state IS 'JSONB object storing widget-specific state data';
+COMMENT ON TABLE public.widget_tab_retention IS 'Stores user-specific widget states, configurations, and dashboard-level settings (active tab retention)';
+COMMENT ON COLUMN public.widget_tab_retention.widget_name IS 'Unique identifier for the widget (e.g., LotSizeCalculator, MultiTimeAnalysis, MultiIndicatorHeatmap, DashboardSettings)';
+COMMENT ON COLUMN public.widget_tab_retention.widget_state IS 'JSONB object storing widget-specific state data or dashboard settings';
 COMMENT ON COLUMN public.widget_tab_retention.widget_config IS 'JSONB object storing widget-specific configuration';
-COMMENT ON COLUMN public.widget_tab_retention.is_visible IS 'Whether the widget is visible in the dashboard';
-COMMENT ON COLUMN public.widget_tab_retention.display_order IS 'Order in which widget should be displayed';
+COMMENT ON COLUMN public.widget_tab_retention.is_visible IS 'Whether the widget is visible in the dashboard (not applicable for DashboardSettings)';
+COMMENT ON COLUMN public.widget_tab_retention.display_order IS 'Order in which widget should be displayed (not applicable for DashboardSettings)';
 

@@ -5,13 +5,15 @@ import { supabase } from '../lib/supabaseClient';
  * Widget Tab Retention Service
  * =====================================================================
  * Manages persistent storage of widget states and configurations
- * for tools tab widgets in the dashboard.
+ * for tools tab widgets in the dashboard, as well as dashboard-level
+ * settings like active tab selection.
  * 
  * Features:
  * - Get/Set widget states with automatic user authentication
  * - Support for multiple widgets with individual configurations
  * - Default state management for each widget type
  * - Batch operations for multiple widgets
+ * - Dashboard active tab retention (Analysis/Tools)
  * - Error handling and validation
  * =====================================================================
  */
@@ -24,6 +26,19 @@ class WidgetTabRetentionService {
     LOT_SIZE_CALCULATOR: 'LotSizeCalculator',
     MULTI_TIME_ANALYSIS: 'MultiTimeAnalysis',
     MULTI_INDICATOR_HEATMAP: 'MultiIndicatorHeatmap'
+  };
+
+  /**
+   * Special widget name for dashboard-level settings
+   */
+  static DASHBOARD_SETTINGS = 'DashboardSettings';
+
+  /**
+   * Valid tab names for dashboard
+   */
+  static TABS = {
+    ANALYSIS: 'analysis',
+    TOOLS: 'tools'
   };
 
   /**
@@ -74,6 +89,10 @@ class WidgetTabRetentionService {
         showNewSignals: true,
         visibleIndicators: ['rsi', 'macd', 'ema', 'sma'],
         timeframeFilter: 'all'
+      },
+      [WidgetTabRetentionService.DASHBOARD_SETTINGS]: {
+        activeTab: WidgetTabRetentionService.TABS.ANALYSIS,
+        lastVisited: null
       }
     };
 
@@ -102,6 +121,10 @@ class WidgetTabRetentionService {
         updateInterval: 30000, // 30 seconds
         showLegend: true,
         colorScheme: 'default'
+      },
+      [WidgetTabRetentionService.DASHBOARD_SETTINGS]: {
+        rememberTab: true,
+        autoSwitchOnAction: false
       }
     };
 
@@ -166,8 +189,11 @@ class WidgetTabRetentionService {
         throw new Error('User not authenticated');
       }
 
-      // Validate widget name
-      const validWidgets = Object.values(WidgetTabRetentionService.WIDGETS);
+      // Validate widget name - include both widgets and dashboard settings
+      const validWidgets = [
+        ...Object.values(WidgetTabRetentionService.WIDGETS),
+        WidgetTabRetentionService.DASHBOARD_SETTINGS
+      ];
       if (!validWidgets.includes(widgetName)) {
         throw new Error(`Invalid widget name: ${widgetName}`);
       }
@@ -524,6 +550,154 @@ class WidgetTabRetentionService {
       return await this.saveAllWidgetStates(states);
     } catch (err) {
       console.error('Error in importWidgetStates:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * =====================================================================
+   * Dashboard Active Tab Management
+   * =====================================================================
+   */
+
+  /**
+   * Get the active tab from database
+   * @returns {Promise<string>} Active tab name ('analysis' or 'tools')
+   */
+  async getActiveTab() {
+    try {
+      console.log('[WidgetRetention] getActiveTab() called');
+      const user = await this.getCurrentUser();
+      if (!user) {
+        console.warn('[WidgetRetention] User not authenticated, returning default active tab');
+        return WidgetTabRetentionService.TABS.ANALYSIS;
+      }
+
+      console.log('[WidgetRetention] User authenticated:', user.id);
+      console.log('[WidgetRetention] Querying widget_tab_retention for DashboardSettings...');
+
+      const { data, error } = await supabase
+        .from('widget_tab_retention')
+        .select('widget_state')
+        .eq('user_id', user.id)
+        .eq('widget_name', WidgetTabRetentionService.DASHBOARD_SETTINGS)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[WidgetRetention] Error fetching active tab:', error);
+        return WidgetTabRetentionService.TABS.ANALYSIS;
+      }
+
+      console.log('[WidgetRetention] Query result:', data);
+
+      if (!data || !data.widget_state || !data.widget_state.activeTab) {
+        console.log('[WidgetRetention] No saved tab found, returning default (analysis)');
+        return WidgetTabRetentionService.TABS.ANALYSIS;
+      }
+
+      // Validate the tab value
+      const validTabs = Object.values(WidgetTabRetentionService.TABS);
+      if (!validTabs.includes(data.widget_state.activeTab)) {
+        console.warn(`[WidgetRetention] Invalid tab value: ${data.widget_state.activeTab}, returning default`);
+        return WidgetTabRetentionService.TABS.ANALYSIS;
+      }
+
+      console.log('[WidgetRetention] Returning saved tab:', data.widget_state.activeTab);
+      return data.widget_state.activeTab;
+    } catch (err) {
+      console.error('[WidgetRetention] Error in getActiveTab:', err);
+      return WidgetTabRetentionService.TABS.ANALYSIS;
+    }
+  }
+
+  /**
+   * Save the active tab to database
+   * @param {string} tabName - Tab name ('analysis' or 'tools')
+   * @returns {Promise<Object>} Updated dashboard settings data
+   */
+  async setActiveTab(tabName) {
+    try {
+      console.log('[WidgetRetention] setActiveTab() called with:', tabName);
+      const user = await this.getCurrentUser();
+      if (!user) {
+        console.error('[WidgetRetention] User not authenticated, cannot save tab');
+        throw new Error('User not authenticated');
+      }
+
+      console.log('[WidgetRetention] User authenticated:', user.id);
+
+      // Validate tab name
+      const validTabs = Object.values(WidgetTabRetentionService.TABS);
+      if (!validTabs.includes(tabName)) {
+        console.error('[WidgetRetention] Invalid tab name:', tabName);
+        throw new Error(`Invalid tab name: ${tabName}. Must be one of: ${validTabs.join(', ')}`);
+      }
+
+      const dashboardState = {
+        activeTab: tabName,
+        lastVisited: new Date().toISOString()
+      };
+
+      console.log('[WidgetRetention] Saving dashboard state:', dashboardState);
+
+      const result = await this.saveWidgetState(
+        WidgetTabRetentionService.DASHBOARD_SETTINGS,
+        dashboardState
+      );
+
+      console.log('[WidgetRetention] Save successful, result:', result);
+      return result;
+    } catch (err) {
+      console.error('[WidgetRetention] Error in setActiveTab:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Get dashboard settings (includes active tab and other settings)
+   * @returns {Promise<Object>} Dashboard settings object
+   */
+  async getDashboardSettings() {
+    try {
+      return await this.getWidgetState(WidgetTabRetentionService.DASHBOARD_SETTINGS);
+    } catch (err) {
+      console.error('Error in getDashboardSettings:', err);
+      return this.getDefaultWidgetState(WidgetTabRetentionService.DASHBOARD_SETTINGS);
+    }
+  }
+
+  /**
+   * Update dashboard settings
+   * @param {Object} settings - Partial dashboard settings to update
+   * @returns {Promise<Object>} Updated dashboard settings data
+   */
+  async updateDashboardSettings(settings) {
+    try {
+      const currentSettings = await this.getDashboardSettings();
+      const updatedSettings = { ...currentSettings, ...settings };
+      
+      // Remove metadata
+      const { _config, _isVisible, _displayOrder, ...cleanSettings } = updatedSettings;
+      
+      return await this.saveWidgetState(
+        WidgetTabRetentionService.DASHBOARD_SETTINGS,
+        cleanSettings
+      );
+    } catch (err) {
+      console.error('Error in updateDashboardSettings:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Reset dashboard settings to default
+   * @returns {Promise<boolean>} Success status
+   */
+  async resetDashboardSettings() {
+    try {
+      return await this.resetWidgetState(WidgetTabRetentionService.DASHBOARD_SETTINGS);
+    } catch (err) {
+      console.error('Error in resetDashboardSettings:', err);
       throw err;
     }
   }

@@ -43,6 +43,15 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Dashboard Active Tab Retention (Latest)
+- **Tab State Persistence**: Dashboard now remembers which tab (Analysis or Tools) was last active
+  - Active tab automatically saved to Supabase when user switches tabs
+  - On dashboard load, user returns to their last selected tab
+  - Default tab is 'Analysis' for first-time users
+  - Uses existing `widget_tab_retention` table with special widget name `DashboardSettings`
+  - Tab state is user-specific and persists across sessions
+  - Files affected: `src/services/widgetTabRetentionService.js`, `src/pages/Dashboard.jsx`
+
 ### UI Layout Fixes
 - **Loading Overlay Z-Index Fix**: Fixed loading overlay appearing behind navbar on page reload
   - Increased z-index from `z-50` to `z-[9999]` to ensure overlay appears above all content including navbar
@@ -1242,6 +1251,72 @@ This service manages the persistence of widget states for the tools tab, includi
 - ✅ **Visibility Control**: Show/hide widgets dynamically
 - ✅ **Display Order**: Customize widget arrangement
 - ✅ **Import/Export**: Backup and restore widget states as JSON
+- ✅ **Dashboard Tab Retention**: Remember active tab (Analysis/Tools) across sessions
+
+### Dashboard Active Tab Retention (Latest)
+
+The service now supports **Dashboard-level settings**, including retention of the active tab (Analysis or Tools) across sessions. This ensures users return to the same view they were using.
+
+#### How It Works
+
+1. **Initial Load**: When a user opens the dashboard, the last active tab is loaded from Supabase
+2. **Auto-Save**: When switching between Analysis and Tools tabs, the selection is automatically saved
+3. **Default Behavior**: First-time users or logged-out users see the Analysis tab by default
+
+#### Usage in Dashboard
+
+```javascript
+// The Dashboard component automatically handles tab retention
+import widgetTabRetentionService from '../services/widgetTabRetentionService';
+
+// Get active tab (called on mount)
+const activeTab = await widgetTabRetentionService.getActiveTab(); // Returns: 'analysis' or 'tools'
+
+// Set active tab (called on tab change)
+await widgetTabRetentionService.setActiveTab('tools');
+
+// Get all dashboard settings (includes active tab and more)
+const settings = await widgetTabRetentionService.getDashboardSettings();
+// Returns: { activeTab: 'analysis', lastVisited: '2025-10-09T...' }
+
+// Update dashboard settings
+await widgetTabRetentionService.updateDashboardSettings({
+  activeTab: 'tools',
+  lastVisited: new Date().toISOString()
+});
+
+// Reset to default
+await widgetTabRetentionService.resetDashboardSettings();
+```
+
+#### Dashboard Settings Structure
+
+```javascript
+{
+  activeTab: 'analysis',  // 'analysis' or 'tools'
+  lastVisited: null       // ISO timestamp of last visit
+}
+```
+
+#### Available Tab Constants
+
+```javascript
+import { WidgetTabRetentionService } from '../services/widgetTabRetentionService';
+
+WidgetTabRetentionService.TABS.ANALYSIS  // 'analysis'
+WidgetTabRetentionService.TABS.TOOLS     // 'tools'
+```
+
+#### Integration
+
+The feature is automatically integrated into the Dashboard component (`src/pages/Dashboard.jsx`):
+- Tab state is loaded from Supabase on component mount
+- Tab changes are automatically persisted to Supabase
+- Uses the same `widget_tab_retention` table with a special widget name: `DashboardSettings`
+
+**Files affected:**
+- `src/services/widgetTabRetentionService.js`: Added tab retention methods
+- `src/pages/Dashboard.jsx`: Integrated auto-save/load functionality
 
 ### Database Schema
 
@@ -1369,6 +1444,8 @@ await widgetTabRetentionService.importWidgetStates(backup);
 
 ### API Reference
 
+#### Widget State Methods
+
 | Method | Description | Parameters | Returns |
 |--------|-------------|------------|---------|
 | `getWidgetState(widgetName)` | Get widget state | Widget name | Promise\<Object\> |
@@ -1384,6 +1461,16 @@ await widgetTabRetentionService.importWidgetStates(backup);
 | `getWidgetConfig(widgetName)` | Get config | Widget name | Promise\<Object\> |
 | `exportWidgetStates()` | Export as JSON | None | Promise\<String\> |
 | `importWidgetStates(json)` | Import from JSON | JSON string | Promise\<Array\> |
+
+#### Dashboard Tab Methods (New)
+
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `getActiveTab()` | Get active tab | None | Promise\<String\> |
+| `setActiveTab(tabName)` | Set active tab | Tab name ('analysis'\|'tools') | Promise\<Object\> |
+| `getDashboardSettings()` | Get dashboard settings | None | Promise\<Object\> |
+| `updateDashboardSettings(settings)` | Update dashboard settings | Partial settings object | Promise\<Object\> |
+| `resetDashboardSettings()` | Reset dashboard settings | None | Promise\<Boolean\> |
 
 ### Security
 
