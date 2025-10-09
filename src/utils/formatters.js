@@ -150,11 +150,19 @@ export const getRsiColor = (rsi, overbought = 70, oversold = 30) => {
 };
 
 export const getCurrencyStrengthColor = (strength) => {
-  if (strength >= 70) return 'text-success-600 bg-success-100';
-  if (strength >= 60) return 'text-success-500 bg-success-50';
-  if (strength >= 40) return 'text-gray-600 bg-gray-100';
-  if (strength >= 30) return 'text-danger-500 bg-danger-50';
-  return 'text-danger-600 bg-danger-100';
+  if (strength > 0) {
+    // Positive values - Green (stronger = darker green)
+    if (strength >= 50) return 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/30';
+    if (strength >= 20) return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20';
+    return 'text-green-500 bg-green-50 dark:text-green-500 dark:bg-green-900/10';
+  } else if (strength < 0) {
+    // Negative values - Red (weaker = darker red)
+    if (strength <= -50) return 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/30';
+    if (strength <= -20) return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20';
+    return 'text-red-500 bg-red-50 dark:text-red-500 dark:bg-red-900/10';
+  }
+  // Zero or neutral
+  return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800';
 };
 
 export const getImpactColor = (impact) => {

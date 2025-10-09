@@ -706,7 +706,17 @@ useEffect(() => {
             const score = buyPct - sellPct; // -100 (strong sell) .. +100 (strong buy)
             // Map score to needle angle: -90deg (left) .. +90deg (right)
             const angle = Math.max(-90, Math.min(90, (score / 100) * 90));
-            const dominant = buyPct >= sellPct ? 'STRONG BUY' : 'STRONG SELL';
+            // Determine dominant signal: >50% is "STRONG", otherwise just "BUY" or "SELL"
+            let dominant;
+            if (buyPct > 50) {
+              dominant = 'STRONG BUY';
+            } else if (sellPct > 50) {
+              dominant = 'STRONG SELL';
+            } else if (buyPct >= sellPct) {
+              dominant = 'BUY';
+            } else {
+              dominant = 'SELL';
+            }
 
             return (
               <div className="h-full rounded-xl bg-white dark:bg-gray-800 p-3">
@@ -753,25 +763,39 @@ useEffect(() => {
                         />
                       );
                     })}
-                    {/* Numeric labels */}
-                    {([0, 0.25, 0.5, 0.75, 1]).map((t, idx) => {
-                      const values = [-100, -50, 0, 50, 100];
+                    {/* Numeric labels - 100% SELL to 100% BUY */}
+                    {([0, 0.5, 1]).map((t, idx) => {
+                      const values = ['100', '0', '100'];
+                      const labels = ['SELL', '', 'BUY'];
                       const ang = (-Math.PI / 2) + (Math.PI * t);
                       const r = 74; // label radius
                       const tx = 100 + Math.cos(ang) * r;
                       const ty = 100 + Math.sin(ang) * r;
                       return (
-                        <text
-                          key={`lbl-${idx}`}
-                          x={tx}
-                          y={ty}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          className="fill-gray-500"
-                          style={{ fontSize: 10, fontWeight: 500 }}
-                        >
-                          {values[idx]}
-                        </text>
+                        <g key={`lbl-${idx}`}>
+                          <text
+                            x={tx}
+                            y={ty - 4}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-gray-600"
+                            style={{ fontSize: 11, fontWeight: 600 }}
+                          >
+                            {values[idx]}
+                          </text>
+                          {labels[idx] && (
+                            <text
+                              x={tx}
+                              y={ty + 8}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                              className={idx === 0 ? 'fill-rose-600' : 'fill-emerald-600'}
+                              style={{ fontSize: 8, fontWeight: 600 }}
+                            >
+                              {labels[idx]}
+                            </text>
+                          )}
+                        </g>
                       );
                     })}
                     {/* Needle */}
@@ -794,22 +818,13 @@ useEffect(() => {
                       BUY
                     </span>
                   </div>
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800/40 dark:text-gray-300 dark:border-gray-700 text-[10px] font-medium">
-                      NEUTRAL
-                    </span>
-                  </div>
                 </div>
                 <div className="mt-2 text-center">
-                  <div className={`text-sm font-bold ${buyPct >= sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
-                  <div className="mt-1 grid grid-cols-3 gap-1 text-xs">
+                  <div className={`text-sm font-bold ${buyPct > sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
+                  <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
                       <div className="text-gray-500">Sell</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-500">{(100 - (buyPct+sellPct)).toFixed(0)}%</div>
-                      <div className="text-gray-500">Neutral</div>
                     </div>
                     <div>
                       <div className="font-semibold text-emerald-600">{buyPct.toFixed(0)}%</div>

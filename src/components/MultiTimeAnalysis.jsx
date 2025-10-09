@@ -321,7 +321,35 @@ const ForexMarketTimeZone = () => {
     { value: "America/Los_Angeles", label: "Los Angeles", flag: "🇺🇸", gmt: "-8" },
   ];
 
-  // Get session bar position and width based on GMT hours (constrains cross-midnight to end of day)
+  // Convert GMT time to selected timezone
+  const convertGMTToTimezone = (gmtHours, targetTimezone) => {
+    const timeRange = gmtHours.replace(' GMT', '').split('-');
+    const startTime = timeRange[0];
+    const endTime = timeRange[1];
+    
+    // Create dates in GMT
+    const now = new Date();
+    const startDate = new Date(`${now.toDateString()} ${startTime} GMT`);
+    const endDate = new Date(`${now.toDateString()} ${endTime} GMT`);
+    
+    // Convert to target timezone
+    const startInTz = startDate.toLocaleTimeString('en-US', {
+      timeZone: targetTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const endInTz = endDate.toLocaleTimeString('en-US', {
+      timeZone: targetTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    
+    return `${startInTz}-${endInTz}`;
+  };
+
+  // Get session bar position and width based on GMT hours (handles cross-midnight sessions)
   const getSessionBarStyle = (gmtHours) => {
     const timeRange = gmtHours.replace(' GMT', '').split('-');
     let startHour = parseInt(timeRange[0].split(':')[0]);
@@ -329,10 +357,12 @@ const ForexMarketTimeZone = () => {
 
     if (isNaN(startHour) || isNaN(endHour)) return { left: '0%', width: '0%' };
 
-    // If session crosses midnight, only show from start to 24:00 within current day
+    // If session crosses midnight, show full duration wrapping around
     if (endHour < startHour) {
+      // Calculate full duration: from start to midnight + midnight to end
+      const duration = (24 - startHour) + endHour;
       const startPercent = (startHour / 24) * 100;
-      const widthPercent = ((24 - startHour) / 24) * 100;
+      const widthPercent = (duration / 24) * 100;
       return {
         left: `${startPercent}%`,
         width: `${widthPercent}%`
@@ -407,25 +437,25 @@ const ForexMarketTimeZone = () => {
             <Globe2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span className="font-bold">Forex Market Time Zone Converter</span>
           </h1>
-          <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
+          
           <div className="relative timezone-dropdown">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs min-w-[160px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-0.5 text-[10px] min-w-[140px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
             >
-              <div className="flex items-center gap-1">
-                <span className="text-sm">
+              <div className="flex items-center gap-1 whitespace-nowrap">
+                <span className="text-xs">
                   {timezoneOptions.find(opt => opt.value === selectedTimezone)?.flag}
                 </span>
-                <span className="text-xs">
+                <span className="text-[10px] font-medium">
                   {timezoneOptions.find(opt => opt.value === selectedTimezone)?.label}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-[9px] text-gray-500 dark:text-gray-400">
                   (GMT {timezoneOptions.find(opt => opt.value === selectedTimezone)?.gmt})
                 </span>
               </div>
               <svg 
-                className={`w-3 h-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                className={`w-2.5 h-2.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -443,15 +473,15 @@ const ForexMarketTimeZone = () => {
                       setSelectedTimezone(option.value);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
                       selectedTimezone === option.value 
                         ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
                         : 'text-gray-900 dark:text-white'
                     }`}
                   >
-                    <span className="text-lg">{option.flag}</span>
-                    <span className="flex-1 text-left">{option.label}</span>
-                    <span className="text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
+                    <span className="text-sm">{option.flag}</span>
+                    <span className="flex-1 text-left text-[10px] font-medium">{option.label}</span>
+                    <span className="text-[9px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
                   </button>
                 ))}
               </div>
@@ -646,7 +676,7 @@ const ForexMarketTimeZone = () => {
                     }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-8">{m.gmtHours}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-8">{convertGMTToTimezone(m.gmtHours, selectedTimezone)}</p>
               </div>
             </div>
           ))}
