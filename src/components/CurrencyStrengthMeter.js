@@ -10,25 +10,49 @@ import { getCurrencyStrengthColor } from '../utils/formatters';
 
 
 const CurrencyHeatmap = ({ strengthData }) => {
-  const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
+  // Split currencies into strongest and weakest with proper sorting
+  const strongestCurrencies = strengthData
+    .filter(item => item.strength >= 0) // Only positive values
+    .sort((a, b) => b.strength - a.strength) // Sort descending (highest first)
+    .slice(0, 4); // Take top 4
+  
+  const weakestCurrencies = strengthData
+    .filter(item => item.strength < 0) // Only negative values
+    .sort((a, b) => a.strength - b.strength) // Sort ascending (most negative first)
+    .slice(0, 4); // Take top 4 weakest
+
+  const CurrencyCard = ({ currency, strength }) => (
+    <div
+      className={`py-4 px-3 rounded-lg transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
+    >
+      <div className="flex items-center justify-between text-sm leading-none font-semibold">
+        <span className="truncate pr-2">{currency}</span>
+        <span className="tabular-nums">{strength.toFixed(0)}</span>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1">
-      {currencies.map(currency => {
-        const strength = strengthData.find(d => d.currency === currency)?.strength || 50;
+    <div className="space-y-3">
+      {/* Strongest Currencies Row */}
+      <div>
+        <h4 className="text-sm font-medium text-green-700 dark:text-green-400 mb-2 px-1">Strongest Currencies</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {strongestCurrencies.map((item) => (
+            <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} />
+          ))}
+        </div>
+      </div>
 
-        return (
-          <div
-            key={currency}
-            className={`py-3 rounded-md transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
-          >
-            <div className="flex items-center justify-between text-[10px] leading-none font-semibold px-2">
-              <span className="truncate pr-1">{currency}</span>
-              <span className="tabular-nums">{strength.toFixed(0)}</span>
-            </div>
-          </div>
-        );
-      })}
+      {/* Weakest Currencies Row */}
+      <div>
+        <h4 className="text-sm font-medium text-red-700 dark:text-red-400 mb-2 px-1">Weakest Currencies</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {weakestCurrencies.map((item) => (
+            <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
@@ -295,44 +319,7 @@ const CurrencyStrengthMeter = () => {
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {strengthData.length > 0 ? (
-          <>
-            <CurrencyHeatmap strengthData={strengthData} />
-
-            {/* Summary for heatmap mode */}
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <div className="rounded-lg py-2 border border-green-300 dark:border-green-700 bg-transparent">
-                <h4 className="text-sm font-medium text-success-700 mb-2 px-2">Strongest Currencies</h4>
-                <div className="space-y-1">
-                  {strengthData.slice(0, 2).map((item) => {
-                    return (
-                      <div key={item.currency} className="flex items-center justify-between px-2">
-                        <span className="text-sm font-medium">{item.currency}</span>
-                        <span className="text-sm font-bold text-success-600">
-                          {item.strength.toFixed(1)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="rounded-lg py-2 border border-red-300 dark:border-red-700 bg-transparent">
-                <h4 className="text-sm font-medium text-danger-700 mb-2 px-2">Weakest Currencies</h4>
-                <div className="space-y-1">
-                  {strengthData.slice(-2).reverse().map((item) => {
-                    return (
-                      <div key={item.currency} className="flex items-center justify-between px-2">
-                        <span className="text-sm font-medium">{item.currency}</span>
-                        <span className="text-sm font-bold text-danger-600">
-                          {item.strength.toFixed(1)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </>
+          <CurrencyHeatmap strengthData={strengthData} />
         ) : (
           <div className="text-center py-12">
             <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center"></div>

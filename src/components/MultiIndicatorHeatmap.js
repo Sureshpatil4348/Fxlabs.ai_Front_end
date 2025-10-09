@@ -379,54 +379,7 @@ useEffect(() => {
   };
 
   // Get actionable zone based on server final_score
-  const getActionableZone = (finalScore, tradingStyle = 'swingTrader') => {
-    // Style-specific sensitivity thresholds
-    const thresholds = {
-      'scalper': 25,
-      'swingTrader': 15
-    };
-    
-    const threshold = thresholds[tradingStyle] || 20;
-    
-    if (typeof finalScore !== 'number') return 'wait';
-    if (finalScore >= threshold) return 'buy';
-    if (finalScore <= -threshold) return 'sell';
-    return 'wait';
-  };
 
-  // Get zone colors and styling - Premium Light Colors
-  const getZoneStyling = (zone) => {
-    switch (zone) {
-      case 'buy':
-        return {
-          bgClass: 'bg-gradient-to-r from-emerald-50 to-green-100',
-          borderClass: 'border-emerald-200/50',
-          textClass: 'text-emerald-800',
-          iconClass: 'text-emerald-600',
-          valueClass: 'text-emerald-600',
-          label: 'Buy Zone'
-        };
-      case 'sell':
-        return {
-          bgClass: 'bg-gradient-to-r from-red-50 to-rose-100',
-          borderClass: 'border-red-200/50',
-          textClass: 'text-red-800',
-          iconClass: 'text-red-600',
-          valueClass: 'text-red-600',
-          label: 'Sell Zone'
-        };
-      case 'wait':
-      default:
-        return {
-          bgClass: 'bg-gradient-to-r from-amber-50 to-yellow-100',
-          borderClass: 'border-amber-200/50',
-          textClass: 'text-amber-800',
-          iconClass: 'text-amber-600',
-          valueClass: 'text-amber-600',
-          label: 'Wait / Mixed'
-        };
-    }
-  };
   
   // Note: New signal detection is handled by the indicator calculation functions
   // The 'new' property is set by calculateEMASignals, calculateMACDSignals, etc.
@@ -440,18 +393,18 @@ useEffect(() => {
     <>
     <div className="h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
-      <div className="mb-3 px-4">
+      <div className="mb-0.5 px-2">
         {/* Top Row - Title, Trading Signals, and Controls */}
         {/* Mobile: wrap and stack, Desktop: single row */}
-        <div className="widget-header flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <div className="flex items-center space-x-1.5 shrink-0">
-            <img src={quantImage} alt="Quantum" className="w-5 h-5" />
+          <div className="flex items-center space-x-1 shrink-0">
+            <img src={quantImage} alt="Quantum" className="w-4 h-4" />
             <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
-          <div className="flex items-center space-x-0.5 flex-wrap gap-1">
+          <div className="flex items-center space-x-0.5 flex-wrap gap-0.5">
           {/* Alert Bell Icon */}
           {user && (
             <div className="flex items-center">
@@ -459,21 +412,21 @@ useEffect(() => {
                 type="button"
                 aria-label="Configure heatmap alerts"
                 onClick={handleBellClick}
-                className={`relative p-1 transition-colors duration-300 group ${
+                className={`relative p-0.5 transition-colors duration-300 group ${
                   activeAlertsCount > 0
                     ? 'text-blue-600'
                     : 'text-gray-400 hover:text-blue-500'
                 }`}
               >
-                <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <Bell className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
               </button>
               <button 
                 type="button"
                 aria-label="Configure custom indicator alert"
                 onClick={handleIndicatorConfigOpen}
-                className="relative p-1 text-gray-400 hover:text-indigo-500 transition-colors duration-300 group ml-1"
+                className="relative p-0.5 text-gray-400 hover:text-indigo-500 transition-colors duration-300 group ml-0.5"
               >
-                <Sliders className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                <Sliders className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
               </button>
             </div>
           )}
@@ -601,7 +554,7 @@ useEffect(() => {
 
       {/* Content Area - More Space for Table */}
       <div style={{
-        height: 'calc(100% - 50px)',
+        height: 'auto',
         overflowY: 'hidden',
         padding: '0.25rem',
         display: 'flex',
@@ -621,204 +574,269 @@ useEffect(() => {
         </div>
       )} */}
 
-      {/* Server-driven only; remove quiet-market client badge */}
-
-      {/* Current Actionable Zone Indicator - Only show for high probability zones (server-based) */}
-      {(() => {
-        const mcState = useMarketCacheStore.getState();
-        const qEntry = mcState.quantumBySymbol.get(currentSymbol);
-        const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
-        const overall = qEntry && qEntry.overall ? qEntry.overall[styleKey] : null;
-        const zone = getActionableZone(overall?.final_score, tradingStyle);
-        const _styling = getZoneStyling(zone);
-        
-        // Only show if it's a high probability zone (Buy or Sell), not Wait/Neutral
-        if (zone === 'wait') return null;
-        return (
-          <div className={`mb-1 p-1 rounded-lg border ${_styling.bgClass} ${_styling.borderClass}`}>
-            <div className="flex items-center justify-between">
-              <span className={`text-xs font-semibold ${_styling.textClass}`}>{_styling.label}</span>
-              {overall && (
-                <span className={`text-xs ${_styling.valueClass}`}>{Math.round((overall.final_score || 0) * 10) / 10}</span>
-              )}
-            </div>
-          </div>
-        );
-      })()}
 
       
-      {/* Heatmap Table - Full Height (server quantum only) */}
-      <div className="overflow-x-auto overflow-y-hidden lg:overflow-y-auto flex-1 min-w-0 min-h-0">
-        <table className="w-full border-collapse min-w-[600px]">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-slate-600">
-              <th className="text-left py-0.5 sm:py-0.5 px-0.5 font-bold text-gray-700 dark:text-slate-300 text-sm w-20"></th>
-              {indicators.map(indicator => (
-                <th key={indicator} className="text-center py-0.5 sm:py-0.5 px-0.5 text-gray-700 dark:text-slate-300">
-                  <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(() => {
-              const mcState = useMarketCacheStore.getState();
-              const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
-              const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
-              return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
-              <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                <td className="py-0.5 sm:py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
-                  <div className="flex items-center space-x-0.5 ml-2">
-                    <span className="text-sm font-normal">{formatTimeframeDisplay(timeframe)}</span>
-                  </div>
-                </td>
-                {indicators.map(indicator => {
-                  const tfData = perTf && perTf[timeframe];
-                  const indData = tfData && tfData.indicators && tfData.indicators[indicator];
-                  const hasData = !!indData;
-                  const signal = (indData && indData.signal) || 'neutral';
-                  const bgColor = signal === 'buy' ? '#03c05d' : signal === 'sell' ? '#e03f4c' : '#9ca3af';
-                  
-                  return (
-                    <td key={indicator} className="text-center py-0.5 px-0.5">
-                      <div className="relative h-full flex items-center justify-center">
-                        <button 
-                          className=""
-                          style={hasData ? {
-                            backgroundColor: bgColor,
-                            borderRadius: '4px',
-                            // Avoid mixing shorthand/non-shorthand border props across renders
-                            borderWidth: '0px',
-                            borderStyle: 'solid',
-                            borderColor: 'transparent',
-                            boxSizing: 'border-box',
-                            color: '#fff',
-                            cursor: 'pointer',
-                            display: 'inline-block',
-                            fontFamily: 'Inter, system-ui, sans-serif',
-                            fontSize: window.innerWidth < 768 ? '10px' : '12px',
-                            fontWeight: '700',
-                            lineHeight: '1.5',
-                            margin: '0',
-                            maxWidth: 'none',
-                            minHeight: window.innerWidth < 768 ? '24px' : '32px',
-                            minWidth: window.innerWidth < 768 ? '48px' : '64px',
-                            outline: 'none',
-                            overflow: 'hidden',
-                            padding: window.innerWidth < 768 ? '3px 5px' : '5px 7px',
-                            position: 'relative',
-                            textAlign: 'center',
-                            textTransform: 'none',
-                            userSelect: 'none',
-                            WebkitUserSelect: 'none',
-                            touchAction: 'manipulation',
-                            width: window.innerWidth < 768 ? '48px' : '64px',
-                            height: window.innerWidth < 768 ? '24px' : '32px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)'
-                          } : {
-                            backgroundColor: '#f3f4f6',
-                            color: '#9ca3af',
-                            borderWidth: '2px',
-                            borderStyle: 'dashed',
-                            borderColor: '#d1d5db',
-                            borderRadius: '4px',
-                            boxSizing: 'border-box',
-                            cursor: 'not-allowed',
-                            display: 'inline-block',
-                            fontFamily: 'Inter, system-ui, sans-serif',
-                            fontSize: window.innerWidth < 768 ? '10px' : '12px',
-                            fontWeight: '700',
-                            lineHeight: '1.5',
-                            margin: '0',
-                            maxWidth: 'none',
-                            minHeight: window.innerWidth < 768 ? '24px' : '32px',
-                            minWidth: window.innerWidth < 768 ? '48px' : '64px',
-                            outline: 'none',
-                            overflow: 'hidden',
-                            padding: window.innerWidth < 768 ? '3px 5px' : '5px 7px',
-                            position: 'relative',
-                            textAlign: 'center',
-                            textTransform: 'none',
-                            userSelect: 'none',
-                            WebkitUserSelect: 'none',
-                            touchAction: 'manipulation',
-                            width: '64px',
-                            height: '32px'
-                          }}
-                          title={hasData ? `Signal: ${signal}` : 'No data'}
-                          disabled={!hasData}
-                        >
-                          {hasData ? getSignalTextFromServer(signal) : <span className="text-xs">⋯</span>}
-                        </button>
-                      </div>
-                    </td>
-                  );
-                })}
+      {/* Heatmap Table + Meter */}
+      <div className="flex gap-1.5 h-full">
+        {/* Left: Compact Table */}
+        <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
+          <table className="w-full border-collapse min-w-[560px]">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-slate-600">
+                <th className="text-left py-0.5 px-0.5 font-bold text-gray-700 dark:text-slate-300 text-xs w-14"></th>
+                {indicators.map(indicator => (
+                  <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700 dark:text-slate-300">
+                    <span className="text-xs font-bold">{formatIndicatorDisplay(indicator)}</span>
+                  </th>
+                ))}
               </tr>
-              ));
-            })()}
-            
-            {/* Buy/Sell Progress Bar Row */}
-            {(() => {
-              const mcState = useMarketCacheStore.getState();
-              const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
-              return (
-                <tr className="border-b-0" style={{ height: 'calc(100% / ' + ([...new Set(supportedTfs)].filter(tf => tf !== '1W').length + 1) + ')' }}>
-              <td className="py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
-                <div className="flex items-center space-x-0.5 ml-2">
-                </div>
-              </td>
-              <td colSpan={indicators.length} className="py-0.5 px-0.5">
-                <div className="flex items-center justify-center">
-                  {(() => {
-                    const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
-                    const qe = mcState.quantumBySymbol.get(currentSymbol);
-                    const ov = qe && qe.overall ? qe.overall[styleKey] : null;
-                    const buyPct = typeof ov?.buy_percent === 'number' ? ov.buy_percent : 50;
-                    const sellPct = typeof ov?.sell_percent === 'number' ? ov.sell_percent : (100 - buyPct);
+            </thead>
+            <tbody>
+              {(() => {
+                const mcState = useMarketCacheStore.getState();
+                const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
+                const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
+                return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
+                <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
+                  <td className="py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
+                    <div className="flex items-center space-x-0.5 ml-1">
+                      <span className="text-xs font-medium">{formatTimeframeDisplay(timeframe)}</span>
+                    </div>
+                  </td>
+                  {indicators.map(indicator => {
+                    const tfData = perTf && perTf[timeframe];
+                    const indData = tfData && tfData.indicators && tfData.indicators[indicator];
+                    const hasData = !!indData;
+                    const signal = (indData && indData.signal) || 'neutral';
+                    const bgGradient = signal === 'buy' ? 'linear-gradient(to bottom right, #10b981, #16a34a)' : signal === 'sell' ? '#e03f4c' : '#f1f5f9';
+                    const textColor = signal === 'neutral' ? '#475569' : '#ffffff';
+                    const cellBorderWidth = signal === 'neutral' ? '1px' : '0px';
+                    const cellBorderColor = signal === 'neutral' ? '#e2e8f0' : 'transparent';
                     
                     return (
-                      <div className="flex items-center gap-2.5 w-full">
-                        <span 
-                          className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap -ml-16"
-                        >BUY {buyPct.toFixed(1)}%</span>
-                        <div className="flex-1 relative">
-                          <div className="w-full h-4 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full transition-all duration-500 ease-out"
-                              style={{ 
-                                width: `${buyPct}%`,
-                                background: '#03c05d',
-                                borderRadius: '8px 0 0 8px'
-                              }}
-                            />
-                            <div 
-                              className="absolute top-0 h-full transition-all duration-500 ease-out"
-                              style={{ 
-                                left: `${buyPct}%`,
-                                width: `${sellPct}%`,
-                                background: '#dc2626',
-                                borderRadius: '0 8px 8px 0'
-                              }}
-                            />
-                          </div>
+                      <td key={indicator} className="text-center py-0.5 px-0.5">
+                        <div className="relative h-full flex items-center justify-center">
+                          <button 
+                            className=""
+                            style={hasData ? {
+                              background: bgGradient,
+                              borderRadius: '4px',
+                              borderWidth: cellBorderWidth,
+                              borderStyle: 'solid',
+                              borderColor: cellBorderColor,
+                              boxSizing: 'border-box',
+                              color: textColor,
+                              cursor: 'pointer',
+                              display: 'inline-block',
+                              fontFamily: 'Inter, system-ui, sans-serif',
+                              fontSize: window.innerWidth < 768 ? '9.5px' : '11px',
+                              fontWeight: '700',
+                              lineHeight: '1.3',
+                              margin: '0',
+                              maxWidth: 'none',
+                              minHeight: window.innerWidth < 768 ? '20px' : '28px',
+                              minWidth: window.innerWidth < 768 ? '44px' : '62px',
+                              outline: 'none',
+                              overflow: 'hidden',
+                              padding: window.innerWidth < 768 ? '3px 4px' : '4px 6px',
+                              position: 'relative',
+                              textAlign: 'center',
+                              textTransform: 'none',
+                              userSelect: 'none',
+                              WebkitUserSelect: 'none',
+                              touchAction: 'manipulation',
+                              width: window.innerWidth < 768 ? '44px' : '62px',
+                              height: window.innerWidth < 768 ? '20px' : '28px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)'
+                            } : {
+                              backgroundColor: '#f3f4f6',
+                              color: '#9ca3af',
+                              borderWidth: '2px',
+                              borderStyle: 'dashed',
+                              borderColor: '#d1d5db',
+                              borderRadius: '4px',
+                              boxSizing: 'border-box',
+                              cursor: 'not-allowed',
+                              display: 'inline-block',
+                              fontFamily: 'Inter, system-ui, sans-serif',
+                              fontSize: window.innerWidth < 768 ? '9.5px' : '11px',
+                              fontWeight: '700',
+                              lineHeight: '1.3',
+                              margin: '0',
+                              maxWidth: 'none',
+                              minHeight: window.innerWidth < 768 ? '20px' : '28px',
+                              minWidth: window.innerWidth < 768 ? '44px' : '62px',
+                              outline: 'none',
+                              overflow: 'hidden',
+                              padding: window.innerWidth < 768 ? '3px 4px' : '4px 6px',
+                              position: 'relative',
+                              textAlign: 'center',
+                              textTransform: 'none',
+                              userSelect: 'none',
+                              WebkitUserSelect: 'none',
+                              touchAction: 'manipulation',
+                              width: window.innerWidth < 768 ? '44px' : '62px',
+                              height: window.innerWidth < 768 ? '20px' : '28px'
+                            }}
+                            title={hasData ? `Signal: ${signal}` : 'No data'}
+                            disabled={!hasData}
+                          >
+                            {hasData ? getSignalTextFromServer(signal) : <span className="text-xs">⋯</span>}
+                          </button>
                         </div>
-                        <span 
-                          className="text-xs font-bold text-red-600 dark:text-red-400 whitespace-nowrap m-2"
-                        >SELL {sellPct.toFixed(1)}%</span>
-                      </div>
+                      </td>
                     );
-                  })()}
+                  })}
+                </tr>
+                ));
+              })()}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Right: Buy/Sell Now Meter (desktop only) */}
+        <div className="hidden lg:block w-96 xl:w-[28rem] shrink-0">
+          {(() => {
+            const mcState = useMarketCacheStore.getState();
+            const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
+            const qe = mcState.quantumBySymbol.get(currentSymbol);
+            const ov = qe && qe.overall ? qe.overall[styleKey] : null;
+            const buyPct = typeof ov?.buy_percent === 'number' ? ov.buy_percent : 50;
+            const sellPct = typeof ov?.sell_percent === 'number' ? ov.sell_percent : (100 - buyPct);
+            const score = buyPct - sellPct; // -100 (strong sell) .. +100 (strong buy)
+            // Map score to needle angle: -90deg (left) .. +90deg (right)
+            const angle = Math.max(-90, Math.min(90, (score / 100) * 90));
+            // Determine dominant signal: >50% is "STRONG", otherwise just "BUY" or "SELL"
+            let dominant;
+            if (buyPct > 50) {
+              dominant = 'STRONG BUY';
+            } else if (sellPct > 50) {
+              dominant = 'STRONG SELL';
+            } else if (buyPct >= sellPct) {
+              dominant = 'BUY';
+            } else {
+              dominant = 'SELL';
+            }
+
+            return (
+              <div className="h-full rounded-xl bg-white dark:bg-gray-800 p-3">
+                <div className="text-center mb-2">
+                  <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">Trading Meter</h3>
                 </div>
-              </td>
-            </tr>
-              );
-            })()}
-          </tbody>
-        </table>
+                {/* Gauge */}
+                <div className="relative w-full" style={{ height: 130 }}>
+                  <svg viewBox="0 0 200 110" className="w-full h-full">
+                    <defs>
+                      <linearGradient id="gaugeStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#ef4444"/>
+                        <stop offset="50%" stopColor="#9ca3af"/>
+                        <stop offset="100%" stopColor="#10b981"/>
+                      </linearGradient>
+                      <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1.2" floodColor="#000" floodOpacity="0.35" />
+                      </filter>
+                    </defs>
+                    {/* Track */}
+                    <path d="M10,100 A90,90 0 0,1 190,100" fill="none" stroke="#e5e7eb" strokeWidth="10" strokeLinecap="round" />
+                    {/* Colored stroke */}
+                    <path d="M10,100 A90,90 0 0,1 190,100" fill="none" stroke="url(#gaugeStroke)" strokeWidth="10" strokeLinecap="round" opacity="0.9" />
+                    {/* Tick marks */}
+                    {Array.from({length: 11}).map((_, i) => {
+                      const t = i / 10; // 0..1
+                      const ang = (-Math.PI / 2) + (Math.PI * t); // -90deg .. +90deg
+                      const inner = 82; // inner radius for tick start
+                      const outer = i % 5 === 0 ? 94 : 90; // longer for major ticks
+                      const x1 = 100 + Math.cos(ang) * inner;
+                      const y1 = 100 + Math.sin(ang) * inner;
+                      const x2 = 100 + Math.cos(ang) * outer;
+                      const y2 = 100 + Math.sin(ang) * outer;
+                      return (
+                        <line
+                          key={i}
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          stroke="#cbd5e1"
+                          strokeWidth={i % 5 === 0 ? 2 : 1}
+                          strokeLinecap="round"
+                        />
+                      );
+                    })}
+                    {/* Numeric labels - 100% SELL to 100% BUY */}
+                    {([0, 0.5, 1]).map((t, idx) => {
+                      const values = ['100', '0', '100'];
+                      const labels = ['SELL', '', 'BUY'];
+                      const ang = (-Math.PI / 2) + (Math.PI * t);
+                      const r = 74; // label radius
+                      const tx = 100 + Math.cos(ang) * r;
+                      const ty = 100 + Math.sin(ang) * r;
+                      return (
+                        <g key={`lbl-${idx}`}>
+                          <text
+                            x={tx}
+                            y={ty - 4}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-gray-600"
+                            style={{ fontSize: 11, fontWeight: 600 }}
+                          >
+                            {values[idx]}
+                          </text>
+                          {labels[idx] && (
+                            <text
+                              x={tx}
+                              y={ty + 8}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                              className={idx === 0 ? 'fill-rose-600' : 'fill-emerald-600'}
+                              style={{ fontSize: 8, fontWeight: 600 }}
+                            >
+                              {labels[idx]}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    })}
+                    {/* Needle */}
+                    <g transform={`rotate(${angle} 100 100)`}>
+                      <polygon points="100,22 95,100 105,100" fill="#7c3aed" />
+                    </g>
+                    {/* Pivot */}
+                    <circle cx="100" cy="100" r="6" fill="#ffffff" stroke="#374151" strokeWidth="2" />
+                  </svg>
+                  {/* Labels */}
+                  <div className="absolute top-2 left-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800 text-xs font-semibold">
+                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                      SELL
+                    </span>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800 text-xs font-semibold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      BUY
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-2 text-center">
+                  <div className={`text-sm font-bold ${buyPct > sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
+                  <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
+                      <div className="text-gray-500">Sell</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-emerald-600">{buyPct.toFixed(0)}%</div>
+                      <div className="text-gray-500">Buy</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       </div>
-      
-      
       </div>
     </div>
     

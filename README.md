@@ -389,6 +389,49 @@ Example:
 - **Professional look**: Reduced inner spacing, rounded-full, clear active/hover states
 - **Files affected**: `src/components/LotSizeCalculator.jsx`
 
+### UI Polish: Lot Size Calculator premium inputs (Latest)
+- **Affixed inputs**: Added currency/percent/unit affixes for clarity (`$`, `%`, `pips`/`price difference`)
+- **Premium sizing**: Increased field height, rounded-2xl corners, soft shadow for a polished look
+- **Select enhancement**: Custom arrow, consistent height, and disabled state styling; respects live-data availability
+- **Responsive spacing**: Increased column gap; labels upgraded to `text-sm` for readability
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### Layout: Segmented control centered (Latest)
+- **Centered pills**: Instrument type segmented control moved to the second line under title and centered for balance
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### Premium Refresh: Lot Size Calculator (Latest)
+- **Subtitle added**: Clear description under the title for context
+- **Soft panel**: Inputs wrapped in rounded-2xl bordered panel with subtle shadow
+- **Results polish**: Stat chips for Risk Amount and Position Size, gradient card, and copy button for calculation
+- **Accessibility**: Copy action provides quick feedback with a temporary "Copied" state
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### Tweak: Segmented control size reduced (Latest)
+- **No scroll on change**: Decreased font size and padding of instrument pills to prevent layout shift/scroll
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### UX: Results displayed inline (Latest)
+- **Inline summary**: After clicking Calculate, results now appear inside the form panel right under the buttons, not at the bottom of the widget
+- **Copy action**: Calculation remains copyable from the inline summary
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### UX: Premium Results Modal (Latest)
+- **Modal presentation**: Clicking Calculate opens a premium modal within the same widget context showing Risk Amount, Position Size, and the full calculation
+- **Keyboard/overlay**: Click outside or press `Esc` to close; includes copy-to-clipboard
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### Tweak: Modal scoped to widget (Latest)
+- **In-widget modal**: Modal is rendered absolutely within the Lot Size Calculator card so it opens inside the widget bounds
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
+### UI Enhancement: Lot Size Calculator inline results (Latest)
+- **Removed modal**: Results now display directly in the widget below the input form instead of in a modal overlay
+- **Compact design**: Reduced spacing and font sizes throughout the component for better space utilization
+- **Inline results**: Risk Amount and Position Size shown in compact cards with copy functionality for calculations
+- **Responsive sizing**: All form elements, labels, and buttons reduced in size while maintaining usability
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### UI Polish: Heatmap symbol dropdown with flags (Latest)
 - **Country flags**: The Multi-Indicator Heatmap symbol dropdown now shows flags for currency pairs (e.g., 🇪🇺 EUR/🇺🇸 USD)
 - **Professional look**: Increased min width, aligned flags on both sides of pair label, improved hover/active states
