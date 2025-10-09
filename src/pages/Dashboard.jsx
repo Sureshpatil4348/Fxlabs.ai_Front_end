@@ -158,27 +158,28 @@
                 {/* Two-column layout: Left stacks Lot Size + Heatmap; Right spans full height with Multi Time Analysis */}
                 {/* Mobile: grid auto-flow, Desktop: grid with flex-1 */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:flex-1 lg:min-h-0">
-                  {/* Left Column: Lot Size (top) + Heatmap (bottom) */}
+                  {/* Left Column: Lot Size (top) */}
                   <div className="flex flex-col gap-2 lg:min-h-0">
                     {/* Lot Size Calculator - Mobile: fixed height with internal scroll, Desktop: h-72 */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[450px] lg:h-72">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[620px] lg:h-[26rem]">
                       <div className="h-full overflow-y-auto">
                         <LotSizeCalculator />
-                      </div>
-                    </div>
-                    {/* Multi Indicator Heatmap - Mobile: reduced height with internal scroll, Desktop: flex-1 */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[420px] lg:h-[28rem] lg:flex-1 lg:min-h-0">
-                      <div className="h-full overflow-auto">
-                        <MultiIndicatorHeatmap />
                       </div>
                     </div>
                   </div>
 
                   {/* Right Column: Multi Time Analysis spanning full height */}
                   {/* Mobile: fixed height with internal scroll, Desktop: min-h-0 flex behavior */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[1100px] lg:h-auto lg:min-h-0">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[900px] lg:h-[26rem] lg:min-h-0 mb-2">
                     <div className="h-full overflow-y-auto overflow-x-auto lg:overflow-x-hidden">
                       <MultiTimeAnalysis />
+                    </div>
+                  </div>
+
+                  {/* Quantum Analysis (MultiIndicatorHeatmap) - full width on desktop */}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[380px] lg:h-auto lg:min-h-0 lg:col-span-2">
+                    <div className="h-full overflow-auto">
+                      <MultiIndicatorHeatmap />
                     </div>
                   </div>
                 </div>

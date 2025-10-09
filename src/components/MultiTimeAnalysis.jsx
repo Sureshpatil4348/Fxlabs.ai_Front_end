@@ -1,58 +1,5 @@
 import { Sun, Moon, Globe2 } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  ResponsiveContainer,
-  Tooltip,
-  AreaChart,
-  Area,
-} from "recharts";
-
-
-// Generate realistic trading volume data based on GMT hours
-const generateVolumeData = () => {
-  const data = [];
-  for (let i = 0; i < 24; i++) {
-    let volume = 20; // Base volume
-    
-    // Sydney session (22:00-07:00 GMT) - Medium volume
-    if (i >= 22 || i < 7) {
-      volume = 30 + Math.random() * 20;
-    }
-    
-    // Tokyo session (00:00-09:00 GMT) - Medium volume
-    if (i >= 0 && i < 9) {
-      volume = 35 + Math.random() * 25;
-    }
-    
-    // London session (08:00-17:00 GMT) - High volume
-    if (i >= 8 && i < 17) {
-      volume = 50 + Math.random() * 30;
-    }
-    
-    // New York session (13:00-22:00 GMT) - High volume
-    if (i >= 13 && i < 22) {
-      volume = 55 + Math.random() * 35;
-    }
-    
-    // London-New York overlap (13:00-17:00 GMT) - Very high volume
-    if (i >= 13 && i < 17) {
-      volume = 70 + Math.random() * 30;
-    }
-    
-    // Off-hours - Low volume
-    if (i >= 17 && i < 22) {
-      volume = 15 + Math.random() * 15;
-    }
-    
-    data.push({
-      time: i.toString(),
-      volume: Math.round(volume)
-    });
-  }
-  return data;
-};
-
-const data = generateVolumeData();
 
 const ForexMarketTimeZone = () => {
   const [selectedTimezone, setSelectedTimezone] = useState("Asia/Kolkata");
@@ -357,31 +304,6 @@ const ForexMarketTimeZone = () => {
     return overlaps;
   };
 
-  // Get trading volume level based on current time
-  const getTradingVolumeLevel = () => {
-    const overlaps = getTradingOverlaps();
-    const now = new Date();
-    const gmtTime = new Date(now.toLocaleString("en-US", {timeZone: "GMT"}));
-    const gmtHour = gmtTime.getHours();
-    
-    // High volume during major overlaps
-    if (overlaps.includes("London-New York Overlap")) {
-      return { level: "Very High", color: "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200" };
-    }
-    
-    // Medium-high volume during other overlaps
-    if (overlaps.length > 0) {
-      return { level: "High", color: "bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-200" };
-    }
-    
-    // Medium volume during major sessions
-    if (gmtHour >= 8 && gmtHour < 17) {
-      return { level: "Medium", color: "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200" };
-    }
-    
-    // Low volume during off-hours
-    return { level: "Low", color: "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200" };
-  };
 
   // Timezone options with flags for dropdown
   const timezoneOptions = [
@@ -433,71 +355,8 @@ const ForexMarketTimeZone = () => {
       timezone: "Australia/Sydney",
       color: "bg-gradient-to-r from-blue-600 to-blue-800",
       stripedColor: "bg-gradient-to-r from-blue-700 to-blue-900",
-      sessionHours: "09:00-18:00 (Local)",
+      sessionHours: "09:00-18:00",
       gmtHours: "22:00-07:00 GMT",
-    },
-    {
-      name: "Tokyo",
-      flag: "🇯🇵",
-      timezone: "Asia/Tokyo",
-      color: "bg-gradient-to-r from-pink-600 to-pink-800",
-      stripedColor: "bg-gradient-to-r from-pink-700 to-pink-900",
-      sessionHours: "09:00-18:00 (Local)",
-      gmtHours: "00:00-09:00 GMT",
-    },
-    {
-      name: "Hong Kong",
-      flag: "🇭🇰",
-      timezone: "Asia/Hong_Kong",
-      color: "bg-gradient-to-r from-red-600 to-red-800",
-      stripedColor: "bg-gradient-to-r from-red-700 to-red-900",
-      sessionHours: "09:00-17:00 (Local)",
-      gmtHours: "01:00-09:00 GMT",
-    },
-    {
-      name: "Singapore",
-      flag: "🇸🇬",
-      timezone: "Asia/Singapore",
-      color: "bg-gradient-to-r from-orange-600 to-orange-800",
-      stripedColor: "bg-gradient-to-r from-orange-700 to-orange-900",
-      sessionHours: "09:00-17:00 (Local)",
-      gmtHours: "01:00-09:00 GMT",
-    },
-    {
-      name: "Dubai",
-      flag: "🇦🇪",
-      timezone: "Asia/Dubai",
-      color: "bg-gradient-to-r from-yellow-600 to-yellow-800",
-      stripedColor: "bg-gradient-to-r from-yellow-700 to-yellow-900",
-      sessionHours: "09:00-17:00 (Local)",
-      gmtHours: "05:00-13:00 GMT",
-    },
-    {
-      name: "Mumbai",
-      flag: "🇮🇳",
-      timezone: "Asia/Kolkata",
-      color: "bg-gradient-to-r from-indigo-600 to-indigo-800",
-      stripedColor: "bg-gradient-to-r from-indigo-700 to-indigo-900",
-      sessionHours: "09:00-17:00 (Local)",
-      gmtHours: "03:30-11:30 GMT",
-    },
-    {
-      name: "Frankfurt",
-      flag: "🇩🇪",
-      timezone: "Europe/Berlin",
-      color: "bg-gradient-to-r from-gray-600 to-gray-800",
-      stripedColor: "bg-gradient-to-r from-gray-700 to-gray-900",
-      sessionHours: "08:00-16:00 (Local)",
-      gmtHours: "07:00-15:00 GMT",
-    },
-    {
-      name: "Zurich",
-      flag: "🇨🇭",
-      timezone: "Europe/Zurich",
-      color: "bg-gradient-to-r from-teal-600 to-teal-800",
-      stripedColor: "bg-gradient-to-r from-teal-700 to-teal-900",
-      sessionHours: "08:00-16:00 (Local)",
-      gmtHours: "07:00-15:00 GMT",
     },
     {
       name: "London",
@@ -505,17 +364,8 @@ const ForexMarketTimeZone = () => {
       timezone: "Europe/London",
       color: "bg-gradient-to-r from-purple-600 to-purple-800",
       stripedColor: "bg-gradient-to-r from-purple-700 to-purple-900",
-      sessionHours: "08:00-17:00 (Local)",
+      sessionHours: "08:00-17:00",
       gmtHours: "08:00-17:00 GMT",
-    },
-    {
-      name: "Toronto",
-      flag: "🇨🇦",
-      timezone: "America/Toronto",
-      color: "bg-gradient-to-r from-cyan-600 to-cyan-800",
-      stripedColor: "bg-gradient-to-r from-cyan-700 to-cyan-900",
-      sessionHours: "08:00-17:00 (Local)",
-      gmtHours: "13:00-22:00 GMT",
     },
     {
       name: "New York",
@@ -523,22 +373,13 @@ const ForexMarketTimeZone = () => {
       timezone: "America/New_York",
       color: "bg-gradient-to-r from-green-600 to-green-800",
       stripedColor: "bg-gradient-to-r from-green-700 to-green-900",
-      sessionHours: "08:00-17:00 (Local)",
+      sessionHours: "08:00-17:00",
       gmtHours: "13:00-22:00 GMT",
-    },
-    {
-      name: "Los Angeles",
-      flag: "🇺🇸",
-      timezone: "America/Los_Angeles",
-      color: "bg-gradient-to-r from-emerald-600 to-emerald-800",
-      stripedColor: "bg-gradient-to-r from-emerald-700 to-emerald-900",
-      sessionHours: "08:00-17:00 (Local)",
-      gmtHours: "16:00-01:00 GMT",
     },
   ];
 
   return (
-  <div className="bg-white dark:bg-gray-800 p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-md dark:shadow-lg overflow-x-auto lg:overflow-x-hidden">
+  <div className="bg-white dark:bg-gray-800 p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none overflow-x-auto lg:overflow-x-hidden border-0">
       {/* Time Format Toggle - Top Right */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <span className="text-xs text-gray-500 dark:text-gray-400">12h</span>
@@ -559,65 +400,64 @@ const ForexMarketTimeZone = () => {
         <span className="text-xs text-gray-500 dark:text-gray-400">24h</span>
       </div>
 
-      {/* Header */}
-      <div className="mb-3 pr-16">
-        <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 tools-heading">
-          <Globe2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          <span className="font-semibold"> Forex Market Time Zone Converter</span>
-        </h1>
-      </div>
-
-      {/* Timezone Selector */}
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">TIMEZONE</span>
-        <div className="relative timezone-dropdown">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm min-w-[200px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-lg">
-                {timezoneOptions.find(opt => opt.value === selectedTimezone)?.flag}
-              </span>
-              <span>
-                {timezoneOptions.find(opt => opt.value === selectedTimezone)?.label}
-              </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                (GMT {timezoneOptions.find(opt => opt.value === selectedTimezone)?.gmt})
-              </span>
-            </div>
-            <svg 
-              className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+      {/* Header and Timezone Selector */}
+      <div className="flex items-center justify-between mb-3 pr-16">
+        <div className="flex items-center gap-3">
+          <h1 className="text-sm font-semibold text-gray-800 dark:text-white flex items-center gap-2 tools-heading">
+            <Globe2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span className="font-bold">Forex Market Time Zone Converter</span>
+          </h1>
+          <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">TIMEZONE</span>
+          <div className="relative timezone-dropdown">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs min-w-[160px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {isDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-              {timezoneOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    setSelectedTimezone(option.value);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
-                    selectedTimezone === option.value 
-                      ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
-                      : 'text-gray-900 dark:text-white'
-                  }`}
-                >
-                  <span className="text-lg">{option.flag}</span>
-                  <span className="flex-1 text-left">{option.label}</span>
-                  <span className="text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
-                </button>
-              ))}
-            </div>
-          )}
+              <div className="flex items-center gap-1">
+                <span className="text-sm">
+                  {timezoneOptions.find(opt => opt.value === selectedTimezone)?.flag}
+                </span>
+                <span className="text-xs">
+                  {timezoneOptions.find(opt => opt.value === selectedTimezone)?.label}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  (GMT {timezoneOptions.find(opt => opt.value === selectedTimezone)?.gmt})
+                </span>
+              </div>
+              <svg 
+                className={`w-3 h-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                {timezoneOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSelectedTimezone(option.value);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                      selectedTimezone === option.value 
+                        ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
+                        : 'text-gray-900 dark:text-white'
+                    }`}
+                  >
+                    <span className="text-lg">{option.flag}</span>
+                    <span className="flex-1 text-left">{option.label}</span>
+                    <span className="text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -695,7 +535,7 @@ const ForexMarketTimeZone = () => {
         
         {/* Time Display */}
         <div 
-          className="absolute -top-14 flex flex-col items-center cursor-grab active:cursor-grabbing"
+          className="absolute -top-[10px] flex flex-col items-center cursor-grab active:cursor-grabbing z-10"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
           role="slider"
           tabIndex={0}
@@ -712,9 +552,9 @@ const ForexMarketTimeZone = () => {
             }
           }}
         >
-          <div className="bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg min-w-[140px]">
-            <div className="flex flex-col items-center justify-center gap-1">
-              <div className="flex items-center justify-center gap-2 text-lg font-semibold whitespace-nowrap">
+          <div className="bg-purple-600 text-white px-2 py-1 rounded-lg shadow-lg min-w-[100px]">
+            <div className="flex flex-col items-center justify-center gap-0.5">
+              <div className="flex items-center justify-center gap-1 text-sm font-medium whitespace-nowrap">
                 {getTimeIcon(getTimeFromSliderPosition(sliderPosition), selectedTimezone)}
                 <span className="inline-flex">{formatTime(getTimeFromSliderPosition(sliderPosition), selectedTimezone)}</span>
               </div>
@@ -724,42 +564,44 @@ const ForexMarketTimeZone = () => {
         </div>
 
         {/* Current Trading Overlaps */}
-        <div className="mt-4 mb-3 min-w-[700px] lg:min-w-0">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 tools-heading">Current Trading Overlaps:</h3>
-          <div className="flex flex-wrap gap-2">
-            {getTradingOverlaps().length > 0 ? (
-              getTradingOverlaps().map((overlap, index) => (
-                <span key={index} className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs font-medium">
-                  {overlap}
-                </span>
-              ))
-            ) : (
-              <span className="text-gray-500 dark:text-gray-400 text-xs">No active overlaps</span>
-            )}
+        <div className="mt-1 mb-1 min-w-[700px] lg:min-w-0">
+          <div className="flex items-center gap-0.5">
+            <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 tools-heading whitespace-nowrap">Current Trading Overlaps:</h3>
+            <div className="flex flex-nowrap gap-0.5 overflow-x-auto">
+              {getTradingOverlaps().length > 0 ? (
+                getTradingOverlaps().map((overlap, index) => (
+                  <span key={index} className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1 py-0.5 rounded text-xs font-medium whitespace-nowrap">
+                    {overlap}
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">No active overlaps</span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Market Rows */}
-        <div className="space-y-3 mt-3 min-w-[800px] lg:min-w-0">
+        <div className="space-y-1 mt-1 min-w-[800px] lg:min-w-0">
           {markets.map((m, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+              className="flex items-center gap-2 py-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
             >
               {/* Flag + Info */}
-              <div className="flex items-center gap-3 w-64">
-                <span className="text-2xl">{m.flag}</span>
+              <div className="flex items-center gap-2 w-64">
+                <span className="text-xl">{m.flag}</span>
                 <div>
-                  <h3 className="font-semibold text-base text-gray-800 dark:text-white">{m.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{formatTime(currentTime, m.timezone)}</p>
+                  <h3 className="font-semibold text-sm text-gray-800 dark:text-white">{m.name}</h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-300">{formatTime(currentTime, m.timezone)}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(currentTime, m.timezone)}</p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">{m.sessionHours}</p>
                 </div>
               </div>
 
               {/* Status */}
-              <div className="text-sm text-gray-700 dark:text-gray-300 font-medium w-64">
-                <span className={`px-3 py-2 rounded-lg whitespace-nowrap ${
+              <div className="text-xs text-gray-700 dark:text-gray-300 font-medium w-64">
+                <span className={`px-2 py-1 rounded text-xs whitespace-nowrap ${
                   getMarketStatus(m.timezone).includes('SESSION') 
                     ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -812,37 +654,6 @@ const ForexMarketTimeZone = () => {
         </div>
       </div>
 
-      {/* Trading Volume Graph */}
-      <div className="mt-3">
-        <p className="text-xs text-gray-600 dark:text-gray-400">
-          Current trading volume level based on active sessions and overlaps.
-        </p>
-        <span className={`inline-block mt-1 px-2 py-1 rounded-full text-xs font-semibold ${getTradingVolumeLevel().color}`}>
-          {getTradingVolumeLevel().level}
-        </span>
-
-        {/* Recharts Line Graph */}
-        <div className="mt-2 h-24">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
-              <defs>
-                <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="volume"
-                stroke="#22c55e"
-                fillOpacity={1}
-                fill="url(#colorVolume)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
     </div>
   );
 };

@@ -40,13 +40,13 @@ const Navbar = ({ activeTab, onChangeTab }) => {
   return (
     <>
       {/* Top spacing for content to scroll under navbar */}
-      <div className="h-8 sm:h-10"></div>
+      <div className="h-6 sm:h-8"></div>
       
       <header className="fixed top-4 left-4 right-4 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-full shadow-2xl shadow-black/10 dark:shadow-black/20">
             <div className="px-4 sm:px-6 lg:px-8 relative">
-              <div className="flex justify-between items-center h-[55px] sm:h-[68px] gap-4 sm:gap-6 lg:gap-8">
+              <div className="flex justify-between items-center h-[45px] sm:h-[55px] gap-4 sm:gap-6 lg:gap-8">
                 {/* Logo Section - Raw Logo */}
                 <div className="flex items-center">
                   <a 
@@ -114,7 +114,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         onClick={() => onChangeTab && onChangeTab('analysis')}
                         className={`px-5 py-1.5 rounded-full transition-all duration-200 ${
                           activeTab === 'analysis'
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
                             : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
@@ -125,7 +125,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         onClick={() => onChangeTab && onChangeTab('tools')}
                         className={`px-5 py-1.5 rounded-full transition-all duration-200 ${
                           activeTab === 'tools'
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
                             : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
@@ -214,7 +214,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         }}
                         className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
                           activeTab === 'analysis'
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
                             : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
@@ -228,7 +228,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         }}
                         className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
                           activeTab === 'tools'
-                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md'
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
                             : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
