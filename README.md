@@ -1427,11 +1427,13 @@ await widgetTabRetentionService.importWidgetStates(backup);
 ```
 
 #### MultiTimeAnalysis (Forex Market Timezone Converter)
+The draggable time bar now initializes at the current time for the selected timezone and automatically advances every minute. While you are actively dragging, auto-follow pauses; on the next minute tick after you release, it realigns to the current time.
+
 ```javascript
 {
   selectedTimezone: 'Asia/Kolkata',
   is24Hour: false,
-  sliderPosition: 66.67
+  // sliderPosition is initialized from current time and auto-updates each minute
 }
 ```
 

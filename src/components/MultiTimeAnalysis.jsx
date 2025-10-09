@@ -8,12 +8,19 @@ const ForexMarketTimeZone = () => {
   const [selectedTimezone, setSelectedTimezone] = useState("Asia/Kolkata");
   const [is24Hour, setIs24Hour] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [sliderPosition, setSliderPosition] = useState(66.67); // Default position (2/3 of timeline)
+  // Initialize slider at current time in the default timezone (Asia/Kolkata)
+  const [sliderPosition, setSliderPosition] = useState(() => {
+    const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const hours = nowInTz.getHours();
+    const minutes = nowInTz.getMinutes();
+    return ((hours + minutes / 60) / 24) * 100;
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isStateLoaded, setIsStateLoaded] = useState(false);
   const timelineRef = useRef(null);
   const saveTimeoutRef = useRef(null);
+  const lastMinuteRef = useRef(null);
 
   // Real-time updates
   useEffect(() => {
@@ -32,6 +39,34 @@ const ForexMarketTimeZone = () => {
     date.setHours(hours, minutes, 0, 0);
     return date;
   };
+
+  // Helper: compute slider position for the current time in a timezone
+  const getSliderPositionForNow = useCallback((timezone) => {
+    const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+    const hours = nowInTz.getHours();
+    const minutes = nowInTz.getMinutes();
+    return ((hours + minutes / 60) / 24) * 100;
+  }, []);
+
+  // Auto-follow: keep the draggable bar aligned to current time each minute.
+  // Pauses while dragging; resumes on next minute tick.
+  useEffect(() => {
+    const localInTz = new Date(currentTime.toLocaleString('en-US', { timeZone: selectedTimezone }));
+    const minuteKey = `${localInTz.getHours()}:${localInTz.getMinutes()}`;
+    if (lastMinuteRef.current !== minuteKey) {
+      lastMinuteRef.current = minuteKey;
+      if (!isDragging) {
+        setSliderPosition(getSliderPositionForNow(selectedTimezone));
+      }
+    }
+  }, [currentTime, selectedTimezone, isDragging, getSliderPositionForNow]);
+
+  // When timezone changes, align slider to current time in the newly selected timezone
+  useEffect(() => {
+    if (!isDragging) {
+      setSliderPosition(getSliderPositionForNow(selectedTimezone));
+    }
+  }, [selectedTimezone, isDragging, getSliderPositionForNow]);
 
   // Get day/night icon based on time
   const getTimeIcon = (date, timezone) => {
