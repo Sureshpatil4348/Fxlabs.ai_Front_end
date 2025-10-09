@@ -441,21 +441,21 @@ const ForexMarketTimeZone = () => {
           <div className="relative timezone-dropdown">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-0.5 text-[10px] min-w-[140px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
+              className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs min-w-[150px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
             >
               <div className="flex items-center gap-1 whitespace-nowrap">
-                <span className="text-xs">
+                <span className="text-sm">
                   {timezoneOptions.find(opt => opt.value === selectedTimezone)?.flag}
                 </span>
-                <span className="text-[10px] font-medium">
+                <span className="text-xs font-medium">
                   {timezoneOptions.find(opt => opt.value === selectedTimezone)?.label}
                 </span>
-                <span className="text-[9px] text-gray-500 dark:text-gray-400">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">
                   (GMT {timezoneOptions.find(opt => opt.value === selectedTimezone)?.gmt})
                 </span>
               </div>
               <svg 
-                className={`w-2.5 h-2.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                className={`w-3 h-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -473,15 +473,15 @@ const ForexMarketTimeZone = () => {
                       setSelectedTimezone(option.value);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
                       selectedTimezone === option.value 
                         ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
                         : 'text-gray-900 dark:text-white'
                     }`}
                   >
-                    <span className="text-sm">{option.flag}</span>
-                    <span className="flex-1 text-left text-[10px] font-medium">{option.label}</span>
-                    <span className="text-[9px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
+                    <span className="text-base">{option.flag}</span>
+                    <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
                   </button>
                 ))}
               </div>
