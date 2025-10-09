@@ -88,6 +88,11 @@ All features that relied on client-side calculations now expect server-provided 
     - `src/components/RSIOverboughtOversoldTracker.js`
     - `src/components/CurrencyStrengthMeter.js`
 
+### Quantum Analysis UI
+- Hidden the “Custom Indicator Alert” button (Sliders icon) from the Quantum Analysis header as requested. No cleanup of related state/logic; only the add/configure button is removed.
+  - Files affected: `src/components/MultiIndicatorHeatmap.js`
+  - Lint: Aliased unused `Sliders` import and unused `handleIndicatorConfigOpen` handler with underscore prefix to satisfy ESLint without functional cleanup.
+
 ### Currency Strength Stability (Latest)
 - Source of truth is now the server snapshot and websocket updates:
   - WebSocket `currency_strength_update` messages applied only when they match the selected timeframe

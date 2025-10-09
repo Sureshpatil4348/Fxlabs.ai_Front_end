@@ -1,6 +1,6 @@
 import { 
   Bell,
-  Sliders
+  Sliders as _Sliders
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
@@ -271,7 +271,7 @@ const symbolDropdownRef = useRef(null);
   const handleBellClick = () => {
     setShowAlertConfig(true);
   };
-  const handleIndicatorConfigOpen = () => setShowIndicatorAlertConfig(true);
+  const _handleIndicatorConfigOpen = () => setShowIndicatorAlertConfig(true);
   const handleIndicatorConfigClose = () => setShowIndicatorAlertConfig(false);
 
   const handleAlertConfigClose = () => {
@@ -424,14 +424,6 @@ useEffect(() => {
                 }`}
               >
                 <Bell className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
-              </button>
-              <button 
-                type="button"
-                aria-label="Configure custom indicator alert"
-                onClick={handleIndicatorConfigOpen}
-                className="relative p-0.5 text-gray-400 hover:text-indigo-500 transition-colors duration-300 group ml-0.5"
-              >
-                <Sliders className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
               </button>
             </div>
           )}
