@@ -408,7 +408,6 @@ const ForexMarketTimeZone = () => {
             <span className="font-bold">Forex Market Time Zone Converter</span>
           </h1>
           <span className="text-xs text-gray-500 dark:text-gray-400">|</span>
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-300">TIMEZONE</span>
           <div className="relative timezone-dropdown">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}

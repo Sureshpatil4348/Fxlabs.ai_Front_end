@@ -161,7 +161,7 @@
                   {/* Left Column: Lot Size (top) */}
                   <div className="flex flex-col gap-2 lg:min-h-0">
                     {/* Lot Size Calculator - Mobile: fixed height with internal scroll, Desktop: h-72 */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[620px] lg:h-[26rem]">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[580px] lg:h-[26rem]">
                       <div className="h-full overflow-y-auto">
                         <LotSizeCalculator />
                       </div>
@@ -170,14 +170,14 @@
 
                   {/* Right Column: Multi Time Analysis spanning full height */}
                   {/* Mobile: fixed height with internal scroll, Desktop: min-h-0 flex behavior */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[900px] lg:h-[26rem] lg:min-h-0 mb-2">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[820px] lg:h-[26rem] lg:min-h-0">
                     <div className="h-full overflow-y-auto overflow-x-auto lg:overflow-x-hidden">
                       <MultiTimeAnalysis />
                     </div>
                   </div>
 
                   {/* Quantum Analysis (MultiIndicatorHeatmap) - full width on desktop */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[380px] lg:h-auto lg:min-h-0 lg:col-span-2">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-1 h-[380px] lg:h-auto lg:min-h-0 lg:col-span-2">
                     <div className="h-full overflow-auto">
                       <MultiIndicatorHeatmap />
                     </div>

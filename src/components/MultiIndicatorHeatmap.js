@@ -393,14 +393,14 @@ useEffect(() => {
     <>
     <div className="h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
-      <div className="mb-1 px-3">
+      <div className="mb-0.5 px-2">
         {/* Top Row - Title, Trading Signals, and Controls */}
         {/* Mobile: wrap and stack, Desktop: single row */}
-        <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-1">
+        <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
           <div className="flex items-center space-x-1 shrink-0">
             <img src={quantImage} alt="Quantum" className="w-4 h-4" />
-            <h2 className="text-sm sm:text-base font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
+            <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
@@ -583,10 +583,10 @@ useEffect(() => {
           <table className="w-full border-collapse min-w-[560px]">
             <thead>
               <tr className="border-b border-gray-200 dark:border-slate-600">
-                <th className="text-left py-0.5 px-0.5 font-bold text-gray-700 dark:text-slate-300 text-[11px] w-14"></th>
+                <th className="text-left py-0.5 px-0.5 font-bold text-gray-700 dark:text-slate-300 text-xs w-14"></th>
                 {indicators.map(indicator => (
                   <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700 dark:text-slate-300">
-                    <span className="text-[11px] font-bold">{formatIndicatorDisplay(indicator)}</span>
+                    <span className="text-xs font-bold">{formatIndicatorDisplay(indicator)}</span>
                   </th>
                 ))}
               </tr>
@@ -598,9 +598,9 @@ useEffect(() => {
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
                 return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
                 <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                  <td className="py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-[11px]">
+                  <td className="py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
                     <div className="flex items-center space-x-0.5 ml-1">
-                      <span className="text-[11px] font-normal">{formatTimeframeDisplay(timeframe)}</span>
+                      <span className="text-xs font-medium">{formatTimeframeDisplay(timeframe)}</span>
                     </div>
                   </td>
                   {indicators.map(indicator => {
@@ -608,7 +608,7 @@ useEffect(() => {
                     const indData = tfData && tfData.indicators && tfData.indicators[indicator];
                     const hasData = !!indData;
                     const signal = (indData && indData.signal) || 'neutral';
-                    const bgColor = signal === 'buy' ? '#03c05d' : signal === 'sell' ? '#e03f4c' : '#f1f5f9';
+                    const bgGradient = signal === 'buy' ? 'linear-gradient(to bottom right, #10b981, #16a34a)' : signal === 'sell' ? '#e03f4c' : '#f1f5f9';
                     const textColor = signal === 'neutral' ? '#475569' : '#ffffff';
                     const cellBorderWidth = signal === 'neutral' ? '1px' : '0px';
                     const cellBorderColor = signal === 'neutral' ? '#e2e8f0' : 'transparent';
@@ -619,7 +619,7 @@ useEffect(() => {
                           <button 
                             className=""
                             style={hasData ? {
-                              backgroundColor: bgColor,
+                              background: bgGradient,
                               borderRadius: '4px',
                               borderWidth: cellBorderWidth,
                               borderStyle: 'solid',
@@ -629,24 +629,24 @@ useEffect(() => {
                               cursor: 'pointer',
                               display: 'inline-block',
                               fontFamily: 'Inter, system-ui, sans-serif',
-                              fontSize: window.innerWidth < 768 ? '8.5px' : '10px',
+                              fontSize: window.innerWidth < 768 ? '9.5px' : '11px',
                               fontWeight: '700',
                               lineHeight: '1.3',
                               margin: '0',
                               maxWidth: 'none',
-                              minHeight: window.innerWidth < 768 ? '18px' : '24px',
-                              minWidth: window.innerWidth < 768 ? '40px' : '56px',
+                              minHeight: window.innerWidth < 768 ? '20px' : '28px',
+                              minWidth: window.innerWidth < 768 ? '44px' : '62px',
                               outline: 'none',
                               overflow: 'hidden',
-                              padding: window.innerWidth < 768 ? '2px 3px' : '3px 5px',
+                              padding: window.innerWidth < 768 ? '3px 4px' : '4px 6px',
                               position: 'relative',
                               textAlign: 'center',
                               textTransform: 'none',
                               userSelect: 'none',
                               WebkitUserSelect: 'none',
                               touchAction: 'manipulation',
-                              width: window.innerWidth < 768 ? '40px' : '56px',
-                              height: window.innerWidth < 768 ? '18px' : '24px',
+                              width: window.innerWidth < 768 ? '44px' : '62px',
+                              height: window.innerWidth < 768 ? '20px' : '28px',
                               boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)'
                             } : {
                               backgroundColor: '#f3f4f6',
@@ -659,24 +659,24 @@ useEffect(() => {
                               cursor: 'not-allowed',
                               display: 'inline-block',
                               fontFamily: 'Inter, system-ui, sans-serif',
-                              fontSize: window.innerWidth < 768 ? '8.5px' : '10px',
+                              fontSize: window.innerWidth < 768 ? '9.5px' : '11px',
                               fontWeight: '700',
                               lineHeight: '1.3',
                               margin: '0',
                               maxWidth: 'none',
-                              minHeight: window.innerWidth < 768 ? '18px' : '24px',
-                              minWidth: window.innerWidth < 768 ? '40px' : '56px',
+                              minHeight: window.innerWidth < 768 ? '20px' : '28px',
+                              minWidth: window.innerWidth < 768 ? '44px' : '62px',
                               outline: 'none',
                               overflow: 'hidden',
-                              padding: window.innerWidth < 768 ? '2px 3px' : '3px 5px',
+                              padding: window.innerWidth < 768 ? '3px 4px' : '4px 6px',
                               position: 'relative',
                               textAlign: 'center',
                               textTransform: 'none',
                               userSelect: 'none',
                               WebkitUserSelect: 'none',
                               touchAction: 'manipulation',
-                              width: '56px',
-                              height: '24px'
+                              width: window.innerWidth < 768 ? '44px' : '62px',
+                              height: window.innerWidth < 768 ? '20px' : '28px'
                             }}
                             title={hasData ? `Signal: ${signal}` : 'No data'}
                             disabled={!hasData}
@@ -711,7 +711,7 @@ useEffect(() => {
             return (
               <div className="h-full rounded-xl bg-white dark:bg-gray-800 p-3">
                 <div className="text-center mb-2">
-                  <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">Trading Meter</h3>
+                  <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">Trading Meter</h3>
                 </div>
                 {/* Gauge */}
                 <div className="relative w-full" style={{ height: 130 }}>
@@ -783,13 +783,13 @@ useEffect(() => {
                   </svg>
                   {/* Labels */}
                   <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800 text-[11px] font-semibold">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800 text-xs font-semibold">
                       <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                       SELL
                     </span>
                   </div>
                   <div className="absolute top-2 right-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800 text-[11px] font-semibold">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800 text-xs font-semibold">
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                       BUY
                     </span>
@@ -802,7 +802,7 @@ useEffect(() => {
                 </div>
                 <div className="mt-2 text-center">
                   <div className={`text-sm font-bold ${buyPct >= sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
-                  <div className="mt-1 grid grid-cols-3 gap-1 text-[11px]">
+                  <div className="mt-1 grid grid-cols-3 gap-1 text-xs">
                     <div>
                       <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
                       <div className="text-gray-500">Sell</div>
