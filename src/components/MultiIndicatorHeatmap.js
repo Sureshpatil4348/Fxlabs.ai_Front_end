@@ -398,9 +398,9 @@ useEffect(() => {
         {/* Mobile: wrap and stack, Desktop: single row */}
         <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <div className="flex items-center space-x-1 shrink-0">
-            <img src={quantImage} alt="Quantum" className="w-4 h-4" />
-            <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
+          <div className="flex items-center shrink-0">
+            <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white tools-heading">Quantum Analysis</h2>
           </div>
           
           {/* Controls Row */}
@@ -706,11 +706,11 @@ useEffect(() => {
             const score = buyPct - sellPct; // -100 (strong sell) .. +100 (strong buy)
             // Map score to needle angle: -90deg (left) .. +90deg (right)
             const angle = Math.max(-90, Math.min(90, (score / 100) * 90));
-            // Determine dominant signal: >50% is "STRONG", otherwise just "BUY" or "SELL"
+            // Determine dominant signal: >75% is "STRONG", otherwise just "BUY" or "SELL"
             let dominant;
-            if (buyPct > 50) {
+            if (buyPct > 75) {
               dominant = 'STRONG BUY';
-            } else if (sellPct > 50) {
+            } else if (sellPct > 75) {
               dominant = 'STRONG SELL';
             } else if (buyPct >= sellPct) {
               dominant = 'BUY';
@@ -763,10 +763,10 @@ useEffect(() => {
                         />
                       );
                     })}
-                    {/* Numeric labels - 100% SELL to 100% BUY */}
-                    {([0, 0.5, 1]).map((t, idx) => {
-                      const values = ['100', '0', '100'];
-                      const labels = ['SELL', '', 'BUY'];
+                    {/* Numeric labels - 0 to 100% BUY */}
+                    {([0.5, 1]).map((t, idx) => {
+                      const values = ['0', '100'];
+                      const labels = ['', 'BUY'];
                       const ang = (-Math.PI / 2) + (Math.PI * t);
                       const r = 74; // label radius
                       const tx = 100 + Math.cos(ang) * r;
@@ -789,7 +789,7 @@ useEffect(() => {
                               y={ty + 8}
                               textAnchor="middle"
                               dominantBaseline="middle"
-                              className={idx === 0 ? 'fill-rose-600' : 'fill-emerald-600'}
+                              className="fill-emerald-600"
                               style={{ fontSize: 8, fontWeight: 600 }}
                             >
                               {labels[idx]}

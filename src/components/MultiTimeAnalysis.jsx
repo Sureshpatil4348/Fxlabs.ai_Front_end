@@ -433,9 +433,9 @@ const ForexMarketTimeZone = () => {
       {/* Header and Timezone Selector */}
       <div className="flex items-center justify-between mb-3 pr-16">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-semibold text-gray-800 dark:text-white flex items-center gap-2 tools-heading">
-            <Globe2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="font-bold">Forex Market Time Zone Converter</span>
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
+            <Globe2 className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+            Forex Market Time Zone Converter
           </h1>
           
           <div className="relative timezone-dropdown">
