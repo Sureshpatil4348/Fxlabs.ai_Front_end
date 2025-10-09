@@ -2288,7 +2288,8 @@ This project is licensed under the MIT License.
   - Ensures WS connection on mount via `connect()`.
   - On mount and timeframe change, fetches REST snapshot:
     `GET /api/indicator?indicator=currency_strength&timeframe=<TF>` and applies via `setCurrencyStrengthSnapshot`.
-  - Auto-refresh every 2 minutes prefers REST snapshot; falls back to local calculation if unavailable.
+  - Live updates arrive via WebSocket. A single REST snapshot is fetched on mount/timeframe change; no periodic REST auto-refresh.
+  - UI renders strongest top 4 and weakest bottom 4 currencies (no duplicates). This guarantees exactly 4 tiles per row while still covering all 8 majors across both rows.
 
 ### Quantum Analysis Integration (Server‑only)
 - Quantum values are sourced solely from the backend; no client‑side calculations.

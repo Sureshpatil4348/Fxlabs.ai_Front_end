@@ -10,16 +10,16 @@ import { getCurrencyStrengthColor } from '../utils/formatters';
 
 
 const CurrencyHeatmap = ({ strengthData }) => {
-  // Split currencies into strongest and weakest with proper sorting
-  const strongestCurrencies = strengthData
-    .filter(item => item.strength >= 0) // Only positive values
-    .sort((a, b) => b.strength - a.strength) // Sort descending (highest first)
-    .slice(0, 4); // Take top 4
-  
+  // Split currencies into strongest top 4 and weakest bottom 4 (no duplicates)
+  const strongestCurrencies = [...strengthData]
+    .sort((a, b) => b.strength - a.strength)
+    .slice(0, 4);
+
+  const strongestSet = new Set(strongestCurrencies.map(i => i.currency));
   const weakestCurrencies = strengthData
-    .filter(item => item.strength < 0) // Only negative values
-    .sort((a, b) => a.strength - b.strength) // Sort ascending (most negative first)
-    .slice(0, 4); // Take top 4 weakest
+    .filter(item => !strongestSet.has(item.currency))
+    .sort((a, b) => a.strength - b.strength)
+    .slice(0, 4);
 
   const CurrencyCard = ({ currency, strength }) => (
     <div
