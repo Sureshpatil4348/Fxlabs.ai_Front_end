@@ -1,6 +1,9 @@
 import { Sun, Moon, Globe2 } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
+import widgetTabRetentionService from '../services/widgetTabRetentionService';
+import { CardTitle } from './ui/card';
+
 const ForexMarketTimeZone = () => {
   const [selectedTimezone, setSelectedTimezone] = useState("Asia/Kolkata");
   const [is24Hour, setIs24Hour] = useState(false);
@@ -8,7 +11,9 @@ const ForexMarketTimeZone = () => {
   const [sliderPosition, setSliderPosition] = useState(66.67); // Default position (2/3 of timeline)
   const [isDragging, setIsDragging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isStateLoaded, setIsStateLoaded] = useState(false);
   const timelineRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
   // Real-time updates
   useEffect(() => {
@@ -85,6 +90,61 @@ const ForexMarketTimeZone = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isDropdownOpen]);
+
+  // Load saved widget state on mount
+  useEffect(() => {
+    const loadSavedState = async () => {
+      try {
+        const savedState = await widgetTabRetentionService.getWidgetState('MultiTimeAnalysis');
+        if (savedState && Object.keys(savedState).length > 0) {
+          if (savedState.selectedTimezone) setSelectedTimezone(savedState.selectedTimezone);
+          if (savedState.is24Hour !== undefined) setIs24Hour(savedState.is24Hour);
+          if (savedState.sliderPosition !== undefined) setSliderPosition(savedState.sliderPosition);
+        }
+      } catch (error) {
+        console.error('Failed to load MultiTimeAnalysis state:', error);
+      } finally {
+        setIsStateLoaded(true);
+      }
+    };
+
+    loadSavedState();
+  }, []);
+
+  // Debounced save function
+  const debouncedSaveState = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!isStateLoaded) return;
+      
+      try {
+        const stateToSave = {
+          selectedTimezone,
+          is24Hour,
+          sliderPosition
+        };
+        await widgetTabRetentionService.saveWidgetState('MultiTimeAnalysis', stateToSave);
+      } catch (error) {
+        console.error('Failed to save MultiTimeAnalysis state:', error);
+      }
+    }, 1000);
+  }, [selectedTimezone, is24Hour, sliderPosition, isStateLoaded]);
+
+  // Auto-save state changes
+  useEffect(() => {
+    if (isStateLoaded) {
+      debouncedSaveState();
+    }
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [selectedTimezone, is24Hour, sliderPosition, debouncedSaveState, isStateLoaded]);
 
   // Format time based on 12/24 hour toggle
   const formatTime = (date, timezone) => {
@@ -433,10 +493,10 @@ const ForexMarketTimeZone = () => {
       {/* Header and Timezone Selector */}
       <div className="flex items-center justify-between mb-3 pr-16">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-semibold text-gray-800 dark:text-white flex items-center gap-2 tools-heading">
-            <Globe2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="font-bold">Forex Market Time Zone Converter</span>
-          </h1>
+          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
+            <Globe2 className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+            Forex Market Time Zone Converter
+          </CardTitle>
           
           <div className="relative timezone-dropdown">
             <button
@@ -595,7 +655,7 @@ const ForexMarketTimeZone = () => {
         {/* Current Trading Overlaps */}
         <div className="mt-1 mb-1 min-w-[700px] lg:min-w-0">
           <div className="flex items-center gap-0.5">
-            <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 tools-heading whitespace-nowrap">Current Trading Overlaps:</h3>
+            <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 tools-heading whitespace-nowrap">Current Trading Overlaps:</h3>
             <div className="flex flex-nowrap gap-0.5 overflow-x-auto">
               {getTradingOverlaps().length > 0 ? (
                 getTradingOverlaps().map((overlap, index) => (
@@ -621,16 +681,16 @@ const ForexMarketTimeZone = () => {
               <div className="flex items-center gap-2 w-64">
                 <span className="text-xl">{m.flag}</span>
                 <div>
-                  <h3 className="font-semibold text-sm text-gray-800 dark:text-white">{m.name}</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-300">{formatTime(currentTime, m.timezone)}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(currentTime, m.timezone)}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{m.sessionHours}</p>
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">{m.name}</h3>
+                  <p className="text-xs text-gray-800 dark:text-gray-200">{formatTime(currentTime, m.timezone)}</p>
+                  <p className="text-xs text-gray-800 dark:text-gray-200">{formatDate(currentTime, m.timezone)}</p>
+                  <p className="text-xs text-gray-800 dark:text-gray-200">{m.sessionHours}</p>
                 </div>
               </div>
 
               {/* Status */}
-              <div className="text-xs text-gray-700 dark:text-gray-300 font-medium w-64">
-                <span className={`px-2 py-1 rounded text-xs whitespace-nowrap ${
+              <div className="text-sm text-gray-800 dark:text-gray-200 font-medium w-64">
+                <span className={`px-2 py-1 rounded text-sm whitespace-nowrap ${
                   getMarketStatus(m.timezone).includes('SESSION') 
                     ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -676,7 +736,7 @@ const ForexMarketTimeZone = () => {
                     }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-8">{convertGMTToTimezone(m.gmtHours, selectedTimezone)}</p>
+                <p className="text-xs text-gray-800 dark:text-gray-200 mt-8">{convertGMTToTimezone(m.gmtHours, selectedTimezone)}</p>
               </div>
             </div>
           ))}

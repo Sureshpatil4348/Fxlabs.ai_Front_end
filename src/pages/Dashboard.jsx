@@ -12,6 +12,7 @@
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
   import TradingViewWidget from '../components/TradingViewWidget'
   import TrendingPairs from '../components/TrendingParis'
+  import widgetTabRetentionService from '../services/widgetTabRetentionService'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketCacheStore from '../store/useMarketCacheStore'
   import useMarketStore from '../store/useMarketStore'
@@ -27,17 +28,69 @@
     const connectionAttempts = useMarketStore(state => state.globalConnectionState.connectionAttempts)
 
   const { loadTabState, tabStateHasLoaded: _tabStateHasLoaded } = useBaseMarketStore();
-  const [activeTab, setActiveTab] = React.useState('analysis') // 'analysis' | 'tools'
+  const [activeTab, setActiveTab] = React.useState(null) // Start with null to indicate loading
+  const isInitialLoadRef = React.useRef(true) // Track if this is the initial load
+  const hasLoadedFromDbRef = React.useRef(false) // Track if we've loaded from DB
 
     React.useEffect(() => {
       // Only reset if we're dealing with a different user
       if (user?.id && connectionInitiated.current !== user.id) {
         connectionInitiated.current = user.id
+        // Reset tab loading refs for new user
+        isInitialLoadRef.current = true
+        hasLoadedFromDbRef.current = false
+        setActiveTab(null) // Reset to loading state
         useMarketStore.getState().initiateGlobalConnection()
         // Initialize centralized market cache (REST + WS)
         useMarketCacheStore.getState().initialize()
       }
     }, [user?.id])
+
+  // Load active tab from Supabase on mount (only run once when user is available)
+  React.useEffect(() => {
+    if (user?.id && !hasLoadedFromDbRef.current) {
+      hasLoadedFromDbRef.current = true; // Mark to prevent multiple calls
+      console.log('[Dashboard] Loading active tab from Supabase...');
+      widgetTabRetentionService.getActiveTab()
+        .then(savedTab => {
+          console.log('[Dashboard] Loaded active tab from Supabase:', savedTab);
+          setActiveTab(savedTab); // This will always return a valid tab (defaults to 'analysis')
+          // Allow saves after a brief delay to ensure initial load is complete
+          setTimeout(() => {
+            isInitialLoadRef.current = false;
+            console.log('[Dashboard] Initial load complete, enabling auto-save');
+          }, 100);
+        })
+        .catch(error => {
+          console.error('[Dashboard] Failed to load active tab:', error);
+          setActiveTab('analysis'); // Fallback to analysis on error
+          isInitialLoadRef.current = false;
+        });
+    } else if (!user?.id && !hasLoadedFromDbRef.current) {
+      // If not logged in, default to analysis
+      console.log('[Dashboard] No user logged in, defaulting to analysis');
+      setActiveTab('analysis');
+      isInitialLoadRef.current = false;
+      hasLoadedFromDbRef.current = true;
+    }
+  }, [user?.id]); // Only depend on user?.id, not activeTab
+
+  // Save active tab to Supabase whenever it changes (after initial load)
+  React.useEffect(() => {
+    // Only save if not initial load and tab is set
+    if (!isInitialLoadRef.current && user?.id && activeTab !== null) {
+      console.log('[Dashboard] Saving active tab to Supabase:', activeTab);
+      widgetTabRetentionService.setActiveTab(activeTab)
+        .then(() => {
+          console.log('[Dashboard] Active tab saved successfully');
+        })
+        .catch(error => {
+          console.error('[Dashboard] Failed to save active tab:', error);
+        });
+    } else {
+      console.log('[Dashboard] Skipping save - isInitial:', isInitialLoadRef.current, 'user:', !!user?.id, 'tab:', activeTab);
+    }
+  }, [activeTab, user?.id]);
 
   // Defer AI news fetch until after WS + state ready to reduce startup load
   React.useEffect(() => {
@@ -76,13 +129,18 @@
         )}
 
         {/* Navbar - pass tab state for centered navbar buttons */}
-        <Navbar activeTab={activeTab} onChangeTab={setActiveTab} />
+        <Navbar activeTab={activeTab || 'analysis'} onChangeTab={setActiveTab} />
 
         {/* Main Content - Takes remaining screen height */}
         <main className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-3 mt-10">
           {/* Tabs moved to Navbar */}
 
-          {activeTab === 'analysis' ? (
+          {/* Don't render content until activeTab is loaded */}
+          {!activeTab ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+            </div>
+          ) : activeTab === 'analysis' ? (
             <>
               {/* Mobile Layout - Stack vertically */}
               <div className="block lg:hidden ">

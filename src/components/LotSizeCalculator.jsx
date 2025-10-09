@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import { Button } from './ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import widgetTabRetentionService from '../services/widgetTabRetentionService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 
 const LotSizeCalculator = () => {
@@ -18,7 +19,9 @@ const LotSizeCalculator = () => {
 
   const [result, setResult] = useState(null);
   const [errors, setErrors] = useState({});
+  const [isStateLoaded, setIsStateLoaded] = useState(false);
   const resultRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
   // Get real-time data from RSI tracker store
   const { 
@@ -127,6 +130,68 @@ const LotSizeCalculator = () => {
       }
     }
   }, [isConnected, formData.currencyPair, getLatestTickForSymbol, realTimePairs]);
+
+  // Load saved widget state on mount
+  useEffect(() => {
+    const loadSavedState = async () => {
+      try {
+        const savedState = await widgetTabRetentionService.getWidgetState('LotSizeCalculator');
+        if (savedState && Object.keys(savedState).length > 0) {
+          // Only restore form inputs, not calculated results
+          const { lastCalculation, ...restState } = savedState;
+          setFormData(prev => ({ ...prev, ...restState }));
+          
+          // Restore last calculation if it exists
+          if (lastCalculation) {
+            setResult(lastCalculation);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load LotSizeCalculator state:', error);
+      } finally {
+        setIsStateLoaded(true);
+      }
+    };
+
+    loadSavedState();
+  }, []);
+
+  // Debounced save function
+  const debouncedSaveState = useCallback((data, calculationResult) => {
+    // Clear previous timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout to save after 1 second of no changes
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!isStateLoaded) return; // Don't save during initial load
+      
+      try {
+        const stateToSave = {
+          ...data,
+          lastCalculation: calculationResult
+        };
+        await widgetTabRetentionService.saveWidgetState('LotSizeCalculator', stateToSave);
+      } catch (error) {
+        console.error('Failed to save LotSizeCalculator state:', error);
+      }
+    }, 1000);
+  }, [isStateLoaded]);
+
+  // Auto-save formData changes
+  useEffect(() => {
+    if (isStateLoaded) {
+      debouncedSaveState(formData, result);
+    }
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [formData, result, debouncedSaveState, isStateLoaded]);
 
   const validateForm = () => {
     const newErrors = {};

@@ -10,7 +10,8 @@ import HeatmapTrackerAlertConfig from './HeatmapTrackerAlertConfig';
 import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
-import userStateService from '../services/userStateService';
+import widgetTabRetentionService from '../services/widgetTabRetentionService';
+import { CardTitle } from './ui/card';
 import useMarketCacheStore from '../store/useMarketCacheStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 // Note: All indicator calculations are now performed server-side
@@ -185,15 +186,15 @@ const symbolDropdownRef = useRef(null);
     };
   }, [isSymbolDropdownOpen]);
 
-  // Load settings from database on component mount
+  // Load settings from database on component mount using widget tab retention service
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const savedSettings = await userStateService.getUserDashboardSettings();
-        if (savedSettings.multiIndicatorHeatmap) {
-          const { symbol, tradingStyle, indicatorWeight, showNewSignals } = savedSettings.multiIndicatorHeatmap;
+        const savedState = await widgetTabRetentionService.getWidgetState('MultiIndicatorHeatmap');
+        if (savedState && Object.keys(savedState).length > 0) {
+          const { selectedSymbol: symbol, tradingStyle: style, indicatorWeight, showNewSignals } = savedState;
           const allowedStyles = ['scalper','swingTrader'];
-          const normalizedStyle = allowedStyles.includes(tradingStyle) ? tradingStyle : 'swingTrader';
+          const normalizedStyle = allowedStyles.includes(style) ? style : 'swingTrader';
           
           // Update local settings state
           setLocalSettings({
@@ -210,14 +211,14 @@ const symbolDropdownRef = useRef(null);
           _setShowNewSignals(showNewSignals !== undefined ? showNewSignals : true);
         }
       } catch (error) {
-        // console.error('❌ Failed to load Multi-Indicator Heatmap settings:', error);
+        console.error('Failed to load MultiIndicatorHeatmap state:', error);
       }
     };
 
     loadSettings();
   }, [selectedSymbol]);
 
-  // Save settings to database
+  // Save settings to database using widget tab retention service
   const saveSettings = async (newSettings) => {
     try {
       const updatedSettings = {
@@ -227,14 +228,18 @@ const symbolDropdownRef = useRef(null);
       
       setLocalSettings(updatedSettings);
       
-      // Persist to database
-      await userStateService.updateUserDashboardSettings({
-        multiIndicatorHeatmap: updatedSettings
-      });
+      // Map to widget state format
+      const widgetState = {
+        selectedSymbol: updatedSettings.symbol,
+        tradingStyle: updatedSettings.tradingStyle,
+        indicatorWeight: updatedSettings.indicatorWeight,
+        showNewSignals: updatedSettings.showNewSignals
+      };
       
-      // console.log('✅ Multi-Indicator Heatmap settings saved:', updatedSettings);
+      // Persist to database via widget retention service
+      await widgetTabRetentionService.saveWidgetState('MultiIndicatorHeatmap', widgetState);
     } catch (error) {
-      // console.error('❌ Failed to save Multi-Indicator Heatmap settings:', error);
+      console.error('Failed to save MultiIndicatorHeatmap state:', error);
     }
   };
 
@@ -398,9 +403,9 @@ useEffect(() => {
         {/* Mobile: wrap and stack, Desktop: single row */}
         <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <div className="flex items-center space-x-1 shrink-0">
-            <img src={quantImage} alt="Quantum" className="w-4 h-4" />
-            <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tools-heading">Quantum Analysis</h2>
+          <div className="flex items-center shrink-0">
+            <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2" />
+            <CardTitle className="text-lg font-bold text-gray-900 dark:text-white tools-heading">Quantum Analysis</CardTitle>
           </div>
           
           {/* Controls Row */}
@@ -437,7 +442,7 @@ useEffect(() => {
               <div className="relative">
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-gray-900 dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                   {(() => {
                     const opt = dropdownOptions.find(opt => opt.value === currentSymbol);
@@ -445,7 +450,7 @@ useEffect(() => {
                     return (
                       <span className="inline-flex items-center gap-1.5">
                         {/* flags removed */}
-                        <span className="text-xs font-semibold">{opt.label}</span>
+                        <span className="text-sm font-medium">{opt.label}</span>
                         {/* flags removed */}
                       </span>
                     );
@@ -466,13 +471,13 @@ useEffect(() => {
                         onClick={() => {
                           handleSymbolChange(option.value);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
-                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-semibold' : 'text-gray-700 dark:text-slate-300'
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
+                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-medium' : 'text-gray-800 dark:text-gray-200'
                         }`}
                       >
                         <span className="inline-flex items-center gap-2">
                           {/* flags removed */}
-                          <span className="text-xs font-semibold">{option.label}</span>
+                          <span className="text-sm font-medium">{option.label}</span>
                           {/* flags removed */}
                         </span>
                       </button>
@@ -495,7 +500,7 @@ useEffect(() => {
                 <select
                   value={tradingStyle}
                   onChange={(e) => handleTradingStyleChange(e.target.value)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-slate-800 dark:text-slate-200 text-xs font-semibold border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-gray-900 dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                 <option value="scalper">Scalper</option>
                 <option value="swingTrader">Swing Trader</option>
@@ -583,10 +588,10 @@ useEffect(() => {
           <table className="w-full border-collapse min-w-[560px]">
             <thead>
               <tr className="border-b border-gray-200 dark:border-slate-600">
-                <th className="text-left py-0.5 px-0.5 font-bold text-gray-700 dark:text-slate-300 text-xs w-14"></th>
+                <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
                 {indicators.map(indicator => (
-                  <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-700 dark:text-slate-300">
-                    <span className="text-xs font-bold">{formatIndicatorDisplay(indicator)}</span>
+                  <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200">
+                    <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
                   </th>
                 ))}
               </tr>
@@ -598,7 +603,7 @@ useEffect(() => {
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
                 return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
                 <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                  <td className="py-0.5 px-0.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
+                  <td className="py-0.5 px-0.5 font-medium text-gray-800 dark:text-gray-200 text-xs">
                     <div className="flex items-center space-x-0.5 ml-1">
                       <span className="text-xs font-medium">{formatTimeframeDisplay(timeframe)}</span>
                     </div>
@@ -706,11 +711,11 @@ useEffect(() => {
             const score = buyPct - sellPct; // -100 (strong sell) .. +100 (strong buy)
             // Map score to needle angle: -90deg (left) .. +90deg (right)
             const angle = Math.max(-90, Math.min(90, (score / 100) * 90));
-            // Determine dominant signal: >50% is "STRONG", otherwise just "BUY" or "SELL"
+            // Determine dominant signal: >75% is "STRONG", otherwise just "BUY" or "SELL"
             let dominant;
-            if (buyPct > 50) {
+            if (buyPct > 75) {
               dominant = 'STRONG BUY';
-            } else if (sellPct > 50) {
+            } else if (sellPct > 75) {
               dominant = 'STRONG SELL';
             } else if (buyPct >= sellPct) {
               dominant = 'BUY';
@@ -721,7 +726,7 @@ useEffect(() => {
             return (
               <div className="h-full rounded-xl bg-white dark:bg-gray-800 p-3">
                 <div className="text-center mb-2">
-                  <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">Trading Meter</h3>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Trading Meter</h3>
                 </div>
                 {/* Gauge */}
                 <div className="relative w-full" style={{ height: 130 }}>
@@ -763,10 +768,10 @@ useEffect(() => {
                         />
                       );
                     })}
-                    {/* Numeric labels - 100% SELL to 100% BUY */}
-                    {([0, 0.5, 1]).map((t, idx) => {
-                      const values = ['100', '0', '100'];
-                      const labels = ['SELL', '', 'BUY'];
+                    {/* Numeric labels - 0 to 100% BUY */}
+                    {([0.5, 1]).map((t, idx) => {
+                      const values = ['0', '100'];
+                      const labels = ['', 'BUY'];
                       const ang = (-Math.PI / 2) + (Math.PI * t);
                       const r = 74; // label radius
                       const tx = 100 + Math.cos(ang) * r;
@@ -789,7 +794,7 @@ useEffect(() => {
                               y={ty + 8}
                               textAnchor="middle"
                               dominantBaseline="middle"
-                              className={idx === 0 ? 'fill-rose-600' : 'fill-emerald-600'}
+                              className="fill-emerald-600"
                               style={{ fontSize: 8, fontWeight: 600 }}
                             >
                               {labels[idx]}

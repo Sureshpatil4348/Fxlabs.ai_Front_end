@@ -247,18 +247,33 @@ const CurrencyStrengthMeter = () => {
   // Memoize strength data conversion to prevent recalculation on every render
   const strengthData = useMemo(() => {
     try {
-      const entries = Array.from(currencyStrength.entries());
+      // Ensure all 8 major currencies are always present
+      const allCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
+      const strengthMap = new Map(currencyStrength);
+      
+      // Initialize missing currencies with neutral value (0)
+      allCurrencies.forEach(currency => {
+        if (!strengthMap.has(currency)) {
+          strengthMap.set(currency, 0);
+        }
+      });
+      
+      const entries = Array.from(strengthMap.entries());
       return entries
         .map(([currency, strength]) => {
           const num = Number(strength);
           return {
             currency,
-            strength: Number.isFinite(num) ? num : 50
+            strength: Number.isFinite(num) ? num : 0
           };
         })
         .sort((a, b) => b.strength - a.strength);
     } catch (_e) {
-      return [];
+      // Fallback: return all currencies with neutral value
+      return ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'].map(currency => ({
+        currency,
+        strength: 0
+      }));
     }
   }, [currencyStrength]);
 
