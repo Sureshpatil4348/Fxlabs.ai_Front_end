@@ -1200,6 +1200,7 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 
 ### Services
 - **UserStateService**: Manages user tab state persistence
+- **WidgetTabRetentionService**: Manages persistent storage of widget states and configurations for tools tab widgets (NEW)
 - **WatchlistService**: Handles watchlist database operations
 - **NewsService**: Fetches and analyzes forex news with AI
 - **RSITrackerAlertService**: Manages single RSI Tracker alert configuration (CRUD only)
@@ -1218,6 +1219,196 @@ If "watchlist items are not getting stored in Supabase," most often the `watchli
 - **RSITrackerAlertConfig**: Alert configuration modal for RSI Tracker alert (single)
 - (Removed) RSICorrelationTrackerAlertConfig
 - **HeatmapTrackerAlertConfig**: Alert configuration modal for heatmap tracker alert (single)
+
+## Widget Tab Retention Service
+
+The **Widget Tab Retention Service** provides persistent storage of widget states and configurations for tools tab widgets in the dashboard, ensuring user preferences are preserved across sessions.
+
+### Overview
+
+This service manages the persistence of widget states for the tools tab, including:
+- **LotSizeCalculator**: Position sizing inputs and calculation history
+- **MultiTimeAnalysis**: Forex market timezone converter preferences (timezone, 24hr format, slider position)
+- **MultiIndicatorHeatmap**: Trading style, indicator weights, and display preferences
+
+### Features
+
+- ✅ **Automatic State Persistence**: Widget states are saved automatically to Supabase
+- ✅ **User-Specific Storage**: Each user has isolated widget states with Row Level Security (RLS)
+- ✅ **Default State Management**: Intelligent fallback to default states when no saved data exists
+- ✅ **Partial Updates**: Update specific widget fields without affecting others
+- ✅ **Batch Operations**: Save/load multiple widget states simultaneously
+- ✅ **Widget Configuration**: Separate configuration storage for widget-specific settings
+- ✅ **Visibility Control**: Show/hide widgets dynamically
+- ✅ **Display Order**: Customize widget arrangement
+- ✅ **Import/Export**: Backup and restore widget states as JSON
+
+### Database Schema
+
+The service uses the `widget_tab_retention` table in Supabase:
+
+```sql
+CREATE TABLE widget_tab_retention (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  widget_name TEXT NOT NULL,
+  widget_state JSONB NOT NULL DEFAULT '{}'::jsonb,
+  widget_config JSONB DEFAULT '{}'::jsonb,
+  is_visible BOOLEAN DEFAULT true,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Key Features:**
+- Unique constraint on `(user_id, widget_name)` ensures one state per widget per user
+- JSONB storage for flexible state structures
+- Automatic timestamp updates via trigger
+- Comprehensive RLS policies for data isolation
+- Indexed for fast queries
+
+### Usage Examples
+
+#### Basic Operations
+
+```javascript
+import widgetTabRetentionService from '../services/widgetTabRetentionService';
+
+// Get widget state
+const lotSizeState = await widgetTabRetentionService.getWidgetState('LotSizeCalculator');
+
+// Save widget state
+await widgetTabRetentionService.saveWidgetState('LotSizeCalculator', {
+  accountBalance: '10000',
+  riskPercentage: '2',
+  stopLoss: '50',
+  instrumentType: 'forex',
+  currencyPair: 'EURUSDm'
+});
+
+// Partial update
+await widgetTabRetentionService.updateWidgetState('MultiTimeAnalysis', {
+  selectedSymbol: 'GBPUSDm'
+});
+
+// Reset to defaults
+await widgetTabRetentionService.resetWidgetState('MultiIndicatorHeatmap');
+```
+
+#### Batch Operations
+
+```javascript
+// Get all widget states
+const allStates = await widgetTabRetentionService.getAllWidgetStates();
+
+// Save multiple widgets
+await widgetTabRetentionService.saveAllWidgetStates({
+  LotSizeCalculator: { accountBalance: '10000' },
+  MultiTimeAnalysis: { selectedSymbol: 'EURUSDm' }
+});
+```
+
+#### Advanced Features
+
+```javascript
+// Widget visibility
+await widgetTabRetentionService.setWidgetVisibility('LotSizeCalculator', false);
+
+// Display order
+await widgetTabRetentionService.setWidgetDisplayOrder('MultiTimeAnalysis', 1);
+
+// Widget configuration
+await widgetTabRetentionService.updateWidgetConfig('MultiIndicatorHeatmap', {
+  autoUpdate: true,
+  updateInterval: 30000
+});
+
+// Export/Import
+const backup = await widgetTabRetentionService.exportWidgetStates();
+await widgetTabRetentionService.importWidgetStates(backup);
+```
+
+### Widget State Structures
+
+#### LotSizeCalculator
+```javascript
+{
+  accountBalance: '',
+  riskPercentage: '',
+  stopLoss: '',
+  instrumentType: 'forex',
+  currencyPair: 'EURUSDm',
+  contractSize: '100000',
+  pipValue: '10',
+  currentPrice: '',
+  lastCalculation: null
+}
+```
+
+#### MultiTimeAnalysis (Forex Market Timezone Converter)
+```javascript
+{
+  selectedTimezone: 'Asia/Kolkata',
+  is24Hour: false,
+  sliderPosition: 66.67
+}
+```
+
+#### MultiIndicatorHeatmap
+```javascript
+{
+  selectedSymbol: 'EURUSDm',
+  tradingStyle: 'swingTrader',
+  indicatorWeight: 'equal',
+  showNewSignals: true,
+  visibleIndicators: ['rsi', 'macd', 'ema', 'sma'],
+  timeframeFilter: 'all'
+}
+```
+
+### API Reference
+
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `getWidgetState(widgetName)` | Get widget state | Widget name | Promise\<Object\> |
+| `saveWidgetState(widgetName, state, options)` | Save widget state | Widget name, state, options | Promise\<Object\> |
+| `updateWidgetState(widgetName, partialState)` | Partial update | Widget name, partial state | Promise\<Object\> |
+| `getAllWidgetStates()` | Get all states | None | Promise\<Object\> |
+| `saveAllWidgetStates(states)` | Batch save | States object | Promise\<Array\> |
+| `resetWidgetState(widgetName)` | Reset to default | Widget name | Promise\<Boolean\> |
+| `resetAllWidgetStates()` | Reset all | None | Promise\<Number\> |
+| `setWidgetVisibility(widgetName, isVisible)` | Set visibility | Widget name, boolean | Promise\<Object\> |
+| `setWidgetDisplayOrder(widgetName, order)` | Set order | Widget name, number | Promise\<Object\> |
+| `updateWidgetConfig(widgetName, config)` | Update config | Widget name, config | Promise\<Object\> |
+| `getWidgetConfig(widgetName)` | Get config | Widget name | Promise\<Object\> |
+| `exportWidgetStates()` | Export as JSON | None | Promise\<String\> |
+| `importWidgetStates(json)` | Import from JSON | JSON string | Promise\<Array\> |
+
+### Security
+
+- **Row Level Security (RLS)**: Users can only access their own widget states
+- **Authentication Required**: All operations require valid user session
+- **Data Isolation**: Strict user_id filtering prevents cross-user data access
+- **Input Validation**: Widget names are validated against allowed widgets
+
+### SQL Setup
+
+To set up the database schema, run the SQL file:
+
+```bash
+psql -h <host> -U <user> -d <database> -f supabase_widget_tab_retention_schema.sql
+```
+
+Or execute via Supabase SQL Editor:
+1. Go to Supabase Dashboard → SQL Editor
+2. Open `supabase_widget_tab_retention_schema.sql`
+3. Click "Run" to execute
+
+### Files
+
+- **SQL Schema**: `/supabase_widget_tab_retention_schema.sql`
+- **Service**: `/src/services/widgetTabRetentionService.js`
 
 ## Multi-Indicator Heatmap
 
