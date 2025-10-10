@@ -12,8 +12,9 @@ const SubscriptionSection = () => {
       try {
         console.log('🌍 Fetching user IP and location information...')
         
-        // Using ipapi.co for IP geolocation
-        const response = await fetch('https://ipapi.co/json/')
+        // Using ipapi.co for IP geolocation with cache busting
+        const timestamp = Date.now()
+        const response = await fetch(`https://ipapi.co/json/?t=${timestamp}`)
         const data = await response.json()
         
         console.log('📍 User Location Data:', {
@@ -46,7 +47,8 @@ const SubscriptionSection = () => {
         // Fallback: Try another IP service
         try {
           console.log('🔄 Trying fallback IP service...')
-          const fallbackResponse = await fetch('https://ipinfo.io/json')
+          const fallbackTimestamp = Date.now()
+          const fallbackResponse = await fetch(`https://ipinfo.io/json?t=${fallbackTimestamp}`)
           const fallbackData = await fallbackResponse.json()
           
           console.log('📍 Fallback Location Data:', fallbackData)
@@ -69,8 +71,7 @@ const SubscriptionSection = () => {
   
   // Get pricing based on user location
   const getPricingPlans = () => {
-    // Temporary override for testing - set to true to see Indian pricing
-    const isIndianUser = true // _userLocation?.country_code === 'IN'
+    const isIndianUser = _userLocation?.country_code === 'IN'
     
     if (isIndianUser) {
       // Indian pricing (INR)
@@ -157,7 +158,7 @@ const SubscriptionSection = () => {
           period: 'for 3 months',
           popular: false,
           description: 'Best value for serious traders',
-          link: 'https://buy.stripe.com/7sY4gz7Mv09lddd6W657W02',
+          link: 'https://buy.stripe.com/28EdR9aYHg8ja11gwG57W0d',
           features: [
             'TradingView Integration',
             'RSI Analysis & Tracking',
@@ -180,7 +181,7 @@ const SubscriptionSection = () => {
           popular: true,
           badge: 'MOST POPULAR',
           description: 'Maximum savings for committed traders',
-          link: 'https://buy.stripe.com/7sYdR97Mv6xJgpp80a57W03',
+          link: 'https://buy.stripe.com/28EfZh7Mv1dpc994NY57W0e',
           features: [
             'TradingView Integration',
             'RSI Analysis & Tracking',
@@ -199,7 +200,16 @@ const SubscriptionSection = () => {
   }
   
   const pricingPlans = getPricingPlans()
-  const isIndianUser = true // _userLocation?.country_code === 'IN' // Temporary override for testing
+  const isIndianUser = _userLocation?.country_code === 'IN'
+  
+  // Debug logging
+  console.log('🔍 Debug Info:', {
+    _userLocation,
+    isIndianUser,
+    pricingPlansCount: pricingPlans.length,
+    pricingPlans: pricingPlans.map(p => ({ id: p.id, name: p.name, price: p.price })),
+    timestamp: new Date().toISOString()
+  })
 
   return (
     <section className="py-12 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
@@ -224,13 +234,13 @@ const SubscriptionSection = () => {
 
         {/* Pricing Cards */}
         <div className="flex justify-center">
-          <div className={`grid grid-cols-1 gap-8 lg:gap-6 items-center max-w-6xl ${
-            isIndianUser ? 'md:grid-cols-3' : 'md:grid-cols-2'
+          <div className={`grid grid-cols-1 items-center ${
+            isIndianUser ? 'md:grid-cols-3 gap-6 lg:gap-4 max-w-5xl' : 'md:grid-cols-2 gap-6 lg:gap-4 max-w-4xl'
           }`}>
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative transition-all duration-500 ${plan.popular ? 'md:scale-[1.08] md:-translate-y-4' : 'md:scale-[0.95]'}`}
+              className="relative transition-all duration-500"
             >
               {/* Popular Badge */}
               {plan.popular && (
@@ -247,21 +257,21 @@ const SubscriptionSection = () => {
                   ? 'p-[3px] bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 shadow-[0_20px_60px_-15px_rgba(16,185,129,0.4)] hover:shadow-[0_25px_70px_-15px_rgba(16,185,129,0.5)]' 
                   : 'p-[2px] bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1'
               }`}>
-                <div className={`relative rounded-3xl p-6 h-full backdrop-blur-xl transition-all duration-300 flex flex-col ${
+                <div className={`relative rounded-3xl p-12 h-full backdrop-blur-xl transition-all duration-300 flex flex-col ${
                   plan.popular
                     ? 'bg-white dark:bg-gray-900'
                     : 'bg-white/90 dark:bg-gray-800/90'
                 }`}>
                   
                   {/* Plan Name & Badge */}
-                  <div className="text-center mb-4">
+                  <div className="text-center mb-8">
                     {!plan.popular && plan.badge && (
                       <div className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-400/20 dark:to-purple-400/20 rounded-full mb-2">
                         <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{plan.badge}</span>
                       </div>
                     )}
                     
-                    <h3 className={`text-xl font-bold mb-1 ${
+                    <h3 className={`text-3xl font-bold mb-3 ${
                       plan.popular 
                         ? 'text-gray-900 dark:text-white' 
                         : 'text-gray-800 dark:text-gray-100'
@@ -269,11 +279,11 @@ const SubscriptionSection = () => {
                       {plan.name}
                     </h3>
                     
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{plan.description}</p>
+                    <p className="text-base text-gray-600 dark:text-gray-400">{plan.description}</p>
                   </div>
 
                   {/* Price Display */}
-                  <div className="text-center mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="text-center mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
                     {/* Original Price (if exists) */}
                     {plan.originalPrice && (
                       <div className="mb-2">
