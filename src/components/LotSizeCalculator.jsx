@@ -447,8 +447,13 @@ const LotSizeCalculator = () => {
                     const { lastCalculation, ...restState } = savedState;
                     setFormData((prev) => ({ ...prev, ...restState }));
 
-                    // Restore last calculation if it exists
-                    if (lastCalculation) {
+                    // Restore last calculation if it exists and has expected shape
+                    if (
+                        lastCalculation &&
+                        typeof lastCalculation === "object" &&
+                        lastCalculation.input &&
+                        typeof lastCalculation.input === "object"
+                    ) {
                         setResult(lastCalculation);
                     }
                 }
@@ -554,7 +559,6 @@ const LotSizeCalculator = () => {
 
         let lotSize = 0;
         let riskAmount = 0;
-        let calculation = "";
 
         // Calculate risk amount
         riskAmount = accountBalance * riskPercentage;
@@ -562,46 +566,30 @@ const LotSizeCalculator = () => {
         if (formData.instrumentType === "forex") {
             // Forex calculation: Lot Size = (Account Balance × Risk %) / (Stop Loss (pips) × Pip Value)
             lotSize = riskAmount / (stopLoss * pipValue);
-            calculation = `(${accountBalance.toFixed(2)} × ${(
-                riskPercentage * 100
-            ).toFixed(
-                1
-            )}%) / (${stopLoss} pips × $${pipValue}) = ${lotSize.toFixed(
-                4
-            )} lots`;
         } else if (formData.instrumentType === "commodities") {
             // Commodities calculation: Lot Size = (Account Balance × Risk %) / (Stop Loss (price difference) × Contract Size)
             lotSize = riskAmount / (stopLoss * contractSize);
-            calculation = `(${accountBalance.toFixed(2)} × ${(
-                riskPercentage * 100
-            ).toFixed(
-                1
-            )}%) / (${stopLoss} × ${contractSize}) = ${lotSize.toFixed(
-                4
-            )} contracts`;
         } else if (formData.instrumentType === "crypto") {
             // Crypto calculation: Position Size = (Account Balance × Risk %) / Stop Loss (price difference)
             lotSize = riskAmount / stopLoss;
-            const currentPrice = parseFloat(formData.currentPrice) || 0;
-            const baseCurrency = formData.currencyPair
-                .replace("USDm", "")
-                .replace("USD", "");
-            calculation = `(${accountBalance.toFixed(2)} × ${(
-                riskPercentage * 100
-            ).toFixed(1)}%) / ${stopLoss} = ${lotSize.toFixed(
-                8
-            )} ${baseCurrency}`;
-            if (currentPrice > 0) {
-                calculation += ` (at $${currentPrice.toFixed(2)})`;
-            }
         }
 
         setResult({
             lotSize: lotSize,
             riskAmount: riskAmount,
-            calculation: calculation,
             instrumentType: formData.instrumentType,
             resultUnit: instrumentConfigs[formData.instrumentType].resultUnit,
+            input: {
+                accountBalance,
+                riskPercentage: riskPercentage * 100,
+                stopLoss,
+                currencyPair: formData.currencyPair,
+                stopLossUnit:
+                    instrumentConfigs[formData.instrumentType].stopLossUnit,
+                currentPrice: formData.currentPrice
+                    ? parseFloat(formData.currentPrice)
+                    : null,
+            },
         });
 
         // Scroll to result section after a brief delay to ensure DOM update
@@ -648,12 +636,12 @@ const LotSizeCalculator = () => {
 
     return (
         <div className="h-full">
-            <Card className="bg-transparent shadow-none border-0 relative">
-                <CardHeader className="p-4 pt-3 pb-2 space-y-2 relative">
-                    <div className="flex items-start justify-between gap-3">
-                        <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
+            <Card className="bg-transparent shadow-none border-0">
+                <CardHeader className="p-2 pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-base font-bold text-gray-900 dark:text-white flex items-center tools-heading">
                             <svg
-                                className="w-5 h-5 mr-2 text-blue-600"
+                                className="w-4 h-4 mr-1.5 text-blue-600"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -667,205 +655,198 @@ const LotSizeCalculator = () => {
                             </svg>
                             Lot Size Calculator
                         </CardTitle>
-                        {/* Instrument Type Selection moved to header right */}
-                        <div className="-mt-1">
-                            <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 whitespace-nowrap overflow-hidden shadow-sm">
-                                {Object.entries(instrumentConfigs).map(
-                                    ([key, config], idx) => (
-                                        <button
-                                            key={key}
-                                            onClick={() =>
-                                                handleInputChange(
-                                                    "instrumentType",
-                                                    key
-                                                )
-                                            }
-                                            className={`${
-                                                formData.instrumentType === key
-                                                    ? "bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm"
-                                                    : "bg-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                                            } px-3 py-1 text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${
-                                                idx !== 0 ? "ml-0.5" : ""
-                                            }`}
-                                            title={`${config.name} (${config.resultUnit})`}
-                                        >
-                                            {config.name}
-                                        </button>
-                                    )
-                                )}
-                            </div>
+                        {/* Instrument Type Selection */}
+                        <div className="flex gap-1 bg-emerald-500/15 dark:bg-emerald-400/15 border border-emerald-500/30 dark:border-emerald-400/30 rounded-full p-0.5">
+                            {Object.entries(instrumentConfigs).map(
+                                ([key, config]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() =>
+                                            handleInputChange(
+                                                "instrumentType",
+                                                key
+                                            )
+                                        }
+                                        className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                                            formData.instrumentType === key
+                                                ? "bg-emerald-500 text-white"
+                                                : "text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20"
+                                        }`}
+                                    >
+                                        {config.name}
+                                    </button>
+                                )
+                            )}
                         </div>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-4 pt-1">
-                    {/* Two-column layout: Left (calculator), Right (examples + results) */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {/* Left: Calculator Panel */}
-                        <div className="rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-4 md:p-5 backdrop-blur-sm">
+                <CardContent className="p-2 pt-2">
+                    {/* Two-column layout: Left (calculator), Right (results) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-2">
+                        {/* Left: Calculator Panel - 3 columns */}
+                        <div className="lg:col-span-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
                             {/* Input Form */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {/* Account Balance */}
-                                <div>
-                                    <label
-                                        htmlFor="accountBalance"
-                                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5"
-                                    >
-                                        Account Balance ($)
-                                    </label>
-                                    <div className="relative group">
-                                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base font-medium">
-                                            $
-                                        </span>
-                                        <input
-                                            id="accountBalance"
-                                            type="number"
-                                            step="0.01"
-                                            value={formData.accountBalance}
-                                            onChange={(e) =>
-                                                handleInputChange(
-                                                    "accountBalance",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={`w-full h-11 pl-8 pr-3 text-base border rounded-xl shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
-                                                errors.accountBalance
-                                                    ? "border-red-500"
-                                                    : "border-gray-300"
-                                            }`}
-                                            placeholder="10000"
-                                        />
-                                    </div>
-                                    {errors.accountBalance && (
-                                        <p className="text-red-500 text-xs mt-1">
-                                            {errors.accountBalance}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Risk Percentage */}
-                                <div>
-                                    <label
-                                        htmlFor="riskPercentage"
-                                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5"
-                                    >
-                                        Risk Percentage (%)
-                                    </label>
-                                    <div className="relative group">
-                                        <input
-                                            id="riskPercentage"
-                                            type="number"
-                                            step="0.1"
-                                            value={formData.riskPercentage}
-                                            onChange={(e) =>
-                                                handleInputChange(
-                                                    "riskPercentage",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className={`w-full h-11 pl-3 pr-8 text-base border rounded-xl shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
-                                                errors.riskPercentage
-                                                    ? "border-red-500"
-                                                    : "border-gray-300"
-                                            }`}
-                                            placeholder="2"
-                                        />
-                                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-base font-medium">
-                                            %
-                                        </span>
-                                    </div>
-                                    {errors.riskPercentage && (
-                                        <p className="text-red-500 text-xs mt-1">
-                                            {errors.riskPercentage}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Currency Pair Selection */}
-                                <div>
-                                    <label
-                                        htmlFor="currencyPair"
-                                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5"
-                                    >
-                                        {formData.instrumentType === "forex"
-                                            ? "Currency Pair"
-                                            : formData.instrumentType ===
-                                              "commodities"
-                                            ? "Commodity"
-                                            : "Cryptocurrency"}
-                                    </label>
-                                    <div className="relative group">
-                                        <select
-                                            id="currencyPair"
-                                            value={formData.currencyPair}
-                                            onChange={(e) =>
-                                                handleInputChange(
-                                                    "currencyPair",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="w-full h-11 pl-3 pr-8 text-base border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white appearance-none transition-all duration-200 group-hover:shadow-md"
-                                            disabled={!isConnected}
+                            <div className="space-y-2">
+                                {/* Row 1: Account Balance & Risk Percentage */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {/* Account Balance */}
+                                    <div>
+                                        <label
+                                            htmlFor="accountBalance"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                         >
-                                            {instrumentConfigs[
-                                                formData.instrumentType
-                                            ].pairs.length > 0 ? (
+                                            Account Balance ($)
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                                $
+                                            </span>
+                                            <input
+                                                id="accountBalance"
+                                                type="number"
+                                                step="0.01"
+                                                value={formData.accountBalance}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        "accountBalance",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className={`w-full h-10 pl-7 pr-3 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                                                    errors.accountBalance
+                                                        ? "border-red-500"
+                                                        : "border-gray-300 dark:border-gray-600"
+                                                }`}
+                                                placeholder="10000"
+                                            />
+                                        </div>
+                                        {errors.accountBalance && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.accountBalance}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Risk Percentage */}
+                                    <div>
+                                        <label
+                                            htmlFor="riskPercentage"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                                        >
+                                            Risk Percentage (%)
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                id="riskPercentage"
+                                                type="number"
+                                                step="0.1"
+                                                value={formData.riskPercentage}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        "riskPercentage",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className={`w-full h-10 pl-3 pr-7 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
+                                                    errors.riskPercentage
+                                                        ? "border-red-500"
+                                                        : "border-gray-300 dark:border-gray-600"
+                                                }`}
+                                                placeholder="2"
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                                %
+                                            </span>
+                                        </div>
+                                        {errors.riskPercentage && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.riskPercentage}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Row 2: Currency Pair & Stop Loss */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {/* Currency Pair Selection */}
+                                    <div>
+                                        <label
+                                            htmlFor="currencyPair"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                                        >
+                                            {formData.instrumentType === "forex"
+                                                ? "Currency Pair"
+                                                : formData.instrumentType ===
+                                                  "commodities"
+                                                ? "Commodity"
+                                                : "Cryptocurrency"}
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                id="currencyPair"
+                                                value={formData.currencyPair}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        "currencyPair",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full h-10 pl-3 pr-8 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 border-gray-300 dark:border-gray-600 appearance-none"
+                                                disabled={!isConnected}
+                                            >
+                                                {instrumentConfigs[
+                                                    formData.instrumentType
+                                                ].pairs.length > 0 ? (
+                                                    instrumentConfigs[
+                                                        formData.instrumentType
+                                                    ].pairs.map((pair) => (
+                                                        <option
+                                                            key={pair.symbol}
+                                                            value={pair.symbol}
+                                                        >
+                                                            {pair.displayName ||
+                                                                pair.symbol}
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    <option value="" disabled>
+                                                        {isConnected
+                                                            ? "No pairs available"
+                                                            : "Connecting to market data..."}
+                                                    </option>
+                                                )}
+                                            </select>
+                                            <svg
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M19 9l-7 7-7-7"
+                                                />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    {/* Stop Loss */}
+                                    <div>
+                                        <label
+                                            htmlFor="stopLoss"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                                        >
+                                            Stop Loss (
+                                            {
                                                 instrumentConfigs[
                                                     formData.instrumentType
-                                                ].pairs.map((pair) => (
-                                                    <option
-                                                        key={pair.symbol}
-                                                        value={pair.symbol}
-                                                    >
-                                                        {pair.displayName ||
-                                                            pair.symbol}
-                                                    </option>
-                                                ))
-                                            ) : (
-                                                <option value="" disabled>
-                                                    {isConnected
-                                                        ? "No pairs available"
-                                                        : "Connecting to market data..."}
-                                                </option>
-                                            )}
-                                        </select>
-                                        <svg
-                                            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </div>
-                                    {!isConnected && (
-                                        <p className="text-yellow-600 dark:text-yellow-400 text-xs mt-1">
-                                            Connect to market data to see live
-                                            prices
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Stop Loss */}
-                                <div>
-                                    <label
-                                        htmlFor="stopLoss"
-                                        className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5"
-                                    >
-                                        Stop Loss (
-                                        {
-                                            instrumentConfigs[
-                                                formData.instrumentType
-                                            ].stopLossUnit
-                                        }
-                                        )
-                                    </label>
-                                    <div className="relative group">
+                                                ].stopLossUnit
+                                            }
+                                            )
+                                        </label>
                                         <input
                                             id="stopLoss"
                                             type="number"
@@ -877,10 +858,10 @@ const LotSizeCalculator = () => {
                                                     e.target.value
                                                 )
                                             }
-                                            className={`w-full h-11 pl-3 pr-12 text-base border rounded-xl shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                                            className={`w-full h-10 px-3 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
                                                 errors.stopLoss
                                                     ? "border-red-500"
-                                                    : "border-gray-300"
+                                                    : "border-gray-300 dark:border-gray-600"
                                             }`}
                                             placeholder={
                                                 formData.instrumentType ===
@@ -889,39 +870,32 @@ const LotSizeCalculator = () => {
                                                     : "100"
                                             }
                                         />
-                                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-base capitalize font-medium">
-                                            {
-                                                instrumentConfigs[
-                                                    formData.instrumentType
-                                                ].stopLossUnit
-                                            }
-                                        </span>
+                                        {errors.stopLoss && (
+                                            <p className="text-red-500 text-xs mt-1">
+                                                {errors.stopLoss}
+                                            </p>
+                                        )}
                                     </div>
-                                    {errors.stopLoss && (
-                                        <p className="text-red-500 text-xs mt-1">
-                                            {errors.stopLoss}
-                                        </p>
-                                    )}
                                 </div>
 
-                                {/* Current Price (for crypto and commodities) */}
+                                {/* Row 3: Current Price (for crypto and commodities only) */}
                                 {(formData.instrumentType === "crypto" ||
                                     formData.instrumentType ===
                                         "commodities") && (
-                                    <div className="md:col-span-2">
+                                    <div>
                                         <label
                                             htmlFor="currentPrice"
-                                            className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5 flex items-center gap-2"
+                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                         >
                                             Current Price ($)
                                             {isConnected &&
                                                 formData.currentPrice && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                                                    <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
                                                         Live
                                                     </span>
                                                 )}
                                         </label>
-                                        <div className="relative group">
+                                        <div className="relative">
                                             <input
                                                 id="currentPrice"
                                                 type="number"
@@ -933,21 +907,12 @@ const LotSizeCalculator = () => {
                                                         e.target.value
                                                     )
                                                 }
-                                                className={`w-full h-11 pl-3 pr-8 text-base border rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                                                className={`w-full h-10 pl-3 pr-10 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 ${
                                                     errors.currentPrice
                                                         ? "border-red-500"
-                                                        : "border-gray-300"
-                                                } ${
-                                                    isConnected &&
-                                                    formData.currentPrice
-                                                        ? "bg-green-50 dark:bg-green-900/10"
-                                                        : ""
+                                                        : "border-gray-300 dark:border-gray-600"
                                                 }`}
-                                                placeholder={
-                                                    isConnected
-                                                        ? "Auto-populated from live data"
-                                                        : "50000"
-                                                }
+                                                placeholder="50000"
                                                 readOnly={
                                                     isConnected &&
                                                     formData.currentPrice
@@ -976,8 +941,8 @@ const LotSizeCalculator = () => {
                                                                 );
                                                             }
                                                         }}
-                                                        className="absolute right-2.5 top-1/2 transform -translate-y-1/2 p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
-                                                        title="Refresh current price"
+                                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                                                        title="Refresh"
                                                     >
                                                         <svg
                                                             className="w-4 h-4"
@@ -1000,123 +965,156 @@ const LotSizeCalculator = () => {
                                                 {errors.currentPrice}
                                             </p>
                                         )}
-                                        {isConnected &&
-                                            formData.currentPrice && (
-                                                <p className="text-green-600 dark:text-green-400 text-xs mt-1">
-                                                    Live price from market data
-                                                </p>
-                                            )}
                                     </div>
                                 )}
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="mt-4 flex gap-3">
+                            <div className="mt-3 flex gap-2">
                                 <Button
                                     onClick={calculateLotSize}
-                                    className="flex-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-600 hover:via-emerald-500 hover:to-green-700 text-white font-semibold h-11 px-4 rounded-xl transition-all duration-300 ease-in-out text-base shadow-lg hover:shadow-xl transform hover:scale-105 hover:brightness-110"
+                                    className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white h-9 rounded-lg text-sm"
                                 >
-                                    <svg
-                                        className="w-4 h-4 mr-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    Calculate Lot Size
+                                    Calculate
                                 </Button>
                                 <Button
                                     onClick={resetCalculator}
                                     variant="outline"
-                                    className="px-6 h-11 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-base shadow-sm hover:shadow-md transform hover:scale-105"
+                                    className="px-3 h-9 border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                                 >
-                                    <svg
-                                        className="w-4 h-4 mr-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                        />
-                                    </svg>
                                     Reset
                                 </Button>
                             </div>
                         </div>
 
-                        {/* Right: Default Calculation Result */}
-                        <div className="space-y-4">
-                            {/* Default Calculation Display */}
-                            <div className="rounded-2xl border border-green-200/60 dark:border-green-700/50 bg-gradient-to-br from-green-50/80 to-white/80 dark:from-green-900/20 dark:to-gray-800/80 shadow-lg p-4 backdrop-blur-sm">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-sm font-bold">
+                        {/* Right: Calculation Result Panel - 2 columns */}
+                        <div className="lg:col-span-2" ref={resultRef}>
+                            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/10 p-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                    <span className="w-4 h-4 rounded-full bg-green-500 text-white text-xs flex items-center justify-center">
                                         ✓
                                     </span>
-                                    <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                                        Sample Calculation
+                                    <h3 className="text-xs font-bold text-gray-900 dark:text-white">
+                                        {result ? "Your Calculation" : "Result"}
                                     </h3>
                                 </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <div className="flex justify-between items-center bg-white/90 dark:bg-gray-900/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                            Account Balance
-                                        </span>
-                                        <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
-                                            $10,000
-                                        </span>
+
+                                {result ? (
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-start gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                            <span className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                                                Account Balance
+                                            </span>
+                                            <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
+                                                $
+                                                {result?.input
+                                                    ?.accountBalance != null
+                                                    ? result.input.accountBalance.toLocaleString()
+                                                    : "-"}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-start gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                            <span className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                                                Risk Percentage
+                                            </span>
+                                            <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
+                                                {result?.input
+                                                    ?.riskPercentage != null
+                                                    ? `${result.input.riskPercentage}%`
+                                                    : "-"}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-start gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                            <span className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                                                Stop Loss
+                                            </span>
+                                            <span className="text-xs font-medium text-gray-900 dark:text-white text-right break-words">
+                                                {result?.input?.stopLoss != null
+                                                    ? `${
+                                                          result.input.stopLoss
+                                                      } ${
+                                                          result?.input
+                                                              ?.stopLossUnit ??
+                                                          ""
+                                                      }`
+                                                    : "-"}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-start gap-2 p-1.5 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                                            <span className="text-xs font-medium text-red-700 dark:text-red-400 leading-tight">
+                                                Risk Amount
+                                            </span>
+                                            <span className="text-xs font-bold text-red-600 dark:text-red-400 text-right">
+                                                {typeof result?.riskAmount ===
+                                                "number"
+                                                    ? `$${result.riskAmount.toFixed(
+                                                          2
+                                                      )}`
+                                                    : "-"}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-start gap-2 p-1.5 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                                            <span className="text-xs font-medium text-green-700 dark:text-green-400 leading-tight">
+                                                {result?.instrumentType ===
+                                                "crypto"
+                                                    ? "Position Size"
+                                                    : result?.instrumentType ===
+                                                      "commodities"
+                                                    ? "Contract Size"
+                                                    : "Position Size"}
+                                            </span>
+                                            <span className="text-xs font-bold text-green-600 dark:text-green-400 text-right break-words">
+                                                {result?.instrumentType ===
+                                                "crypto"
+                                                    ? result?.lotSize != null &&
+                                                      result?.input
+                                                          ?.currencyPair
+                                                        ? `${result.lotSize.toFixed(
+                                                              6
+                                                          )} ${result.input.currencyPair
+                                                              .replace(
+                                                                  "USDm",
+                                                                  ""
+                                                              )
+                                                              .replace(
+                                                                  "USD",
+                                                                  ""
+                                                              )}`
+                                                        : "-"
+                                                    : result?.lotSize != null
+                                                    ? `${result.lotSize.toFixed(
+                                                          2
+                                                      )} ${
+                                                          result?.resultUnit ??
+                                                          ""
+                                                      }`
+                                                    : "-"}
+                                            </span>
+                                        </div>
+                                        {result?.instrumentType !== "forex" &&
+                                            result?.input?.currentPrice !=
+                                                null && (
+                                                <div className="flex justify-between items-start gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                                    <span className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                                                        Current Price
+                                                    </span>
+                                                    <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
+                                                        $
+                                                        {Number(
+                                                            result.input
+                                                                .currentPrice
+                                                        ).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )}
                                     </div>
-                                    <div className="flex justify-between items-center bg-white/90 dark:bg-gray-900/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                            Risk Percentage
-                                        </span>
-                                        <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
-                                            2%
-                                        </span>
+                                ) : (
+                                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs">
+                                            Enter details and click Calculate
+                                        </p>
                                     </div>
-                                    <div className="flex justify-between items-center bg-white/90 dark:bg-gray-900/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                            Stop Loss
-                                        </span>
-                                        <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
-                                            50 pips
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center bg-white/90 dark:bg-gray-900/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                            Risk Amount
-                                        </span>
-                                        <span className="font-bold text-red-600 text-lg">
-                                            $200
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center bg-white/90 dark:bg-gray-900/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-                                        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                            Position Size
-                                        </span>
-                                        <span className="font-bold text-green-600 text-lg">
-                                            0.40 lots
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="bg-white/90 dark:bg-gray-900/90 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-3 text-sm text-gray-600 dark:text-gray-300 mt-3">
-                                    <div className="font-medium text-gray-800 dark:text-gray-200 mb-1">
-                                        Formula
-                                    </div>
-                                    <div className="font-mono text-xs break-words">
-                                        ($10,000 × 2%) / (50 pips × $10) = 0.40
-                                        lots
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>

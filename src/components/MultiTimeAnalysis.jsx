@@ -93,6 +93,7 @@ const ForexMarketTimeZone = () => {
     const handleMouseDown = (e) => {
         setIsDragging(true);
         e.preventDefault();
+        e.stopPropagation();
     };
 
     const handleMouseMove = useCallback(
@@ -112,6 +113,15 @@ const ForexMarketTimeZone = () => {
 
     const handleMouseUp = () => {
         setIsDragging(false);
+    };
+
+    const handleTimelineClick = (e) => {
+        if (e.target.closest(".time-indicator-handle")) return;
+        if (!timelineRef.current) return;
+        const rect = timelineRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        setSliderPosition(percentage);
     };
 
     // Add global mouse events when dragging
@@ -623,9 +633,9 @@ const ForexMarketTimeZone = () => {
     ];
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none overflow-x-auto lg:overflow-x-hidden border-0">
+        <div className="bg-white dark:bg-gray-800 p-2 max-w-4xl mx-auto font-sans relative rounded-lg overflow-x-auto lg:overflow-x-hidden">
             {/* Time Format Toggle - Top Right */}
-            <div className="absolute top-4 right-4 flex items-center gap-2">
+            <div className="absolute top-2 right-2 flex items-center gap-1.5">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                     12h
                 </span>
@@ -651,17 +661,17 @@ const ForexMarketTimeZone = () => {
             </div>
 
             {/* Header and Timezone Selector */}
-            <div className="flex items-center justify-between mb-3 pr-16">
-                <div className="flex items-center gap-3">
-                    <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
-                        <Globe2 className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
-                        Forex Market Time Zone Converter
+            <div className="flex items-center justify-between mb-2 pr-14">
+                <div className="flex items-center gap-2">
+                    <CardTitle className="text-base font-bold text-gray-900 dark:text-white flex items-center tools-heading">
+                        <Globe2 className="w-4 h-4 mr-1.5 text-indigo-600 dark:text-indigo-400" />
+                        Forex Market Time Zone
                     </CardTitle>
 
                     <div className="relative timezone-dropdown">
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs min-w-[150px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-0.5 text-xs min-w-[130px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 whitespace-nowrap"
                         >
                             <div className="flex items-center gap-1 whitespace-nowrap">
                                 <span className="text-sm">
@@ -743,11 +753,18 @@ const ForexMarketTimeZone = () => {
             {/* Timeline */}
             <div
                 ref={timelineRef}
-                className="relative timeline-container min-w-[700px] lg:min-w-0"
-                onMouseMove={handleMouseMove}
+                className="relative timeline-container min-w-[700px] lg:min-w-0 cursor-pointer"
+                onClick={handleTimelineClick}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleTimelineClick(e);
+                    }
+                }}
+                role="presentation"
             >
                 {/* Top hours - Real-time */}
-                <div className="flex text-xs text-gray-500 dark:text-gray-400 justify-between px-6 mb-2">
+                <div className="flex text-xs text-gray-500 dark:text-gray-400 justify-between px-4 mb-1.5">
                     {Array.from({ length: 24 }).map((_, i) => {
                         const hourTime = new Date();
                         hourTime.setHours(i, 0, 0, 0);
@@ -780,19 +797,13 @@ const ForexMarketTimeZone = () => {
 
                 {/* Interactive Timeline Background */}
                 <div
-                    className="h-3 bg-gray-200 dark:bg-gray-600 rounded-full mx-6 mb-6 cursor-pointer"
+                    className="h-2.5 bg-gray-200 dark:bg-gray-600 rounded-full mx-4 mb-4 cursor-pointer relative"
                     role="slider"
                     tabIndex={0}
                     aria-label="Timeline slider"
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={sliderPosition}
-                    onClick={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const percentage = (x / rect.width) * 100;
-                        setSliderPosition(percentage);
-                    }}
                     onKeyDown={(e) => {
                         if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
                             e.preventDefault();
@@ -807,51 +818,32 @@ const ForexMarketTimeZone = () => {
                     {Array.from({ length: 24 }).map((_, i) => (
                         <div
                             key={i}
-                            className="absolute w-px h-3 bg-gray-300 dark:bg-gray-500"
+                            className="absolute w-px h-2.5 bg-gray-300 dark:bg-gray-500 pointer-events-none"
                             style={{ left: `${(i / 23) * 100}%` }}
                         />
                     ))}
                 </div>
 
-                {/* Vertical Time Indicator - Interactive Slider */}
+                {/* Vertical Time Indicator Line */}
                 <div
-                    className="absolute top-0 bottom-0 w-1 bg-purple-500 cursor-grab active:cursor-grabbing transition-all duration-200"
+                    className="absolute top-0 bottom-0 w-1 bg-purple-500 pointer-events-none z-20"
                     style={{ left: `${sliderPosition}%` }}
-                    role="slider"
-                    tabIndex={0}
-                    aria-label="Time indicator slider"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={sliderPosition}
-                    onMouseDown={handleMouseDown}
-                    onKeyDown={(e) => {
-                        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-                            e.preventDefault();
-                            const increment = e.key === "ArrowRight" ? 5 : -5;
-                            setSliderPosition((prev) =>
-                                Math.max(0, Math.min(100, prev + increment))
-                            );
-                        }
-                    }}
-                >
-                    {/* Slider Handle */}
-                    <div className="absolute -top-3 -left-3 w-6 h-6 bg-purple-600 rounded-full border-2 border-white shadow-lg"></div>
-                </div>
+                ></div>
 
-                {/* Time Display */}
+                {/* Time Display - Draggable */}
                 <div
-                    className="absolute -top-[10px] flex flex-col items-center cursor-grab active:cursor-grabbing z-10"
+                    className="time-indicator-handle absolute -top-[8px] flex flex-col items-center cursor-grab active:cursor-grabbing z-30"
                     style={{
                         left: `${sliderPosition}%`,
                         transform: "translateX(-50%)",
                     }}
+                    onMouseDown={handleMouseDown}
                     role="slider"
                     tabIndex={0}
                     aria-label="Time indicator slider"
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={sliderPosition}
-                    onMouseDown={handleMouseDown}
                     onKeyDown={(e) => {
                         if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
                             e.preventDefault();
@@ -862,9 +854,13 @@ const ForexMarketTimeZone = () => {
                         }
                     }}
                 >
-                    <div className="bg-purple-600 text-white px-2 py-1 rounded-lg shadow-lg min-w-[100px]">
-                        <div className="flex flex-col items-center justify-center gap-0.5">
-                            <div className="flex items-center justify-center gap-1 text-sm font-medium whitespace-nowrap">
+                    <div
+                        className={`bg-purple-600 text-white px-2 py-0.5 rounded-lg shadow-md min-w-[90px] transition-transform ${
+                            isDragging ? "scale-105" : "hover:scale-102"
+                        }`}
+                    >
+                        <div className="flex flex-col items-center justify-center">
+                            <div className="flex items-center justify-center gap-1 text-xs font-medium whitespace-nowrap">
                                 {getTimeIcon(
                                     getTimeFromSliderPosition(sliderPosition),
                                     selectedTimezone
@@ -878,11 +874,11 @@ const ForexMarketTimeZone = () => {
                                     )}
                                 </span>
                             </div>
-                            <span className="text-xs text-center whitespace-nowrap">
+                            <span className="text-[10px] text-center whitespace-nowrap">
                                 {getTimeFromSliderPosition(
                                     sliderPosition
                                 ).toLocaleDateString("en-US", {
-                                    weekday: "long",
+                                    weekday: "short",
                                     timeZone: selectedTimezone,
                                 })}
                             </span>
@@ -891,10 +887,10 @@ const ForexMarketTimeZone = () => {
                 </div>
 
                 {/* Current Trading Overlaps */}
-                <div className="mt-1 mb-1 min-w-[700px] lg:min-w-0">
+                <div className="mt-0.5 mb-1 min-w-[700px] lg:min-w-0">
                     <div className="flex items-center gap-0.5">
-                        <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 tools-heading whitespace-nowrap">
-                            Current Trading Overlaps:
+                        <h3 className="text-xs font-medium text-gray-800 dark:text-gray-200 tools-heading whitespace-nowrap">
+                            Trading Overlaps:
                         </h3>
                         <div className="flex flex-nowrap gap-0.5 overflow-x-auto">
                             {getTradingOverlaps().length > 0 ? (
@@ -916,33 +912,32 @@ const ForexMarketTimeZone = () => {
                 </div>
 
                 {/* Market Rows */}
-                <div className="space-y-1 mt-1 min-w-[800px] lg:min-w-0">
+                <div className="space-y-0.5 mt-0.5 min-w-[800px] lg:min-w-0">
                     {markets.map((m, i) => (
                         <div
                             key={i}
-                            className="flex items-center gap-2 py-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                            className="flex items-center gap-1.5 py-0.5 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                         >
                             {/* Flag + Info */}
-                            <div className="flex items-center gap-2 w-64">
-                                <span className="text-xl">{m.flag}</span>
+                            <div className="flex items-center gap-1.5 w-52">
+                                <span className="text-lg">{m.flag}</span>
                                 <div>
-                                    <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                                    <h3 className="font-bold text-xs text-gray-900 dark:text-white">
                                         {m.name}
                                     </h3>
-                                    <p className="text-xs text-gray-800 dark:text-gray-200">
+                                    <p className="text-[10px] text-gray-800 dark:text-gray-200">
                                         {formatTime(currentTime, m.timezone)}
                                     </p>
-                                    <p className="text-xs text-gray-800 dark:text-gray-200">
+                                    <p className="text-[10px] text-gray-800 dark:text-gray-200">
                                         {formatDate(currentTime, m.timezone)}
                                     </p>
-                                    {/* <p className="text-xs text-gray-800 dark:text-gray-200">{m.sessionHours}</p> */}
                                 </div>
                             </div>
 
                             {/* Status */}
-                            <div className="text-sm text-gray-800 dark:text-gray-200 font-medium w-64">
+                            <div className="text-xs text-gray-800 dark:text-gray-200 font-medium w-48">
                                 <span
-                                    className={`px-2 py-1 rounded text-sm whitespace-nowrap ${
+                                    className={`px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap ${
                                         getMarketStatus(m.timezone).includes(
                                             "SESSION"
                                         )
@@ -955,9 +950,9 @@ const ForexMarketTimeZone = () => {
                             </div>
 
                             {/* Timeline bar with session indicator */}
-                            <div className="flex-1 ml-2 relative h-6">
+                            <div className="flex-1 ml-1 relative h-5">
                                 <div
-                                    className={`h-6 rounded-lg absolute overflow-hidden ${
+                                    className={`h-5 rounded-lg absolute overflow-hidden ${
                                         getMarketStatus(m.timezone).includes(
                                             "SESSION"
                                         )
@@ -1001,7 +996,7 @@ const ForexMarketTimeZone = () => {
                                         }}
                                     ></div>
                                 </div>
-                                <p className="text-xs text-gray-800 dark:text-gray-200 mt-8">
+                                <p className="text-[10px] text-gray-800 dark:text-gray-200 mt-6">
                                     {convertLocalSessionToTimezone(
                                         m.sessionHours,
                                         m.timezone,

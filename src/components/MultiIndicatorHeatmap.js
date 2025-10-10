@@ -1230,7 +1230,7 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = "EURUSDm" }) => {
                                             </svg>
                                             {/* Labels */}
                                             <div className="absolute top-2 left-2">
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800 text-xs font-semibold">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-400 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-600 text-xs font-semibold">
                                                     <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                                                     SELL
                                                 </span>

@@ -84,7 +84,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                                             <button
                                                 onClick={() =>
                                                     scrollToSection(
-                                                        "trading-dashboard"
+                                                        "video-explanation"
                                                     )
                                                 }
                                                 className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
@@ -99,7 +99,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                                             <button
                                                 onClick={() =>
                                                     scrollToSection(
-                                                        "video-explanation"
+                                                        "why-system-works"
                                                     )
                                                 }
                                                 className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
