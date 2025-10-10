@@ -235,7 +235,7 @@ const SubscriptionSection = () => {
         {/* Pricing Cards */}
         <div className="flex justify-center">
           <div className={`grid grid-cols-1 items-center ${
-            isIndianUser ? 'md:grid-cols-3 gap-6 lg:gap-4 max-w-5xl' : 'md:grid-cols-2 gap-6 lg:gap-4 max-w-4xl'
+            isIndianUser ? 'md:grid-cols-3 gap-6 lg:gap-4 max-w-7xl' : 'md:grid-cols-2 gap-6 lg:gap-4 max-w-6xl'
           }`}>
           {pricingPlans.map((plan) => (
             <div
