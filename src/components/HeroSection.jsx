@@ -1,25 +1,133 @@
 import { Settings, TrendingUp, TrendingDown, Clock, BarChart3 } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
+import PremiumHeroBackground from './PremiumHeroBackground'
 import aiIcon from '../assets/artificial-intelligence.png'
+import useMarketCacheStore from '../store/useMarketCacheStore'
+import useMarketStore from '../store/useMarketStore'
+import { formatSymbolDisplay } from '../utils/formatters'
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(1)
-  const [isDataLoading, setIsDataLoading] = useState(true)
+  const { connect, isConnected } = useMarketStore()
+  const { ticksBySymbol, pricingBySymbol } = useMarketCacheStore()
+  const [eurChangePct, setEurChangePct] = useState(null)
+  const [xauChangePct, setXauChangePct] = useState(null)
   const [_isFreeTrialOpen, setIsFreeTrialOpen] = useState(false)
   
-  // Mock data for dashboard
-  const [btcData] = useState({
-    price: 67432.85,
-    changePercent: -2.34
-  })
-  
-  const [ethData] = useState({
-    price: 2456.73,
-    changePercent: -1.89
-  })
-  
   const [marketTrend] = useState('Bearish')
+
+  // Ensure live connection for hero pricing
+  useEffect(() => {
+    console.log('🔌 WebSocket connection status:', isConnected)
+    if (!isConnected) {
+      console.log('🔄 Attempting to connect to WebSocket...')
+      try { 
+        connect() 
+        console.log('✅ WebSocket connection initiated')
+      } catch (error) {
+        console.error('❌ WebSocket connection failed:', error)
+      }
+    } else {
+      console.log('✅ WebSocket already connected')
+      
+      // Subscribe to symbols when connected using market cache store
+      console.log('📡 Subscribing to EUR/USD and Gold for tick data...')
+      try {
+        const cacheStore = useMarketCacheStore.getState()
+        // Use the ensureSubscriptionsForTrending method to subscribe
+        cacheStore.ensureSubscriptionsForTrending(['EURUSDm', 'XAUUSDm'])
+        console.log('✅ Subscription requests sent for EUR/USD and Gold via cache store')
+      } catch (error) {
+        console.error('❌ Failed to subscribe to symbols:', error)
+      }
+    }
+  }, [isConnected, connect])
+
+  // Note: Only using live tick data, no fallback pricing
+
+  // Track daily change % from latest ticks when available
+  useEffect(() => {
+    console.log('🔄 Checking for live tick data...')
+    console.log('📡 Current ticksBySymbol Map:', ticksBySymbol)
+    console.log('📡 Current pricingBySymbol Map:', pricingBySymbol)
+    console.log('📡 ticksBySymbol size:', ticksBySymbol?.size || 0)
+    console.log('📡 pricingBySymbol size:', pricingBySymbol?.size || 0)
+    console.log('📡 ticksBySymbol entries:', Array.from(ticksBySymbol?.entries() || []))
+    console.log('📡 pricingBySymbol entries:', Array.from(pricingBySymbol?.entries() || []))
+    
+    // Get latest tick from ticksBySymbol
+    const eurTicks = ticksBySymbol?.get('EURUSDm')
+    const xauTicks = ticksBySymbol?.get('XAUUSDm')
+    
+    // Get pricing data from pricingBySymbol
+    const eurPricing = pricingBySymbol?.get('EURUSDm')
+    const xauPricing = pricingBySymbol?.get('XAUUSDm')
+    
+    console.log('💱 EUR/USD ticks:', eurTicks)
+    console.log('💱 EUR/USD pricing:', eurPricing)
+    console.log('🥇 Gold ticks:', xauTicks)
+    console.log('🥇 Gold pricing:', xauPricing)
+    
+    // Use pricing data for daily change percentage
+    if (eurPricing && typeof eurPricing.daily_change_pct === 'number') {
+      console.log('📈 EUR/USD daily change set to:', eurPricing.daily_change_pct)
+      setEurChangePct(eurPricing.daily_change_pct)
+    } else {
+      console.log('❌ No EUR/USD pricing data available')
+    }
+    
+    if (xauPricing && typeof xauPricing.daily_change_pct === 'number') {
+      console.log('📈 Gold daily change set to:', xauPricing.daily_change_pct)
+      setXauChangePct(xauPricing.daily_change_pct)
+    } else {
+      console.log('❌ No Gold pricing data available')
+    }
+  }, [ticksBySymbol, pricingBySymbol])
+
+  const LivePrice = ({ symbol, precision = 5 }) => {
+    // Get pricing data from market cache store
+    const pricing = pricingBySymbol?.get(symbol)
+    const price = pricing?.bid || null
+    
+    console.log(`💲 LivePrice for ${symbol}:`, {
+      pricing,
+      price,
+      hasPricing: !!pricing,
+      hasPrice: typeof price === 'number' && isFinite(price)
+    })
+    
+    if (!(typeof price === 'number' && isFinite(price))) {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm">Loading...</span>
+        </div>
+      )
+    }
+    const formatted = Number(price).toLocaleString('en-US', { minimumFractionDigits: precision, maximumFractionDigits: precision })
+    return (
+      <div className="flex items-center space-x-2">
+        <span className="text-black dark:text-white font-bold">${formatted}</span>
+        <div className="w-2 h-2 bg-green-400 rounded-full" title="Live Data"></div>
+      </div>
+    )
+  }
+
+  const ChangeBadge = ({ value }) => {
+    if (typeof value !== 'number' || !isFinite(value)) return null
+    const isUp = value >= 0
+    return (
+      <div className={`text-sm flex items-center font-medium ${isUp ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+        {isUp ? (
+          <TrendingUp className="w-4 h-4 mr-1.5" />
+        ) : (
+          <TrendingDown className="w-4 h-4 mr-1.5" />
+        )}
+        <span className="font-semibold">{`${isUp ? '+' : ''}${value.toFixed(2)}%`}</span>
+      </div>
+    )
+  }
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -29,13 +137,7 @@ const HeroSection = () => {
     return () => clearInterval(interval)
   }, [])
   
-  // Simulate data loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsDataLoading(false)
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [])
+  // remove legacy loading simulation (live data used)
 
   const showSlide = (n) => {
     setCurrentSlide(n)
@@ -50,7 +152,8 @@ const HeroSection = () => {
   }
 
   return (
-    <section className="pt-28 pb-16 px-4 sm:pt-32 sm:pb-20 md:px-6 w-full transition-colors duration-300">
+    <section className="relative overflow-hidden pt-16 pb-16 px-4 sm:pt-20 sm:pb-20 md:px-6 w-full transition-colors duration-300">
+      <PremiumHeroBackground />
       <div className="container mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="w-full lg:w-1/2 text-center lg:text-left mb-8 lg:mb-0">
@@ -182,47 +285,30 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              {/* Cryptocurrency Analysis Cards */}
-              <div className="space-y-2 sm:space-y-3">
-                {/* Bitcoin Analysis Card */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg">
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
-                        <span className="text-gray-800 dark:text-white font-bold text-sm">BTC</span>
+              {/* Live Symbol Analysis Cards */}
+              <div className="space-y-2 sm:space-y-2">
+                {/* EURUSD Analysis Card */}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
+                        <span className="text-gray-800 dark:text-white font-bold text-sm">EUR</span>
                       </div>
                       <div>
-                        <div className="text-gray-800 dark:text-white font-semibold text-base sm:text-lg">Bitcoin</div>
-                        <div className="text-gray-600 dark:text-gray-400 text-sm">BTC/USD</div>
+                        <div className="text-gray-800 dark:text-white font-semibold text-sm sm:text-base">Euro vs US Dollar</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatSymbolDisplay('EURUSDm')}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">
-                        {isDataLoading ? (
-                          <div className="flex items-center space-x-2">
-                            <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-sm">Loading...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <span>${btcData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <div className="w-2 h-2 bg-green-400 rounded-full" title="Real Data (Static)"></div>
-                          </div>
-                        )}
+                      <div className="text-gray-800 dark:text-white font-bold text-base sm:text-lg">
+                        <LivePrice symbol="EURUSDm" precision={5} />
                       </div>
-                      <div className={`text-sm flex items-center ${btcData.changePercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {!isDataLoading && (
-                          <>
-                            {btcData.changePercent >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                            {`${btcData.changePercent >= 0 ? '+' : ''}${btcData.changePercent.toFixed(2)}%`}
-                          </>
-                        )}
-                      </div>
+                      <ChangeBadge value={eurChangePct} />
                     </div>
                   </div>
                   
-                  {/* Bitcoin Price Chart */}
-                  <div className="h-16 sm:h-20 mb-3 sm:mb-4 relative">
+                  {/* Mini Sparkline Placeholder */}
+                  <div className="h-12 sm:h-16 mb-2 sm:mb-3 relative">
                     <svg className="w-full h-full" viewBox="0 0 700 60">
                       <path
                         d="M0,35 Q175,20 350,25 Q525,30 700,28"
@@ -234,68 +320,51 @@ const HeroSection = () => {
                     </svg>
                   </div>
                   
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <div>
-                      <div className="text-gray-600 dark:text-gray-400 text-sm mb-1">Success Probability</div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div className="bg-[#03c05d] h-2 rounded-full" style={{width: '35%'}}></div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div className="bg-[#03c05d] h-1.5 rounded-full" style={{width: '35%'}}></div>
                       </div>
-                      <div className="text-[#03c05d] text-sm mt-1">35%</div>
+                      <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">35%</div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 bg-[#03c05d] rounded-full flex items-center justify-center">
+                      <div className="flex items-center space-x-1.5">
+                        <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
                           <span className="text-white text-xs">✓</span>
                         </div>
-                        <span className="text-red-500 dark:text-red-400 text-sm">Weak Downtrend</span>
+                        <span className="text-red-500 dark:text-red-400 text-xs sm:text-sm">Weak Downtrend</span>
                       </div>
-                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-sm">
-                        <Clock className="w-3 h-3" />
+                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                        <Clock className="w-2.5 h-2.5" />
                         <span>Just now</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Ethereum Analysis Card */}
-                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg">
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
-                        <span className="text-gray-800 dark:text-white font-bold text-sm">ETH</span>
+                {/* XAUUSD Analysis Card */}
+                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
+                        <span className="text-gray-800 dark:text-white font-bold text-sm">XAU</span>
                       </div>
                       <div>
-                        <div className="text-gray-800 dark:text-white font-semibold text-base sm:text-lg">Ethereum</div>
-                        <div className="text-gray-600 dark:text-gray-400 text-sm">ETH/USD</div>
+                        <div className="text-gray-800 dark:text-white font-semibold text-sm sm:text-base">Gold vs US Dollar</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatSymbolDisplay('XAUUSDm')}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-800 dark:text-white font-bold text-lg sm:text-xl">
-                        {isDataLoading ? (
-                          <div className="flex items-center space-x-2">
-                            <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-sm">Loading...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <span>${ethData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <div className="w-2 h-2 bg-green-400 rounded-full" title="Real Data (Static)"></div>
-                          </div>
-                        )}
+                      <div className="text-gray-800 dark:text-white font-bold text-base sm:text-lg">
+                        <LivePrice symbol="XAUUSDm" precision={2} />
                       </div>
-                      <div className={`text-sm flex items-center ${ethData.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {!isDataLoading && (
-                          <>
-                            {ethData.changePercent >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                            {`${ethData.changePercent >= 0 ? '+' : ''}${ethData.changePercent.toFixed(2)}%`}
-                          </>
-                        )}
-                      </div>
+                      <ChangeBadge value={xauChangePct} />
                     </div>
                   </div>
                   
-                  {/* Ethereum Price Chart */}
-                  <div className="h-16 sm:h-20 mb-3 sm:mb-4 relative">
+                  {/* Mini Sparkline Placeholder */}
+                  <div className="h-12 sm:h-16 mb-2 sm:mb-3 relative">
                     <svg className="w-full h-full" viewBox="0 0 700 60">
                       <path
                         d="M0,40 Q175,25 350,30 Q525,35 700,32"
@@ -307,22 +376,22 @@ const HeroSection = () => {
                     </svg>
                   </div>
                   
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <div>
-                      <div className="text-gray-600 dark:text-gray-400 text-xs mb-0.5">Success Probability</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
                       <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-1.5">
                         <div className="bg-[#03c05d] h-1.5 rounded-full" style={{width: '35%'}}></div>
                       </div>
-                      <div className="text-[#03c05d] text-xs mt-0.5">35%</div>
+                      <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">35%</div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1.5">
-                        <div className="w-3 h-3 bg-[#03c05d] rounded-full flex items-center justify-center">
+                        <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
                           <span className="text-white text-xs">✓</span>
                         </div>
-                        <span className="text-red-500 dark:text-red-400 text-xs">Weak Downtrend</span>
+                        <span className="text-red-500 dark:text-red-400 text-xs sm:text-sm">Weak Downtrend</span>
                       </div>
-                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs">
+                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                         <Clock className="w-2.5 h-2.5" />
                         <span>Just now</span>
                       </div>
