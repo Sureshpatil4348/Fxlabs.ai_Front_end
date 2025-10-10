@@ -1,4 +1,4 @@
-import { Settings, TrendingUp, TrendingDown, Clock, BarChart3 } from 'lucide-react'
+import { Settings, TrendingUp, TrendingDown, Clock } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
 import PremiumHeroBackground from './PremiumHeroBackground'
@@ -13,9 +13,9 @@ const HeroSection = () => {
   const { ticksBySymbol, pricingBySymbol } = useMarketCacheStore()
   const [eurChangePct, setEurChangePct] = useState(null)
   const [xauChangePct, setXauChangePct] = useState(null)
-  const [_isFreeTrialOpen, setIsFreeTrialOpen] = useState(false)
+  const [_isFreeTrialOpen, _setIsFreeTrialOpen] = useState(false)
   
-  const [marketTrend] = useState('Bearish')
+  const [_marketTrend] = useState('Bearish')
 
   // Ensure live connection for hero pricing
   useEffect(() => {
@@ -341,28 +341,7 @@ const HeroSection = () => {
                 </div>
               </div>
               
-              {/* Market Trend Section */}
-              <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg mt-4 sm:mt-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="w-5 h-5 text-[#03c05d]" />
-                    </div>
-                    <span className={`font-semibold text-base sm:text-lg ${
-                      marketTrend === 'Bullish' ? 'text-[#03c05d]' : 
-                      marketTrend === 'Bearish' ? 'text-red-500 dark:text-red-400' : 
-                      'text-yellow-600 dark:text-yellow-400'
-                    }`}>
-                      Market Trend: {marketTrend}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setIsFreeTrialOpen(true)}
-                    className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-5 py-3 rounded-lg text-sm sm:text-base font-medium transition-colors">
-                    View Full Analysis
-                  </button>
-                </div>
-              </div>
+              
             </div>
           </div>
               </div>

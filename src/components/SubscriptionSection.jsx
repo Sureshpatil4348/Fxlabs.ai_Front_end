@@ -69,10 +69,11 @@ const SubscriptionSection = () => {
   
   // Get pricing based on user location
   const getPricingPlans = () => {
-    const isIndianUser = _userLocation?.country_code === 'IN'
+    // Temporary override for testing - set to true to see Indian pricing
+    const isIndianUser = true // _userLocation?.country_code === 'IN'
     
     if (isIndianUser) {
-      // Indian pricing (current pricing)
+      // Indian pricing (INR)
       return [
         {
           id: 'free',
@@ -97,10 +98,12 @@ const SubscriptionSection = () => {
         },
         {
           id: 'quarterly',
-          name: 'Quarterly Plan',
+          name: '3 Months Plan',
           duration: '3 Months',
-          price: '199',
-          period: 'per quarter',
+          originalPrice: '25000',
+          price: '16999',
+          period: 'for 3 months',
+          savings: 'SAVE ₹8,001',
           popular: false,
           description: 'Best value for serious traders',
           link: 'https://tagmango.app/0c590f2c10',
@@ -119,10 +122,12 @@ const SubscriptionSection = () => {
         },
         {
           id: 'yearly',
-          name: 'Yearly Plan',
+          name: '1 Year Plan',
           duration: '12 Months',
-          price: '499',
-          period: 'per year',
+          originalPrice: '79999',
+          price: '49999',
+          period: 'for 1 year',
+          savings: 'SAVE ₹30,000',
           popular: true,
           badge: 'MOST POPULAR',
           description: 'Maximum savings for committed traders',
@@ -142,76 +147,51 @@ const SubscriptionSection = () => {
         }
       ]
     } else {
-      // Non-Indian pricing (premium pricing)
+      // Non-Indian pricing (USD) - Only 2 options
       return [
         {
-          id: 'silver',
-          name: 'Silver',
-          duration: 'Lifetime',
-          originalPrice: '1099',
-          price: '899',
-          period: 'lifetime',
-          savings: 'SAVE $200',
+          id: 'quarterly',
+          name: '3 Months Plan',
+          duration: '3 Months',
+          price: '199',
+          period: 'for 3 months',
           popular: false,
-          description: 'Perfect for beginners - For Single Direction Trading',
+          description: 'Best value for serious traders',
           link: 'https://buy.stripe.com/7sY4gz7Mv09lddd6W657W02',
           features: [
-            'Trading Direction: Choose Buy Only OR Sell Only',
-            'Instruments: EURUSD, GOLD',
-            'Stop-Loss: Standard unified protection',
-            'Interface: Basic dashboard'
-          ],
-          notIncluded: [
-            'Bi-directional trading',
-            'Enhanced re-entry logic',
-            'Advanced customization'
+            'TradingView Integration',
+            'RSI Analysis & Tracking',
+            'Currency Strength Meter',
+            'Lot Size Calculator',
+            'All-in-One Indicator Analysis',
+            'Market Session Tracker',
+            'Live Email Notifications',
+            'News & Market Alerts',
+            'Multi-Timeframe Analysis',
+            'Professional Dashboard'
           ]
         },
         {
-          id: 'gold',
-          name: 'Gold',
-          duration: 'Lifetime',
-          originalPrice: '1399',
-          price: '1099',
-          period: 'lifetime',
-          savings: 'SAVE $300',
+          id: 'yearly',
+          name: '1 Year Plan',
+          duration: '12 Months',
+          price: '499',
+          period: 'for 1 year',
           popular: true,
           badge: 'MOST POPULAR',
-          description: 'For professional traders - Best for Bi-directional Trading',
+          description: 'Maximum savings for committed traders',
           link: 'https://buy.stripe.com/7sYdR97Mv6xJgpp80a57W03',
           features: [
-            'Everything in Silver, Plus:',
-            'Trading Direction: Buy Only, Sell Only and Both Mode',
-            'Profit Potential: Increases with bi-directional trading',
-            'Instruments: EURUSD, GOLD, GBPUSD, AUDUSD, USDJPY',
-            'Market Adaptability: Profit in trending markets',
-            'Risk Management: Advanced protection'
-          ],
-          notIncluded: [
-            'Custom trading schedules',
-            'Advanced customization options'
-          ]
-        },
-        {
-          id: 'diamond',
-          name: 'Diamond',
-          duration: 'Lifetime',
-          originalPrice: '1999',
-          price: '1199',
-          period: 'lifetime',
-          savings: 'SAVE $800',
-          popular: false,
-          description: 'For professional traders - Maximum Customization & Power',
-          link: 'https://buy.stripe.com/14AeVdfeX6xJ6OP80a57W04',
-          features: [
-            'Everything in Gold, Plus:',
-            'Advanced Features: Full system customization',
-            'Trading Schedule: Set custom trading hours',
-            'Price Range: Set specific trading zones',
-            'Position Sizing: Advanced risk control',
-            'Instruments: Unlimited Pairs',
-            'Re-entry: Visual tracking lines',
-            'Support: Lifetime VIP Support'
+            'TradingView Integration',
+            'RSI Analysis & Tracking',
+            'Currency Strength Meter',
+            'Lot Size Calculator',
+            'All-in-One Indicator Analysis',
+            'Market Session Tracker',
+            'Live Email Notifications',
+            'News & Market Alerts',
+            'Multi-Timeframe Analysis',
+            'Professional Dashboard'
           ]
         }
       ]
@@ -219,6 +199,7 @@ const SubscriptionSection = () => {
   }
   
   const pricingPlans = getPricingPlans()
+  const isIndianUser = true // _userLocation?.country_code === 'IN' // Temporary override for testing
 
   return (
     <section className="py-12 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
@@ -242,7 +223,10 @@ const SubscriptionSection = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6 items-center">
+        <div className="flex justify-center">
+          <div className={`grid grid-cols-1 gap-8 lg:gap-6 items-center max-w-6xl ${
+            isIndianUser ? 'md:grid-cols-3' : 'md:grid-cols-2'
+          }`}>
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
@@ -251,7 +235,7 @@ const SubscriptionSection = () => {
               {/* Popular Badge */}
               {plan.popular && (
                 <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
-                  <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 text-white px-6 py-2 rounded-full text-xs font-bold tracking-wider shadow-lg">
+                  <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 text-white px-6 py-2 rounded-full text-xs font-bold tracking-wider shadow-lg whitespace-nowrap">
                     {plan.badge}
                   </div>
                 </div>
@@ -293,7 +277,7 @@ const SubscriptionSection = () => {
                     {/* Original Price (if exists) */}
                     {plan.originalPrice && (
                       <div className="mb-2">
-                        <span className="text-lg text-gray-400 dark:text-gray-500 line-through">${plan.originalPrice}</span>
+                        <span className="text-lg text-gray-400 dark:text-gray-500 line-through">{isIndianUser ? '₹' : '$'}{plan.originalPrice}</span>
                       </div>
                     )}
                     
@@ -302,7 +286,7 @@ const SubscriptionSection = () => {
                         plan.popular 
                           ? 'text-gray-900 dark:text-white' 
                           : 'text-gray-700 dark:text-gray-200'
-                      }`}>$</span>
+                      }`}>{isIndianUser ? '₹' : '$'}</span>
                       <span className={`text-5xl font-bold ${
                         plan.popular 
                           ? 'bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent' 
@@ -406,6 +390,7 @@ const SubscriptionSection = () => {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
 
