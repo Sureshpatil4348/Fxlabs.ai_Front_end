@@ -240,7 +240,9 @@ const SubscriptionSection = () => {
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className="relative transition-all duration-500"
+              className={`relative transition-all duration-500 ${
+                plan.popular ? 'md:scale-[1.05] md:-translate-y-2' : ''
+              }`}
             >
               {/* Popular Badge */}
               {plan.popular && (
@@ -257,10 +259,10 @@ const SubscriptionSection = () => {
                   ? 'p-[3px] bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 shadow-[0_20px_60px_-15px_rgba(16,185,129,0.4)] hover:shadow-[0_25px_70px_-15px_rgba(16,185,129,0.5)]' 
                   : 'p-[2px] bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1'
               }`}>
-                <div className={`relative rounded-3xl p-12 h-full backdrop-blur-xl transition-all duration-300 flex flex-col ${
+                <div className={`relative rounded-3xl h-full backdrop-blur-xl transition-all duration-300 flex flex-col ${
                   plan.popular
-                    ? 'bg-white dark:bg-gray-900'
-                    : 'bg-white/90 dark:bg-gray-800/90'
+                    ? 'bg-white dark:bg-gray-900 p-14'
+                    : 'bg-white/90 dark:bg-gray-800/90 p-12'
                 }`}>
                   
                   {/* Plan Name & Badge */}
