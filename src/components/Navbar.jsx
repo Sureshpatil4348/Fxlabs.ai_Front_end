@@ -1,15 +1,13 @@
-import { LogIn, BarChart3, Sun, Moon, Cpu, Users, DollarSign, Menu, X } from 'lucide-react'
+import { LogIn, BarChart3, Cpu, Users, DollarSign, Menu, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 import LoginModal from './LoginModal'
 import UserProfileDropdown from './UserProfileDropdown'
 import { useAuth } from '../auth/AuthProvider'
-import { useTheme } from '../contexts/ThemeContext'
 
 const Navbar = ({ activeTab, onChangeTab }) => {
   const { user } = useAuth()
-  const { isDarkMode, toggleTheme } = useTheme()
   const location = useLocation()
   const isOnDashboard = location.pathname === '/dashboard'
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -44,7 +42,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
       
       <header className="fixed top-4 left-4 right-4 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-full shadow-2xl shadow-black/10 dark:shadow-black/20">
+          <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-black/10">
             <div className="px-4 sm:px-6 lg:px-8 relative">
               <div className="flex justify-between items-center h-[45px] sm:h-[55px] gap-4 sm:gap-6 lg:gap-8">
                 {/* Logo Section - Raw Logo */}
@@ -55,7 +53,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                     onClick={() => window.scrollTo(0, 0)}
                   >
                     <img 
-                      src={isDarkMode ? require('../assets/main.png') : require('../assets/blacklogo.png')} 
+                      src={require('../assets/blacklogo.png')} 
                       alt="FXLabs Logo" 
                       className="w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 object-contain transition-all duration-300 group-hover:scale-105"
                     />
@@ -98,7 +96,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                       {user && (
                         <Link
                           to="/dashboard"
-                          className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
+                          className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
                         >
                           <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                           <span className="font-medium text-sm">Dashboard</span>
@@ -109,13 +107,13 @@ const Navbar = ({ activeTab, onChangeTab }) => {
 
                   {/* Show Analysis/Tools tabs centered when ON dashboard */}
                   {isOnDashboard && (
-                    <div className="flex items-center gap-2 bg-emerald-500/15 dark:bg-emerald-400/15 border border-emerald-500/30 dark:border-emerald-400/30 rounded-full p-1 backdrop-blur-md shadow-sm">
+                    <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 rounded-full p-1 backdrop-blur-md shadow-sm">
                       <button
                         onClick={() => onChangeTab && onChangeTab('analysis')}
                         className={`px-5 py-1.5 rounded-full transition-all duration-200 ${
                           activeTab === 'analysis'
                             ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
-                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                            : 'text-emerald-800 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
                       >
@@ -126,7 +124,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         className={`px-5 py-1.5 rounded-full transition-all duration-200 ${
                           activeTab === 'tools'
                             ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
-                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                            : 'text-emerald-800 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
                       >
@@ -142,26 +140,13 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   {/* Market is Live Pill - Only show on landing page */}
                   {!isOnDashboard && (
                     <div className="hidden sm:flex items-center space-x-2">
-                      <div className="flex items-center space-x-2 bg-green-100/80 dark:bg-slate-800/80 text-green-800 dark:text-green-300 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-green-200/50 dark:border-green-700/50 backdrop-blur-sm">
+                      <div className="flex items-center space-x-2 bg-green-100/80 text-green-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-green-200/50 backdrop-blur-sm">
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
                         <span className="text-xs sm:text-sm font-normal">Market is Live</span>
                       </div>
                     </div>
                   )}
 
-                  {/* Theme Toggle Button */}
-                  <button
-                    hidden
-                    onClick={toggleTheme}
-                    className="p-2 rounded-xl bg-white/50 dark:bg-gray-800/50 hover:bg-white/70 dark:hover:bg-gray-700/70 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 border border-white/20 dark:border-gray-600/30 backdrop-blur-sm"
-                    title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                  >
-                    {isDarkMode ? (
-                      <Sun className="w-4 h-4 sm:w-5 sm:h-5" />
-                    ) : (
-                      <Moon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    )}
-                  </button>
 
                   {/* Desktop User Section - Hidden on mobile */}
                   <div className="hidden lg:flex items-center">
@@ -184,7 +169,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   {/* Mobile Menu Button */}
                   <button
                     onClick={toggleMobileMenu}
-                    className="lg:hidden p-2 rounded-xl bg-white/50 dark:bg-gray-800/50 hover:bg-white/70 dark:hover:bg-gray-700/70 text-gray-700 dark:text-gray-300 transition-all duration-300 border border-white/20 dark:border-gray-600/30 backdrop-blur-sm"
+                    className="lg:hidden p-2 rounded-xl bg-white/50 hover:bg-white/70 text-gray-700 transition-all duration-300 border border-white/20 backdrop-blur-sm"
                     aria-label="Toggle mobile menu"
                   >
                     {isMobileMenuOpen ? (
@@ -200,13 +185,13 @@ const Navbar = ({ activeTab, onChangeTab }) => {
 
           {/* Mobile Menu Overlay */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden mt-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-[2rem] shadow-2xl shadow-black/10 dark:shadow-black/20">
-              <div className="px-6 py-4">
+            <div className="lg:hidden mt-2 bg-white/90 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl shadow-black/10">
+              <div className="px-6 py-6">
                 {/* Simple Menu List */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {/* Show Analysis/Tools tabs when ON dashboard */}
                   {isOnDashboard && (
-                    <div className="flex items-center justify-center gap-2 bg-emerald-500/15 dark:bg-emerald-400/15 border border-emerald-500/30 dark:border-emerald-400/30 rounded-full p-1 backdrop-blur-md shadow-sm mb-3">
+                    <div className="flex items-center justify-center gap-2 bg-emerald-500/15 border border-emerald-500/30 rounded-full p-1 backdrop-blur-md shadow-sm mb-3">
                       <button
                         onClick={() => {
                           onChangeTab && onChangeTab('analysis')
@@ -215,7 +200,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
                           activeTab === 'analysis'
                             ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
-                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                            : 'text-emerald-800 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
                       >
@@ -229,7 +214,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
                           activeTab === 'tools'
                             ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
-                            : 'text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20'
+                            : 'text-emerald-800 hover:bg-emerald-500/20'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
                       >
@@ -242,25 +227,25 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                     <>
                       <button
                         onClick={() => scrollToSection('trading-dashboard')}
-                        className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 py-3 px-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       >
-                        <Cpu className="w-5 h-5" />
+                        <Cpu className="w-6 h-6 flex-shrink-0" />
                         <span className="font-medium">Technology</span>
                       </button>
 
                       <button
                         onClick={() => scrollToSection('video-explanation')}
-                        className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 py-3 px-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       >
-                        <Users className="w-5 h-5" />
+                        <Users className="w-6 h-6 flex-shrink-0" />
                         <span className="font-medium">About Us</span>
                       </button>
 
                       <button
                         onClick={() => scrollToSection('subscription')}
-                        className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 py-3 px-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       >
-                        <DollarSign className="w-5 h-5" />
+                        <DollarSign className="w-6 h-6 flex-shrink-0" />
                         <span className="font-medium">Pricing</span>
                       </button>
                     </>
@@ -269,16 +254,16 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   {user && !isOnDashboard && (
                     <Link
                       to="/dashboard"
-                      className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 py-3 px-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50"
+                      className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <BarChart3 className="w-5 h-5" />
+                      <BarChart3 className="w-6 h-6 flex-shrink-0" />
                       <span className="font-medium">Dashboard</span>
                     </Link>
                   )}
 
                   {/* Profile Section */}
-                  <div className="pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+                  <div className="pt-3 border-t border-gray-200/50">
                     {user ? (
                       <div className="flex justify-center">
                         <UserProfileDropdown />
@@ -289,9 +274,9 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                           handleLoginClick()
                           setIsMobileMenuOpen(false)
                         }}
-                        className="flex items-center space-x-3 w-full text-left text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 py-3 px-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 text-sm sm:text-base"
+                        className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50 text-sm sm:text-base"
                       >
-                        <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <LogIn className="w-6 h-6 flex-shrink-0" />
                         <span className="font-medium">Login</span>
                       </button>
                     )}
