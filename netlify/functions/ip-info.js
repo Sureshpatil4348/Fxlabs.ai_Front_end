@@ -36,7 +36,25 @@ exports.handler = async function (event) {
     const clientId = process.env.ASOASIS_API_IP_INFO_CLIENT_ID;
     const clientSecret = process.env.ASOASIS_API_IP_INFO_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
-      return { statusCode: 500, body: 'Server misconfiguration: missing ASOASIS client credentials' };
+      // Safe diagnostics: do not print secrets; only presence booleans and context
+      const ctx = process.env.CONTEXT || 'unknown';
+      const site = process.env.URL || process.env.DEPLOY_PRIME_URL || '';
+      console.warn('[ip-info] Missing credentials', {
+        hasClientId: Boolean(clientId),
+        hasClientSecret: Boolean(clientSecret),
+        context: ctx,
+        site
+      });
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: 'server_misconfiguration',
+          message: 'Server misconfiguration: missing ASOASIS client credentials',
+          missing: { clientId: !clientId, clientSecret: !clientSecret },
+          context: ctx
+        })
+      };
     }
 
     // Header names are fixed as `client-id` and `client-secret`

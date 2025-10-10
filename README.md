@@ -40,6 +40,18 @@ No UI changes have been introduced yet; output is printed to console for future 
     - Confirm the function exists in Netlify (Site → Functions) and visiting it directly in the browser returns JSON (or a clear function error), not the app HTML.
     - When developing locally with CRA (`react-scripts start`), functions are not available. Use Netlify CLI (`netlify dev`) or point the client to the deployed function URL.
 
+#### Function not appearing in Netlify UI
+
+- Drag-and-drop deploys do not include Functions. Use Git-based deploys or the Netlify CLI to deploy Functions.
+- Git-based deploy (recommended):
+  - Commit `netlify.toml` and `netlify/functions/ip-info.js` to the repository root.
+  - Connect the site to your Git repo and push a commit; Netlify will build and bundle functions automatically.
+  - In build logs, look for a Functions bundling step. After deploy, check Site → Functions for `ip-info`.
+- Netlify CLI deploy:
+  - `netlify deploy --prod --dir=build --functions=netlify/functions`
+  - This publishes the built static assets and uploads functions from `netlify/functions`.
+- If you recently edited environment variables, click "Finish update" in Netlify, then trigger a fresh deploy (ideally "Clear cache and deploy site").
+
 ## Migration Notice: Server-Side Calculations (Latest)
 
 **IMPORTANT ARCHITECTURAL CHANGE**: All technical indicator calculations have been moved to the server-side.
