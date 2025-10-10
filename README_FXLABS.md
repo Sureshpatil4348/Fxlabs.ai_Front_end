@@ -161,7 +161,7 @@ User Settings → Store Update → Recalculation → Real-time UI Update
 
 ### Environment Variables
 ```bash
-REACT_APP_WEBSOCKET_URL=wss://api.fxlabs.ai/ws/market
+REACT_APP_WEBSOCKET_URL=wss://api.fxlabsprime.com/ws/market
 REACT_APP_PERPLEXITY_API_KEY=your_perplexity_api_key
 NODE_ENV=development
 ```

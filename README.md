@@ -214,7 +214,7 @@ All features that relied on client-side calculations now expect server-provided 
 - **Broadcast-all mode**: WebSocket v2 broadcasts ticks and indicator updates for a baseline set of symbols/timeframes to all connected clients
 
 ### WebSocket v2 Architecture
-- **Endpoint**: `wss://api.fxlabs.ai/market-v2` (override via `REACT_APP_WEBSOCKET_URL`)
+- **Endpoint**: `wss://api.fxlabsprime.com/market-v2` (override via `REACT_APP_WEBSOCKET_URL`)
 - **Connection management**: Single shared WebSocket connection across all stores
 - **Message routing**: Centralized message router (`src/services/websocketMessageRouter.js`) directs messages to appropriate stores
 - **Data types**: `['ticks', 'indicators']` (OHLC no longer available)
@@ -338,7 +338,7 @@ All technical indicator calculations are now performed server-side:
 - Moved `AINewsAnalysis` to the bottom-right area to balance the layout.
 - Component file: `src/components/TrendingParis.jsx` (default export `TrendingPairs`).
 - Backend‑driven list: trending symbols are hydrated at startup via REST and updated live via WebSocket.
-  - REST: `GET https://api.fxlabs.ai/trending-pairs?limit=N` (client helper: `trendingService.fetchTrendingPairs`).
+  - REST: `GET https://api.fxlabsprime.com/trending-pairs?limit=N` (client helper: `trendingService.fetchTrendingPairs`).
   - WS types handled: `trending_pairs`, `trending_update`, `trending_snapshot`.
   - Central cache: `useMarketCacheStore` keeps `trendingSymbols` (ordered) and ensures live subscriptions for those symbols.
   - Display data is pulled live from cache: RSI (current timeframe), Price (bid), Daily %.
@@ -527,8 +527,8 @@ Example:
   - Theme-aware control styling
   - Consistent loading overlay theming
 
-### Fix: Resolved infinite API loop in RSI Tracker causing excessive calls to fxlabs.ai/indicator (Latest)
-- **Problem**: The RSI Tracker component was making API calls to `https://api.fxlabs.ai/api/indicator` every second due to an infinite loop.
+### Fix: Resolved infinite API loop in RSI Tracker causing excessive calls to fxlabsprime.com/indicator (Latest)
+- **Problem**: The RSI Tracker component was making API calls to `https://api.fxlabsprime.com/api/indicator` every second due to an infinite loop.
 - **Root Cause**: The `useEffect` hook in `RSIOverboughtOversoldTracker.js` had `rsiData` in its dependency array, causing it to re-run every time WebSocket messages updated the RSI data, creating a loop: WebSocket → rsiData update → useEffect → API call → rsiData update → useEffect → API call...
 - **Fix**: Removed `rsiData` from the `useEffect` dependency array in `src/components/RSIOverboughtOversoldTracker.js` line 313. The effect only needs to run when `settings.timeframe` or `settings?.autoSubscribeSymbols` change.
 - **Impact**: Eliminates excessive API calls (was calling every second), reduces server load, improves performance, and prevents potential rate limiting.
@@ -2323,7 +2323,7 @@ This project is licensed under the MIT License.
 
 ### REST Snapshot + WebSocket Merge (Initial Load Pattern)
 - On mount and on configuration changes (e.g., timeframe), fetch initial closed‑bar indicator values via REST:
-  - Service: `src/services/indicatorService.js` → `GET https://api.fxlabs.ai/api/indicator?indicator=rsi&timeframe=<TF>&pairs=...`
+  - Service: `src/services/indicatorService.js` → `GET https://api.fxlabsprime.com/api/indicator?indicator=rsi&timeframe=<TF>&pairs=...`
   - Stores/components merge the snapshot into `rsiData` to render immediately, then live `indicator_update` pushes keep it fresh.
 - Implementations:
   - `src/store/useRSITrackerStore.js`: fires REST snapshot on timeframe change; populates `rsiData`.
@@ -2331,7 +2331,7 @@ This project is licensed under the MIT License.
   - `src/components/RSIOverboughtOversoldTracker.js`: fetches on mount/timeframe change.
   - (Removed) correlation dashboard component
 - Notes:
-  - REST base is fixed: `https://api.fxlabs.ai` (no env vars required).
+  - REST base is fixed: `https://api.fxlabsprime.com` (no env vars required).
 
 #### Currency Strength Heatmap (Server‑driven)
 - WebSocket v2 additionally broadcasts `currency_strength_update` per timeframe:

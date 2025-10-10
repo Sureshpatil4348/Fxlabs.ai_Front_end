@@ -1,7 +1,7 @@
 // News service for FX Labs API integration and AI analysis
 
 // FX Labs API configuration
-const FXLABS_API_BASE_URL = "https://api.fxlabs.ai/api/news/analysis";
+const FXLABS_API_BASE_URL = "https://api.fxlabsprime.com/api/news/analysis";
 /**
  * Transform FX Labs API response to match our existing data format
  */

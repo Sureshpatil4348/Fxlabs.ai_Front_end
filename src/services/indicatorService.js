@@ -1,6 +1,6 @@
 // Simple REST client for indicator snapshots (cache-first backend)
 // Fixed API base per product guidance
-const API_BASE = 'https://api.fxlabs.ai';
+const API_BASE = 'https://api.fxlabsprime.com';
 
 const buildUrl = (indicator, timeframe, pairs) => {
   const params = new URLSearchParams();

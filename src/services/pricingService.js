@@ -1,7 +1,7 @@
 // Simple REST client for pricing snapshots (cache-first backend)
 // Mirrors indicatorService pattern
 
-const API_BASE = 'https://api.fxlabs.ai';
+const API_BASE = 'https://api.fxlabsprime.com';
 
 const buildUrl = (pairs) => {
   const params = new URLSearchParams();
@@ -32,5 +32,4 @@ const pricingService = {
 };
 
 export default pricingService;
-
 

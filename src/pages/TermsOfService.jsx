@@ -250,7 +250,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>21) Notices & Contact</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <li><strong>Legal Notices / Arbitration Notices:</strong> <a href="mailto:support@fxlabs.ai" className="text-blue-500 hover:underline">support@fxlabs.ai</a></li>
+              <li><strong>Legal Notices / Arbitration Notices:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></li>
               <li><strong>Registered Office:</strong> #253, Junnur Mudhol, Karnataka - 587204</li>
             </ul>
           </section>

@@ -35,8 +35,8 @@ const PrivacyPolicy = () => {
             <p><strong>Entity:</strong> Pinaxa Labs LLP (&quot;Company&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;)</p>
             <p><strong>Brand:</strong> FX Labs (&quot;FX Labs&quot;, &quot;Service&quot;, &quot;Platform&quot;)</p>
             <p><strong>Registered Office:</strong> #253, Junnur, Mudhol, Karnataka - 587204</p>
-            <p><strong>Legal / Privacy Email:</strong> <a href="mailto:support@fxlabs.ai" className="text-blue-500 hover:underline">support@fxlabs.ai</a></p>
-            <p><strong>Data Protection Contact:</strong> Suresh Patil, support@fxlabs.ai</p>
+            <p><strong>Legal / Privacy Email:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></p>
+            <p><strong>Data Protection Contact:</strong> Suresh Patil, support@fxlabsprime.com</p>
           </div>
         </div>
 
@@ -209,7 +209,7 @@ const PrivacyPolicy = () => {
               <strong>California (CCPA/CPRA):</strong> Know, delete, correct, opt-out of sharing, and non-discrimination rights.
             </p>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              To exercise rights, email <a href="mailto:support@fxlabs.ai" className="text-blue-500 hover:underline">support@fxlabs.ai</a>. We will verify your request and respond within statutory timelines.
+              To exercise rights, email <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a>. We will verify your request and respond within statutory timelines.
             </p>
           </section>
 
@@ -257,7 +257,7 @@ const PrivacyPolicy = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>18) Contact & Grievance Redressal</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <li><strong>Privacy / Data Protection:</strong> <a href="mailto:support@fxlabs.ai" className="text-blue-500 hover:underline">support@fxlabs.ai</a></li>
+              <li><strong>Privacy / Data Protection:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></li>
               <li><strong>Registered Office:</strong> #253, Junnur Mudhol, Karnataka - 587204</li>
             </ul>
           </section>

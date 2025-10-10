@@ -1,7 +1,7 @@
 // Simple REST client for trending pairs snapshot
 // Mirrors indicatorService/pricingService pattern
 
-const API_BASE = 'https://api.fxlabs.ai';
+const API_BASE = 'https://api.fxlabsprime.com';
 
 const buildUrl = (limit) => {
   const params = new URLSearchParams();
@@ -30,5 +30,4 @@ const trendingService = {
 };
 
 export default trendingService;
-
 

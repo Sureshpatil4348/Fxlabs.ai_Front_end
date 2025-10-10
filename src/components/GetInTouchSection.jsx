@@ -187,8 +187,8 @@ const GetInTouchSection = () => {
                 <div>
                   <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Email</h4>
                   <div className="space-y-1">
-                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>info@fxlabs.ai</p>
-                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>support@fxlabs.ai</p>
+                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>info@fxlabsprime.com</p>
+                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>support@fxlabsprime.com</p>
                   </div>
                 </div>
               </div>

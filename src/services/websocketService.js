@@ -8,7 +8,7 @@
 import websocketMessageRouter from './websocketMessageRouter';
 
 // WebSocket URL configuration - v2 with indicator support
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabs.ai/market-v2';
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabsprime.com/market-v2';
 
 // Debug configuration
 const ENABLE_TICK_LOGGING = process.env.REACT_APP_ENABLE_TICK_LOGGING === 'true';

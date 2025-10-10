@@ -75,7 +75,7 @@ const RefundPolicy = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>5) Duplicate Charges / Fraudulent Use</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              If you believe you were <strong>double-charged</strong> due to a technical error, contact <a href="mailto:support@fxlabs.ai" className="text-blue-500 hover:underline">support@fxlabs.ai</a> within <strong>15 days</strong> with evidence; upon verification, we may issue an <strong>account credit</strong> or <strong>corrective adjustment</strong> at our discretion. Suspicious or fraudulent use may result in immediate suspension without refund.
+              If you believe you were <strong>double-charged</strong> due to a technical error, contact <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a> within <strong>15 days</strong> with evidence; upon verification, we may issue an <strong>account credit</strong> or <strong>corrective adjustment</strong> at our discretion. Suspicious or fraudulent use may result in immediate suspension without refund.
             </p>
           </section>
 
@@ -99,7 +99,7 @@ const RefundPolicy = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>8) Contact (Refund/Billing)</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <li><strong>Billing Support:</strong> <a href="mailto:support@fxlabs.ai" className="text-blue-500 hover:underline">support@fxlabs.ai</a></li>
+              <li><strong>Billing Support:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></li>
               <li><strong>Registered Office:</strong> #253, Junnur Mudhol, Karnataka - 587204</li>
             </ul>
           </section>
