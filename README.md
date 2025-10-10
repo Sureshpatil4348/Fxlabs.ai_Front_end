@@ -28,6 +28,7 @@ Do NOT put these values in `REACT_APP_` variables — those are exposed to the b
 - The proxy function path is `/.netlify/functions/ip-info` by default
 - For local Netlify dev, create a `.env` at repo root with the variables above
 - You can override IP for testing via query param: `/.netlify/functions/ip-info?ip=1.2.3.4`
+- If calling the deployed function from `http://localhost:3000`, CORS is permitted by default (`Access-Control-Allow-Origin: *`) and preflight `OPTIONS` is supported.
 
 No UI changes have been introduced yet; output is printed to console for future pricing logic. Headers to upstream are `client-id` and `client-secret`.
 

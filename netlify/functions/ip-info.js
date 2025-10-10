@@ -17,9 +17,26 @@ function resolveClientIp(event) {
   return xf || nf || xr || ci || '';
 }
 
+function makeCorsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
+function withCors(init) {
+  return { ...init, headers: { ...(init.headers || {}), ...makeCorsHeaders() } };
+}
+
 exports.handler = async function (event) {
+  // CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return withCors({ statusCode: 204, body: '' });
+  }
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return withCors({ statusCode: 405, body: 'Method Not Allowed' });
   }
 
   try {
@@ -29,7 +46,7 @@ exports.handler = async function (event) {
 
     const clientIp = (overrideIp || resolveClientIp(event) || '').trim();
     if (!clientIp) {
-      return { statusCode: 400, body: 'Unable to determine client IP' };
+      return withCors({ statusCode: 400, body: 'Unable to determine client IP' });
     }
 
     // API-specific credentials (do not expose via REACT_APP_*)
@@ -45,7 +62,7 @@ exports.handler = async function (event) {
         context: ctx,
         site
       });
-      return {
+      return withCors({
         statusCode: 500,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,7 +71,7 @@ exports.handler = async function (event) {
           missing: { clientId: !clientId, clientSecret: !clientSecret },
           context: ctx
         })
-      };
+      });
     }
 
     // Header names are fixed as `client-id` and `client-secret`
@@ -75,16 +92,16 @@ exports.handler = async function (event) {
     const contentType = resp.headers.get('content-type') || '';
     const body = contentType.includes('application/json') ? text : JSON.stringify({ raw: text });
 
-    return {
+    return withCors({
       statusCode: resp.status,
       headers: { 'Content-Type': 'application/json' },
       body,
-    };
+    });
   } catch (err) {
-    return {
+    return withCors({
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'proxy_failed', message: err && err.message ? err.message : String(err) }),
-    };
+    });
   }
 };
