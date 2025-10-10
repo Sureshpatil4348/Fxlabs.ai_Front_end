@@ -14,6 +14,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   
   const { user } = useAuth()
   const { isDarkMode } = useTheme()
@@ -28,6 +29,12 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    if (!acceptedTerms) {
+      setError('Please accept the Terms & Conditions to continue')
+      return
+    }
+    
     setLoading(true)
     setError('')
     setSuccess('')
@@ -59,6 +66,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     setPassword('')
     setError('')
     setSuccess('')
+    setAcceptedTerms(false)
     onClose()
   }
 
@@ -190,11 +198,52 @@ const LoginModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
+            {/* Terms & Conditions Checkbox */}
+            <div className="flex items-start space-x-3 py-2">
+              <div className="flex items-center h-5">
+                <input
+                  id="terms-checkbox"
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className={`w-4 h-4 rounded border-2 focus:ring-2 focus:ring-green-500/50 transition-colors ${
+                    isDarkMode
+                      ? 'bg-gray-800/50 border-gray-600/50 text-green-500 focus:border-green-500'
+                      : 'bg-white/80 border-gray-300/50 text-green-500 focus:border-green-500'
+                  }`}
+                />
+              </div>
+              <label htmlFor="terms-checkbox" className={`text-sm leading-5 transition-colors ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                I agree to the{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate('/terms-of-service')}
+                  className="text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300 underline transition-colors"
+                >
+                  Terms & Conditions
+                </button>
+                {' '}and{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate('/privacy-policy')}
+                  className="text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300 underline transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </label>
+            </div>
+
             {/* Login Button */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-green-500/25"
+              disabled={loading || !acceptedTerms}
+              className={`w-full py-3 font-medium rounded-lg transition-all duration-300 transform shadow-lg ${
+                acceptedTerms && !loading
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white hover:scale-[1.02] hover:shadow-green-500/25'
+                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              }`}
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-2">

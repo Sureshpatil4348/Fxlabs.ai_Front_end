@@ -7,12 +7,16 @@ import {
     Calculator,
     Activity,
     Globe,
-    CheckCircle2
+    CheckCircle2,
+    Play,
+    Pause
   } from 'lucide-react'
-  import React, { useState } from 'react'
+  import React, { useState, useEffect } from 'react'
   
   const TradingToolsShowcase = () => {
-    const [activeTab, setActiveTab] = useState(1)
+    const [activeTab, setActiveTab] = useState(0)
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+    const [userInteracted, setUserInteracted] = useState(false)
   
     const tools = [
       {
@@ -114,6 +118,30 @@ import {
     ]
   
     const activeTool = tools[activeTab]
+
+    // Auto-rotation effect
+    useEffect(() => {
+      if (!isAutoPlaying || userInteracted) return
+
+      const interval = setInterval(() => {
+        setActiveTab(prev => (prev + 1) % tools.length)
+      }, 4000) // Change tab every 4 seconds
+
+      return () => clearInterval(interval)
+    }, [isAutoPlaying, userInteracted, tools.length])
+
+    const handleTabClick = (tabId) => {
+      setActiveTab(tabId)
+      setUserInteracted(true)
+      setIsAutoPlaying(false)
+    }
+
+    const toggleAutoPlay = () => {
+      setIsAutoPlaying(!isAutoPlaying)
+      if (!isAutoPlaying) {
+        setUserInteracted(false)
+      }
+    }
   
     return (
       <section id="trading-tools" className="py-14 md:py-20 px-4 md:px-6 w-full transition-colors duration-300 relative overflow-hidden">
@@ -142,37 +170,61 @@ import {
             </h2>
             
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              
+              Discover our premium suite of professional trading tools. Each tool is designed to give you the edge you need in today&apos;s fast-paced markets.
             </p>
           </div>
   
           {/* Interactive Tabs with Glassy Effect */}
           <div className="mb-10 md:mb-12">
+            {/* Auto-play Controls */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-full px-4 py-2 shadow-lg">
+                <button
+                  onClick={toggleAutoPlay}
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  {isAutoPlaying ? (
+                    <>
+                      <Pause className="w-4 h-4" />
+                      <span>Auto-playing</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      <span>Click to explore</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
             <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-3xl p-2 shadow-xl">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 {tools.map((tool) => (
                   <button
                     key={tool.id}
-                    onClick={() => setActiveTab(tool.id)}
-                    className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 ${
+                    onClick={() => handleTabClick(tool.id)}
+                    className={`group flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 cursor-pointer ${
                       activeTab === tool.id
                         ? 'bg-white dark:bg-gray-800 shadow-lg scale-105'
-                        : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
+                        : 'hover:bg-white/50 dark:hover:bg-gray-800/50 hover:scale-102'
                     }`}
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 ${
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 transition-all duration-300 ${
                       activeTab === tool.id
                         ? `bg-gradient-to-r ${tool.gradient} shadow-lg`
-                        : 'bg-gray-100 dark:bg-gray-700'
+                        : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
                     }`}>
-                      <tool.icon className={`w-6 h-6 ${
-                        activeTab === tool.id ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                      <tool.icon className={`w-6 h-6 transition-all duration-300 ${
+                        activeTab === tool.id 
+                          ? 'text-white' 
+                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200'
                       }`} />
                     </div>
-                    <span className={`text-xs font-semibold text-center leading-snug ${
+                    <span className={`text-xs font-semibold text-center leading-snug transition-all duration-300 ${
                       activeTab === tool.id
                         ? 'text-gray-900 dark:text-white'
-                        : 'text-gray-600 dark:text-gray-400'
+                        : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200'
                     }`}>
                       {tool.name}
                     </span>
