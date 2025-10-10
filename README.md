@@ -2,6 +2,44 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## IP Info Integration (Landing Page)
+
+To enable future geo-based pricing, the landing page now calls an IP information API on load and prints the result to the browser console.
+
+- Netlify Function proxy added to securely attach client credentials (secrets never shipped to browser): `netlify/functions/ip-info.js`
+- Client service wrapper: `src/services/ipInfoService.js`
+- Landing page hook logs result to console: `src/pages/Home.jsx`
+
+### How it works
+1. Browser calls `/.netlify/functions/ip-info` (or `REACT_APP_IP_INFO_FUNCTION_URL` if overridden)
+2. Function resolves client IP from headers and calls `https://api.asoasis.tech/ip-info/ip/<ip>`
+3. Function forwards JSON back to browser
+4. Result is printed in DevTools console and also exposed at `window.__FX_IP_INFO__`
+
+### Configure secrets (Netlify)
+Set these environment variables in your Netlify site settings (Build & deploy → Environment):
+
+- `ASOASIS_API_IP_INFO_CLIENT_ID` – provided client id (IP Info API)
+- `ASOASIS_API_IP_INFO_CLIENT_SECRET` – provided client secret (IP Info API)
+
+Do NOT put these values in `REACT_APP_` variables — those are exposed to the browser.
+
+### Local development notes
+- The proxy function path is `/.netlify/functions/ip-info` by default
+- For local Netlify dev, create a `.env` at repo root with the variables above
+- You can override IP for testing via query param: `/.netlify/functions/ip-info?ip=1.2.3.4`
+
+No UI changes have been introduced yet; output is printed to console for future pricing logic. Headers to upstream are `client-id` and `client-secret`.
+
+### Troubleshooting
+
+- Symptom: Network call response body shows "You need to enable JavaScript to run this app".
+  - Cause: The request is being served the SPA `index.html` instead of the Netlify Function. This happens if the function path is wrong or functions are not enabled on the current host (e.g., local CRA server).
+  - Fixes:
+    - Ensure the endpoint is exactly `/.netlify/functions/ip-info` (or set `REACT_APP_IP_INFO_FUNCTION_URL` to the full deployed URL like `https://<your-site>.netlify.app/.netlify/functions/ip-info`).
+    - Confirm the function exists in Netlify (Site → Functions) and visiting it directly in the browser returns JSON (or a clear function error), not the app HTML.
+    - When developing locally with CRA (`react-scripts start`), functions are not available. Use Netlify CLI (`netlify dev`) or point the client to the deployed function URL.
+
 ## Migration Notice: Server-Side Calculations (Latest)
 
 **IMPORTANT ARCHITECTURAL CHANGE**: All technical indicator calculations have been moved to the server-side.

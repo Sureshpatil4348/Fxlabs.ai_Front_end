@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { useAuth } from '../auth/AuthProvider'
 import AfterPurchaseSection from '../components/AfterPurchaseSection'
@@ -14,10 +14,35 @@ import SubscriptionSection from '../components/SubscriptionSection'
 import TradingToolsShowcase from '../components/TradingToolsShowcase'
 import VideoExplanationSection from '../components/VideoExplanationSection'
 import WhySystemWorks from '../components/WhySystemWorks'
+import ipInfoService from '../services/ipInfoService'
 const Home = () => {
   const { user: _user } = useAuth()
 
   // Allow users to access home page even when logged in
+
+  // On landing, fetch IP info (via Netlify Function) and print result
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const data = await ipInfoService.fetchIpInfo()
+        if (cancelled) return
+        // Expose for debugging and print to console for now
+        if (typeof window !== 'undefined') {
+          window.__FX_IP_INFO__ = data
+        }
+        // Requirement: print the result (visible in DevTools)
+        console.log('[FXLabs] IP info:', data)
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('[FXLabs] IP info fetch error:', err?.message || err)
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors duration-300">
