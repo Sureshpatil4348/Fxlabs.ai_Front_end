@@ -307,18 +307,7 @@ const HeroSection = () => {
                     </div>
                   </div>
                   
-                  {/* Mini Sparkline Placeholder */}
-                  <div className="h-12 sm:h-16 mb-2 sm:mb-3 relative">
-                    <svg className="w-full h-full" viewBox="0 0 700 60">
-                      <path
-                        d="M0,35 Q175,20 350,25 Q525,30 700,28"
-                        stroke="#03c05d"
-                        strokeWidth="2"
-                        fill="none"
-                        opacity="0.6"
-                      />
-                    </svg>
-                  </div>
+                  
                   
                   <div className="space-y-1.5 sm:space-y-2">
                     <div>
@@ -363,18 +352,7 @@ const HeroSection = () => {
                     </div>
                   </div>
                   
-                  {/* Mini Sparkline Placeholder */}
-                  <div className="h-12 sm:h-16 mb-2 sm:mb-3 relative">
-                    <svg className="w-full h-full" viewBox="0 0 700 60">
-                      <path
-                        d="M0,40 Q175,25 350,30 Q525,35 700,32"
-                        stroke="#03c05d"
-                        strokeWidth="2"
-                        fill="none"
-                        opacity="0.6"
-                      />
-                    </svg>
-                  </div>
+                  
                   
                   <div className="space-y-1.5 sm:space-y-2">
                     <div>

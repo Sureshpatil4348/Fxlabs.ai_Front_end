@@ -41,7 +41,7 @@ const PremiumHeroBackground = () => {
     function initParticles() {
       const count = Math.round(Math.min(120, Math.max(60, (width * height) / 18000)))
       particlesRef.current = Array.from({ length: count }, () => {
-        const speed = 0.2 + Math.random() * 0.5
+        const speed = 0.1 + Math.random() * 0.2 // Slightly faster: 0.1-0.3 for better balance
         const angle = Math.random() * Math.PI * 2
         return {
           x: Math.random() * width,
