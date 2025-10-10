@@ -2368,3 +2368,12 @@ Benefits:
 - Schema (Supabase):
   - `supabase_currency_strength_tracker_alerts_schema.sql`
   - Table: `currency_strength_tracker_alerts(user_id, user_email, timeframe, is_active, created_at, updated_at)` with 1 row per user.
+### Startup UX: Immediate WebSocket + Faster Loader Close (Latest)
+- WebSocket connection now boots immediately at app start (in `src/index.js`) instead of waiting for the Dashboard/user session.
+- The loader modal closes as soon as the first WebSocket connection is established.
+  - `marketCache` store now reports connection to the global dashboard state via `updateDashboardConnection`.
+  - This ensures the modal disappears promptly on WS open, before other background tasks run.
+- Non-critical REST calls are deferred until after WS connect to avoid blocking startup:
+  - Trending pairs snapshot fetch moved to `marketCache` connection callback.
+  - News polling already starts only after global status becomes `CONNECTED`.
+- You can tune the connection timeout using `REACT_APP_WS_CONNECT_TIMEOUT_MS` (default 15000ms).

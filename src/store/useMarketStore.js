@@ -613,9 +613,9 @@ const useMarketStore = create(
             import('./useCurrencyStrengthStore')
           ]);
 
-          // Initiate connections with staggered timing (correlation removed)
-          setTimeout(() => useRSITrackerStore.getState().connect(), 200);
-          setTimeout(() => useCurrencyStrengthStore.getState().connect(), 400);
+          // Initiate connections immediately to minimize loader time
+          try { useRSITrackerStore.getState().connect(); } catch (_e) {}
+          try { useCurrencyStrengthStore.getState().connect(); } catch (_e) {}
 
           // Set timeout for connection attempts
           const timeoutId = setTimeout(() => {

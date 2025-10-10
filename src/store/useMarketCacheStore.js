@@ -84,7 +84,17 @@ const useMarketCacheStore = create(
           try { get().handleMessage(message); } catch (e) { /* eslint-disable-next-line no-console */ console.error('[MarketCache] handleMessage error:', e); }
         },
         connectionCallback: () => {
-          // no-op
+          // Notify global dashboard that at least one store is connected so the loader can close
+          import('./useMarketStore').then(({ default: useMarketStore }) => {
+            useMarketStore.getState().updateDashboardConnection('marketCache', {
+              connected: true,
+              connecting: false,
+              error: null
+            });
+          }).catch(() => {});
+
+          // Fetch initial trending pairs snapshot after WS connect
+          try { get().hydrateTrendingFromREST(); } catch (_e) { /* ignore */ }
         },
         disconnectionCallback: () => {
           // keep cache
@@ -99,10 +109,7 @@ const useMarketCacheStore = create(
       websocketService.connect().catch(() => {});
 
       set({ initialized: true });
-      // Defer REST hydration. Components should request minimal snapshots as needed.
-
-      // Fetch initial trending pairs snapshot (small payload; okay at startup)
-      try { get().hydrateTrendingFromREST(); } catch (_e) { /* ignore */ }
+      // Defer REST hydration; trending will be fetched on WS connect callback
     },
 
     hydrateFromSession: () => {
@@ -636,5 +643,4 @@ const useMarketCacheStore = create(
 );
 
 export default useMarketCacheStore;
-
 
