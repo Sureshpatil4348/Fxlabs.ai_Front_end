@@ -7,8 +7,8 @@ import App from './App';
 import { AuthProvider } from './auth/AuthProvider';
 // Early bootstrap: connect WebSocket ASAP and prep caches
 // Avoids waiting for route/user to be ready before starting WS handshake
-import useMarketStore from './store/useMarketStore';
 import useMarketCacheStore from './store/useMarketCacheStore';
+import useMarketStore from './store/useMarketStore';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
