@@ -155,21 +155,21 @@ import {
           {/* Section Header */}
           <div className="text-center mb-12 md:mb-16">
             <div className="inline-flex items-center justify-center mb-6">
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-full px-6 py-3 shadow-lg">
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent font-semibold text-sm uppercase tracking-wider">
+              <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-full px-6 py-3 shadow-lg">
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent font-semibold text-sm uppercase tracking-wider">
                   Powerful Trading Tools
                 </span>
               </div>
             </div>
             
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
               Your Complete{' '}
-              <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 dark:from-blue-400 dark:via-cyan-400 dark:to-blue-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Trading Arsenal
               </span>
             </h2>
             
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Discover our premium suite of professional trading tools. Each tool is designed to give you the edge you need in today&apos;s fast-paced markets.
             </p>
           </div>
@@ -178,10 +178,10 @@ import {
           <div className="mb-10 md:mb-12">
             {/* Auto-play Controls */}
             <div className="flex items-center justify-center mb-4">
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-full px-4 py-2 shadow-lg">
+              <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-full px-4 py-2 shadow-lg">
                 <button
                   onClick={toggleAutoPlay}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                 >
                   {isAutoPlaying ? (
                     <>
@@ -198,33 +198,33 @@ import {
               </div>
             </div>
 
-            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-3xl p-2 shadow-xl">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="bg-white/40 backdrop-blur-xl border border-white/30 rounded-3xl p-3 shadow-xl">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {tools.map((tool) => (
                   <button
                     key={tool.id}
                     onClick={() => handleTabClick(tool.id)}
-                    className={`group flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 cursor-pointer ${
+                    className={`group flex flex-col items-center justify-center p-4 sm:p-3 rounded-2xl transition-all duration-300 cursor-pointer ${
                       activeTab === tool.id
-                        ? 'bg-white dark:bg-gray-800 shadow-lg scale-105'
-                        : 'hover:bg-white/50 dark:hover:bg-gray-800/50 hover:scale-102'
+                        ? 'bg-white shadow-lg scale-105'
+                        : 'hover:bg-white/50 hover:scale-102'
                     }`}
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 transition-all duration-300 ${
+                    <div className={`w-14 h-14 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-2 transition-all duration-300 ${
                       activeTab === tool.id
                         ? `bg-gradient-to-r ${tool.gradient} shadow-lg`
-                        : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
+                        : 'bg-gray-100 group-hover:bg-gray-200'
                     }`}>
-                      <tool.icon className={`w-6 h-6 transition-all duration-300 ${
+                      <tool.icon className={`w-7 h-7 sm:w-6 sm:h-6 transition-all duration-300 ${
                         activeTab === tool.id 
                           ? 'text-white' 
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200'
+                          : 'text-gray-600 group-hover:text-gray-800'
                       }`} />
                     </div>
-                    <span className={`text-xs font-semibold text-center leading-snug transition-all duration-300 ${
+                    <span className={`text-sm sm:text-xs font-semibold text-center leading-snug transition-all duration-300 ${
                       activeTab === tool.id
-                        ? 'text-gray-900 dark:text-white'
-                        : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200'
+                        ? 'text-gray-900'
+                        : 'text-gray-600 group-hover:text-gray-800'
                     }`}>
                       {tool.name}
                     </span>
@@ -240,39 +240,39 @@ import {
             <div className={`absolute inset-0 bg-gradient-to-r ${activeTool.gradient} opacity-10 blur-3xl rounded-3xl transition-all duration-500`}></div>
             
             {/* Main Content Card */}
-            <div className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-2xl border border-white/40 dark:border-gray-700/40 rounded-3xl shadow-2xl overflow-hidden">
+            <div className="relative bg-white/50 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-2xl overflow-hidden">
               <div className="grid md:grid-cols-2 gap-8 p-6 sm:p-8 md:p-12">
                 {/* Left Column - Description */}
                 <div className="space-y-6">
                   {/* Icon and Title */}
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-r ${activeTool.gradient} flex items-center justify-center shadow-xl`}>
-                      <activeTool.icon className="w-10 h-10 text-white" />
+                  <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
+                    <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-20 md:h-20 rounded-md md:rounded-none bg-gradient-to-r ${activeTool.gradient} flex items-center justify-center shadow-xl`}>
+                      <activeTool.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-10 md:h-10 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                         {activeTool.title}
                       </h3>
                     </div>
                   </div>
   
                   {/* Description */}
-                  <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
                     {activeTool.description}
                   </p>
   
                   {/* Alert Badge */}
-                  <div className="flex items-center space-x-2 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 rounded-full px-4 py-2 w-fit">
-                    <Bell className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  <div className="flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-2 w-fit">
+                    <Bell className="w-4 h-4 text-emerald-600" />
+                    <span className="text-sm font-semibold text-emerald-600">
                       Email notifications included
                     </span>
                   </div>
                 </div>
   
                 {/* Right Column - Features List */}
-                <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-2xl p-6 md:p-8 shadow-lg">
-                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl p-6 md:p-8 shadow-lg">
+                  <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                     <TrendingUp className={`w-6 h-6 mr-2 bg-gradient-to-r ${activeTool.gradient} bg-clip-text text-transparent`} />
                     Key Features
                   </h4>
@@ -282,7 +282,7 @@ import {
                         <div className={`mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r ${activeTool.gradient} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
                           <CheckCircle2 className="w-4 h-4 text-white" />
                         </div>
-                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed">
+                        <span className="text-gray-700 text-sm sm:text-base leading-relaxed">
                           {feature}
                         </span>
                       </li>
