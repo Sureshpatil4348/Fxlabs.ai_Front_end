@@ -67,8 +67,8 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                     <>
                       {/* Technology */}
                       <button
-                        onClick={() => scrollToSection('trading-dashboard')}
-                        className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        onClick={() => scrollToSection('video-explanation')}
+                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
                       >
                         <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-sm">Technology</span>
@@ -76,8 +76,8 @@ const Navbar = ({ activeTab, onChangeTab }) => {
 
                       {/* About Us */}
                       <button
-                        onClick={() => scrollToSection('video-explanation')}
-                        className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        onClick={() => scrollToSection('why-system-works')}
+                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
                       >
                         <Users className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-sm">About Us</span>
@@ -86,7 +86,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                       {/* Pricing */}
                       <button
                         onClick={() => scrollToSection('subscription')}
-                        className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50"
+                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
                       >
                         <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-sm">Pricing</span>
@@ -226,7 +226,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   {!isOnDashboard && (
                     <>
                       <button
-                        onClick={() => scrollToSection('trading-dashboard')}
+                        onClick={() => scrollToSection('video-explanation')}
                         className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       >
                         <Cpu className="w-6 h-6 flex-shrink-0" />
@@ -234,7 +234,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                       </button>
 
                       <button
-                        onClick={() => scrollToSection('video-explanation')}
+                        onClick={() => scrollToSection('why-system-works')}
                         className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       >
                         <Users className="w-6 h-6 flex-shrink-0" />
