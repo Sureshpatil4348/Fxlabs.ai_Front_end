@@ -49,15 +49,6 @@ const UserProfileDropdown = () => {
     setIsOpen(false)
   }
 
-  // Generate random avatar color based on user email
-  const getAvatarColor = (email) => {
-    const colors = [
-      'bg-green-800', 'bg-green-700', 'bg-green-600', 'bg-green-500',
-      'bg-green-400', 'bg-green-300', 'bg-green-200', 'bg-green-100'
-    ]
-    const index = email?.charCodeAt(0) % colors.length || 0
-    return colors[index]
-  }
 
   // Get user initials
   const getUserInitials = (email) => {
@@ -72,42 +63,26 @@ const UserProfileDropdown = () => {
         {/* Avatar Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-            isDarkMode 
-              ? 'bg-gray-700 hover:bg-gray-600 focus:ring-offset-gray-900' 
-              : 'bg-gray-200 hover:bg-gray-300 focus:ring-offset-white'
-          }`}
+          className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
         >
-          <div className={`w-10 h-10 rounded-full ${getAvatarColor(user?.email)} flex items-center justify-center text-white font-semibold text-sm`}>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 flex items-center justify-center text-white font-semibold text-sm shadow-lg border-2 border-white/20">
             {getUserInitials(user?.email)}
           </div>
         </button>
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 z-50 transition-colors duration-300 ${
-            isDarkMode 
-              ? 'bg-gray-800 border border-gray-700' 
-              : 'bg-white border border-gray-200'
-          }`}>
+          <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl py-1 z-50 transition-all duration-300 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-700/50">
             <button
               onClick={handleSettings}
-              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                isDarkMode 
-                  ? 'text-gray-300 hover:bg-gray-700' 
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 dark:hover:from-emerald-900/20 dark:hover:to-green-900/20 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg mx-1"
             >
               <Settings className="w-4 h-4 mr-3" />
               Settings
             </button>
             <button
               onClick={handleSignOut}
-              className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
-                isDarkMode 
-                  ? 'text-gray-300 hover:bg-gray-700' 
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 dark:hover:from-red-900/20 dark:hover:to-pink-900/20 hover:text-red-700 dark:hover:text-red-300 rounded-lg mx-1"
             >
               <LogOut className="w-4 h-4 mr-3" />
               Sign Out
@@ -118,10 +93,8 @@ const UserProfileDropdown = () => {
 
       {/* Settings Modal - Rendered via Portal to avoid layout constraints */}
       {showSettings && createPortal(
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`rounded-lg p-8 max-w-md w-full transition-colors duration-300 ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          }`}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="rounded-2xl p-8 max-w-md w-full transition-all duration-300 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-700/50 shadow-2xl">
             <div className="flex items-center justify-between mb-0">
               <h2 className={`text-2xl font-bold transition-colors duration-300 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
@@ -139,9 +112,7 @@ const UserProfileDropdown = () => {
             </div>
 
             {/* Account Information */}
-            <div className={`rounded-lg p-6 mb-6 transition-colors duration-300 ${
-              isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
-            }`}>
+            <div className="rounded-xl p-6 mb-6 transition-all duration-300 bg-gradient-to-r from-emerald-50 via-green-50 to-emerald-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50">
               <h3 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>Account Information</h3>

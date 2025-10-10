@@ -1,4 +1,4 @@
-import { Settings, TrendingUp, TrendingDown, Clock, BarChart3 } from 'lucide-react'
+import { Settings, TrendingUp, TrendingDown, Clock } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
 import PremiumHeroBackground from './PremiumHeroBackground'
@@ -13,33 +13,26 @@ const HeroSection = () => {
   const { ticksBySymbol, pricingBySymbol } = useMarketCacheStore()
   const [eurChangePct, setEurChangePct] = useState(null)
   const [xauChangePct, setXauChangePct] = useState(null)
-  const [_isFreeTrialOpen, setIsFreeTrialOpen] = useState(false)
+  const [_isFreeTrialOpen, _setIsFreeTrialOpen] = useState(false)
   
-  const [marketTrend] = useState('Bearish')
+  const [_marketTrend] = useState('Bearish')
 
   // Ensure live connection for hero pricing
   useEffect(() => {
-    console.log('🔌 WebSocket connection status:', isConnected)
     if (!isConnected) {
-      console.log('🔄 Attempting to connect to WebSocket...')
       try { 
         connect() 
-        console.log('✅ WebSocket connection initiated')
       } catch (error) {
-        console.error('❌ WebSocket connection failed:', error)
+        // Silent error handling
       }
     } else {
-      console.log('✅ WebSocket already connected')
-      
       // Subscribe to symbols when connected using market cache store
-      console.log('📡 Subscribing to EUR/USD and Gold for tick data...')
       try {
         const cacheStore = useMarketCacheStore.getState()
         // Use the ensureSubscriptionsForTrending method to subscribe
         cacheStore.ensureSubscriptionsForTrending(['EURUSDm', 'XAUUSDm'])
-        console.log('✅ Subscription requests sent for EUR/USD and Gold via cache store')
       } catch (error) {
-        console.error('❌ Failed to subscribe to symbols:', error)
+        // Silent error handling
       }
     }
   }, [isConnected, connect])
@@ -48,40 +41,17 @@ const HeroSection = () => {
 
   // Track daily change % from latest ticks when available
   useEffect(() => {
-    console.log('🔄 Checking for live tick data...')
-    console.log('📡 Current ticksBySymbol Map:', ticksBySymbol)
-    console.log('📡 Current pricingBySymbol Map:', pricingBySymbol)
-    console.log('📡 ticksBySymbol size:', ticksBySymbol?.size || 0)
-    console.log('📡 pricingBySymbol size:', pricingBySymbol?.size || 0)
-    console.log('📡 ticksBySymbol entries:', Array.from(ticksBySymbol?.entries() || []))
-    console.log('📡 pricingBySymbol entries:', Array.from(pricingBySymbol?.entries() || []))
-    
-    // Get latest tick from ticksBySymbol
-    const eurTicks = ticksBySymbol?.get('EURUSDm')
-    const xauTicks = ticksBySymbol?.get('XAUUSDm')
-    
     // Get pricing data from pricingBySymbol
     const eurPricing = pricingBySymbol?.get('EURUSDm')
     const xauPricing = pricingBySymbol?.get('XAUUSDm')
     
-    console.log('💱 EUR/USD ticks:', eurTicks)
-    console.log('💱 EUR/USD pricing:', eurPricing)
-    console.log('🥇 Gold ticks:', xauTicks)
-    console.log('🥇 Gold pricing:', xauPricing)
-    
     // Use pricing data for daily change percentage
     if (eurPricing && typeof eurPricing.daily_change_pct === 'number') {
-      console.log('📈 EUR/USD daily change set to:', eurPricing.daily_change_pct)
       setEurChangePct(eurPricing.daily_change_pct)
-    } else {
-      console.log('❌ No EUR/USD pricing data available')
     }
     
     if (xauPricing && typeof xauPricing.daily_change_pct === 'number') {
-      console.log('📈 Gold daily change set to:', xauPricing.daily_change_pct)
       setXauChangePct(xauPricing.daily_change_pct)
-    } else {
-      console.log('❌ No Gold pricing data available')
     }
   }, [ticksBySymbol, pricingBySymbol])
 
@@ -89,13 +59,6 @@ const HeroSection = () => {
     // Get pricing data from market cache store
     const pricing = pricingBySymbol?.get(symbol)
     const price = pricing?.bid || null
-    
-    console.log(`💲 LivePrice for ${symbol}:`, {
-      pricing,
-      price,
-      hasPricing: !!pricing,
-      hasPrice: typeof price === 'number' && isFinite(price)
-    })
     
     if (!(typeof price === 'number' && isFinite(price))) {
       return (
@@ -378,28 +341,7 @@ const HeroSection = () => {
                 </div>
               </div>
               
-              {/* Market Trend Section */}
-              <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-[#03c05d]/20 shadow-lg mt-4 sm:mt-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="w-5 h-5 text-[#03c05d]" />
-                    </div>
-                    <span className={`font-semibold text-base sm:text-lg ${
-                      marketTrend === 'Bullish' ? 'text-[#03c05d]' : 
-                      marketTrend === 'Bearish' ? 'text-red-500 dark:text-red-400' : 
-                      'text-yellow-600 dark:text-yellow-400'
-                    }`}>
-                      Market Trend: {marketTrend}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setIsFreeTrialOpen(true)}
-                    className="bg-[#03c05d] hover:bg-[#02a04a] text-white px-5 py-3 rounded-lg text-sm sm:text-base font-medium transition-colors">
-                    View Full Analysis
-                  </button>
-                </div>
-              </div>
+              
             </div>
           </div>
               </div>
