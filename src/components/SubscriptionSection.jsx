@@ -1,78 +1,224 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import FreeTrialPopup from './FreeTrialPopup'
 
 const SubscriptionSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [_userLocation, setUserLocation] = useState(null)
   
-  const pricingPlans = [
-    {
-      id: 'free',
-      name: 'Free Trial',
-      duration: '1 Month',
-      price: '0',
-      period: 'Free for 1 month',
-      popular: false,
-      description: 'Experience the full power of our platform',
-      features: [
-        'TradingView Integration',
-        'RSI Analysis & Tracking',
-        'Currency Strength Meter',
-        'Lot Size Calculator',
-        'All-in-One Indicator Analysis',
-        'Market Session Tracker',
-        'Live Email Notifications',
-        'News & Market Alerts',
-        'Multi-Timeframe Analysis',
-        'Professional Dashboard'
+  // Fetch user's IP and location information
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      try {
+        console.log('🌍 Fetching user IP and location information...')
+        
+        // Using ipapi.co for IP geolocation
+        const response = await fetch('https://ipapi.co/json/')
+        const data = await response.json()
+        
+        console.log('📍 User Location Data:', {
+          ip: data.ip,
+          country: data.country,
+          country_code: data.country_code,
+          country_name: data.country_name,
+          region: data.region,
+          city: data.city,
+          timezone: data.timezone,
+          currency: data.currency,
+          currency_name: data.currency_name,
+          languages: data.languages,
+          org: data.org,
+          asn: data.asn
+        })
+        
+        setUserLocation(data)
+        
+        // Check if user is from India
+        if (data.country_code === 'IN') {
+          console.log('🇮🇳 User is from India - India specific pricing should be shown')
+        } else {
+          console.log(`🌎 User is from ${data.country_name} (${data.country_code}) - Standard pricing should be shown`)
+        }
+        
+      } catch (error) {
+        console.error('❌ Error fetching user location:', error)
+        
+        // Fallback: Try another IP service
+        try {
+          console.log('🔄 Trying fallback IP service...')
+          const fallbackResponse = await fetch('https://ipinfo.io/json')
+          const fallbackData = await fallbackResponse.json()
+          
+          console.log('📍 Fallback Location Data:', fallbackData)
+          setUserLocation(fallbackData)
+          
+          if (fallbackData.country === 'IN') {
+            console.log('🇮🇳 User is from India (fallback) - India specific pricing should be shown')
+          } else {
+            console.log(`🌎 User is from ${fallbackData.country} (fallback) - Standard pricing should be shown`)
+          }
+          
+        } catch (fallbackError) {
+          console.error('❌ Fallback IP service also failed:', fallbackError)
+        }
+      }
+    }
+    
+    fetchUserLocation()
+  }, [])
+  
+  // Get pricing based on user location
+  const getPricingPlans = () => {
+    const isIndianUser = _userLocation?.country_code === 'IN'
+    
+    if (isIndianUser) {
+      // Indian pricing (current pricing)
+      return [
+        {
+          id: 'free',
+          name: 'Free Trial',
+          duration: '1 Month',
+          price: '0',
+          period: 'Free for 1 month',
+          popular: false,
+          description: 'Experience the full power of our platform',
+          features: [
+            'TradingView Integration',
+            'RSI Analysis & Tracking',
+            'Currency Strength Meter',
+            'Lot Size Calculator',
+            'All-in-One Indicator Analysis',
+            'Market Session Tracker',
+            'Live Email Notifications',
+            'News & Market Alerts',
+            'Multi-Timeframe Analysis',
+            'Professional Dashboard'
+          ]
+        },
+        {
+          id: 'quarterly',
+          name: 'Quarterly Plan',
+          duration: '3 Months',
+          price: '199',
+          period: 'per quarter',
+          popular: false,
+          description: 'Best value for serious traders',
+          link: 'https://tagmango.app/0c590f2c10',
+          features: [
+            'TradingView Integration',
+            'RSI Analysis & Tracking',
+            'Currency Strength Meter',
+            'Lot Size Calculator',
+            'All-in-One Indicator Analysis',
+            'Market Session Tracker',
+            'Live Email Notifications',
+            'News & Market Alerts',
+            'Multi-Timeframe Analysis',
+            'Professional Dashboard'
+          ]
+        },
+        {
+          id: 'yearly',
+          name: 'Yearly Plan',
+          duration: '12 Months',
+          price: '499',
+          period: 'per year',
+          popular: true,
+          badge: 'MOST POPULAR',
+          description: 'Maximum savings for committed traders',
+          link: 'https://tagmango.app/9c4d769ec5',
+          features: [
+            'TradingView Integration',
+            'RSI Analysis & Tracking',
+            'Currency Strength Meter',
+            'Lot Size Calculator',
+            'All-in-One Indicator Analysis',
+            'Market Session Tracker',
+            'Live Email Notifications',
+            'News & Market Alerts',
+            'Multi-Timeframe Analysis',
+            'Professional Dashboard'
+          ]
+        }
       ]
-    },
-    {
-      id: 'quarterly',
-      name: 'Quarterly Plan',
-      duration: '3 Months',
-      price: '199',
-      period: 'per quarter',
-      popular: false,
-      description: 'Best value for serious traders',
-      link: 'https://tagmango.app/0c590f2c10',
-      features: [
-        'TradingView Integration',
-        'RSI Analysis & Tracking',
-        'Currency Strength Meter',
-        'Lot Size Calculator',
-        'All-in-One Indicator Analysis',
-        'Market Session Tracker',
-        'Live Email Notifications',
-        'News & Market Alerts',
-        'Multi-Timeframe Analysis',
-        'Professional Dashboard'
-      ]
-    },
-    {
-      id: 'yearly',
-      name: 'Yearly Plan',
-      duration: '12 Months',
-      price: '499',
-      period: 'per year',
-      popular: true,
-      badge: 'MOST POPULAR',
-      description: 'Maximum savings for committed traders',
-      link: 'https://tagmango.app/9c4d769ec5',
-      features: [
-        'TradingView Integration',
-        'RSI Analysis & Tracking',
-        'Currency Strength Meter',
-        'Lot Size Calculator',
-        'All-in-One Indicator Analysis',
-        'Market Session Tracker',
-        'Live Email Notifications',
-        'News & Market Alerts',
-        'Multi-Timeframe Analysis',
-        'Professional Dashboard'
+    } else {
+      // Non-Indian pricing (premium pricing)
+      return [
+        {
+          id: 'silver',
+          name: 'Silver',
+          duration: 'Lifetime',
+          originalPrice: '1099',
+          price: '899',
+          period: 'lifetime',
+          savings: 'SAVE $200',
+          popular: false,
+          description: 'Perfect for beginners - For Single Direction Trading',
+          link: 'https://buy.stripe.com/7sY4gz7Mv09lddd6W657W02',
+          features: [
+            'Trading Direction: Choose Buy Only OR Sell Only',
+            'Instruments: EURUSD, GOLD',
+            'Stop-Loss: Standard unified protection',
+            'Interface: Basic dashboard'
+          ],
+          notIncluded: [
+            'Bi-directional trading',
+            'Enhanced re-entry logic',
+            'Advanced customization'
+          ]
+        },
+        {
+          id: 'gold',
+          name: 'Gold',
+          duration: 'Lifetime',
+          originalPrice: '1399',
+          price: '1099',
+          period: 'lifetime',
+          savings: 'SAVE $300',
+          popular: true,
+          badge: 'MOST POPULAR',
+          description: 'For professional traders - Best for Bi-directional Trading',
+          link: 'https://buy.stripe.com/7sYdR97Mv6xJgpp80a57W03',
+          features: [
+            'Everything in Silver, Plus:',
+            'Trading Direction: Buy Only, Sell Only and Both Mode',
+            'Profit Potential: Increases with bi-directional trading',
+            'Instruments: EURUSD, GOLD, GBPUSD, AUDUSD, USDJPY',
+            'Market Adaptability: Profit in trending markets',
+            'Risk Management: Advanced protection'
+          ],
+          notIncluded: [
+            'Custom trading schedules',
+            'Advanced customization options'
+          ]
+        },
+        {
+          id: 'diamond',
+          name: 'Diamond',
+          duration: 'Lifetime',
+          originalPrice: '1999',
+          price: '1199',
+          period: 'lifetime',
+          savings: 'SAVE $800',
+          popular: false,
+          description: 'For professional traders - Maximum Customization & Power',
+          link: 'https://buy.stripe.com/14AeVdfeX6xJ6OP80a57W04',
+          features: [
+            'Everything in Gold, Plus:',
+            'Advanced Features: Full system customization',
+            'Trading Schedule: Set custom trading hours',
+            'Price Range: Set specific trading zones',
+            'Position Sizing: Advanced risk control',
+            'Instruments: Unlimited Pairs',
+            'Re-entry: Visual tracking lines',
+            'Support: Lifetime VIP Support'
+          ]
+        }
       ]
     }
-  ]
+  }
+  
+  const pricingPlans = getPricingPlans()
 
   return (
     <section className="py-12 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
@@ -144,6 +290,13 @@ const SubscriptionSection = () => {
 
                   {/* Price Display */}
                   <div className="text-center mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                    {/* Original Price (if exists) */}
+                    {plan.originalPrice && (
+                      <div className="mb-2">
+                        <span className="text-lg text-gray-400 dark:text-gray-500 line-through">${plan.originalPrice}</span>
+                      </div>
+                    )}
+                    
                     <div className="flex items-start justify-center gap-1 mb-1">
                       <span className={`text-2xl font-bold mt-1 ${
                         plan.popular 
@@ -157,7 +310,7 @@ const SubscriptionSection = () => {
                       }`}>{plan.price}</span>
                     </div>
                     
-                    <div className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-0.5">{plan.period}</div>
+                    <div className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-0.5">/{plan.period}</div>
                     <div className={`text-base font-semibold ${
                       plan.popular 
                         ? 'text-emerald-600 dark:text-emerald-400' 
@@ -169,6 +322,12 @@ const SubscriptionSection = () => {
                     {plan.savings && (
                       <div className="mt-2 inline-flex items-center px-3 py-1 bg-emerald-500/10 dark:bg-emerald-400/20 rounded-full">
                         <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{plan.savings}</span>
+                      </div>
+                    )}
+                    
+                    {plan.period === 'lifetime' && (
+                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        One-time payment, no recurring fees
                       </div>
                     )}
                   </div>
@@ -189,6 +348,18 @@ const SubscriptionSection = () => {
                             ? 'text-gray-700 dark:text-gray-200 font-medium' 
                             : 'text-gray-600 dark:text-gray-300'
                         }`}>
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                    
+                    {/* Not Included Features (for non-Indian pricing) */}
+                    {plan.notIncluded && plan.notIncluded.map((feature, index) => (
+                      <div key={`not-${index}`} className="flex items-start gap-2.5">
+                        <div className="flex-shrink-0 w-4 h-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mt-0.5">
+                          <i className="fas fa-times text-red-600 dark:text-red-400 text-[9px]"></i>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-through">
                           {feature}
                         </span>
                       </div>
