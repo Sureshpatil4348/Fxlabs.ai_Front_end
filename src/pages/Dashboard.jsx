@@ -167,20 +167,20 @@
           ) : activeTab === 'analysis' ? (
             <>
               {/* Mobile Layout - Stack vertically */}
-              <div className="block lg:hidden ">
-                {/* Section 1 - Currency Strength Meter */}
-                <div className="h-80">
-                  <CurrencyStrengthMeter />
-                </div>
-
-                {/* Section 2 - Trending Pairs */}
+              <div className="block lg:hidden space-y-4">
+                {/* Section 1 - Trending Pairs */}
                 <div className="h-64">
                   <TrendingPairs />
                 </div>
 
-                {/* Section 3 - RSI Tracker */}
+                {/* Section 2 - RSI Tracker */}
                 <div className="h-64">
                   <RSIOverboughtOversoldTracker />
+                </div>
+
+                {/* Section 3 - Currency Strength Meter */}
+                <div className="h-80">
+                  <CurrencyStrengthMeter />
                 </div>
 
                 {/* Section 4 - AI News Analysis */}
