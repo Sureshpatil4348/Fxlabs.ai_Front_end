@@ -573,7 +573,7 @@ const LotSizeCalculator = () => {
               {result ? (
                 <div ref={resultRef} className="space-y-2">
                     {/* Risk Amount Card */}
-                    <div className="p-3">
+                    <div className="p-3 pt-0">
                       <div className="mb-2">
                         <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk Amount</span>
                       </div>
