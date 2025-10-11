@@ -56,44 +56,48 @@ const Navbar = ({ activeTab, onChangeTab }) => {
             
                 {/* Center Section - Navigation Links / Dashboard Tabs */}
                 <div className="flex flex-1 justify-center items-center">
-                  {/* Show landing links when NOT on dashboard - Desktop only */}
+                  {/* Show landing links when NOT on dashboard - All screen sizes */}
                   {!isOnDashboard && (
-                    <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+                    <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6 xl:space-x-8">
                       {/* About Us */}
                       <button
                         onClick={() => scrollToSection('why-system-works')}
-                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        title="About Us"
                       >
                         <Users className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                        <span className="font-medium text-sm">About Us</span>
+                        <span className="font-medium text-xs sm:text-sm hidden sm:inline">About Us</span>
                       </button>
 
                       {/* Technology */}
                       <button
                         onClick={() => scrollToSection('video-explanation')}
-                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        title="Technology"
                       >
                         <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                        <span className="font-medium text-sm">Technology</span>
+                        <span className="font-medium text-xs sm:text-sm hidden sm:inline">Technology</span>
                       </button>
 
                       {/* Pricing */}
                       <button
                         onClick={() => scrollToSection('subscription')}
-                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        title="Pricing"
                       >
                         <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                        <span className="font-medium text-sm">Pricing</span>
+                        <span className="font-medium text-xs sm:text-sm hidden sm:inline">Pricing</span>
                       </button>
 
                       {/* Dashboard (for logged in users) */}
                       {user && (
                         <Link
                           to="/dashboard"
-                          className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
+                          className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                          title="Dashboard"
                         >
                           <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                          <span className="font-medium text-sm">Dashboard</span>
+                          <span className="font-medium text-xs sm:text-sm hidden sm:inline">Dashboard</span>
                         </Link>
                       )}
                     </div>
