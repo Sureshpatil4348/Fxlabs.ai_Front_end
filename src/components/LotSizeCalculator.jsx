@@ -198,7 +198,8 @@ const LotSizeCalculator = () => {
       newErrors.stopLoss = 'Stop loss must be greater than 0';
     }
 
-    if (!formData.takeProfit || parseFloat(formData.takeProfit) <= 0) {
+    // Take profit is optional - only validate if provided
+    if (formData.takeProfit && parseFloat(formData.takeProfit) <= 0) {
       newErrors.takeProfit = 'Take profit must be greater than 0';
     }
 
@@ -216,20 +217,22 @@ const LotSizeCalculator = () => {
     const accountBalance = parseFloat(formData.accountBalance);
     const riskPercentage = parseFloat(formData.riskPercentage) / 100;
     const stopLoss = parseFloat(formData.stopLoss);
-    const takeProfit = parseFloat(formData.takeProfit);
+    const takeProfit = formData.takeProfit ? parseFloat(formData.takeProfit) : null;
     const pipValue = parseFloat(formData.pipValue);
     const contractSize = parseFloat(formData.contractSize);
 
     let lotSize = 0;
     let riskAmount = 0;
     let calculation = '';
-    let riskRewardRatio = 0;
+    let riskRewardRatio = null;
 
     // Calculate risk amount
     riskAmount = accountBalance * riskPercentage;
 
-    // Calculate Risk Reward Ratio
-    riskRewardRatio = takeProfit / stopLoss;
+    // Calculate Risk Reward Ratio only if take profit is provided
+    if (takeProfit && takeProfit > 0) {
+      riskRewardRatio = takeProfit / stopLoss;
+    }
 
     if (formData.instrumentType === 'forex') {
       // Forex calculation: Lot Size = (Account Balance × Risk %) / (Stop Loss (pips) × Pip Value)
@@ -256,7 +259,8 @@ const LotSizeCalculator = () => {
       riskRewardRatio: riskRewardRatio,
       calculation: calculation,
       instrumentType: formData.instrumentType,
-      resultUnit: instrumentConfigs[formData.instrumentType].resultUnit
+      resultUnit: instrumentConfigs[formData.instrumentType].resultUnit,
+      hasTakeProfit: takeProfit !== null
     });
 
     // Scroll to result section after a brief delay to ensure DOM update
@@ -598,8 +602,8 @@ const LotSizeCalculator = () => {
                       </p>
                     </div>
 
-                    {/* Risk Reward Ratio Card */}
-                    {result.riskRewardRatio !== undefined && (
+                    {/* Risk Reward Ratio Card - Only show if take profit is provided */}
+                    {result.hasTakeProfit && result.riskRewardRatio !== null && (
                       <div className="p-3">
                         <div className="mb-2">
                           <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward Ratio</span>
