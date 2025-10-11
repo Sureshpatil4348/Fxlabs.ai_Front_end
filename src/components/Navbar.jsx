@@ -185,22 +185,22 @@ const Navbar = ({ activeTab, onChangeTab }) => {
 
           {/* Mobile Menu Overlay */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden mt-2 bg-white/90 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl shadow-black/10">
+            <div className="lg:hidden absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-white/90 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl shadow-black/10">
               <div className="px-6 py-6">
                 {/* Simple Menu List */}
                 <div className="space-y-3">
                   {/* Show Analysis/Tools tabs when ON dashboard */}
                   {isOnDashboard && (
-                    <div className="flex items-center justify-center gap-2 bg-emerald-500/15 border border-emerald-500/30 rounded-full p-1 backdrop-blur-md shadow-sm mb-3">
+                    <div className="space-y-2 mb-3">
                       <button
                         onClick={() => {
                           onChangeTab && onChangeTab('analysis')
                           setIsMobileMenuOpen(false)
                         }}
-                        className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
+                        className={`w-full px-5 py-3 rounded-xl transition-all duration-200 ${
                           activeTab === 'analysis'
                             ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
-                            : 'text-emerald-800 hover:bg-emerald-500/20'
+                            : 'text-emerald-800 bg-emerald-500/15 hover:bg-emerald-500/20 border border-emerald-500/30'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
                       >
@@ -211,10 +211,10 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                           onChangeTab && onChangeTab('tools')
                           setIsMobileMenuOpen(false)
                         }}
-                        className={`flex-1 px-5 py-2 rounded-full transition-all duration-200 ${
+                        className={`w-full px-5 py-3 rounded-xl transition-all duration-200 ${
                           activeTab === 'tools'
                             ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white shadow-md'
-                            : 'text-emerald-800 hover:bg-emerald-500/20'
+                            : 'text-emerald-800 bg-emerald-500/15 hover:bg-emerald-500/20 border border-emerald-500/30'
                         }`}
                         style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
                       >
