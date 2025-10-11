@@ -94,6 +94,39 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator Two-Column Layout (Latest)
+- **Split-Screen Design**: Lot Size Calculator now features a clean two-column layout for better UX
+  - **Left Side**: All input parameters (Account Balance, Risk %, Currency Pair, Stop Loss, etc.)
+  - **Right Side**: Real-time calculation results display with enhanced visual feedback
+  - **Empty State**: Right panel shows helpful guidance when no calculation has been performed
+  - **Responsive**: Columns stack vertically on mobile devices (< 1024px), side-by-side on larger screens
+- **Streamlined Header**: Instrument type tabs (Forex/Commodities/Crypto) moved to same line as title for compact layout
+- **Clean Interface**: Removed redundant section headers and status indicators, focusing on essential input/output
+- **Space-Efficient Inline Inputs**: Labels and input fields now displayed on the same line
+  - Saves significant vertical space with horizontal label-input layout
+  - Fixed-width labels (120px) for consistent alignment
+  - Reduced input height (h-10) for more compact appearance
+  - Tighter spacing between input groups (2.5 units)
+  - Labels simplified (e.g., "Account Balance" instead of "Account Balance ($)", "Risk %" instead of "Risk Percentage (%)")
+  - Error messages and helper text aligned with input field positioning
+- **Enhanced Results Display**: 
+  - Larger, more prominent display of Risk Amount and Position Size
+  - Visual indicators and icons for quick interpretation
+  - Formula display in a dedicated card for educational purposes
+- **Complete Currency Pair Support**: All forex currency pairs now available (28 major and cross pairs)
+  - **Major Pairs**: EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD
+  - **EUR Crosses**: EUR/GBP, EUR/JPY, EUR/CHF, EUR/AUD, EUR/CAD, EUR/NZD
+  - **GBP Crosses**: GBP/JPY, GBP/CHF, GBP/AUD, GBP/CAD, GBP/NZD
+  - **AUD Crosses**: AUD/JPY, AUD/CHF, AUD/CAD, AUD/NZD
+  - **NZD Crosses**: NZD/JPY, NZD/CHF, NZD/CAD
+  - **CAD Crosses**: CAD/JPY, CAD/CHF
+  - **CHF Crosses**: CHF/JPY
+  - Proper pip value (10) and contract size (100,000) for accurate lot size calculations
+  - Pairs sourced from centralized constants for consistency across the application
+- **Commodities Support**: Gold (XAU/USD) and Silver (XAG/USD) with correct contract specifications
+- **Crypto Support**: BTC/USD and ETH/USD for cryptocurrency position sizing
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Dashboard Active Tab Retention (Latest)
 - **Tab State Persistence**: Dashboard now remembers which tab (Analysis or Tools) was last active
   - Active tab automatically saved to Supabase when user switches tabs
