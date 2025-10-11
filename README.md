@@ -185,9 +185,21 @@ All features that relied on client-side calculations now expect server-provided 
   - Solution: Removed outer card wrapper, kept inner `widget-card` styling for consistent appearance
   - Files affected: `src/pages/Dashboard.jsx`
 
-- **Fixed Forex Market Time Zone Converter UI issues**: Enhanced user experience in MultiTimeAnalysis component
-  - Removed "Learn more about..." text for cleaner interface
-  - Made time display (showing current time like "2:42 PM") draggable like the rest of the timeline bar
+- **Forex Market Time Zone Converter improvements**
+  - Current-time bar now syncs precisely to the selected timezone using Intl parts (no off-by-one-minute drift).
+  - Market session duration bars are computed from canonical city-local 08:00–17:00 via a DST-aware engine and projected to the viewer timezone, including cross-midnight handling.
+  - Slider and bars reflow immediately when timezone is changed via dropdown.
+  - Implementation is locale-safe and avoids ambiguous string parsing.
+  - Timezone dropdown now lists real IANA timezones with their current GMT offsets, auto-detects the system default, and supports override.
+  - Dropdown no longer shows flag icons; labels are concise like "Kolkata (GMT +05:30)".
+  - Added search-as-you-type in the timezone dropdown; filters by label, IANA id, or offset.
+
+Engine:
+- Added `src/utils/marketHoursEngine.js` implementing a DST-aware specification:
+  - Inputs: `viewInstantUTC`, `viewerTz` (auto-detect by default).
+  - Outputs: retail gate status, viewer clock/offset, and sessions with `sessionOpenUTC`, `sessionCloseUTC`, `isOpenNow`, and `projectedSegmentInViewer`.
+  - Retail weekend gate: Sunday 17:00 ET → Friday 17:00 ET.
+  - Sessions anchored to each city’s local wall-time: Sydney, London, New York (08:00–17:00).
   - Changed time display from `pointer-events-none` to `cursor-grab` with proper mouse event handlers
   - Added proper accessibility support with ARIA attributes and keyboard navigation
   - Fixed `e.currentTarget.closest is not a function` error by using useRef for timeline container

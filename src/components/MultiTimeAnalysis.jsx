@@ -2,25 +2,39 @@ import { Sun, Moon, Globe2 } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
+import { computeMarketHours, listTimezonesWithOffsets } from '../utils/marketHoursEngine';
 import { CardTitle } from './ui/card';
 
 const ForexMarketTimeZone = () => {
-  const [selectedTimezone, setSelectedTimezone] = useState("Asia/Kolkata");
+  const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const [selectedTimezone, setSelectedTimezone] = useState(systemTimezone);
   const [is24Hour, setIs24Hour] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  // Initialize slider at current time in the default timezone (Asia/Kolkata)
+  // Initialize slider at current time in the default timezone (browser/system)
   const [sliderPosition, setSliderPosition] = useState(() => {
-    const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-    const hours = nowInTz.getHours();
-    const minutes = nowInTz.getMinutes();
-    return ((hours + minutes / 60) / 24) * 100;
+    // Use Intl.DateTimeFormat parts to avoid string parsing and rounding errors
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: systemTimezone,
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).formatToParts(new Date());
+    const h = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+    const m = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+    const s = parseInt(parts.find(p => p.type === 'second')?.value || '0', 10);
+    return ((h + (m + s / 60) / 60) / 24) * 100;
   });
   const [isDragging, setIsDragging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [tzQuery, setTzQuery] = useState('');
   const [isStateLoaded, setIsStateLoaded] = useState(false);
   const timelineRef = useRef(null);
+  const trackRef = useRef(null);
+  const tzInputRef = useRef(null);
   const saveTimeoutRef = useRef(null);
   const lastMinuteRef = useRef(null);
+  const [indicatorLeft, setIndicatorLeft] = useState(0);
 
   // Real-time updates
   useEffect(() => {
@@ -33,26 +47,46 @@ const ForexMarketTimeZone = () => {
 
   // Calculate time based on slider position
   const getTimeFromSliderPosition = (position) => {
-    const hours = Math.floor((position / 100) * 24);
-    const minutes = Math.floor(((position / 100) * 24 - hours) * 60);
+    const totalHours = (position / 100) * 24;
+    let hours = Math.floor(totalHours + 1e-9);
+    let minutes = Math.round((totalHours - hours) * 60);
+    if (minutes === 60) {
+      minutes = 0;
+      hours = (hours + 1) % 24;
+    }
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);
     return date;
   };
 
-  // Helper: compute slider position for the current time in a timezone
+  // Helper: compute slider position for the current time in a timezone (precise to seconds)
   const getSliderPositionForNow = useCallback((timezone) => {
-    const nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-    const hours = nowInTz.getHours();
-    const minutes = nowInTz.getMinutes();
-    return ((hours + minutes / 60) / 24) * 100;
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).formatToParts(new Date());
+    const h = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+    const m = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+    const s = parseInt(parts.find(p => p.type === 'second')?.value || '0', 10);
+    return ((h + (m + s / 60) / 60) / 24) * 100;
   }, []);
 
   // Auto-follow: keep the draggable bar aligned to current time each minute.
   // Pauses while dragging; resumes on next minute tick.
   useEffect(() => {
-    const localInTz = new Date(currentTime.toLocaleString('en-US', { timeZone: selectedTimezone }));
-    const minuteKey = `${localInTz.getHours()}:${localInTz.getMinutes()}`;
+    // Compute HH:MM in the selected timezone reliably using Intl parts
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: selectedTimezone,
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    }).formatToParts(currentTime);
+    const h = parts.find(p => p.type === 'hour')?.value || '00';
+    const m = parts.find(p => p.type === 'minute')?.value || '00';
+    const minuteKey = `${h}:${m}`;
     if (lastMinuteRef.current !== minuteKey) {
       lastMinuteRef.current = minuteKey;
       if (!isDragging) {
@@ -89,8 +123,8 @@ const ForexMarketTimeZone = () => {
 
   const handleMouseMove = useCallback((e) => {
     if (!isDragging || !timelineRef.current) return;
-    
-    const rect = timelineRef.current.getBoundingClientRect();
+    const basis = trackRef.current || timelineRef.current;
+    const rect = basis.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPosition(percentage);
@@ -117,6 +151,7 @@ const ForexMarketTimeZone = () => {
     const handleClickOutside = (event) => {
       if (isDropdownOpen && !event.target.closest('.timezone-dropdown')) {
         setIsDropdownOpen(false);
+        setTzQuery('');
       }
     };
 
@@ -124,6 +159,33 @@ const ForexMarketTimeZone = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, [isDropdownOpen]);
+
+  // Keep indicator horizontally aligned with the track left + slider position
+  const updateIndicatorLeft = useCallback(() => {
+    if (!timelineRef.current || !trackRef.current) return;
+    const containerRect = timelineRef.current.getBoundingClientRect();
+    const trackRect = trackRef.current.getBoundingClientRect();
+    const leftPx = (trackRect.left - containerRect.left) + (sliderPosition / 100) * trackRect.width;
+    setIndicatorLeft(leftPx);
+  }, [sliderPosition]);
+
+  useEffect(() => {
+    updateIndicatorLeft();
+  }, [sliderPosition, selectedTimezone, updateIndicatorLeft]);
+
+  useEffect(() => {
+    const onResize = () => updateIndicatorLeft();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [updateIndicatorLeft]);
+
+  // Autofocus search input when dropdown opens
+  useEffect(() => {
+    if (isDropdownOpen && tzInputRef.current) {
+      // Small timeout to ensure element is in DOM
+      setTimeout(() => tzInputRef.current && tzInputRef.current.focus(), 0);
+    }
   }, [isDropdownOpen]);
 
   // Load saved widget state on mount
@@ -204,271 +266,110 @@ const ForexMarketTimeZone = () => {
     return date.toLocaleDateString('en-US', options);
   };
 
-  // Get market status based on real forex trading hours
+  // Get market status using the DST-aware engine
   const getMarketStatus = (timezone) => {
-    const now = new Date();
-    const localTime = new Date(now.toLocaleString("en-US", {timeZone: timezone}));
-    const day = localTime.getDay(); // 0 = Sunday, 6 = Saturday
-    const hour = localTime.getHours();
-    const minute = localTime.getMinutes();
-    const timeInMinutes = hour * 60 + minute;
-    
-    // Forex markets are closed on weekends
-    if (day === 0 || day === 6) {
-      return "MARKET CLOSED FOR THE WEEKEND";
+    const result = computeMarketHours({ viewInstantUTC: new Date(), viewerTz: selectedTimezone });
+    const map = new Map(result.sessions.map(s => [s.cityTzLabel, s.isOpenNow]));
+    const open = map.get(timezone);
+    if (result.viewer.retailGateOpen && open) {
+      if (timezone === 'Australia/Sydney') return 'SYDNEY SESSION';
+      if (timezone === 'Europe/London') return 'LONDON SESSION';
+      if (timezone === 'America/New_York') return 'NEW YORK SESSION';
     }
-    
-    // Real forex trading hours (GMT times converted to local timezone)
-    let marketOpen = false;
-    let session = "";
-    
-    switch (timezone) {
-      case "Australia/Sydney":
-        // Sydney session: 22:00 GMT - 07:00 GMT (next day)
-        // Convert to Sydney time: 09:00 - 18:00 (AEST/AEDT)
-        if (timeInMinutes >= 9 * 60 && timeInMinutes < 18 * 60) {
-          marketOpen = true;
-          session = "SYDNEY SESSION";
-        }
-        break;
-        
-      case "Asia/Tokyo":
-        // Tokyo session: 00:00 GMT - 09:00 GMT
-        // Convert to Tokyo time: 09:00 - 18:00 (JST)
-        if (timeInMinutes >= 9 * 60 && timeInMinutes < 18 * 60) {
-          marketOpen = true;
-          session = "TOKYO SESSION";
-        }
-        break;
-        
-      case "Asia/Hong_Kong":
-        // Hong Kong session: 01:00 GMT - 09:00 GMT
-        // Convert to Hong Kong time: 09:00 - 17:00 (HKT)
-        if (timeInMinutes >= 9 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "HONG KONG SESSION";
-        }
-        break;
-        
-      case "Asia/Singapore":
-        // Singapore session: 01:00 GMT - 09:00 GMT
-        // Convert to Singapore time: 09:00 - 17:00 (SGT)
-        if (timeInMinutes >= 9 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "SINGAPORE SESSION";
-        }
-        break;
-        
-      case "Asia/Dubai":
-        // Dubai session: 05:00 GMT - 13:00 GMT
-        // Convert to Dubai time: 09:00 - 17:00 (GST)
-        if (timeInMinutes >= 9 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "DUBAI SESSION";
-        }
-        break;
-        
-      case "Asia/Kolkata":
-        // Mumbai session: 03:30 GMT - 11:30 GMT
-        // Convert to Mumbai time: 09:00 - 17:00 (IST)
-        if (timeInMinutes >= 9 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "MUMBAI SESSION";
-        }
-        break;
-        
-      case "Europe/Berlin":
-        // Frankfurt session: 07:00 GMT - 15:00 GMT
-        // Convert to Frankfurt time: 08:00 - 16:00 (CET/CEST)
-        if (timeInMinutes >= 8 * 60 && timeInMinutes < 16 * 60) {
-          marketOpen = true;
-          session = "FRANKFURT SESSION";
-        }
-        break;
-        
-      case "Europe/Zurich":
-        // Zurich session: 07:00 GMT - 15:00 GMT
-        // Convert to Zurich time: 08:00 - 16:00 (CET/CEST)
-        if (timeInMinutes >= 8 * 60 && timeInMinutes < 16 * 60) {
-          marketOpen = true;
-          session = "ZURICH SESSION";
-        }
-        break;
-        
-      case "Europe/London":
-        // London session: 08:00 GMT - 17:00 GMT
-        // Convert to London time: 08:00 - 17:00 (GMT/BST)
-        if (timeInMinutes >= 8 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "LONDON SESSION";
-        }
-        break;
-        
-      case "America/Toronto":
-        // Toronto session: 13:00 GMT - 22:00 GMT
-        // Convert to Toronto time: 08:00 - 17:00 (EST/EDT)
-        if (timeInMinutes >= 8 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "TORONTO SESSION";
-        }
-        break;
-        
-      case "America/New_York":
-        // New York session: 13:00 GMT - 22:00 GMT
-        // Convert to New York time: 08:00 - 17:00 (EST/EDT)
-        if (timeInMinutes >= 8 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "NEW YORK SESSION";
-        }
-        break;
-        
-      case "America/Los_Angeles":
-        // Los Angeles session: 16:00 GMT - 01:00 GMT (next day)
-        // Convert to Los Angeles time: 08:00 - 17:00 (PST/PDT)
-        if (timeInMinutes >= 8 * 60 && timeInMinutes < 17 * 60) {
-          marketOpen = true;
-          session = "LOS ANGELES SESSION";
-        }
-        break;
-        
-      default:
-        // Default to GMT-based calculation
-        const gmtTime = new Date(now.toLocaleString("en-US", {timeZone: "GMT"}));
-        const gmtHour = gmtTime.getHours();
-        if (gmtHour >= 8 && gmtHour < 17) {
-          marketOpen = true;
-          session = "MARKET OPEN";
-        }
-    }
-    
-    if (marketOpen) {
-      return session;
-    } else {
-      return "MARKET CLOSED";
-    }
+    if (!result.viewer.retailGateOpen) return 'MARKET CLOSED FOR THE WEEKEND';
+    return 'MARKET CLOSED';
   };
 
-  // Get current trading session overlap information
-  const getTradingOverlaps = () => {
-    const now = new Date();
-    const gmtTime = new Date(now.toLocaleString("en-US", {timeZone: "GMT"}));
-    const gmtHour = gmtTime.getHours();
-    const gmtMinute = gmtTime.getMinutes();
-    const gmtTimeInMinutes = gmtHour * 60 + gmtMinute;
-    
-    const overlaps = [];
-    
-    // Asian-Pacific overlaps
-    // Sydney-Tokyo overlap: 00:00-07:00 GMT
-    if (gmtTimeInMinutes >= 0 && gmtTimeInMinutes < 7 * 60) {
-      overlaps.push("Sydney-Tokyo Overlap");
-    }
-    
-    // Tokyo-Hong Kong-Singapore overlap: 01:00-09:00 GMT
-    if (gmtTimeInMinutes >= 1 * 60 && gmtTimeInMinutes < 9 * 60) {
-      overlaps.push("Asian Markets Overlap");
-    }
-    
-    // European overlaps
-    // Frankfurt-Zurich-London overlap: 08:00-15:00 GMT
-    if (gmtTimeInMinutes >= 8 * 60 && gmtTimeInMinutes < 15 * 60) {
-      overlaps.push("European Markets Overlap");
-    }
-    
-    // London-Tokyo overlap: 08:00-09:00 GMT
-    if (gmtTimeInMinutes >= 8 * 60 && gmtTimeInMinutes < 9 * 60) {
-      overlaps.push("London-Tokyo Overlap");
-    }
-    
-    // London-New York overlap: 13:00-17:00 GMT (Highest volume)
-    if (gmtTimeInMinutes >= 13 * 60 && gmtTimeInMinutes < 17 * 60) {
-      overlaps.push("London-New York Overlap");
-    }
-    
-    // American overlaps
-    // Toronto-New York overlap: 13:00-17:00 GMT
-    if (gmtTimeInMinutes >= 13 * 60 && gmtTimeInMinutes < 17 * 60) {
-      overlaps.push("North American Overlap");
-    }
-    
-    // New York-Los Angeles overlap: 16:00-22:00 GMT
-    if (gmtTimeInMinutes >= 16 * 60 && gmtTimeInMinutes < 22 * 60) {
-      overlaps.push("US Markets Overlap");
-    }
-    
-    return overlaps;
-  };
+  // Overlap UI removed; no overlap calculations needed here
 
 
-  // Timezone options with flags for dropdown
-  const timezoneOptions = [
-    { value: "Asia/Kolkata", label: "Mumbai", flag: "🇮🇳", gmt: "+5:30" },
-    { value: "Asia/Dubai", label: "Dubai", flag: "🇦🇪", gmt: "+4" },
-    { value: "Asia/Singapore", label: "Singapore", flag: "🇸🇬", gmt: "+8" },
-    { value: "Asia/Hong_Kong", label: "Hong Kong", flag: "🇭🇰", gmt: "+8" },
-    { value: "Asia/Tokyo", label: "Tokyo", flag: "🇯🇵", gmt: "+9" },
-    { value: "Australia/Sydney", label: "Sydney", flag: "🇦🇺", gmt: "+10" },
-    { value: "Europe/Zurich", label: "Zurich", flag: "🇨🇭", gmt: "+1" },
-    { value: "Europe/Berlin", label: "Frankfurt", flag: "🇩🇪", gmt: "+1" },
-    { value: "Europe/London", label: "London", flag: "🇬🇧", gmt: "+0" },
-    { value: "America/Toronto", label: "Toronto", flag: "🇨🇦", gmt: "-5" },
-    { value: "America/New_York", label: "New York", flag: "🇺🇸", gmt: "-5" },
-    { value: "America/Los_Angeles", label: "Los Angeles", flag: "🇺🇸", gmt: "-8" },
-  ];
+  // Timezone options generated dynamically with current GMT offsets
+  const timezoneOptions = React.useMemo(() => listTimezonesWithOffsets(new Date()).map(item => ({
+    value: item.value,
+    label: item.label,
+    flag: item.flag,
+    gmt: item.gmt
+  })), []);
 
-  // Convert GMT time to selected timezone
+  // Filter timezones by query across label, zone id, and offset
+  const filteredTimezones = React.useMemo(() => {
+    const q = tzQuery.trim().toLowerCase();
+    if (!q) return timezoneOptions;
+    return timezoneOptions.filter((opt) => {
+      const id = String(opt.value || '').toLowerCase();
+      const label = String(opt.label || '').toLowerCase();
+      const gmt = String(opt.gmt || '').toLowerCase();
+      return id.includes(q) || label.includes(q) || gmt.includes(q);
+    });
+  }, [tzQuery, timezoneOptions]);
+
+  // Convert GMT time to selected timezone (robust against locale parsing)
   const convertGMTToTimezone = (gmtHours, targetTimezone) => {
-    const timeRange = gmtHours.replace(' GMT', '').split('-');
-    const startTime = timeRange[0];
-    const endTime = timeRange[1];
-    
-    // Create dates in GMT
+    const [startTime, endTime] = gmtHours.replace(' GMT', '').split('-');
+    const [sh, sm = '0'] = startTime.split(':');
+    const [eh, em = '0'] = endTime.split(':');
     const now = new Date();
-    const startDate = new Date(`${now.toDateString()} ${startTime} GMT`);
-    const endDate = new Date(`${now.toDateString()} ${endTime} GMT`);
-    
-    // Convert to target timezone
-    const startInTz = startDate.toLocaleTimeString('en-US', {
+    const y = now.getUTCFullYear();
+    const mo = now.getUTCMonth();
+    const d = now.getUTCDate();
+    const startUTC = new Date(Date.UTC(y, mo, d, parseInt(sh, 10), parseInt(sm, 10), 0));
+    const endUTC = new Date(Date.UTC(y, mo, d, parseInt(eh, 10), parseInt(em, 10), 0));
+    const fmt = new Intl.DateTimeFormat('en-US', {
       timeZone: targetTimezone,
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
     });
-    const endInTz = endDate.toLocaleTimeString('en-US', {
-      timeZone: targetTimezone,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-    
+    const startInTz = fmt.format(startUTC);
+    const endInTz = fmt.format(endUTC);
     return `${startInTz}-${endInTz}`;
   };
 
-  // Get session bar position and width based on GMT hours (handles cross-midnight sessions)
-  const getSessionBarStyle = (gmtHours) => {
-    const timeRange = gmtHours.replace(' GMT', '').split('-');
-    let startHour = parseInt(timeRange[0].split(':')[0]);
-    let endHour = parseInt(timeRange[1].split(':')[0]);
-
-    if (isNaN(startHour) || isNaN(endHour)) return { left: '0%', width: '0%' };
-
-    // If session crosses midnight, show full duration wrapping around
-    if (endHour < startHour) {
-      // Calculate full duration: from start to midnight + midnight to end
-      const duration = (24 - startHour) + endHour;
-      const startPercent = (startHour / 24) * 100;
-      const widthPercent = (duration / 24) * 100;
-      return {
-        left: `${startPercent}%`,
-        width: `${widthPercent}%`
-      };
+  // Get session bar position and width based on GMT hours, projected into the selected timezone
+  const getSessionBarStyle = (gmtHours, targetTimezone) => {
+    const [startTime, endTime] = gmtHours.replace(' GMT', '').split('-');
+    const [sh, sm = '0'] = startTime.split(':');
+    const [eh, em = '0'] = endTime.split(':');
+    const now = new Date();
+    const y = now.getUTCFullYear();
+    const mo = now.getUTCMonth();
+    const d = now.getUTCDate();
+    const startUTC = new Date(Date.UTC(y, mo, d, parseInt(sh, 10), parseInt(sm, 10), 0));
+    const endUTC = new Date(Date.UTC(y, mo, d, parseInt(eh, 10), parseInt(em, 10), 0));
+    if (endUTC <= startUTC) {
+      endUTC.setUTCDate(endUTC.getUTCDate() + 1);
     }
 
-    const duration = endHour - startHour;
-    const startPercent = (startHour / 24) * 100;
-    const widthPercent = (duration / 24) * 100;
+    const partsFor = (date) => new Intl.DateTimeFormat('en-US', {
+      timeZone: targetTimezone,
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    }).formatToParts(date);
+
+    const decHour = (date) => {
+      const parts = partsFor(date);
+      const h = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+      const m = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+      return h + m / 60;
+    };
+
+    const startLocal = decHour(startUTC);
+    const endLocal = decHour(endUTC);
+
+    let leftPercent;
+    let widthPercent;
+    if (endLocal >= startLocal) {
+      leftPercent = (startLocal / 24) * 100;
+      widthPercent = ((endLocal - startLocal) / 24) * 100;
+    } else {
+      // Crosses midnight in target timezone
+      leftPercent = (startLocal / 24) * 100;
+      widthPercent = ((24 - startLocal + endLocal) / 24) * 100;
+    }
+
     return {
-      left: `${startPercent}%`,
+      left: `${leftPercent}%`,
       width: `${widthPercent}%`
     };
   };
@@ -539,9 +440,6 @@ const ForexMarketTimeZone = () => {
               className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs min-w-[150px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
             >
               <div className="flex items-center gap-1 whitespace-nowrap">
-                <span className="text-sm">
-                  {timezoneOptions.find(opt => opt.value === selectedTimezone)?.flag}
-                </span>
                 <span className="text-xs font-medium">
                   {timezoneOptions.find(opt => opt.value === selectedTimezone)?.label}
                 </span>
@@ -561,12 +459,23 @@ const ForexMarketTimeZone = () => {
             
             {isDropdownOpen && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                {timezoneOptions.map((option) => (
+                <div className="p-1 sticky top-0 bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <input
+                    ref={tzInputRef}
+                    type="text"
+                    value={tzQuery}
+                    onChange={(e) => setTzQuery(e.target.value)}
+                    placeholder="Search timezone..."
+                    className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
+                  />
+                </div>
+                {filteredTimezones.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => {
                       setSelectedTimezone(option.value);
                       setIsDropdownOpen(false);
+                      setTzQuery('');
                     }}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
                       selectedTimezone === option.value 
@@ -574,7 +483,6 @@ const ForexMarketTimeZone = () => {
                         : 'text-gray-900 dark:text-white'
                     }`}
                   >
-                    <span className="text-base">{option.flag}</span>
                     <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
                     <span className="text-[10px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
                   </button>
@@ -587,57 +495,64 @@ const ForexMarketTimeZone = () => {
 
       {/* Timeline */}
       <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
-        {/* Top hours - Real-time */}
-        <div className="flex text-xs text-gray-500 dark:text-gray-400 justify-between px-6 mb-2">
-          {Array.from({ length: 24 }).map((_, i) => {
-            const hourTime = new Date();
-            hourTime.setHours(i, 0, 0, 0);
-            const displayHour = formatTime(hourTime, selectedTimezone).split(':')[0];
-            return (
-              <span key={i} className={i === new Date().getHours() ? 'text-purple-600 font-bold' : ''}>
-                {displayHour}
-              </span>
-            );
-          })}
+        {/* Top hours - Real-time (aligned after markets column) */}
+        <div className="flex items-center px-6 mb-2">
+          <div className="w-64"></div>
+          <div className="flex-1 ml-2 flex text-xs text-gray-500 dark:text-gray-400 justify-between">
+            {Array.from({ length: 24 }).map((_, i) => {
+              const hourTime = new Date();
+              hourTime.setHours(i, 0, 0, 0);
+              const displayHour = formatTime(hourTime, selectedTimezone).split(':')[0];
+              return (
+                <span key={i} className={i === new Date().getHours() ? 'text-purple-600 font-bold' : ''}>
+                  {displayHour}
+                </span>
+              );
+            })}
+          </div>
         </div>
 
         {/* Interactive Timeline Background */}
-        <div 
-          className="h-3 bg-gray-200 dark:bg-gray-600 rounded-full mx-6 mb-6 cursor-pointer"
-          role="slider"
-          tabIndex={0}
-          aria-label="Timeline slider"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={sliderPosition}
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const percentage = (x / rect.width) * 100;
-            setSliderPosition(percentage);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-              e.preventDefault();
-              const increment = e.key === 'ArrowRight' ? 5 : -5;
-              setSliderPosition(prev => Math.max(0, Math.min(100, prev + increment)));
-            }
-          }}
-        >
-          {/* Timeline markers */}
-          {Array.from({ length: 24 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-px h-3 bg-gray-300 dark:bg-gray-500"
-              style={{ left: `${(i / 23) * 100}%` }}
-            />
-          ))}
+        <div className="flex items-center px-6 mb-2">
+          <div className="w-64"></div>
+          <div 
+            ref={trackRef}
+            className="flex-1 ml-2 h-3 bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer relative"
+            role="slider"
+            tabIndex={0}
+            aria-label="Timeline slider"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={sliderPosition}
+            onClick={(e) => {
+              const rect = (trackRef.current || e.currentTarget).getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const percentage = (x / rect.width) * 100;
+              setSliderPosition(percentage);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                const increment = e.key === 'ArrowRight' ? 5 : -5;
+                setSliderPosition(prev => Math.max(0, Math.min(100, prev + increment)));
+              }
+            }}
+          >
+            {/* Timeline markers */}
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-px h-3 bg-gray-300 dark:bg-gray-500"
+                style={{ left: `${(i / 23) * 100}%` }}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Vertical Time Indicator - Interactive Slider */}
         <div 
           className="absolute top-0 bottom-0 w-1 bg-purple-500 cursor-grab active:cursor-grabbing transition-all duration-200"
-          style={{ left: `${sliderPosition}%` }}
+          style={{ left: `${indicatorLeft}px` }}
           role="slider"
           tabIndex={0}
           aria-label="Time indicator slider"
@@ -660,7 +575,7 @@ const ForexMarketTimeZone = () => {
         {/* Time Display */}
         <div 
           className="absolute -top-[10px] flex flex-col items-center cursor-grab active:cursor-grabbing z-10"
-          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+          style={{ left: `${indicatorLeft}px`, transform: 'translateX(-50%)' }}
           role="slider"
           tabIndex={0}
           aria-label="Time indicator slider"
@@ -687,23 +602,7 @@ const ForexMarketTimeZone = () => {
           </div>
         </div>
 
-        {/* Current Trading Overlaps */}
-        <div className="mt-1 mb-1 min-w-[700px] lg:min-w-0">
-          <div className="flex items-center gap-0.5">
-            <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 tools-heading whitespace-nowrap">Current Trading Overlaps:</h3>
-            <div className="flex flex-nowrap gap-0.5 overflow-x-auto">
-              {getTradingOverlaps().length > 0 ? (
-                getTradingOverlaps().map((overlap, index) => (
-                  <span key={index} className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1 py-0.5 rounded text-xs font-medium whitespace-nowrap">
-                    {overlap}
-                  </span>
-                ))
-              ) : (
-                <span className="text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">No active overlaps</span>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Overlaps removed per requirement */}
 
         {/* Market Rows */}
         <div className="space-y-1 mt-1 min-w-[800px] lg:min-w-0">
@@ -740,7 +639,7 @@ const ForexMarketTimeZone = () => {
                   className={`h-6 rounded-lg absolute overflow-hidden ${
                     getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-30'
                   }`}
-                  style={getSessionBarStyle(m.gmtHours)}
+                  style={getSessionBarStyle(m.gmtHours, selectedTimezone)}
                 >
                   {/* Base gradient background */}
                   <div className={`absolute inset-0 ${m.color}`}></div>
