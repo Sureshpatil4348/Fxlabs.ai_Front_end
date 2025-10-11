@@ -88,14 +88,29 @@ const LotSizeCalculator = () => {
     };
   }, []);
 
-  // Update pip value, contract size, and current price when currency pair changes
+  // Update pip value, contract size, and current price when currency pair or instrument type changes
   useEffect(() => {
     const config = instrumentConfigs[formData.instrumentType];
-    const selectedPair = config.pairs.find(pair => pair.symbol === formData.currencyPair);
+    let selectedPair = config.pairs.find(pair => pair.symbol === formData.currencyPair);
+    
+    // If current pair doesn't exist in the new instrument type (e.g., switching tabs),
+    // automatically select the first available pair
+    if (!selectedPair && config.pairs.length > 0) {
+      selectedPair = config.pairs[0];
+      
+      // Update the currency pair to the first available pair in this instrument type
+      setFormData(prev => ({
+        ...prev,
+        currencyPair: selectedPair.symbol
+      }));
+      
+      // Early return - the effect will re-run with the new currencyPair
+      return;
+    }
     
     if (selectedPair) {
       // Store the current symbol to check for stale updates
-      const currentSymbol = formData.currencyPair;
+      const currentSymbol = selectedPair.symbol;
       
       // Get real-time price for the selected pair
       const latestTick = getLatestTickForSymbol(currentSymbol);
@@ -116,11 +131,6 @@ const LotSizeCalculator = () => {
         };
       });
     }
-    
-    // Cleanup function to prevent lingering values
-    return () => {
-      // No cleanup needed as we check symbol match in the setter
-    };
   }, [formData.currencyPair, formData.instrumentType, instrumentConfigs, getLatestTickForSymbol]);
 
   // Auto-update current price when real-time data changes (only for crypto and commodities)

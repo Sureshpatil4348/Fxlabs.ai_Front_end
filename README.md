@@ -94,6 +94,25 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - Tab Switching Auto-Selection Fix (Latest)
+- **Fixed price not updating when switching instrument tabs**: Automatically selects first available pair when switching between Forex/Commodities/Crypto tabs
+  - **Root cause**: When switching tabs (e.g., Forex → Commodities), the `currencyPair` remained set to the previous instrument's pair (like `EURUSDm`), which doesn't exist in the new instrument type, causing the price to not update
+  - **Solution implemented**: 
+    - Added automatic pair selection when current pair doesn't exist in new instrument type
+    - Detects invalid pair for current instrument type and auto-selects first available pair
+    - Triggers re-render with new pair, which then fetches correct price
+  - **User experience improvement**:
+    - Switching from Forex → Commodities: Automatically selects Gold (XAU/USD) with current price
+    - Switching from Commodities → Crypto: Automatically selects BTC/USD with current price  
+    - Switching from Crypto → Forex: Automatically selects EUR/USD with current price
+    - No more blank prices or stale data when switching tabs
+  - **Technical details**:
+    - Lines 96-109: Added pair validation and auto-selection logic
+    - Early return pattern triggers effect re-run with correct pair
+    - Preserves user's selection within each tab when switching back
+  - **Impact**: Seamless tab switching with immediate price updates for the selected instrument
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Lot Size Calculator - Price Fetching Race Condition Fix (Latest)
 - **Fixed critical bug with lingering old prices**: Eliminated race conditions when switching between instruments/pairs
   - **Root cause**: Two separate useEffect hooks updating current price caused race conditions where old prices could briefly appear or linger
