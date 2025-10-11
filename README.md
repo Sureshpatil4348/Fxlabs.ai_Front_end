@@ -154,6 +154,11 @@ All features that relied on client-side calculations now expect server-provided 
   - **Cleaner layout**: Removed AI Analysis explanation preview text to reduce card clutter
   - **Simplified AI section**: Shows only effect badge (Bullish/Bearish) without lengthy text
   - Orange-colored countdown timer badge for better visibility
+
+- **AI News Analysis - Smart Economic Data Display** (Latest): Economic data section now only shows when values are present
+  - **Conditional display**: Economic data (Previous, Forecast, Actual) section is hidden when all three values are empty/null/N/A
+  - **Cleaner modal**: News modal doesn't show empty economic data rows, improving UI clarity
+  - **Better UX**: Only relevant information is displayed, avoiding confusion from empty data
   - Files affected: `src/components/AINewsAnalysis.js`
 
 - **Currency Strength Meter Improvements**: Increased currency card height

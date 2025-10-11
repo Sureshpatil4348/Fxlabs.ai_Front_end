@@ -239,26 +239,28 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           )}
 
 
-          {/* Economic Data - Moved to third position */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Economic Data</h3>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Previous</div>
-                <div className="text-sm font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
-              </div>
-              <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Forecast</div>
-                <div className="text-sm font-bold text-blue-900 dark:text-blue-300">{news.forecast || '--'}</div>
-              </div>
-              <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Actual</div>
-                <div className="text-sm font-bold text-green-900 dark:text-green-300">
-                  {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
+          {/* Economic Data - Moved to third position - Only show if at least one value exists */}
+          {(news.previous || news.forecast || (news.actual && news.actual !== 'N/A' && news.actual !== null)) && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Economic Data</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Previous</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
+                </div>
+                <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Forecast</div>
+                  <div className="text-sm font-bold text-blue-900 dark:text-blue-300">{news.forecast || '--'}</div>
+                </div>
+                <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Actual</div>
+                  <div className="text-sm font-bold text-green-900 dark:text-green-300">
+                    {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Detailed Analysis - Moved to bottom */}
           {analysis && (
