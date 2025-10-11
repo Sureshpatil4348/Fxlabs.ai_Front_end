@@ -39,11 +39,11 @@ const AfterPurchaseSection = () => {
             <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center md:text-left">After You Purchase:</h3>
             <ol className="space-y-4">
               {steps.map((step, index) => (
-                <li key={index} className="flex flex-col sm:flex-row sm:items-start">
-                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mx-auto sm:mx-0 sm:mt-1 sm:mr-4 shadow-md">
+                <li key={index} className="flex items-start">
+                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mr-4 mt-1 shadow-md">
                     <step.icon className="h-5 w-5 text-white" />
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 mt-3 sm:mt-0 text-center sm:text-left">
+                  <p className="text-gray-700 dark:text-gray-300 text-left">
                     <strong className="text-gray-900 dark:text-white">{step.title}:</strong> {step.description}
                   </p>
                 </li>
