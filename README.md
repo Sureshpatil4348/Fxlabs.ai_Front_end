@@ -94,208 +94,85 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Lot Size Calculator Two-Column Layout (Latest)
-- **Split-Screen Design**: Lot Size Calculator now features a clean two-column layout for better UX
-  - **Left Side**: All input parameters (Account Balance, Risk %, Currency Pair, Stop Loss, etc.)
-  - **Right Side**: Real-time calculation results display with enhanced visual feedback
-  - **Empty State**: Right panel shows helpful guidance when no calculation has been performed
-  - **Responsive**: Columns stack vertically on mobile devices (< 1024px), side-by-side on larger screens
-- **Streamlined Header**: Instrument type tabs (Forex/Commodities/Crypto) moved to same line as title for compact layout
-- **Clean Interface**: Removed redundant section headers and status indicators, focusing on essential input/output
-- **Space-Efficient Inline Inputs**: Labels and input fields now displayed on the same line
-  - Saves significant vertical space with horizontal label-input layout
-  - Fixed-width labels (120px) for consistent alignment
-  - Reduced input height (h-10) for more compact appearance
-  - Tighter spacing between input groups (2.5 units)
-  - Labels simplified (e.g., "Account Balance" instead of "Account Balance ($)", "Risk %" instead of "Risk Percentage (%)")
-  - Error messages and helper text aligned with input field positioning
-- **Enhanced Results Display**: 
-  - Larger, more prominent display of Risk Amount and Position Size
-  - Visual indicators and icons for quick interpretation
-  - Formula display in a dedicated card for educational purposes
-- **Complete Currency Pair Support**: All forex currency pairs now available (28 major and cross pairs)
-  - **Major Pairs**: EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD
-  - **EUR Crosses**: EUR/GBP, EUR/JPY, EUR/CHF, EUR/AUD, EUR/CAD, EUR/NZD
-  - **GBP Crosses**: GBP/JPY, GBP/CHF, GBP/AUD, GBP/CAD, GBP/NZD
-  - **AUD Crosses**: AUD/JPY, AUD/CHF, AUD/CAD, AUD/NZD
-  - **NZD Crosses**: NZD/JPY, NZD/CHF, NZD/CAD
-  - **CAD Crosses**: CAD/JPY, CAD/CHF
-  - **CHF Crosses**: CHF/JPY
-  - Proper pip value (10) and contract size (100,000) for accurate lot size calculations
-  - Pairs sourced from centralized constants for consistency across the application
-- **Commodities Support**: Gold (XAU/USD) and Silver (XAG/USD) with correct contract specifications
-- **Crypto Support**: BTC/USD and ETH/USD for cryptocurrency position sizing
-- **Files affected**: `src/components/LotSizeCalculator.jsx`
+### Forex Market Time Zone Converter - Multi-Segment Rendering (Latest)
+- **Fixed timezone change reactivity**: Time labels inside market bars now update immediately when timezone changes
+  - **Root cause**: `getSessionHoursInTimezone` function wasn't memoized with proper dependencies
+  - **Solution**: Converted to `useCallback` with `[marketData, is24Hour]` dependencies
+  - **Result**: Time labels now correctly reflect the selected timezone and 12h/24h format
+- **Multi-segment projection**: Engine returns all segments overlapping the viewer's day window for each market
+  - Provides `projectedSegmentsInViewer` (array) and `projectedSegmentInViewer` (first segment for backward-compat)
+  - Shows both yesterday’s tail and today’s segment when applicable (e.g., New York in IST)
+- **Session detection logic**:
+  - **Yesterday extends check** and **today overlaps check** used to build all segments
+  - No merging at engine level; component renders all segments clipped to 24h window
+- **Component rendering update**: Renders all segments per market
+  - Clips each segment at 0% and 100% to prevent overflow
+  - Labels inside each segment respect 12h/24h toggle and timezone
+  - When multiple segments exist, only the largest segment displays the time label (for visual clarity)
+- **Enhanced debugging**: Comprehensive debug logging for multi-day session detection
+  - Formatted output with clear sections for viewer window, yesterday's session, today's session, gap analysis, and selection logic
+  - Shows exact timestamps, gap duration in hours, and which session is selected
+  - Includes yesterday session flag, merged session flag, gap flag, and positioning adjustments
+  - Helps diagnose multi-day session projection and selection issues
 
-### Dashboard Active Tab Retention (Latest)
-- **Tab State Persistence**: Dashboard now remembers which tab (Analysis or Tools) was last active
-  - Active tab automatically saved to Supabase when user switches tabs
-  - On dashboard load, user returns to their last selected tab
-  - Default tab is 'Analysis' for first-time users
-  - Uses existing `widget_tab_retention` table with special widget name `DashboardSettings`
-  - Tab state is user-specific and persists across sessions
-  - Files affected: `src/services/widgetTabRetentionService.js`, `src/pages/Dashboard.jsx`
+### Forex Market Time Zone Converter - Cross-Midnight Session Fix
+- **Fixed New York session bar ending early**: Resolved issue where New York session bar ended at 21:30 instead of 17:00 local time
+  - **Root cause**: Sessions that cross midnight in viewer's timezone were being clipped by the 24-hour viewer window
+  - **Solution**: Extended viewer window to 48 hours to capture cross-midnight sessions
+  - **Session bar positioning**: Added logic to handle sessions where endHour < startHour (crosses midnight)
+  - **24-hour boundary clipping**: Session bars that extend beyond the 24-hour timeline are clipped at 100% to prevent overflow
+  - **CSS overflow handling**: Added `overflow-hidden` to timeline bar containers to ensure clean visual boundaries
+  - **Example**: New York session (8:00-17:00 EST) appears as 17:30-02:30 IST, with the portion after midnight clipped at 24h mark
+- **Enhanced debugging**: Added comprehensive debug logging for session projection and positioning
+  - Logs viewer window boundaries, session overlap calculations, and cross-midnight detection
+  - Includes clipping detection to show when bars are truncated at 24-hour boundary
+  - Helps diagnose timezone conversion issues in development mode
 
-### UI Layout Fixes
-- **Loading Overlay Z-Index Fix**: Fixed loading overlay appearing behind navbar on page reload
-  - Increased z-index from `z-50` to `z-[9999]` to ensure overlay appears above all content including navbar
-  - Added dark mode support for loading overlay modal
-  - Enhanced text colors for better dark mode visibility
-  - Files affected: `src/components/LoadingOverlay.js`
+### Forex Market Time Zone Converter - Timezone Selection & Time Format Updates
+- **Curated timezone list**: Timezone dropdown now shows only prominent timezones (one per GMT offset)
+  - Covers all major GMT offsets from GMT-11:00 to GMT+13:00
+  - Includes half-hour and quarter-hour offset timezones (e.g., Kolkata at GMT+05:30, Kathmandu at GMT+05:45)
+  - Updated names: "Calcutta" → "Kolkata" and other modern timezone names
+  - System timezone is always included in the list for user convenience
+  - List is sorted by GMT offset for easy navigation
+- **Time format consistency**: Market session times and timeline hours now fully respect the 12h/24h format toggle
+  - **Timeline hours**: 
+    - 24-hour format: displays 0-24 (includes terminal 24 label)
+    - 12-hour format: displays 12, 1-11, 12, 1-11, 12 (includes terminal 12 label)
+  - **Market session times** inside the colored rectangles:
+    - Previously showed only 24-hour format (e.g., "08:00-17:00")
+    - Now respects the toggle: 24-hour format (e.g., "08:00-17:00") or 12-hour format (e.g., "8:00 AM-5:00 PM")
+    - Applies to Sydney, London, and New York session bars
+- **Files affected**: 
+  - `src/utils/marketHoursEngine.js` (timezone list, extended viewer window)
+  - `src/components/MultiTimeAnalysis.jsx` (time format logic, cross-midnight handling)
 
-- **AI News Analysis - Compact Card Design**: Streamlined news cards for better readability
-  - **Country codes**: Replaced country flags with styled 3-letter country codes (USD, EUR, GBP, JPY, etc.)
-  - **Countdown timer integration**: Timer now displays directly as a badge instead of separate "Starting Soon" label
-  - **Suggested pairs single line**: Optimized to show 5 pairs in single horizontal line with "..." for more
-    - Displays first 5 pairs with compact spacing (gap-0.5, px-1 padding, 9px font)
-    - If more than 5 pairs exist, shows light blue "..." indicator at the end
-    - Reduced padding and gap between badges to fit more pairs without cutting off
-    - No wrapping or cutting off - ensures all visible content fits properly
-  - **Cleaner layout**: Removed AI Analysis explanation preview text to reduce card clutter
-  - **Simplified AI section**: Shows only effect badge (Bullish/Bearish) without lengthy text
-  - Orange-colored countdown timer badge for better visibility
-
-- **AI News Analysis - Smart Economic Data Display** (Latest): Economic data section now only shows when values are present
-  - **Conditional display**: Economic data (Previous, Forecast, Actual) section is hidden when all three values are empty/null/N/A
-  - **Cleaner modal**: News modal doesn't show empty economic data rows, improving UI clarity
-  - **Better UX**: Only relevant information is displayed, avoiding confusion from empty data
-  - Files affected: `src/components/AINewsAnalysis.js`
-
-- **AI News Analysis - Pastel Backgrounds for Sentiment** (Latest): AI Analysis section now features color-coded pastel backgrounds
-  - **Bullish sentiment**: Light green pastel background (`bg-green-50 dark:bg-green-900/20`) matching Currency Strength Meter style
-  - **Bearish sentiment**: Light red pastel background (`bg-red-50 dark:bg-red-900/20`) matching Currency Strength Meter style
-  - **Visual consistency**: Colors match the pastel shades used in Currency Strength Meter for cohesive design
-  - **Enhanced UX**: Quick visual identification of market sentiment at a glance
-  - **Preserved borders**: Green/red borders remain on news cards for bullish/bearish news
-  - **Fixed spacing**: AI Analysis section now has even padding (8px top and bottom) for balanced appearance
-  - Files affected: `src/components/AINewsAnalysis.js`
-
-- **Currency Strength Meter Improvements**: Increased currency card height
-  - Currency card padding increased from `py-1` to `py-3` for better space utilization
-  - Reduces excessive bottom spacing in the component
-  - Files affected: `src/components/CurrencyStrengthMeter.js`
-  - Also fixed ESLint import/order in `src/components/CurrencyStrengthMeter.js`
-
-### Alert Bell UI
-- Replaced numeric alert badges on bell icons with colored bell outlines (icon stroke color) when any alert is configured (no count shown).
-  - Colors: Purple (RSI Correlation), Blue (Heatmap), Orange (RSI Tracker), Emerald (Currency Strength)
-  - No button borders or background circles are applied — only the bell icon color changes when alerts exist
-  - Files affected:
-    - `src/components/RSICorrelationDashboard.js`
-    - `src/components/MultiIndicatorHeatmap.js`
-    - `src/components/RSIOverboughtOversoldTracker.js`
-    - `src/components/CurrencyStrengthMeter.js`
-
-### Quantum Analysis UI
-- Hidden the "Custom Indicator Alert" button (Sliders icon) from the Quantum Analysis header as requested. No cleanup of related state/logic; only the add/configure button is removed.
-  - Files affected: `src/components/MultiIndicatorHeatmap.js`
-  - Lint: Aliased unused `Sliders` import and unused `handleIndicatorConfigOpen` handler with underscore prefix to satisfy ESLint without functional cleanup.
-
-### Quantum Analysis Sell Cell Gradient Enhancement (Latest)
-- **Visual depth added**: Sell cells now feature a gradient effect matching the buy cells' gradient pattern
-- **Gradient definition**: `linear-gradient(to bottom right, #f15b5b, #e64c4c)` - from lighter red to darker red on corners
-- **Consistent styling**: Both buy and sell cells now use gradients for a cohesive, professional appearance
-  - Buy cells: `linear-gradient(to bottom right, #10b981, #16a34a)` (emerald to green)
-  - Sell cells: `linear-gradient(to bottom right, #f15b5b, #e64c4c)` (light red to darker red)
-- **Enhanced visual appeal**: The gradient creates depth and dimension, making the cells more engaging and modern
-- **Improved UX**: Gradient effect helps signal cells stand out and provides a more polished trading interface
-- Files affected: `src/components/MultiIndicatorHeatmap.js`
-
-### Quantum Analysis Trading Meter Card Elevation
-- **Enhanced visual hierarchy**: Trading Meter now displayed in an elevated Card component with shadow
-- **Card styling**: Applied `shadow-lg` for a subtle elevation effect with smooth hover transition (`hover:shadow-xl`)
-- **Improved UX**: Card creates visual separation between the indicator table and the meter, making the Trading Meter stand out as a key decision-making tool
-- **Dark mode support**: Card adapts to dark theme with appropriate border colors (`border-gray-200 dark:border-gray-700`)
-- **Clean implementation**: Replaced plain div with semantic Card component from UI library, maintaining all existing functionality
-- Files affected: `src/components/MultiIndicatorHeatmap.js`
-
-### Quantum Analysis Header Enhancement
-- Added "Trading Meter" as a header label above the meter section, matching the style of indicator headers (EMA 21, EMA 50, etc.)
-- Extended the header line (border) to span across both the indicator table and the Trading Meter section for unified visual appearance
-- Optimized vertical spacing for perfect visual balance:
-  - Equal vertical spacing (1.5 units) on both sides of the border line
-  - Above border: Header items (py-0.5) + container bottom padding (pb-1) = 1.5 units
-  - Below border: Content row top padding (pt-1.5) = 1.5 units
-  - Creates symmetrical, professional appearance with balanced spacing
-- Restructured layout:
-  - Header row now includes both table indicator headers and Trading Meter header
-  - Single continuous border line below all headers
-  - Removed duplicate "Trading Meter" title from within the meter component
-  - Desktop-only display (hidden on mobile via `lg:block` breakpoint)
-- Files affected: `src/components/MultiIndicatorHeatmap.js`
-
-### Currency Strength Stability (Latest)
-- Source of truth is now the server snapshot and websocket updates:
-  - WebSocket `currency_strength_update` messages applied only when they match the selected timeframe
-  - REST `indicator=currency_strength` snapshot fetched on mount and when timeframe changes
-- Local (tick-based) calculations only run in `live` mode as a fallback. They are not triggered on initial indicator updates to avoid random values after refresh.
-- Per-timeframe snapshots are persisted to `localStorage` to keep values stable across refresh until the server pushes a new snapshot.
-  - Key: `fxlabs.currencyStrength.snapshots`
-  - Store maintains `lastServerStrengthByTimeframe` and applies cached value immediately on reconnect/timeframe switch.
-- Affected files:
-  - `src/store/useCurrencyStrengthStore.js`
-    - Added per-timeframe caching and hydration on connect
-    - Removed auto recalculation on `initial_indicators`
-    - Only recalculates locally in live mode
-  - `src/components/CurrencyStrengthMeter.js`
-    - Debounced local calc now gated by `settings.mode === 'live'`
-
-### Currency Strength Settings Simplified (Latest)
-- Settings panel now includes only `Timeframe` for Currency Strength.
-- Removed from UI: `Calculation Method` and `Calculation Mode`.
-- The system still honors server-provided strength values; local calculation remains a live-mode fallback without user toggle.
-
-- **Multi Time Analysis - Mobile Scroll Enhancement**: Added horizontal scroll for better mobile viewing
-  - Timeline and market rows now properly scroll horizontally on mobile
-  - Desktop view remains unchanged with no horizontal scroll
-  - Minimum width applied only on mobile (< lg breakpoint)
-  - Files affected: `src/components/MultiTimeAnalysis.jsx`
-
-- **Mobile Tools Tab Improvements**: Enhanced mobile responsiveness for all tools widgets
-  - Added proper scrolling to all three widgets (Lot Size Calculator, Quantum Analysis, Multi Time Analysis) on mobile
-  - Multi Indicator Heatmap height optimized to 420px on mobile for better viewability
-  - Fixed heading overlap issue in Quantum Analysis: header now wraps properly on mobile with flex-wrap
-  - All widgets now have fixed heights with internal scrolling on mobile, while desktop layout remains unchanged
-  - Desktop view completely unaffected - maintains original flex-based layout
-  - Files affected: `src/pages/Dashboard.jsx`, `src/components/MultiIndicatorHeatmap.js`
-
-- Adjusted Tools tab sizing: increased `LotSizeCalculator` height and reduced `MultiIndicatorHeatmap` height to improve readability and match visual balance in the left column. Files: `src/pages/Dashboard.jsx`, `src/components/MultiIndicatorHeatmap.js`.
-- **Fixed Quantum Analysis card-in-card issue**: Removed duplicate card wrapper in Dashboard.jsx for MultiIndicatorHeatmap component
-  - Issue: MultiIndicatorHeatmap had its own `widget-card` styling but was also wrapped in another card container
-  - Solution: Removed outer card wrapper, kept inner `widget-card` styling for consistent appearance
-  - Files affected: `src/pages/Dashboard.jsx`
-
-- **Forex Market Time Zone Converter improvements**
-  - Current-time bar now syncs precisely to the selected timezone using Intl parts (no off-by-one-minute drift).
-  - Market session duration bars are computed from canonical city-local 08:00–17:00 via a DST-aware engine and projected to the viewer timezone, including cross-midnight handling.
-  - Slider and bars reflow immediately when timezone is changed via dropdown.
-  - Implementation is locale-safe and avoids ambiguous string parsing.
-  - Timezone dropdown now lists real IANA timezones with their current GMT offsets, auto-detects the system default, and supports override.
-  - Dropdown no longer shows flag icons; labels are concise like "Kolkata (GMT +05:30)".
-  - Added search-as-you-type in the timezone dropdown; filters by label, IANA id, or offset.
-  - **Fixed timezone dropdown initialization**: System/browser timezone is now always included in the options list and properly displays on page load
-  - Added robust fallback handling to prevent "(GMT)" display when timezone not found
-  - Improved performance by memoizing current timezone option to avoid repeated array searches
-
-Engine:
-- Added `src/utils/marketHoursEngine.js` implementing a DST-aware specification:
-  - Inputs: `viewInstantUTC`, `viewerTz` (auto-detect by default).
-  - Outputs: retail gate status, viewer clock/offset, and sessions with `sessionOpenUTC`, `sessionCloseUTC`, `isOpenNow`, and `projectedSegmentInViewer`.
-  - Retail weekend gate: Sunday 17:00 ET → Friday 17:00 ET.
-  - Sessions anchored to each city’s local wall-time: Sydney, London, New York (08:00–17:00).
-  - Changed time display from `pointer-events-none` to `cursor-grab` with proper mouse event handlers
-  - Added proper accessibility support with ARIA attributes and keyboard navigation
-  - Fixed `e.currentTarget.closest is not a function` error by using useRef for timeline container
-  - Improved time display alignment: properly centered icon, time, and day labels with consistent spacing and minimum width
-  - Fixed time display text wrapping: added `whitespace-nowrap` to keep time and AM/PM on single line, increased minimum width to 140px
-  - Files affected: `src/components/MultiTimeAnalysis.jsx`
-
-- **Fixed mobile navigation for Analysis/Tools tabs**: Added dashboard tab switcher to mobile menu
-  - Analysis/Tools tabs now visible in mobile menu when on dashboard
-  - Maintains same styling and behavior as desktop version
-  - Automatically closes mobile menu after tab selection for better UX
-  - Fixed mobile menu border radius from `rounded-full` to `rounded-[2rem]` for properly rounded edges
-  - Files affected: `src/components/Navbar.jsx`
+### Forex Market Time Zone Converter - Simplified Timeline Interaction
+- **Removed horizontal timeline bar**: Removed the gray rounded horizontal bar with vertical markers that was previously displayed between the times and market rows
+- **Time numbers row now clickable**: The time numbers row at the top is now clickable to move the purple vertical time indicator to that position
+- **Individual card design for each market**: Each market (Sydney, London, New York) now appears in its own distinct card
+  - Clean white background (no fill color) with border, rounded corners, and shadow
+  - Enhanced visual separation between markets
+  - Hover effect on cards for better interactivity feedback
+  - Currency badge now has proper background (white in light mode, dark in dark mode)
+  - Consistent padding and spacing within each card
+- **Enhanced active market session bars**: Active market session indicators are now more prominent
+  - Increased height from 1.5rem to 2.5rem for better visibility
+  - Intensified color gradients for stronger visual impact:
+    - Sydney (Blue): from-blue-700 to-blue-900
+    - London (Purple): from-purple-700 to-purple-900
+    - New York (Green): from-green-700 to-green-900
+  - Inactive sessions remain at 30% opacity for clear distinction
+- **Improved vertical spacing**: Market rows now have optimal spacing between them for better readability and less clutter
+  - Markets are evenly spread out vertically within the widget
+  - Better visual hierarchy and organization
+- **Improved UX**: Cleaner, more minimalist design with enhanced interactive functionality
+  - The purple vertical time indicator remains draggable
+  - Clicking on any time number or anywhere in the time row moves the indicator to that position
+  - Hover effect on time numbers shows interactivity
+  - Keyboard navigation (Arrow Left/Right) still works as before
+  - Completely removed the invisible space between time numbers and market rows
+- **Files affected**: `src/components/MultiTimeAnalysis.jsx`
 
 ## Market v2 WebSocket Integration (Latest)
 

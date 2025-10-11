@@ -189,12 +189,13 @@ const ForexMarketTimeZone = () => {
   }, [isDropdownOpen]);
 
   // Load saved widget state on mount
+  // Note: Timezone is NOT saved/restored - always defaults to browser/device timezone
   useEffect(() => {
     const loadSavedState = async () => {
       try {
         const savedState = await widgetTabRetentionService.getWidgetState('MultiTimeAnalysis');
         if (savedState && Object.keys(savedState).length > 0) {
-          if (savedState.selectedTimezone) setSelectedTimezone(savedState.selectedTimezone);
+          // selectedTimezone is intentionally not restored - always use browser timezone
           if (savedState.is24Hour !== undefined) setIs24Hour(savedState.is24Hour);
           if (savedState.sliderPosition !== undefined) setSliderPosition(savedState.sliderPosition);
         }
@@ -209,6 +210,7 @@ const ForexMarketTimeZone = () => {
   }, []);
 
   // Debounced save function
+  // Note: Timezone is NOT saved - only user preferences like 24-hour format and slider position
   const debouncedSaveState = useCallback(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -219,7 +221,7 @@ const ForexMarketTimeZone = () => {
       
       try {
         const stateToSave = {
-          selectedTimezone,
+          // selectedTimezone is intentionally excluded - always use browser timezone
           is24Hour,
           sliderPosition
         };
@@ -228,9 +230,9 @@ const ForexMarketTimeZone = () => {
         console.error('Failed to save MultiTimeAnalysis state:', error);
       }
     }, 1000);
-  }, [selectedTimezone, is24Hour, sliderPosition, isStateLoaded]);
+  }, [is24Hour, sliderPosition, isStateLoaded]);
 
-  // Auto-save state changes
+  // Auto-save state changes (excluding timezone which always defaults to browser)
   useEffect(() => {
     if (isStateLoaded) {
       debouncedSaveState();
@@ -241,7 +243,7 @@ const ForexMarketTimeZone = () => {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [selectedTimezone, is24Hour, sliderPosition, debouncedSaveState, isStateLoaded]);
+  }, [is24Hour, sliderPosition, debouncedSaveState, isStateLoaded]);
 
   // Format time based on 12/24 hour toggle
   const formatTime = (date, timezone) => {
@@ -276,7 +278,6 @@ const ForexMarketTimeZone = () => {
       if (timezone === 'Europe/London') return 'LONDON SESSION';
       if (timezone === 'America/New_York') return 'NEW YORK SESSION';
     }
-    if (!result.viewer.retailGateOpen) return 'MARKET CLOSED FOR THE WEEKEND';
     return 'MARKET CLOSED';
   };
 
@@ -311,104 +312,101 @@ const ForexMarketTimeZone = () => {
     });
   }, [tzQuery, timezoneOptions]);
 
-  // Convert GMT time to selected timezone (robust against locale parsing)
-  const convertGMTToTimezone = (gmtHours, targetTimezone) => {
-    const [startTime, endTime] = gmtHours.replace(' GMT', '').split('-');
-    const [sh, sm = '0'] = startTime.split(':');
-    const [eh, em = '0'] = endTime.split(':');
-    const now = new Date();
-    const y = now.getUTCFullYear();
-    const mo = now.getUTCMonth();
-    const d = now.getUTCDate();
-    const startUTC = new Date(Date.UTC(y, mo, d, parseInt(sh, 10), parseInt(sm, 10), 0));
-    const endUTC = new Date(Date.UTC(y, mo, d, parseInt(eh, 10), parseInt(em, 10), 0));
-    const fmt = new Intl.DateTimeFormat('en-US', {
-      timeZone: targetTimezone,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-    const startInTz = fmt.format(startUTC);
-    const endInTz = fmt.format(endUTC);
-    return `${startInTz}-${endInTz}`;
-  };
+  // Get DST-aware market data for all sessions
+  // Memoized to update only when timezone changes or minute changes (not every second)
+  const currentMinute = React.useMemo(() => {
+    const d = new Date(currentTime);
+    return `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}-${d.getUTCHours()}-${d.getUTCMinutes()}`;
+  }, [currentTime]);
 
-  // Get session bar position and width based on GMT hours, projected into the selected timezone
-  const getSessionBarStyle = (gmtHours, targetTimezone) => {
-    const [startTime, endTime] = gmtHours.replace(' GMT', '').split('-');
-    const [sh, sm = '0'] = startTime.split(':');
-    const [eh, em = '0'] = endTime.split(':');
-    const now = new Date();
-    const y = now.getUTCFullYear();
-    const mo = now.getUTCMonth();
-    const d = now.getUTCDate();
-    const startUTC = new Date(Date.UTC(y, mo, d, parseInt(sh, 10), parseInt(sm, 10), 0));
-    const endUTC = new Date(Date.UTC(y, mo, d, parseInt(eh, 10), parseInt(em, 10), 0));
-    if (endUTC <= startUTC) {
-      endUTC.setUTCDate(endUTC.getUTCDate() + 1);
-    }
+  const marketData = React.useMemo(() => {
+    return computeMarketHours({ viewInstantUTC: currentTime, viewerTz: selectedTimezone });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMinute, selectedTimezone]);
 
-    const partsFor = (date) => new Intl.DateTimeFormat('en-US', {
-      timeZone: targetTimezone,
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit'
-    }).formatToParts(date);
-
-    const decHour = (date) => {
-      const parts = partsFor(date);
-      const h = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
-      const m = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+  // Compute bar style from a projected segment's start/end ISO strings (in viewer timezone)
+  const getBarStyleFromISO = (startLocalISO, endLocalISO) => {
+    // Parse ISO time strings to extract hours and minutes
+    const parseTime = (isoString) => {
+      const timePart = isoString.split('T')[1];
+      const [h, m] = timePart.split(':').map(Number);
       return h + m / 60;
     };
 
-    const startLocal = decHour(startUTC);
-    const endLocal = decHour(endUTC);
+    const startHour = parseTime(startLocalISO);
+    const endHour = parseTime(endLocalISO);
 
-    let leftPercent;
-    let widthPercent;
-    if (endLocal >= startLocal) {
-      leftPercent = (startLocal / 24) * 100;
-      widthPercent = ((endLocal - startLocal) / 24) * 100;
-    } else {
-      // Crosses midnight in target timezone
-      leftPercent = (startLocal / 24) * 100;
-      widthPercent = ((24 - startLocal + endLocal) / 24) * 100;
+    // Handle sessions that cross midnight (endHour < startHour)
+    let adjustedEndHour = endHour;
+    if (endHour < startHour) {
+      adjustedEndHour = endHour + 24;
+    }
+
+    // Calculate bar position relative to the 24-hour timeline
+    const leftPercentRaw = (startHour / 24) * 100;
+    const widthPercentRaw = ((adjustedEndHour - startHour) / 24) * 100;
+
+    const leftPercent = Math.max(0, Math.min(100, leftPercentRaw));
+    let widthPercent = widthPercentRaw;
+    if (leftPercent + widthPercent > 100) {
+      widthPercent = 100 - leftPercent;
     }
 
     return {
       left: `${leftPercent}%`,
-      width: `${widthPercent}%`
+      width: `${Math.max(0, widthPercent)}%`
     };
+  };
+
+  // Get all projected segments for a given market timezone
+  const getSessionSegments = (marketTimezone) => {
+    const session = marketData.sessions.find(s => s.cityTzLabel === marketTimezone);
+    if (!session) return [];
+    if (Array.isArray(session.projectedSegmentsInViewer)) return session.projectedSegmentsInViewer;
+    if (session.projectedSegmentInViewer) return [session.projectedSegmentInViewer];
+    return [];
+  };
+
+  // Format a time from ISO based on 12h/24h preference
+  const formatTimeFromISO = (isoString) => {
+    const timePart = isoString.split('T')[1];
+    const [h, m] = timePart.split(':');
+    const hour = parseInt(h, 10);
+    const minute = m;
+    if (is24Hour) {
+      return `${h}:${minute}`;
+    }
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${hour12}:${minute} ${period}`;
+  };
+
+  // Format a range from ISO start/end
+  const formatRangeFromISO = (startISO, endISO) => {
+    return `${formatTimeFromISO(startISO)}-${formatTimeFromISO(endISO)}`;
   };
 
   const markets = [
     {
       name: "Sydney",
-      flag: "🇦🇺",
+      currency: "AUD",
       timezone: "Australia/Sydney",
-      color: "bg-gradient-to-r from-blue-600 to-blue-800",
-      stripedColor: "bg-gradient-to-r from-blue-700 to-blue-900",
-      sessionHours: "09:00-18:00",
-      gmtHours: "22:00-07:00 GMT",
+      color: "bg-gradient-to-r from-blue-700 to-blue-900",
+      stripedColor: "bg-gradient-to-r from-blue-800 to-blue-950",
     },
     {
       name: "London",
-      flag: "🇬🇧",
+      currency: "GBP",
       timezone: "Europe/London",
-      color: "bg-gradient-to-r from-purple-600 to-purple-800",
-      stripedColor: "bg-gradient-to-r from-purple-700 to-purple-900",
-      sessionHours: "08:00-17:00",
-      gmtHours: "08:00-17:00 GMT",
+      color: "bg-gradient-to-r from-purple-700 to-purple-900",
+      stripedColor: "bg-gradient-to-r from-purple-800 to-purple-950",
     },
     {
       name: "New York",
-      flag: "🇺🇸",
+      currency: "USD",
       timezone: "America/New_York",
-      color: "bg-gradient-to-r from-green-600 to-green-800",
-      stripedColor: "bg-gradient-to-r from-green-700 to-green-900",
-      sessionHours: "08:00-17:00",
-      gmtHours: "13:00-22:00 GMT",
+      color: "bg-gradient-to-r from-green-700 to-green-900",
+      stripedColor: "bg-gradient-to-r from-green-800 to-green-950",
     },
   ];
 
@@ -503,29 +501,12 @@ const ForexMarketTimeZone = () => {
 
       {/* Timeline */}
       <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
-        {/* Top hours - Real-time (aligned after markets column) */}
+        {/* Top hours - Real-time (aligned after market info column) - Clickable to move time indicator */}
         <div className="flex items-center px-6 mb-2">
-          <div className="w-64"></div>
-          <div className="flex-1 ml-2 flex text-xs text-gray-500 dark:text-gray-400 justify-between">
-            {Array.from({ length: 24 }).map((_, i) => {
-              const hourTime = new Date();
-              hourTime.setHours(i, 0, 0, 0);
-              const displayHour = formatTime(hourTime, selectedTimezone).split(':')[0];
-              return (
-                <span key={i} className={i === new Date().getHours() ? 'text-purple-600 font-bold' : ''}>
-                  {displayHour}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Interactive Timeline Background */}
-        <div className="flex items-center px-6 mb-2">
-          <div className="w-64"></div>
+          <div className="w-48"></div> {/* Spacer for market info column */}
           <div 
             ref={trackRef}
-            className="flex-1 ml-2 h-3 bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer relative"
+            className="flex-1 ml-2 flex text-xs text-gray-500 dark:text-gray-400 justify-between cursor-pointer"
             role="slider"
             tabIndex={0}
             aria-label="Timeline slider"
@@ -546,14 +527,29 @@ const ForexMarketTimeZone = () => {
               }
             }}
           >
-            {/* Timeline markers */}
-            {Array.from({ length: 24 }).map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-px h-3 bg-gray-300 dark:bg-gray-500"
-                style={{ left: `${(i / 23) * 100}%` }}
-              />
-            ))}
+            {Array.from({ length: 25 }).map((_, i) => {
+              const hourIndex = i === 24 ? 24 : i; // include terminal label
+              let displayHour;
+              if (is24Hour) {
+                // 24-hour format: 0-24 (show 24 at the end)
+                displayHour = hourIndex;
+              } else {
+                // 12-hour format: 12, 1-11, 12, 1-11, 12 (show 12 at the end)
+                if (hourIndex === 24) {
+                  displayHour = 12;
+                } else {
+                  displayHour = hourIndex === 0 ? 12 : hourIndex > 12 ? hourIndex - 12 : hourIndex;
+                }
+              }
+              return (
+                <span 
+                  key={i} 
+                  className={`hover:text-purple-500 transition-colors ${i === new Date().getHours() ? 'text-purple-600 font-bold' : ''}`}
+                >
+                  {displayHour}
+                </span>
+              );
+            })}
           </div>
         </div>
 
@@ -612,73 +608,101 @@ const ForexMarketTimeZone = () => {
 
         {/* Overlaps removed per requirement */}
 
+        {/* Global Weekend Closure Message */}
+        {!marketData.viewer.retailGateOpen && (
+          <div className="flex items-center px-6 mt-3 mb-2">
+            <div className="w-48"></div> {/* Spacer for market info column */}
+            <div className="flex-1 ml-2">
+              <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
+                MARKET CLOSED FOR THE WEEKEND
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Market Rows */}
-        <div className="space-y-1 mt-1 min-w-[800px] lg:min-w-0">
+        <div className="space-y-4 mt-4 min-w-[800px] lg:min-w-0">
           {markets.map((m, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 py-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+              className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-shadow"
             >
-              {/* Flag + Info */}
-              <div className="flex items-center gap-2 w-64">
-                <span className="text-xl">{m.flag}</span>
+              {/* Currency + Info */}
+              <div className="flex items-center gap-3 w-48">
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                  <span className="text-gray-700 dark:text-gray-300 text-xs font-bold">{m.currency}</span>
+                </div>
                 <div>
                   <h3 className="font-bold text-sm text-gray-900 dark:text-white">{m.name}</h3>
                   <p className="text-xs text-gray-800 dark:text-gray-200">{formatTime(currentTime, m.timezone)}</p>
                   <p className="text-xs text-gray-800 dark:text-gray-200">{formatDate(currentTime, m.timezone)}</p>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">{m.sessionHours}</p>
                 </div>
               </div>
 
-              {/* Status */}
-              <div className="text-sm text-gray-800 dark:text-gray-200 font-medium w-64">
-                <span className={`px-2 py-1 rounded text-sm whitespace-nowrap ${
-                  getMarketStatus(m.timezone).includes('SESSION') 
-                    ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                }`}>
-                  {getMarketStatus(m.timezone)}
-                </span>
-              </div>
+              {/* Status removed to reclaim space */}
+              <div className="hidden"></div>
 
-              {/* Timeline bar with session indicator */}
-              <div className="flex-1 ml-2 relative h-6">
-                <div 
-                  className={`h-6 rounded-lg absolute overflow-hidden ${
-                    getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-30'
-                  }`}
-                  style={getSessionBarStyle(m.gmtHours, selectedTimezone)}
-                >
-                  {/* Base gradient background */}
-                  <div className={`absolute inset-0 ${m.color}`}></div>
-                  {/* Striped pattern overlay */}
-                  <div 
-                    className="absolute inset-0 opacity-40"
-                    style={{
-                      backgroundImage: `repeating-linear-gradient(
-                        45deg,
-                        transparent,
-                        transparent 3px,
-                        rgba(255,255,255,0.15) 3px,
-                        rgba(255,255,255,0.15) 6px
-                      )`
-                    }}
-                  ></div>
-                  {/* Additional subtle stripe for depth */}
-                  <div 
-                    className="absolute inset-0 opacity-20"
-                    style={{
-                      backgroundImage: `repeating-linear-gradient(
-                        -45deg,
-                        transparent,
-                        transparent 6px,
-                        rgba(0,0,0,0.1) 6px,
-                        rgba(0,0,0,0.1) 12px
-                      )`
-                    }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-800 dark:text-gray-200 mt-8">{convertGMTToTimezone(m.gmtHours, selectedTimezone)}</p>
+              {/* Timeline bar with session indicator(s) */}
+              <div className="flex-1 ml-2 relative h-10 overflow-hidden">
+                {(() => {
+                  const segments = getSessionSegments(m.timezone);
+                  // Find the largest segment by width
+                  let largestSegmentIdx = 0;
+                  let maxWidth = 0;
+                  segments.forEach((seg, idx) => {
+                    const style = getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO);
+                    const width = parseFloat(style.width);
+                    if (width > maxWidth) {
+                      maxWidth = width;
+                      largestSegmentIdx = idx;
+                    }
+                  });
+                  
+                  return segments.map((seg, idx) => (
+                    <div 
+                      key={idx}
+                      className={`h-10 rounded-lg absolute overflow-hidden flex items-center justify-center ${
+                        getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-60'
+                      }`}
+                      style={getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO)}
+                    >
+                      {/* Base gradient background */}
+                      <div className={`absolute inset-0 ${m.color}`}></div>
+                      {/* Striped pattern overlay */}
+                      <div 
+                        className="absolute inset-0 opacity-40"
+                        style={{
+                          backgroundImage: `repeating-linear-gradient(
+                            45deg,
+                            transparent,
+                            transparent 3px,
+                            rgba(255,255,255,0.15) 3px,
+                            rgba(255,255,255,0.15) 6px
+                          )`
+                        }}
+                      ></div>
+                      {/* Additional subtle stripe for depth */}
+                      <div 
+                        className="absolute inset-0 opacity-20"
+                        style={{
+                          backgroundImage: `repeating-linear-gradient(
+                            -45deg,
+                            transparent,
+                            transparent 6px,
+                            rgba(0,0,0,0.1) 6px,
+                            rgba(0,0,0,0.1) 12px
+                          )`
+                        }}
+                      ></div>
+                      {/* Timing text inside bar - only show in largest segment */}
+                      {idx === largestSegmentIdx && (
+                        <span className="relative z-10 text-xs font-medium text-white drop-shadow-md">
+                          {formatRangeFromISO(seg.startLocalISO, seg.endLocalISO)}
+                        </span>
+                      )}
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           ))}

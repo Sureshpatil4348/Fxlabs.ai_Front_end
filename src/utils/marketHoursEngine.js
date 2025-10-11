@@ -91,6 +91,7 @@ function isRetailGateOpen(viewInstantUTC) {
 function getViewerWindowUTC(viewInstantUTC, viewerTz) {
   const vp = getZonedParts(viewInstantUTC, viewerTz);
   const startUTC = utcFromLocal(viewerTz, vp.year, vp.month, vp.day, 0, 0, 0);
+  // Calculate endUTC: viewer's local midnight tomorrow (24-hour window)
   const dayPlus = addDaysUTC(startUTC, 1);
   const endUTC = utcFromLocal(viewerTz, getZonedParts(dayPlus, viewerTz).year, getZonedParts(dayPlus, viewerTz).month, getZonedParts(dayPlus, viewerTz).day, 0, 0, 0);
   return { startUTC, endUTC, startLocalISO: toLocalISO({ ...vp, hour: 0, minute: 0, second: 0 }) };
@@ -110,38 +111,100 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
   const viewerWindow = getViewerWindowUTC(viewInstantUTC, detectedViewerTz);
 
   const sessionsDef = [
-    { key: 'Sydney', tz: 'Australia/Sydney' },
-    { key: 'London', tz: 'Europe/London' },
-    { key: 'NewYork', tz: 'America/New_York' }
+    { key: 'Sydney', tz: 'Australia/Sydney', open: 9, close: 18 },
+    { key: 'London', tz: 'Europe/London', open: 8, close: 17 },
+    { key: 'NewYork', tz: 'America/New_York', open: 8, close: 17 }
   ];
 
   const sessions = sessionsDef.map((def) => {
     const lp = getZonedParts(viewInstantUTC, def.tz);
-    const openUTC = utcFromLocal(def.tz, lp.year, lp.month, lp.day, 8, 0, 0);
-    const closeUTC = utcFromLocal(def.tz, lp.year, lp.month, lp.day, 17, 0, 0);
+    
+    // Get today's session times
+    const todayOpenUTC = utcFromLocal(def.tz, lp.year, lp.month, lp.day, def.open, 0, 0);
+    const todayCloseUTC = utcFromLocal(def.tz, lp.year, lp.month, lp.day, def.close, 0, 0);
+    
+    // Get yesterday's session times (if it extends into today's window)
+    const yesterday = addDaysUTC(viewInstantUTC, -1);
+    const yesterdayParts = getZonedParts(yesterday, def.tz);
+    const yesterdayOpenUTC = utcFromLocal(def.tz, yesterdayParts.year, yesterdayParts.month, yesterdayParts.day, def.open, 0, 0);
+    const yesterdayCloseUTC = utcFromLocal(def.tz, yesterdayParts.year, yesterdayParts.month, yesterdayParts.day, def.close, 0, 0);
+    
+    // Check if yesterday's session extends into today's viewer window
+    const yesterdayExtendsIntoToday = yesterdayCloseUTC.getTime() > viewerWindow.startUTC.getTime();
+    
+    // Check if today's session overlaps with the viewer window
+    const todayOverlapsWindow = todayOpenUTC.getTime() < viewerWindow.endUTC.getTime() && todayCloseUTC.getTime() > viewerWindow.startUTC.getTime();
+    
+    // Build projected segments for yesterday and today independently
+    const projectedSegmentsInViewer = [];
 
-    const isOpenNow = gateOpen && (openUTC.getTime() <= viewInstantUTC.getTime()) && (viewInstantUTC.getTime() < closeUTC.getTime());
-
-    // Project to viewer day window
-    const startOverlap = new Date(Math.max(openUTC.getTime(), viewerWindow.startUTC.getTime()));
-    const endOverlap = new Date(Math.min(closeUTC.getTime(), viewerWindow.endUTC.getTime()));
-    const hasOverlap = startOverlap.getTime() < endOverlap.getTime();
-    const projected = hasOverlap
-      ? {
+    const projectOverlap = (openUTC, closeUTC) => {
+      const startOverlap = new Date(Math.max(openUTC.getTime(), viewerWindow.startUTC.getTime()));
+      const endOverlap = new Date(Math.min(closeUTC.getTime(), viewerWindow.endUTC.getTime()));
+      if (startOverlap.getTime() < endOverlap.getTime()) {
+        projectedSegmentsInViewer.push({
           startLocalISO: toLocalISOInZone(startOverlap, detectedViewerTz),
           endLocalISO: toLocalISOInZone(endOverlap, detectedViewerTz)
-        }
-      : null;
+        });
+      }
+    };
+
+    // If yesterday extends into today, project yesterday's tail
+    if (yesterdayExtendsIntoToday) {
+      projectOverlap(yesterdayOpenUTC, yesterdayCloseUTC);
+    }
+    // Always evaluate today's session within the window
+    if (todayOverlapsWindow) {
+      projectOverlap(todayOpenUTC, todayCloseUTC);
+    }
+
+    // Determine open-now state across either yesterday's or today's full sessions
+    const now = viewInstantUTC.getTime();
+    const isOpenYesterday = now >= yesterdayOpenUTC.getTime() && now < yesterdayCloseUTC.getTime();
+    const isOpenToday = now >= todayOpenUTC.getTime() && now < todayCloseUTC.getTime();
+    const isOpenNow = gateOpen && (isOpenYesterday || isOpenToday);
+
+    // Backward-compat single segment (first), if any
+    const projectedSegmentInViewer = projectedSegmentsInViewer[0] || null;
+    
+    // Debug logging for New York session
+    if (def.tz === 'America/New_York' && process.env.NODE_ENV === 'development') {
+      console.log(`\n=== NY Session Debug ===`);
+      console.log(`Viewer window: ${viewerWindow.startUTC.toISOString()} → ${viewerWindow.endUTC.toISOString()}`);
+      console.log(`\n[Yesterday's Session]`);
+      console.log(`  Open UTC: ${yesterdayOpenUTC.toISOString()}`);
+      console.log(`  Close UTC: ${yesterdayCloseUTC.toISOString()}`);
+      console.log(`  Extends into today: ${yesterdayExtendsIntoToday}`);
+      console.log(`  Check: ${yesterdayCloseUTC.getTime()} > ${viewerWindow.startUTC.getTime()} = ${yesterdayCloseUTC.getTime() > viewerWindow.startUTC.getTime()}`);
+      console.log(`\n[Today's Session]`);
+      console.log(`  Open UTC: ${todayOpenUTC.toISOString()}`);
+      console.log(`  Close UTC: ${todayCloseUTC.toISOString()}`);
+      console.log(`  Overlaps window: ${todayOverlapsWindow}`);
+      console.log(`  Check: ${todayOpenUTC.getTime()} < ${viewerWindow.endUTC.getTime()} && ${todayCloseUTC.getTime()} > ${viewerWindow.startUTC.getTime()}`);
+      console.log(`  = ${todayOpenUTC.getTime() < viewerWindow.endUTC.getTime()} && ${todayCloseUTC.getTime() > viewerWindow.startUTC.getTime()}`);
+      console.log(`\n[Result]`);
+      console.log(`  Yesterday extends: ${yesterdayExtendsIntoToday}`);
+      console.log(`  Today overlaps: ${todayOverlapsWindow}`);
+      console.log(`  Segments count: ${projectedSegmentsInViewer.length}`);
+      projectedSegmentsInViewer.forEach((seg, idx) => {
+        console.log(`    Segment ${idx + 1}: ${seg.startLocalISO} → ${seg.endLocalISO}`);
+      });
+      console.log(`  isOpenNow: ${isOpenNow}`);
+      console.log(`======================\n`);
+    }
+    
+    const projected = projectedSegmentInViewer;
 
     return {
       session: def.key,
       cityTzLabel: def.tz,
       cityUtcOffsetNow: offsetToString(getOffsetMinutesAt(viewInstantUTC, def.tz)),
       cityClockNowLocal: toLocalISOInZone(viewInstantUTC, def.tz),
-      sessionOpenUTC: openUTC.toISOString(),
-      sessionCloseUTC: closeUTC.toISOString(),
+      sessionOpenUTC: todayOpenUTC.toISOString(),
+      sessionCloseUTC: todayCloseUTC.toISOString(),
       isOpenNow,
-      projectedSegmentInViewer: projected
+      projectedSegmentInViewer: projected,
+      projectedSegmentsInViewer
     };
   });
 
@@ -172,15 +235,41 @@ export function listTimezonesWithOffsets(viewInstantUTC = new Date()) {
   // Get system timezone to ensure it's always included
   const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   
-  let zones = (typeof Intl.supportedValuesOf === 'function')
-    ? Intl.supportedValuesOf('timeZone')
-    : [
-        'UTC',
-        'Asia/Kolkata', 'Asia/Tokyo', 'Asia/Singapore', 'Asia/Hong_Kong', 'Asia/Dubai',
-        'Australia/Sydney',
-        'Europe/London', 'Europe/Berlin', 'Europe/Zurich',
-        'America/New_York', 'America/Toronto', 'America/Los_Angeles'
-      ];
+  // Curated list of prominent timezones (one per GMT offset) with updated names
+  let zones = [
+    'Pacific/Midway',        // GMT-11:00
+    'Pacific/Honolulu',      // GMT-10:00
+    'America/Anchorage',     // GMT-09:00
+    'America/Los_Angeles',   // GMT-08:00
+    'America/Denver',        // GMT-07:00
+    'America/Chicago',       // GMT-06:00
+    'America/New_York',      // GMT-05:00
+    'America/Caracas',       // GMT-04:00
+    'America/St_Johns',      // GMT-03:30
+    'America/Sao_Paulo',     // GMT-03:00
+    'Atlantic/South_Georgia', // GMT-02:00
+    'Atlantic/Azores',       // GMT-01:00
+    'UTC',                   // GMT+00:00
+    'Europe/London',         // GMT+00:00 (DST aware)
+    'Europe/Paris',          // GMT+01:00
+    'Europe/Athens',         // GMT+02:00
+    'Europe/Moscow',         // GMT+03:00
+    'Asia/Dubai',            // GMT+04:00
+    'Asia/Kabul',            // GMT+04:30
+    'Asia/Karachi',          // GMT+05:00
+    'Asia/Kolkata',          // GMT+05:30 (updated from Calcutta)
+    'Asia/Kathmandu',        // GMT+05:45
+    'Asia/Dhaka',            // GMT+06:00
+    'Asia/Yangon',           // GMT+06:30
+    'Asia/Bangkok',          // GMT+07:00
+    'Asia/Singapore',        // GMT+08:00
+    'Asia/Tokyo',            // GMT+09:00
+    'Australia/Adelaide',    // GMT+09:30
+    'Australia/Sydney',      // GMT+10:00
+    'Pacific/Noumea',        // GMT+11:00
+    'Pacific/Auckland',      // GMT+12:00
+    'Pacific/Tongatapu'      // GMT+13:00
+  ];
   
   // Ensure system timezone is in the list
   if (!zones.includes(systemTimezone)) {
