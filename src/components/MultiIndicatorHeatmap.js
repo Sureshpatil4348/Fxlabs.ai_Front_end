@@ -579,14 +579,18 @@ useEffect(() => {
         <div className="flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-1">
           {/* Left: Table Headers */}
           <div className="flex-1 min-w-0">
-            <div className="flex min-w-[560px]">
-              <div className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></div>
-              {indicators.map(indicator => (
-                <div key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200 flex-1">
-                  <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
-                </div>
-              ))}
-            </div>
+            <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
+              <thead>
+                <tr>
+                  <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
+                  {indicators.map(indicator => (
+                    <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
+                      <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            </table>
           </div>
           {/* Right: Trading Meter Header (desktop only) */}
           <div className="hidden lg:block w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
@@ -598,27 +602,17 @@ useEffect(() => {
         <div className="flex gap-1.5 h-full pt-1.5">
           {/* Left: Compact Table */}
           <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
-            <table className="w-full border-collapse min-w-[560px]">
-              <thead className="sr-only">
-                <tr>
-                  <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
-                  {indicators.map(indicator => (
-                    <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200">
-                      <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-            <tbody>
+            <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
+              <tbody>
               {(() => {
                 const mcState = useMarketCacheStore.getState();
                 const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
                 return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
                 <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                  <td className="py-0.5 px-0.5 font-medium text-gray-800 dark:text-gray-200 text-xs">
+                  <td className="py-0.5 px-0.5 font-medium text-gray-800 dark:text-gray-200 text-sm w-14">
                     <div className="flex items-center space-x-0.5 ml-1">
-                      <span className="text-xs font-medium">{formatTimeframeDisplay(timeframe)}</span>
+                      <span className="text-sm font-medium">{formatTimeframeDisplay(timeframe)}</span>
                     </div>
                   </td>
                   {indicators.map(indicator => {
@@ -632,7 +626,7 @@ useEffect(() => {
                     const cellBorderColor = signal === 'neutral' ? '#e2e8f0' : 'transparent';
                     
                     return (
-                      <td key={indicator} className="text-center py-0.5 px-0.5">
+                      <td key={indicator} className="text-center py-0.5 px-0.5" style={{width: `${504 / indicators.length}px`}}>
                         <div className="relative h-full flex items-center justify-center">
                           <button 
                             className=""
