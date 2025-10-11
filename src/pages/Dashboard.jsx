@@ -233,8 +233,8 @@
                   {/* Left Column: Lot Size (top) */}
                   {/* Mobile: order-1 (first), Desktop: maintains position */}
                   <div className="flex flex-col gap-2 lg:min-h-0 order-1">
-                    {/* Lot Size Calculator - Mobile: fixed height with internal scroll, Desktop: h-72 */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[580px] lg:h-[26rem]">
+                    {/* Lot Size Calculator - Mobile: auto height, Desktop: h-72 */}
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-auto lg:h-[26rem]">
                       <div className="h-full overflow-y-auto">
                         <LotSizeCalculator />
                       </div>

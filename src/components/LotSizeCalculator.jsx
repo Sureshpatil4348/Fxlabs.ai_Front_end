@@ -626,49 +626,64 @@ const LotSizeCalculator = () => {
             </div>
 
             {/* RIGHT SIDE - Result Display */}
-            <div className="flex flex-col px-4 lg:pl-4 lg:pr-2">
+            <div className="flex flex-col px-4 lg:pl-4 lg:pr-2 pb-2 sm:pb-0">
               {result ? (
-                <div ref={resultRef} className="space-y-2">
-                    {/* Risk Amount Card */}
-                    <div className="p-3 pt-0">
-                      <div className="mb-2">
-                        <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk Amount</span>
-                      </div>
-                      <div className="text-xl font-bold text-red-600 dark:text-red-400">
-                        ${result.riskAmount.toFixed(2)}
-                      </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Maximum amount you&apos;ll risk on this trade
-                      </p>
-                    </div>
-
-                    {/* Position Size Card */}
-                    <div className="p-3">
-                      <div className="mb-2">
-                        <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Position Size</span>
-                      </div>
-                      <div className="text-xl font-bold text-green-600 dark:text-green-400">
-                        {result.lotSize.toFixed(2)}
-                      </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {result.resultUnit.charAt(0).toUpperCase() + result.resultUnit.slice(1)} to trade for this position
-                      </p>
-                    </div>
-
-                    {/* Risk Reward Ratio Card - Only show if take profit is provided */}
-                    {result.hasTakeProfit && result.riskRewardRatio !== null && (
-                      <div className="p-3">
-                        <div className="mb-2">
-                          <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward Ratio</span>
+                <div ref={resultRef} className="space-y-0 sm:space-y-2">
+                    {/* All cards in one row on mobile, stacked on desktop */}
+                    <div className="grid grid-cols-3 gap-1 sm:space-y-2 sm:grid-cols-1">
+                      {/* Risk Amount Card */}
+                      <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                        <div className="mb-0.5 sm:mb-2">
+                          <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Amount</span>
                         </div>
-                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                          1:{Math.round(result.riskRewardRatio)}
+                        <div className="text-sm sm:text-xl font-bold text-red-600 dark:text-red-400">
+                          ${result.riskAmount.toFixed(2)}
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          Expected reward per unit of risk
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
+                          Maximum amount you&apos;ll risk on this trade
                         </p>
                       </div>
-                    )}
+
+                      {/* Position Size Card */}
+                      <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                        <div className="mb-0.5 sm:mb-2">
+                          <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Position Size</span>
+                        </div>
+                        <div className="text-sm sm:text-xl font-bold text-green-600 dark:text-green-400">
+                          {result.lotSize.toFixed(2)}
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
+                          {result.resultUnit.charAt(0).toUpperCase() + result.resultUnit.slice(1)} to trade for this position
+                        </p>
+                      </div>
+
+                      {/* Risk Reward Ratio Card - Only show if take profit is provided */}
+                      {result.hasTakeProfit && result.riskRewardRatio !== null ? (
+                        <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                          <div className="mb-0.5 sm:mb-2">
+                            <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward</span>
+                          </div>
+                          <div className="text-sm sm:text-xl font-bold text-blue-600 dark:text-blue-400">
+                            1:{Math.round(result.riskRewardRatio)}
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
+                            Expected reward per unit of risk
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                          <div className="mb-0.5 sm:mb-2">
+                            <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward</span>
+                          </div>
+                          <div className="text-sm sm:text-xl font-bold text-gray-400 dark:text-gray-500">
+                            N/A
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
+                            Set take profit to see ratio
+                          </p>
+                        </div>
+                      )}
+                    </div>
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
