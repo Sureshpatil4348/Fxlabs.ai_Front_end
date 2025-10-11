@@ -574,8 +574,8 @@ useEffect(() => {
       
       {/* Heatmap Table + Meter */}
       <div className="flex flex-col gap-0 h-full">
-        {/* Header Row for both Table and Meter */}
-        <div className="flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-1">
+        {/* Header Row for Desktop Table and Meter */}
+        <div className="hidden lg:flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-1">
           {/* Left: Table Headers */}
           <div className="flex-1 min-w-0">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
@@ -592,7 +592,7 @@ useEffect(() => {
             </table>
           </div>
           {/* Right: Trading Meter Header (desktop only) */}
-          <div className="hidden lg:block w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
+          <div className="w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
             <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Trading Meter</span>
           </div>
         </div>
@@ -848,9 +848,21 @@ useEffect(() => {
 
         {/* Mobile Layout - Table and Meter Stacked Vertically */}
         <div className="lg:hidden flex flex-col gap-3 pt-1.5">
-          {/* Table Section */}
+          {/* Table Section with Header - Single Scrollable Container */}
           <div className="w-full overflow-x-auto overflow-y-hidden">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
+              {/* Mobile Table Header */}
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-slate-600">
+                  <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
+                  {indicators.map(indicator => (
+                    <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
+                      <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              {/* Mobile Table Body */}
               <tbody>
               {(() => {
                 const mcState = useMarketCacheStore.getState();
