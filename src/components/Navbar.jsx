@@ -65,15 +65,6 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   {/* Show landing links when NOT on dashboard */}
                   {!isOnDashboard && (
                     <>
-                      {/* Technology */}
-                      <button
-                        onClick={() => scrollToSection('video-explanation')}
-                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
-                      >
-                        <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                        <span className="font-medium text-sm">Technology</span>
-                      </button>
-
                       {/* About Us */}
                       <button
                         onClick={() => scrollToSection('why-system-works')}
@@ -81,6 +72,15 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                       >
                         <Users className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-sm">About Us</span>
+                      </button>
+
+                      {/* Technology */}
+                      <button
+                        onClick={() => scrollToSection('video-explanation')}
+                        className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-3 py-2 rounded-lg hover:bg-white/50"
+                      >
+                        <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                        <span className="font-medium text-sm">Technology</span>
                       </button>
 
                       {/* Pricing */}
@@ -226,19 +226,19 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   {!isOnDashboard && (
                     <>
                       <button
-                        onClick={() => scrollToSection('video-explanation')}
-                        className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
-                      >
-                        <Cpu className="w-6 h-6 flex-shrink-0" />
-                        <span className="font-medium">Technology</span>
-                      </button>
-
-                      <button
                         onClick={() => scrollToSection('why-system-works')}
                         className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
                       >
                         <Users className="w-6 h-6 flex-shrink-0" />
                         <span className="font-medium">About Us</span>
+                      </button>
+
+                      <button
+                        onClick={() => scrollToSection('video-explanation')}
+                        className="flex items-center space-x-3 w-full text-left text-gray-700 hover:text-emerald-600 transition-all duration-300 py-3 px-4 rounded-xl hover:bg-white/50"
+                      >
+                        <Cpu className="w-6 h-6 flex-shrink-0" />
+                        <span className="font-medium">Technology</span>
                       </button>
 
                       <button
