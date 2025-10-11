@@ -370,9 +370,13 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
          </div>
        )}
 
-      {/* Quick Analysis Preview - Compact */}
+      {/* Quick Analysis Preview - Compact with Pastel Background */}
       {analysis && (
-        <div className="border-t pt-2">
+        <div className={`border-t pt-2 -mx-3 -mb-3 px-3 pb-3 mt-2 rounded-b-lg ${
+          analysis.effect === 'Bullish' ? 'bg-green-50 dark:bg-green-900/20' :
+          analysis.effect === 'Bearish' ? 'bg-red-50 dark:bg-red-900/20' :
+          ''
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />

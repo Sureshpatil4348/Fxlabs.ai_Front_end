@@ -161,6 +161,14 @@ All features that relied on client-side calculations now expect server-provided 
   - **Better UX**: Only relevant information is displayed, avoiding confusion from empty data
   - Files affected: `src/components/AINewsAnalysis.js`
 
+- **AI News Analysis - Pastel Backgrounds for Sentiment** (Latest): AI Analysis section now features color-coded pastel backgrounds
+  - **Bullish sentiment**: Light green pastel background (`bg-green-50 dark:bg-green-900/20`) matching Currency Strength Meter style
+  - **Bearish sentiment**: Light red pastel background (`bg-red-50 dark:bg-red-900/20`) matching Currency Strength Meter style
+  - **Visual consistency**: Colors match the pastel shades used in Currency Strength Meter for cohesive design
+  - **Enhanced UX**: Quick visual identification of market sentiment at a glance
+  - **Preserved borders**: Green/red borders remain on news cards for bullish/bearish news
+  - Files affected: `src/components/AINewsAnalysis.js`
+
 - **Currency Strength Meter Improvements**: Increased currency card height
   - Currency card padding increased from `py-1` to `py-3` for better space utilization
   - Reduces excessive bottom spacing in the component
