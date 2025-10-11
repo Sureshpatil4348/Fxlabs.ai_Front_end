@@ -26,7 +26,7 @@ const workflow = [
 
 const AutomationAlertsSection = () => {
   return (
-    <section className="py-12 sm:py-16 md:py-20 px-4 md:px-6 w-full transition-colors duration-300">
+    <section className="hidden sm:block py-12 sm:py-16 md:py-20 px-4 md:px-6 w-full transition-colors duration-300">
       <div className="container mx-auto max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 xl:gap-16 items-center">
           <div className="space-y-4 sm:space-y-6 text-center lg:text-left">
