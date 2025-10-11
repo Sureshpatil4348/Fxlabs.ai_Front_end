@@ -1,5 +1,4 @@
 import { 
-  Phone, 
   Mail, 
   MapPin, 
   Clock,
@@ -165,19 +164,6 @@ const GetInTouchSection = () => {
             
             <div className="space-y-8">
               
-              {/* Phone */}
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-[#03c05d] rounded-lg flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Phone</h4>
-                  <div className="space-y-1">
-                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>+91 6361156726</p>
-                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>+91 8722741058</p>
-                  </div>
-                </div>
-              </div>
 
               {/* Email */}
               <div className="flex items-start space-x-4">

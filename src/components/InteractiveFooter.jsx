@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Hexagon, Twitter, Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react'
+import { Mail, MapPin, Hexagon, Twitter, Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -410,12 +410,6 @@ const InteractiveFooter = () => {
                 <Mail className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   support@fxlabsprime.com
-                </span>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Phone className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  +91 8867571889
                 </span>
               </div>
               <div className="flex items-start space-x-3">
