@@ -62,8 +62,8 @@ const VideoExplanationSection = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
-          {/* Features Column */}
-          <div className="lg:w-1/2 space-y-3">
+          {/* Features Column - Hidden on mobile, visible on desktop */}
+          <div className="hidden md:block lg:w-1/2 space-y-3">
             {features.map((feature, index) => (
               <div 
                 key={index}
@@ -85,7 +85,7 @@ const VideoExplanationSection = () => {
           </div>
 
           {/* Video Column */}
-          <div className="lg:w-1/2 w-full">
+          <div className="w-full lg:w-1/2">
             <div className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-3xl shadow-2xl overflow-hidden p-2">
               {/* Gradient Border Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50"></div>
