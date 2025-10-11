@@ -118,7 +118,7 @@ const HeroSection = () => {
     <section className="relative overflow-hidden pt-16 pb-16 px-4 sm:pt-20 sm:pb-20 md:px-6 w-full transition-colors duration-300">
       <PremiumHeroBackground />
       <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
+        <div className="flex flex-col lg:flex-row items-center gap-0 lg:gap-12">
           <div className="w-full lg:w-1/2 text-center lg:text-left mb-8 lg:mb-0">
             {/* Premium Badges with Glassy Effect */}
             <div className="mb-6 flex flex-col items-center lg:items-start space-y-3">
@@ -146,7 +146,7 @@ const HeroSection = () => {
             </p>
 
             {/* Premium Feature Highlights */}
-            <div className="mb-10 sm:mb-12 relative p-[1.5px] rounded-3xl bg-gradient-to-br from-white/60 via-white/30 to-white/10 dark:from-white/20 dark:via-white/10 dark:to-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+            <div className="hidden md:block mb-10 sm:mb-12 relative p-[1.5px] rounded-3xl bg-gradient-to-br from-white/60 via-white/30 to-white/10 dark:from-white/20 dark:via-white/10 dark:to-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
               <div className="rounded-3xl bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl border border-white/20 dark:border-white/10 p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="group flex items-center space-x-3 rounded-xl bg-white/10 dark:bg-white/[0.04] border border-white/20 dark:border-white/10 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20">
@@ -205,27 +205,9 @@ const HeroSection = () => {
                 </div>
               </div>
             </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-              <a 
-                href="#subscription" 
-                className="relative bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-500 hover:via-emerald-500 hover:to-emerald-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_12px_40px_rgba(16,185,129,0.45)] hover:shadow-[0_16px_50px_rgba(16,185,129,0.55)] ring-1 ring-white/20 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
-              >
-                <span>Get Started Now</span>
-                <i className="fas fa-arrow-right"></i>
-              </a>
-              <a 
-                href="#trading-tools" 
-                className="relative bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border border-white/30 dark:border-white/10 text-gray-900 dark:text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.16)] hover:bg-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
-              >
-                <i className="fas fa-play-circle"></i>
-                <span>Explore Tools</span>
-              </a>
-            </div>
           </div>
 
-          <div className=" lg:w-1/2 flex justify-center items-center relative">
+          <div className=" lg:w-1/2 flex flex-col justify-center items-center relative">
             {/* Master Trader AI Dashboard Container */}
             <div className="relative w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[700px] mx-auto min-h-[300px] sm:min-h-[420px] md:min-h-[450px] lg:min-h-[480px] xl:min-h-[500px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 lg:p-6 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
                  style={{
@@ -342,6 +324,24 @@ const HeroSection = () => {
               </div>
               
               
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-8 w-full px-4">
+              <a 
+                href="#subscription" 
+                className="relative bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-500 hover:via-emerald-500 hover:to-emerald-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_12px_40px_rgba(16,185,129,0.45)] hover:shadow-[0_16px_50px_rgba(16,185,129,0.55)] ring-1 ring-white/20 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
+              >
+                <span>Get Started Now</span>
+                <i className="fas fa-arrow-right"></i>
+              </a>
+              <a 
+                href="#trading-tools" 
+                className="relative bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border border-white/30 dark:border-white/10 text-gray-900 dark:text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.16)] hover:bg-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-play-circle"></i>
+                <span>Explore Tools</span>
+              </a>
             </div>
           </div>
               </div>
