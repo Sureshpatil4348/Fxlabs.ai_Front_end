@@ -594,7 +594,7 @@ const LotSizeCalculator = () => {
                         {result.lotSize.toFixed(result.instrumentType === 'crypto' ? 8 : 4)}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {result.resultUnit} to trade for this position
+                        {result.resultUnit.charAt(0).toUpperCase() + result.resultUnit.slice(1)} to trade for this position
                       </p>
                     </div>
 

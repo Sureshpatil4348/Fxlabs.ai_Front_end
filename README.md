@@ -94,7 +94,14 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Tools Tab Icon Alignment Improvement (Latest)
+### Lot Size Calculator Result Unit Capitalization (Latest)
+- **Fixed text display**: The result unit (lots/contracts/units) now displays with proper capitalization
+  - **Position Size description**: Changed from "lots to trade for this position" to "Lots to trade for this position"
+  - **Implementation**: Added `.charAt(0).toUpperCase() + .slice(1)` to capitalize the first letter of `result.resultUnit`
+  - **Components updated**:
+    - `src/components/LotSizeCalculator.jsx` - Line 597
+
+### Tools Tab Icon Alignment Improvement
 - **Improved icon vertical alignment**: Icons in all three tools now align better with their title text
   - **Removed top margin**: Changed icon positioning from `mt-0.5` to no top margin for better vertical centering
   - **Components updated**:
