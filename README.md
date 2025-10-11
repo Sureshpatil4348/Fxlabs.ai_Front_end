@@ -94,6 +94,35 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Tools Tab Icon Alignment Improvement (Latest)
+- **Improved icon vertical alignment**: Icons in all three tools now align better with their title text
+  - **Removed top margin**: Changed icon positioning from `mt-0.5` to no top margin for better vertical centering
+  - **Components updated**:
+    - **Lot Size Calculator**: Removed `mt-0.5` from calculator icon
+    - **Forex Market Time Zone Converter**: Removed `mt-0.5` from globe icon  
+    - **Quantum Analysis**: Removed `mt-0.5` from quantum image
+  - **Visual improvement**: Icons now appear more centered and aligned with the title text baseline
+  - **Responsive design maintained**: All responsive layout and spacing classes preserved
+- **Files affected**: 
+  - `src/components/LotSizeCalculator.jsx` - Updated icon positioning
+  - `src/components/MultiTimeAnalysis.jsx` - Updated icon positioning
+  - `src/components/MultiIndicatorHeatmap.js` - Updated icon positioning
+
+### Tools Tab Header Standardization (Latest)
+- **Standardized header styling across all tools**: All three main tools now have consistent title text styling and icon placement
+  - **Title text styling**: All components now use `CardTitle` component with consistent classes: `text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading`
+  - **Icon placement standardization**: All icons now use consistent sizing and spacing: `w-5 h-5 mr-2 flex-shrink-0 text-blue-600`
+  - **Components updated**:
+    - **Lot Size Calculator**: Updated from `h3` to `CardTitle` component, maintained blue icon color
+    - **Forex Market Time Zone Converter**: Updated icon from responsive sizing (`sm:w-5 sm:h-5`) to fixed sizing (`w-5 h-5`), changed color from indigo to blue
+    - **Quantum Analysis**: Updated from `h3` to `CardTitle` component, removed responsive sizing from icon
+  - **Responsive design maintained**: All responsive spacing and layout classes preserved, only standardized the header elements
+  - **Impact**: All three tools now have identical header appearance and behavior across mobile and desktop views
+- **Files affected**: 
+  - `src/components/LotSizeCalculator.jsx` - Added CardTitle import and updated header
+  - `src/components/MultiTimeAnalysis.jsx` - Standardized icon styling
+  - `src/components/MultiIndicatorHeatmap.js` - Added CardTitle import and updated header
+
 ### Lot Size Calculator - Header Styling Consistency (Latest)
 - **Updated header to match other widgets**: Title now consistently displays "Lot Size Calculator" across all screen sizes
   - **Removed responsive text**: Removed separate mobile ("Calculator") and desktop ("Lot Size Calculator") title variants for consistency

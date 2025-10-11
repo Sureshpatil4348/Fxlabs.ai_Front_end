@@ -436,7 +436,7 @@ const ForexMarketTimeZone = () => {
       <div className="flex items-center justify-between mb-2 sm:mb-3 pr-14 sm:pr-16">
         <div className="flex items-center gap-3">
           <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
-            <Globe2 className="w-5 h-5 sm:w-5 sm:h-5 mr-2 mt-0.5 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
+            <Globe2 className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
             Forex Market Time Zone Converter
           </CardTitle>
           

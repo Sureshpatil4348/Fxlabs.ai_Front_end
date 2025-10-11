@@ -11,7 +11,7 @@ import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
-import { Card } from './ui/card';
+import { Card, CardTitle } from './ui/card';
 import useMarketCacheStore from '../store/useMarketCacheStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 // Note: All indicator calculations are now performed server-side
@@ -403,10 +403,10 @@ useEffect(() => {
         {/* Mobile: wrap and stack, Desktop: single row */}
         <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading shrink-0">
-            <img src={quantImage} alt="Quantum" className="w-5 h-5 sm:w-5 sm:h-5 mr-2 mt-0.5 flex-shrink-0" />
+          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+            <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
             Quantum Analysis
-          </h3>
+          </CardTitle>
           
           {/* Controls Row */}
           <div className="flex items-center space-x-0.5 flex-wrap gap-0.5">
