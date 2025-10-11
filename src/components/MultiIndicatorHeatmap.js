@@ -403,8 +403,8 @@ useEffect(() => {
         {/* Mobile: wrap and stack, Desktop: single row */}
         <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading shrink-0">
-            <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2" />
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading shrink-0">
+            <img src={quantImage} alt="Quantum" className="w-5 h-5 sm:w-5 sm:h-5 mr-2 mt-0.5 flex-shrink-0" />
             Quantum Analysis
           </h3>
           

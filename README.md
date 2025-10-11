@@ -94,6 +94,18 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Widget Icons - Mobile View Alignment & Sizing Fix (Latest)
+- **Fixed icon alignment and size in mobile view**: Icons in Forex Market Time Zone Converter, Lot Size Calculator, and Quantum Analysis now align properly and maintain consistent size across all screen sizes
+  - **Vertical alignment**: Changed from `items-center` to `items-start` to align icons to the top of title text instead of middle
+  - **Icon positioning**: Added `mt-0.5` (2px top margin) to align icon baseline with text baseline
+  - **Size consistency**: Added responsive sizing classes `w-5 h-5 sm:w-5 sm:h-5` to ensure icons maintain 20px × 20px size across all breakpoints
+  - **Prevent shrinking**: Added `flex-shrink-0` to prevent icons from shrinking when title text wraps on mobile
+  - **Impact**: All three widget icons now have consistent size and top-aligned positioning, improving visual hierarchy and readability on mobile devices
+- **Files affected**: 
+  - `src/components/MultiTimeAnalysis.jsx` - Forex Market Time Zone Converter icon
+  - `src/components/LotSizeCalculator.jsx` - Lot Size Calculator icon
+  - `src/components/MultiIndicatorHeatmap.js` - Quantum Analysis icon
+
 ### Forex Market Time Zone Converter - Performance Optimization (Latest)
 - **Reduced update frequency**: Changed time update interval from 1 second to 10 seconds
   - **Timer interval**: Modified `setInterval` from 1000ms to 10000ms for better performance
