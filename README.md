@@ -191,9 +191,32 @@ All features that relied on client-side calculations now expect server-provided 
   - Files affected: `src/components/MultiIndicatorHeatmap.js`
   - Lint: Aliased unused `Sliders` import and unused `handleIndicatorConfigOpen` handler with underscore prefix to satisfy ESLint without functional cleanup.
 
-### Quantum Analysis Header Enhancement (Latest)
+### Quantum Analysis Sell Cell Gradient Enhancement (Latest)
+- **Visual depth added**: Sell cells now feature a gradient effect matching the buy cells' gradient pattern
+- **Gradient definition**: `linear-gradient(to bottom right, #f15b5b, #e64c4c)` - from lighter red to darker red on corners
+- **Consistent styling**: Both buy and sell cells now use gradients for a cohesive, professional appearance
+  - Buy cells: `linear-gradient(to bottom right, #10b981, #16a34a)` (emerald to green)
+  - Sell cells: `linear-gradient(to bottom right, #f15b5b, #e64c4c)` (light red to darker red)
+- **Enhanced visual appeal**: The gradient creates depth and dimension, making the cells more engaging and modern
+- **Improved UX**: Gradient effect helps signal cells stand out and provides a more polished trading interface
+- Files affected: `src/components/MultiIndicatorHeatmap.js`
+
+### Quantum Analysis Trading Meter Card Elevation
+- **Enhanced visual hierarchy**: Trading Meter now displayed in an elevated Card component with shadow
+- **Card styling**: Applied `shadow-lg` for a subtle elevation effect with smooth hover transition (`hover:shadow-xl`)
+- **Improved UX**: Card creates visual separation between the indicator table and the meter, making the Trading Meter stand out as a key decision-making tool
+- **Dark mode support**: Card adapts to dark theme with appropriate border colors (`border-gray-200 dark:border-gray-700`)
+- **Clean implementation**: Replaced plain div with semantic Card component from UI library, maintaining all existing functionality
+- Files affected: `src/components/MultiIndicatorHeatmap.js`
+
+### Quantum Analysis Header Enhancement
 - Added "Trading Meter" as a header label above the meter section, matching the style of indicator headers (EMA 21, EMA 50, etc.)
 - Extended the header line (border) to span across both the indicator table and the Trading Meter section for unified visual appearance
+- Optimized vertical spacing for perfect visual balance:
+  - Equal vertical spacing (1.5 units) on both sides of the border line
+  - Above border: Header items (py-0.5) + container bottom padding (pb-1) = 1.5 units
+  - Below border: Content row top padding (pt-1.5) = 1.5 units
+  - Creates symmetrical, professional appearance with balanced spacing
 - Restructured layout:
   - Header row now includes both table indicator headers and Trading Meter header
   - Single continuous border line below all headers

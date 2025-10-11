@@ -11,7 +11,7 @@ import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
-import { CardTitle } from './ui/card';
+import { Card, CardTitle } from './ui/card';
 import useMarketCacheStore from '../store/useMarketCacheStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 // Note: All indicator calculations are now performed server-side
@@ -576,7 +576,7 @@ useEffect(() => {
       {/* Heatmap Table + Meter */}
       <div className="flex flex-col gap-0 h-full">
         {/* Header Row for both Table and Meter */}
-        <div className="flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-0.5">
+        <div className="flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-1">
           {/* Left: Table Headers */}
           <div className="flex-1 min-w-0">
             <div className="flex min-w-[560px]">
@@ -595,7 +595,7 @@ useEffect(() => {
         </div>
 
         {/* Content Row */}
-        <div className="flex gap-1.5 h-full">
+        <div className="flex gap-1.5 h-full pt-1.5">
           {/* Left: Compact Table */}
           <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
             <table className="w-full border-collapse min-w-[560px]">
@@ -626,7 +626,7 @@ useEffect(() => {
                     const indData = tfData && tfData.indicators && tfData.indicators[indicator];
                     const hasData = !!indData;
                     const signal = (indData && indData.signal) || 'neutral';
-                    const bgGradient = signal === 'buy' ? 'linear-gradient(to bottom right, #10b981, #16a34a)' : signal === 'sell' ? '#e03f4c' : '#f1f5f9';
+                    const bgGradient = signal === 'buy' ? 'linear-gradient(to bottom right, #10b981, #16a34a)' : signal === 'sell' ? 'linear-gradient(to bottom right, #f15b5b, #e64c4c)' : '#f1f5f9';
                     const textColor = signal === 'neutral' ? '#475569' : '#ffffff';
                     const cellBorderWidth = signal === 'neutral' ? '1px' : '0px';
                     const cellBorderColor = signal === 'neutral' ? '#e2e8f0' : 'transparent';
@@ -737,7 +737,7 @@ useEffect(() => {
             }
 
             return (
-              <div className="h-full rounded-xl bg-white dark:bg-gray-800 p-3">
+              <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-3">
                 {/* Gauge */}
                 <div className="relative w-full" style={{ height: 130 }}>
                   <svg viewBox="0 0 200 110" className="w-full h-full">
@@ -847,7 +847,7 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             );
           })()}
         </div>
