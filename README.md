@@ -94,6 +94,13 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - Risk Reward Ratio Text Format (Latest)
+- **Updated text formatting**: Changed "Risk:Reward Ratio" to "Risk Reward Ratio" (removed colon)
+  - **Display label**: Updated from "Risk:Reward Ratio" to "Risk Reward Ratio"
+  - **Comment text**: Updated calculation comment to match new format
+  - **Impact**: Cleaner, more readable text formatting without punctuation
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Lot Size Calculator - Risk:Reward Ratio Integer Display (Latest)
 - **Integer risk:reward ratio**: Risk:Reward ratio now displays as whole numbers without decimal fractions
   - **Display format**: Changed from `1:2.50` to `1:3` (rounded to nearest integer)

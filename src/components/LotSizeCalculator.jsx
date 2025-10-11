@@ -228,7 +228,7 @@ const LotSizeCalculator = () => {
     // Calculate risk amount
     riskAmount = accountBalance * riskPercentage;
 
-    // Calculate Risk:Reward Ratio
+    // Calculate Risk Reward Ratio
     riskRewardRatio = takeProfit / stopLoss;
 
     if (formData.instrumentType === 'forex') {
@@ -598,11 +598,11 @@ const LotSizeCalculator = () => {
                       </p>
                     </div>
 
-                    {/* Risk:Reward Ratio Card */}
+                    {/* Risk Reward Ratio Card */}
                     {result.riskRewardRatio !== undefined && (
                       <div className="p-3">
                         <div className="mb-2">
-                          <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk:Reward Ratio</span>
+                          <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward Ratio</span>
                         </div>
                         <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
                           1:{Math.round(result.riskRewardRatio)}
