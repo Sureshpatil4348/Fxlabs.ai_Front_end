@@ -320,12 +320,11 @@ const LotSizeCalculator = () => {
       {/* Header */}
       <div className="px-2 pt-3 pb-2">
         <div className="flex items-center justify-between gap-2 sm:gap-3">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 mt-0.5 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+            <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            <span className="hidden xs:inline">Lot Size Calculator</span>
-            <span className="xs:hidden">Calculator</span>
+            Lot Size Calculator
           </h3>
           
           {/* Instrument Type Selection */}

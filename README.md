@@ -94,13 +94,21 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Lot Size Calculator - Mobile View Responsive Improvements (Latest)
+### Lot Size Calculator - Header Styling Consistency (Latest)
+- **Updated header to match other widgets**: Title now consistently displays "Lot Size Calculator" across all screen sizes
+  - **Removed responsive text**: Removed separate mobile ("Calculator") and desktop ("Lot Size Calculator") title variants for consistency
+  - **Standardized icon sizing**: Changed icon size from responsive `w-4 h-4 sm:w-5 sm:h-5` to fixed `w-5 h-5` to match other headers like "Forex Market Time Zone Converter"
+  - **Consistent icon spacing**: Changed icon margin from responsive `mr-1.5 sm:mr-2` to fixed `mr-2` for uniformity
+  - **Consistent text sizing**: Changed text size from responsive `text-base sm:text-lg` to fixed `text-lg` for consistency
+  - **Impact**: Header now has the same professional appearance and styling as "Forex Market Time Zone Converter" and other dashboard widgets
+- **Files affected**: 
+  - `src/components/LotSizeCalculator.jsx` - Header styling standardized
+
+### Lot Size Calculator - Mobile View Responsive Improvements
 - **Fixed tab switcher cutoff in mobile view**: The Forex/Commodities/Crypto tab switcher now displays properly on smaller screens
   - **Responsive text sizing**: Changed button text from `text-sm` to `text-xs sm:text-sm` for better mobile fit
   - **Responsive padding**: Changed button padding from `px-3` to `px-2 sm:px-3` to reduce width on mobile
   - **Header gap adjustment**: Changed gap from `gap-3` to `gap-2 sm:gap-3` for tighter mobile spacing
-  - **Title responsiveness**: Added responsive title display - "Calculator" on mobile, "Lot Size Calculator" on larger screens
-  - **Icon sizing**: Updated icon size from fixed `w-5 h-5` to responsive `w-4 h-4 sm:w-5 sm:h-5` and margin from `mr-2` to `mr-1.5 sm:mr-2`
   - **Prevent shrinkage**: Added `flex-shrink-0` to tab switcher container to prevent unwanted compression
 - **Fixed input section margins**: Input fields now have proper spacing on mobile screens
   - **Left panel margins**: Changed from `pl-4` to `px-4 sm:pl-4 sm:pr-2` for consistent mobile padding
@@ -133,7 +141,7 @@ All features that relied on client-side calculations now expect server-provided 
 - **Fixed icon alignment and size in mobile view**: Icons in Forex Market Time Zone Converter, Lot Size Calculator, and Quantum Analysis now align properly and maintain consistent size across all screen sizes
   - **Vertical alignment**: Changed from `items-center` to `items-start` to align icons to the top of title text instead of middle
   - **Icon positioning**: Added `mt-0.5` (2px top margin) to align icon baseline with text baseline
-  - **Size consistency**: Added responsive sizing classes `w-5 h-5 sm:w-5 sm:h-5` to ensure icons maintain 20px × 20px size across all breakpoints
+  - **Size consistency**: Icons use fixed `w-5 h-5` sizing to ensure they maintain 20px × 20px size across all breakpoints
   - **Prevent shrinking**: Added `flex-shrink-0` to prevent icons from shrinking when title text wraps on mobile
   - **Impact**: All three widget icons now have consistent size and top-aligned positioning, improving visual hierarchy and readability on mobile devices
 - **Files affected**: 
