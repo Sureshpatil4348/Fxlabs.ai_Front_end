@@ -94,6 +94,27 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - Price Fetching Race Condition Fix (Latest)
+- **Fixed critical bug with lingering old prices**: Eliminated race conditions when switching between instruments/pairs
+  - **Root cause**: Two separate useEffect hooks updating current price caused race conditions where old prices could briefly appear or linger
+  - **Solution implemented**: 
+    - Added symbol validation checks in `setFormData` callbacks to prevent stale updates
+    - Combined price fetching logic with proper cleanup mechanisms
+    - Added interval-based real-time updates for crypto/commodities with symbol consistency checks
+    - Added price change detection to prevent unnecessary re-renders (0.00001 threshold)
+  - **Key improvements**:
+    - **Race condition prevention**: All price updates now verify the symbol hasn't changed before applying
+    - **Proper cleanup**: Intervals are cleared when symbols change or component unmounts
+    - **Performance optimization**: Price updates only trigger when actual price changes exceed threshold
+    - **Type-specific updates**: Real-time polling only for crypto and commodities (forex uses WebSocket updates)
+  - **Technical details**:
+    - Lines 105-117: Added symbol validation in main price update effect
+    - Lines 126-165: New real-time price update effect with proper cleanup and validation
+    - Used closure-based symbol tracking to detect stale updates
+    - 1-second update interval for smooth real-time price tracking
+  - **Impact**: Users can now switch between instruments/pairs without any lingering old price values
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Lot Size Calculator - Risk Reward Ratio Text Format (Latest)
 - **Updated text formatting**: Changed "Risk:Reward Ratio" to "Risk Reward Ratio" (removed colon)
   - **Display label**: Updated from "Risk:Reward Ratio" to "Risk Reward Ratio"

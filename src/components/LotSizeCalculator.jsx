@@ -92,34 +92,77 @@ const LotSizeCalculator = () => {
   useEffect(() => {
     const config = instrumentConfigs[formData.instrumentType];
     const selectedPair = config.pairs.find(pair => pair.symbol === formData.currencyPair);
+    
     if (selectedPair) {
+      // Store the current symbol to check for stale updates
+      const currentSymbol = formData.currencyPair;
+      
       // Get real-time price for the selected pair
-      const latestTick = getLatestTickForSymbol(formData.currencyPair);
+      const latestTick = getLatestTickForSymbol(currentSymbol);
       const currentPrice = latestTick?.bid || 0;
       
-      setFormData(prev => ({
-        ...prev,
-        pipValue: selectedPair.pipValue.toString(),
-        contractSize: selectedPair.contractSize.toString(),
-        currentPrice: currentPrice > 0 ? currentPrice.toFixed(5) : ''
-      }));
+      // Update form data, ensuring we're still on the same symbol (prevent race conditions)
+      setFormData(prev => {
+        // Only update if we're still on the same symbol
+        if (prev.currencyPair !== currentSymbol) {
+          return prev;
+        }
+        
+        return {
+          ...prev,
+          pipValue: selectedPair.pipValue.toString(),
+          contractSize: selectedPair.contractSize.toString(),
+          currentPrice: currentPrice > 0 ? currentPrice.toFixed(5) : ''
+        };
+      });
     }
+    
+    // Cleanup function to prevent lingering values
+    return () => {
+      // No cleanup needed as we check symbol match in the setter
+    };
   }, [formData.currencyPair, formData.instrumentType, instrumentConfigs, getLatestTickForSymbol]);
 
-  // Auto-update current price when real-time data changes
+  // Auto-update current price when real-time data changes (only for crypto and commodities)
   useEffect(() => {
-    if (isConnected && formData.currencyPair) {
-      const latestTick = getLatestTickForSymbol(formData.currencyPair);
+    if (!isConnected) return;
+    if (formData.instrumentType !== 'crypto' && formData.instrumentType !== 'commodities') return;
+    if (!formData.currencyPair) return;
+    
+    // Store the current symbol at the time of effect execution
+    const currentSymbol = formData.currencyPair;
+    
+    // Set up interval for real-time price updates
+    const intervalId = setInterval(() => {
+      const latestTick = getLatestTickForSymbol(currentSymbol);
       const currentPrice = latestTick?.bid || 0;
       
       if (currentPrice > 0) {
-        setFormData(prev => ({
-          ...prev,
-          currentPrice: currentPrice.toFixed(5)
-        }));
+        setFormData(prev => {
+          // Critical check: only update if still on the same symbol
+          if (prev.currencyPair !== currentSymbol) {
+            return prev;
+          }
+          
+          // Only update if price has changed (avoid unnecessary re-renders)
+          const prevPrice = parseFloat(prev.currentPrice) || 0;
+          if (Math.abs(prevPrice - currentPrice) < 0.00001) {
+            return prev;
+          }
+          
+          return {
+            ...prev,
+            currentPrice: currentPrice.toFixed(5)
+          };
+        });
       }
-    }
-  }, [isConnected, formData.currencyPair, getLatestTickForSymbol]);
+    }, 1000); // Update every second
+    
+    // Cleanup interval when symbol changes or component unmounts
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isConnected, formData.currencyPair, formData.instrumentType, getLatestTickForSymbol]);
 
   // Load saved widget state on mount
   useEffect(() => {
