@@ -2375,6 +2375,7 @@ This project is licensed under the MIT License.
   - `src/components/MultiIndicatorHeatmap.js` reads `overall[scalper|swingtrader]` for Buy/Sell percentages.
   - Per‑timeframe cells use `per_timeframe[TF].indicators[EMA21|EMA50|EMA200|MACD|RSI|UTBOT|ICHIMOKU].signal`.
   - No fallback computations; if data is missing, the cell shows a placeholder.
+  - **Responsive Layout**: Desktop displays indicator grid and Trading Meter side-by-side; mobile displays them stacked vertically with the meter below the grid for better visibility on smaller screens.
 
 ### RSI Correlation Dashboard: Blank/Neutral Render Troubleshooting
 - Ensure WebSocket connection established (see console `[WS][Market-v2] Connected`).
