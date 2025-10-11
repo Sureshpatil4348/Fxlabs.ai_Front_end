@@ -9,7 +9,7 @@ const PsychologicalBenefitsSection = () => {
           Built with <span className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-500 bg-clip-text text-transparent">Trader Psychology</span> in Mind
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 justify-items-center">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 sm:mb-6 mx-auto transition-colors duration-300">
               <Heart className="text-green-600 dark:text-green-400 w-6 h-6 sm:w-8 sm:h-8 transition-colors duration-300" />
             </div>
@@ -18,7 +18,7 @@ const PsychologicalBenefitsSection = () => {
               Automation removes impulsive decisions and emotional responses that often lead to trading losses.
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 sm:mb-6 mx-auto transition-colors duration-300">
               <Target className="text-green-600 dark:text-green-400 w-6 h-6 sm:w-8 sm:h-8 transition-colors duration-300" />
             </div>
@@ -27,7 +27,7 @@ const PsychologicalBenefitsSection = () => {
               Predefined strategies enforce consistent trading behavior and keep you aligned with your long-term goals.
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300 col-span-2 sm:col-span-2 md:col-span-1 justify-self-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300 col-span-2 sm:col-span-2 md:col-span-1 justify-self-center flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 sm:mb-6 mx-auto transition-colors duration-300">
               <Trophy className="text-green-600 dark:text-green-400 w-6 h-6 sm:w-8 sm:h-8 transition-colors duration-300" />
             </div>
