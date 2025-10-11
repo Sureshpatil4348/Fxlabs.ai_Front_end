@@ -413,6 +413,36 @@ All features that relied on client-side calculations now expect server-provided 
   - `src/utils/marketHoursEngine.js` (timezone list, extended viewer window)
   - `src/components/MultiTimeAnalysis.jsx` (time format logic, cross-midnight handling)
 
+### Forex Market Time Zone Converter - Mobile View Optimization & UI Reorganization (Latest)
+- **Mobile-optimized layout**: Redesigned for better horizontal space utilization on mobile devices
+  - **Fixed markets column**: Market information (currency symbols, names, times) stays fixed on the left side
+  - **Scrollable timeline section**: Timeline bars and hours scroll horizontally on the right side
+  - **Auto-scroll to current time**: On mobile, the timeline automatically scrolls to center the current time indicator (purple bar) on mount
+  - **Synchronized scrolling**: All timeline elements (hours row, market bars) scroll together as a single unit
+  - **Desktop layout**: Desktop view (≥1024px) uses optimized layout with timezone selector on the left
+- **Timezone selector repositioned**: 
+  - Moved from header to left side above market information (both mobile and desktop)
+  - No longer overlaps with 12h-24h toggle switch
+  - Compact vertical layout showing timezone name and GMT offset
+  - Positioned at the same visual level as the time hours row
+  - Better visual hierarchy and cleaner header area
+- **Implementation details**:
+  - Added `scrollContainerRef` to manage horizontal scroll position
+  - Separate mobile/desktop layouts using Tailwind `lg:` breakpoint
+  - Mobile layout uses flex container with fixed left column (`w-48 flex-shrink-0`) and scrollable right section
+  - Auto-scroll effect triggers only on mobile (< 1024px) and centers the current time indicator
+  - Custom scrollbar styling for better appearance (`scrollbar-thin` utility classes)
+  - Z-index layering: 12h-24h toggle (`z-50`) > timezone dropdown (`z-40`) > time indicator (`z-10`)
+  - Overflow visible on parent containers to prevent time badge clipping
+- **UX improvements**:
+  - Reduced horizontal scrolling on mobile by keeping markets fixed
+  - Better visibility of current time by auto-scrolling to it on load
+  - Smooth scroll animation for better user experience
+  - All interactive features (draggable indicator, clickable hours) work seamlessly in both layouts
+  - Cleaner header with no overlapping elements
+  - Time indicator badge fully visible without clipping
+- **Files affected**: `src/components/MultiTimeAnalysis.jsx`
+
 ### Forex Market Time Zone Converter - Simplified Timeline Interaction
 - **Removed horizontal timeline bar**: Removed the gray rounded horizontal bar with vertical markers that was previously displayed between the times and market rows
 - **Time numbers row now clickable**: The time numbers row at the top is now clickable to move the purple vertical time indicator to that position

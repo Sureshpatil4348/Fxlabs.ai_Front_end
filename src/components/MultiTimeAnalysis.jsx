@@ -35,6 +35,7 @@ const ForexMarketTimeZone = () => {
   const saveTimeoutRef = useRef(null);
   const lastMinuteRef = useRef(null);
   const [indicatorLeft, setIndicatorLeft] = useState(0);
+  const scrollContainerRef = useRef(null);
 
   // Real-time updates (every 10 seconds for better performance)
   useEffect(() => {
@@ -179,6 +180,28 @@ const ForexMarketTimeZone = () => {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [updateIndicatorLeft]);
+
+  // Auto-scroll to current time indicator on mount and when indicator position changes (mobile only)
+  useEffect(() => {
+    if (!scrollContainerRef.current || !trackRef.current) return;
+    
+    // Only apply on mobile (screen width < 1024px)
+    if (window.innerWidth >= 1024) return;
+    
+    const scrollContainer = scrollContainerRef.current;
+    const containerWidth = scrollContainer.clientWidth;
+    const scrollWidth = scrollContainer.scrollWidth;
+    
+    // Calculate scroll position to center the indicator
+    const indicatorPositionInScroll = (sliderPosition / 100) * scrollWidth;
+    const scrollLeft = indicatorPositionInScroll - (containerWidth / 2);
+    
+    // Smooth scroll to position
+    scrollContainer.scrollTo({
+      left: Math.max(0, scrollLeft),
+      behavior: 'smooth'
+    });
+  }, [indicatorLeft, sliderPosition]);
 
   // Autofocus search input when dropdown opens
   useEffect(() => {
@@ -411,9 +434,9 @@ const ForexMarketTimeZone = () => {
   ];
 
   return (
-  <div className="bg-white dark:bg-gray-800 p-2 sm:p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none overflow-x-auto lg:overflow-x-hidden border-0">
+  <div className="bg-white dark:bg-gray-800 p-2 sm:p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none border-0">
       {/* Time Format Toggle - Top Right */}
-      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center gap-2">
+      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center gap-2 z-50">
         <span className="text-xs text-gray-500 dark:text-gray-400">12h</span>
         <button
           onClick={() => setIs24Hour(!is24Hour)}
@@ -432,126 +455,225 @@ const ForexMarketTimeZone = () => {
         <span className="text-xs text-gray-500 dark:text-gray-400">24h</span>
       </div>
 
-      {/* Header and Timezone Selector */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-2 sm:mb-3 pr-14 sm:pr-16">
-        <div className="flex items-center gap-3">
-          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
-            <Globe2 className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
-            Forex Market Time Zone Converter
-          </CardTitle>
-          
-          <div className="relative timezone-dropdown">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs min-w-[150px] justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
-            >
-              <div className="flex items-center gap-1 whitespace-nowrap">
-                <span className="text-xs font-medium">
-                  {currentTimezoneOption.label}
-                </span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                  (GMT {currentTimezoneOption.gmt})
-                </span>
-              </div>
-              <svg 
-                className={`w-3 h-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                <div className="p-1 sticky top-0 bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                  <input
-                    ref={tzInputRef}
-                    type="text"
-                    value={tzQuery}
-                    onChange={(e) => setTzQuery(e.target.value)}
-                    placeholder="Search timezone..."
-                    className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
-                  />
-                </div>
-                {filteredTimezones.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setSelectedTimezone(option.value);
-                      setIsDropdownOpen(false);
-                      setTzQuery('');
-                    }}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
-                      selectedTimezone === option.value 
-                        ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
-                        : 'text-gray-900 dark:text-white'
-                    }`}
-                  >
-                    <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+          <Globe2 className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
+          Forex Market Time Zone Converter
+        </CardTitle>
       </div>
 
-      {/* Timeline */}
-      <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
-        {/* Top hours - Real-time (aligned after market info column) - Clickable to move time indicator */}
-        <div className="flex items-center px-4 sm:px-6 mb-1 sm:mb-2">
-          <div className="w-48"></div> {/* Spacer for market info column */}
-          <div 
-            ref={trackRef}
-            className="flex-1 ml-2 flex text-xs text-gray-500 dark:text-gray-400 justify-between cursor-pointer"
-            role="slider"
-            tabIndex={0}
-            aria-label="Timeline slider"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={sliderPosition}
-            onClick={(e) => {
-              const rect = (trackRef.current || e.currentTarget).getBoundingClientRect();
-              const x = e.clientX - rect.left;
-              const percentage = (x / rect.width) * 100;
-              setSliderPosition(percentage);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                e.preventDefault();
-                const increment = e.key === 'ArrowRight' ? 5 : -5;
-                setSliderPosition(prev => Math.max(0, Math.min(100, prev + increment)));
-              }
-            }}
-          >
-            {Array.from({ length: 25 }).map((_, i) => {
-              const hourIndex = i === 24 ? 24 : i; // include terminal label
-              let displayHour;
-              if (is24Hour) {
-                // 24-hour format: 0-24 (show 24 at the end)
-                displayHour = hourIndex;
-              } else {
-                // 12-hour format: 12, 1-11, 12, 1-11, 12 (show 12 at the end)
-                if (hourIndex === 24) {
-                  displayHour = 12;
-                } else {
-                  displayHour = hourIndex === 0 ? 12 : hourIndex > 12 ? hourIndex - 12 : hourIndex;
-                }
-              }
-              return (
-                <span 
-                  key={i} 
-                  className={`hover:text-purple-500 transition-colors ${i === new Date().getHours() ? 'text-purple-600 font-bold' : ''}`}
+      {/* Timeline - Mobile: Fixed markets + Scrollable timeline */}
+      <div className="lg:block overflow-visible">
+        {/* Mobile: Flex container with fixed markets column */}
+        <div className="flex lg:block overflow-visible">
+          {/* Left column: Markets info (Fixed on mobile) */}
+          <div className="flex-shrink-0 w-48 lg:hidden overflow-visible pt-6">
+            {/* Timezone Selector - Mobile */}
+            <div className="mb-1 sm:mb-2 px-2 h-10">
+              <div className="relative timezone-dropdown">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs w-full justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
-                  {displayHour}
-                </span>
-              );
-            })}
+                  <div className="flex flex-col items-start min-w-0">
+                    <span className="text-[10px] font-medium truncate w-full text-left">
+                      {currentTimezoneOption.label}
+                    </span>
+                    <span className="text-[9px] text-gray-500 dark:text-gray-400">
+                      GMT {currentTimezoneOption.gmt}
+                    </span>
+                  </div>
+                  <svg 
+                    className={`w-3 h-3 transition-transform flex-shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
+                    <div className="p-1 sticky top-0 bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                      <input
+                        ref={tzInputRef}
+                        type="text"
+                        value={tzQuery}
+                        onChange={(e) => setTzQuery(e.target.value)}
+                        placeholder="Search timezone..."
+                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
+                      />
+                    </div>
+                    {filteredTimezones.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSelectedTimezone(option.value);
+                          setIsDropdownOpen(false);
+                          setTzQuery('');
+                        }}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                          selectedTimezone === option.value 
+                            ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
+                            : 'text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Weekend closure spacer - matches the message height on right side */}
+            {!marketData.viewer.retailGateOpen && (
+              <div className="mt-2 sm:mt-3 mb-1 sm:mb-2 px-2">
+                {/* Empty spacer to match weekend message height */}
+                <div className="h-[26px]"></div>
+              </div>
+            )}
+            
+            {/* Market info cards */}
+            <div className="space-y-4 mt-2 sm:mt-4 px-2">
+              {markets.map((m, i) => (
+                <div
+                  key={i}
+                  className="px-2 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm h-[60px]"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                      <span className="text-gray-700 dark:text-gray-300 text-[10px] font-bold">{m.currency}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-xs text-gray-900 dark:text-white truncate">{m.name}</h3>
+                      <p className="text-[10px] text-gray-800 dark:text-gray-200 leading-tight">{formatTime(currentTime, m.timezone)}</p>
+                      <p className="text-[10px] text-gray-800 dark:text-gray-200 leading-tight truncate">{formatDate(currentTime, m.timezone)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {/* Right column: Scrollable timeline (Mobile) / Full width (Desktop) */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex-1 overflow-x-auto overflow-y-visible lg:overflow-x-visible scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 pt-6 lg:pt-0"
+          >
+            <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
+              {/* Top hours - Real-time - Clickable to move time indicator */}
+              <div className="flex items-start mb-1 sm:mb-2 px-2 lg:px-0 h-10 lg:h-auto">
+                {/* Timezone Selector - Desktop */}
+                <div className="w-48 lg:w-56 hidden lg:block lg:ml-0">
+                  <div className="relative timezone-dropdown">
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs w-full justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <div className="flex flex-col items-start min-w-0">
+                        <span className="text-[10px] font-medium truncate w-full text-left">
+                          {currentTimezoneOption.label}
+                        </span>
+                        <span className="text-[9px] text-gray-500 dark:text-gray-400">
+                          GMT {currentTimezoneOption.gmt}
+                        </span>
+                      </div>
+                      <svg 
+                        className={`w-3 h-3 transition-transform flex-shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
+                        <div className="p-1 sticky top-0 bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                          <input
+                            ref={tzInputRef}
+                            type="text"
+                            value={tzQuery}
+                            onChange={(e) => setTzQuery(e.target.value)}
+                            placeholder="Search timezone..."
+                            className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
+                          />
+                        </div>
+                        {filteredTimezones.map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => {
+                              setSelectedTimezone(option.value);
+                              setIsDropdownOpen(false);
+                              setTzQuery('');
+                            }}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                              selectedTimezone === option.value 
+                                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
+                                : 'text-gray-900 dark:text-white'
+                            }`}
+                          >
+                            <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400">GMT {option.gmt}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div 
+                  ref={trackRef}
+                  className="flex-1 lg:ml-2 flex text-xs text-gray-500 dark:text-gray-400 justify-between cursor-pointer h-full items-center"
+                  role="slider"
+                  tabIndex={0}
+                  aria-label="Timeline slider"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={sliderPosition}
+                  onClick={(e) => {
+                    const rect = (trackRef.current || e.currentTarget).getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const percentage = (x / rect.width) * 100;
+                    setSliderPosition(percentage);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                      e.preventDefault();
+                      const increment = e.key === 'ArrowRight' ? 5 : -5;
+                      setSliderPosition(prev => Math.max(0, Math.min(100, prev + increment)));
+                    }
+                  }}
+                >
+                  {Array.from({ length: 25 }).map((_, i) => {
+                    const hourIndex = i === 24 ? 24 : i; // include terminal label
+                    let displayHour;
+                    if (is24Hour) {
+                      // 24-hour format: 0-24 (show 24 at the end)
+                      displayHour = hourIndex;
+                    } else {
+                      // 12-hour format: 12, 1-11, 12, 1-11, 12 (show 12 at the end)
+                      if (hourIndex === 24) {
+                        displayHour = 12;
+                      } else {
+                        displayHour = hourIndex === 0 ? 12 : hourIndex > 12 ? hourIndex - 12 : hourIndex;
+                      }
+                    }
+                    return (
+                      <span 
+                        key={i} 
+                        className={`hover:text-purple-500 transition-colors ${i === new Date().getHours() ? 'text-purple-600 font-bold' : ''}`}
+                      >
+                        {displayHour}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
 
         {/* Vertical Time Indicator - Interactive Slider */}
         <div 
@@ -608,42 +730,47 @@ const ForexMarketTimeZone = () => {
 
         {/* Overlaps removed per requirement */}
 
-        {/* Global Weekend Closure Message */}
-        {!marketData.viewer.retailGateOpen && (
-          <div className="flex items-center px-4 sm:px-6 mt-2 sm:mt-3 mb-1 sm:mb-2">
-            <div className="w-48"></div> {/* Spacer for market info column */}
-            <div className="flex-1 ml-2">
-              <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
-                MARKET CLOSED FOR THE WEEKEND
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Market Rows */}
-        <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-4 min-w-[800px] lg:min-w-0">
-          {markets.map((m, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-            >
-              {/* Currency + Info */}
-              <div className="flex items-center gap-3 w-48">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                  <span className="text-gray-700 dark:text-gray-300 text-xs font-bold">{m.currency}</span>
+              {/* Global Weekend Closure Message */}
+              {!marketData.viewer.retailGateOpen && (
+                <div className="mt-2 sm:mt-3 lg:mt-1 mb-1 sm:mb-2">
+                  <div className="hidden lg:flex items-center mx-3 sm:mx-4 lg:mx-0">
+                    <div className="w-48 lg:w-56"></div> {/* Spacer for desktop */}
+                    <div className="flex-1 ml-2">
+                      <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
+                        MARKET CLOSED FOR THE WEEKEND
+                      </p>
+                    </div>
+                  </div>
+                  {/* Mobile version */}
+                  <div className="lg:hidden px-2">
+                    <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
+                      MARKET CLOSED FOR THE WEEKEND
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">{m.name}</h3>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">{formatTime(currentTime, m.timezone)}</p>
-                  <p className="text-xs text-gray-800 dark:text-gray-200">{formatDate(currentTime, m.timezone)}</p>
-                </div>
-              </div>
+              )}
 
-              {/* Status removed to reclaim space */}
-              <div className="hidden"></div>
+              {/* Market Rows - Desktop layout (hidden on mobile) */}
+              <div className="hidden lg:block space-y-4 mt-2 sm:mt-4 mx-3 sm:mx-4 lg:mx-0">
+                {markets.map((m, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 sm:gap-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    {/* Currency + Info */}
+                    <div className="flex items-center gap-3 w-48 lg:w-56 flex-shrink-0 px-3 sm:px-4">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                        <span className="text-gray-700 dark:text-gray-300 text-xs font-bold">{m.currency}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-gray-900 dark:text-white">{m.name}</h3>
+                        <p className="text-xs text-gray-800 dark:text-gray-200">{formatTime(currentTime, m.timezone)}</p>
+                        <p className="text-xs text-gray-800 dark:text-gray-200">{formatDate(currentTime, m.timezone)}</p>
+                      </div>
+                    </div>
 
-              {/* Timeline bar with session indicator(s) */}
-              <div className="flex-1 ml-2 relative h-10 overflow-hidden">
+                    {/* Timeline bar with session indicator(s) */}
+                    <div className="flex-1 ml-2 relative h-10 overflow-hidden pr-3 sm:pr-4">
                 {(() => {
                   const segments = getSessionSegments(m.timezone);
                   // Find the largest segment by width
@@ -703,9 +830,85 @@ const ForexMarketTimeZone = () => {
                     </div>
                   ));
                 })()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Market Rows - Mobile layout (timeline bars only, markets are in fixed left column) */}
+              <div className="lg:hidden space-y-4 mt-2 sm:mt-4 px-2">
+                {markets.map((m, i) => (
+                  <div
+                    key={i}
+                    className="px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm h-[60px] flex items-center"
+                  >
+                    {/* Timeline bar with session indicator(s) */}
+                    <div className="relative h-10 overflow-hidden w-full">
+                      {(() => {
+                        const segments = getSessionSegments(m.timezone);
+                        // Find the largest segment by width
+                        let largestSegmentIdx = 0;
+                        let maxWidth = 0;
+                        segments.forEach((seg, idx) => {
+                          const style = getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO);
+                          const width = parseFloat(style.width);
+                          if (width > maxWidth) {
+                            maxWidth = width;
+                            largestSegmentIdx = idx;
+                          }
+                        });
+                        
+                        return segments.map((seg, idx) => (
+                          <div 
+                            key={idx}
+                            className={`h-10 rounded-lg absolute overflow-hidden flex items-center justify-center ${
+                              getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-60'
+                            }`}
+                            style={getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO)}
+                          >
+                            {/* Base gradient background */}
+                            <div className={`absolute inset-0 ${m.color}`}></div>
+                            {/* Striped pattern overlay */}
+                            <div 
+                              className="absolute inset-0 opacity-40"
+                              style={{
+                                backgroundImage: `repeating-linear-gradient(
+                                  45deg,
+                                  transparent,
+                                  transparent 3px,
+                                  rgba(255,255,255,0.15) 3px,
+                                  rgba(255,255,255,0.15) 6px
+                                )`
+                              }}
+                            ></div>
+                            {/* Additional subtle stripe for depth */}
+                            <div 
+                              className="absolute inset-0 opacity-20"
+                              style={{
+                                backgroundImage: `repeating-linear-gradient(
+                                  -45deg,
+                                  transparent,
+                                  transparent 6px,
+                                  rgba(0,0,0,0.1) 6px,
+                                  rgba(0,0,0,0.1) 12px
+                                )`
+                              }}
+                            ></div>
+                            {/* Timing text inside bar - only show in largest segment */}
+                            {idx === largestSegmentIdx && (
+                              <span className="relative z-10 text-xs font-medium text-white drop-shadow-md">
+                                {formatRangeFromISO(seg.startLocalISO, seg.endLocalISO)}
+                              </span>
+                            )}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
