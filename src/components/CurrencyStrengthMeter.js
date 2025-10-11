@@ -1,5 +1,6 @@
 import { Settings, BarChart3, Bell } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 import CurrencyStrengthAlertConfig from './CurrencyStrengthAlertConfig';
 import { useAuth } from '../auth/AuthProvider';
@@ -355,8 +356,19 @@ const CurrencyStrengthMeter = () => {
       />
 
       {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showSettings && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999]"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            isolation: 'isolate'
+          }}
+        >
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Currency Strength Settings</h3>
             
@@ -402,7 +414,8 @@ const CurrencyStrengthMeter = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

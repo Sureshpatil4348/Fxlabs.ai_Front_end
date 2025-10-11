@@ -185,7 +185,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
 
           {/* Mobile Menu Overlay */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-white/90 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl shadow-black/10">
+            <div className="lg:hidden absolute right-0 mt-2 w-[280px] sm:w-[320px] bg-white/90 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl shadow-black/10 z-40">
               <div className="px-6 py-6">
                 {/* Simple Menu List */}
                 <div className="space-y-3">

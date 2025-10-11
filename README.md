@@ -94,7 +94,29 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Lot Size Calculator - Tab Switching Auto-Selection Fix (Latest)
+### Currency Strength Meter - Alert Config Modal Z-Index Fix (Latest)
+- **Fixed navbar appearing over alert config modal**: Implemented React Portal solution to render modals outside component tree, bypassing all CSS stacking context issues
+  - **Root cause**: Multiple issues causing navbar overlay:
+    1. Alert config modal was rendered inside CurrencyStrengthMeter component, subject to parent CSS stacking contexts
+    2. Parent component had `z-10 relative` and other CSS properties creating stacking contexts
+    3. Navbar mobile menu dropdown had no explicit z-index, inheriting from parent navbar
+    4. Backdrop-blur effects creating additional stacking contexts
+  - **Solution implemented**: 
+    - **React Portal**: Used `createPortal(modal, document.body)` to render modals directly to document body
+    - **Bypass stacking contexts**: Modals now render outside component tree, immune to parent CSS interference
+    - **Maintained z-index**: Kept `z-[99999]` with explicit inline styles for absolute positioning
+    - **Added isolation**: `isolation: 'isolate'` CSS property for proper stacking context isolation
+    - **Enhanced backdrop**: `backdrop-blur-sm` for better visual separation
+    - **Fixed navbar mobile menu**: Set z-index to `z-40` (lower than modal)
+    - **Applied to both modals**: Alert config and settings modals both use portal rendering
+  - **Components updated**: 
+    - `src/components/CurrencyStrengthAlertConfig.jsx` - Added `createPortal` import and portal rendering
+    - `src/components/CurrencyStrengthMeter.js` - Added `createPortal` import and portal rendering for settings modal
+    - `src/components/Navbar.jsx` - Mobile menu dropdown z-index fixed to `z-40`
+  - **User experience**: Alert config and settings modals now properly overlay all other UI elements including navbar and mobile menu
+  - **Technical details**: React Portal renders modals directly to `document.body`, completely bypassing any parent component CSS stacking contexts, ensuring absolute top-level rendering regardless of component hierarchy
+
+### Lot Size Calculator - Tab Switching Auto-Selection Fix
 - **Fixed price not updating when switching instrument tabs**: Automatically selects first available pair when switching between Forex/Commodities/Crypto tabs
   - **Root cause**: When switching tabs (e.g., Forex → Commodities), the `currencyPair` remained set to the previous instrument's pair (like `EURUSDm`), which doesn't exist in the new instrument type, causing the price to not update
   - **Solution implemented**: 
