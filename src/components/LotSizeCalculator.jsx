@@ -7,9 +7,9 @@ import { Button } from './ui/button';
 
 const LotSizeCalculator = () => {
   const [formData, setFormData] = useState({
-    accountBalance: '',
-    riskPercentage: '',
-    stopLoss: '',
+    accountBalance: '1000',
+    riskPercentage: '1',
+    stopLoss: '100',
     instrumentType: 'forex',
     currencyPair: 'EURUSDm',
     contractSize: '100000',
@@ -181,7 +181,7 @@ const LotSizeCalculator = () => {
     };
   }, [formData, result, debouncedSaveState, isStateLoaded]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors = {};
 
     if (!formData.accountBalance || parseFloat(formData.accountBalance) <= 0) {
@@ -202,9 +202,9 @@ const LotSizeCalculator = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const calculateLotSize = () => {
+  const calculateLotSize = useCallback(() => {
     if (!validateForm()) return;
 
     const accountBalance = parseFloat(formData.accountBalance);
@@ -257,7 +257,19 @@ const LotSizeCalculator = () => {
         });
       }
     }, 100);
-  };
+  }, [formData, instrumentConfigs, validateForm]);
+
+  // Auto-calculate with default values when no saved state exists
+  useEffect(() => {
+    if (isStateLoaded && !result) {
+      // Check if we have default values (indicating no saved state was loaded)
+      if (formData.accountBalance === '1000' && formData.riskPercentage === '1' && formData.stopLoss === '100') {
+        setTimeout(() => {
+          calculateLotSize();
+        }, 100);
+      }
+    }
+  }, [isStateLoaded, result, formData.accountBalance, formData.riskPercentage, formData.stopLoss, calculateLotSize]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -276,9 +288,9 @@ const LotSizeCalculator = () => {
 
   const resetCalculator = () => {
     setFormData({
-      accountBalance: '',
-      riskPercentage: '',
-      stopLoss: '',
+      accountBalance: '1000',
+      riskPercentage: '1',
+      stopLoss: '100',
       instrumentType: 'forex',
       currencyPair: 'EURUSDm',
       contractSize: '100000',
@@ -327,7 +339,7 @@ const LotSizeCalculator = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             
             {/* LEFT SIDE - Input Panel */}
-            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm flex flex-col">
+            <div className="flex flex-col pl-4">
               {/* Input Form */}
               <div className="space-y-2.5 flex-1">
             {/* Account Balance */}
@@ -518,19 +530,15 @@ const LotSizeCalculator = () => {
             </div>
 
             {/* RIGHT SIDE - Result Display */}
-            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm flex flex-col">
+            <div className="flex flex-col pl-4">
               {result ? (
-                <div ref={resultRef} className="flex-1 flex flex-col justify-center">
-                  <div className="space-y-2">
+                <div ref={resultRef} className="space-y-2">
                     {/* Risk Amount Card */}
-                    <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg border border-red-200/50 dark:border-red-700/50 p-3 shadow-sm hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Risk Amount</span>
+                    <div className="p-3">
+                      <div className="mb-2">
+                        <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk Amount</span>
                       </div>
-                      <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                      <div className="text-xl font-bold text-red-600 dark:text-red-400">
                         ${result.riskAmount.toFixed(2)}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -539,29 +547,17 @@ const LotSizeCalculator = () => {
                     </div>
 
                     {/* Position Size Card */}
-                    <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg border border-green-200/50 dark:border-green-700/50 p-3 shadow-sm hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Position Size</span>
+                    <div className="p-3">
+                      <div className="mb-2">
+                        <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Position Size</span>
                       </div>
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      <div className="text-xl font-bold text-green-600 dark:text-green-400">
                         {result.lotSize.toFixed(result.instrumentType === 'crypto' ? 8 : 4)}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {result.resultUnit} to trade for this position
                       </p>
                     </div>
-
-                    {/* Calculation Formula */}
-                    <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-200/50 dark:border-blue-700/50 p-3">
-                      <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">Formula Used:</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
-                        {result.calculation}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-8">

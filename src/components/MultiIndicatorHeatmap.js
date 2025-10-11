@@ -11,7 +11,7 @@ import quantImage from '../assets/quant.png';
 import { useAuth } from '../auth/AuthProvider';
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
-import { Card, CardTitle } from './ui/card';
+import { Card } from './ui/card';
 import useMarketCacheStore from '../store/useMarketCacheStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 // Note: All indicator calculations are now performed server-side
@@ -403,10 +403,10 @@ useEffect(() => {
         {/* Mobile: wrap and stack, Desktop: single row */}
         <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <div className="flex items-center shrink-0">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading shrink-0">
             <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2" />
-            <CardTitle className="text-lg font-bold text-gray-900 dark:text-white tools-heading">Quantum Analysis</CardTitle>
-          </div>
+            Quantum Analysis
+          </h3>
           
           {/* Controls Row */}
           <div className="flex items-center space-x-0.5 flex-wrap gap-0.5">
@@ -599,7 +599,7 @@ useEffect(() => {
         </div>
 
         {/* Content Row */}
-        <div className="flex gap-1.5 h-full pt-1.5">
+        <div className="flex gap-1.5 h-full pt-1.5 pl-4">
           {/* Left: Compact Table */}
           <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
@@ -610,8 +610,8 @@ useEffect(() => {
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
                 return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
                 <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                  <td className="py-0.5 px-0.5 font-medium text-gray-800 dark:text-gray-200 text-sm w-14">
-                    <div className="flex items-center space-x-0.5 ml-1">
+                  <td className="py-0.5 pr-0.5 font-medium text-gray-800 dark:text-gray-200 text-sm w-14">
+                    <div className="flex items-center space-x-0.5">
                       <span className="text-sm font-medium">{formatTimeframeDisplay(timeframe)}</span>
                     </div>
                   </td>
