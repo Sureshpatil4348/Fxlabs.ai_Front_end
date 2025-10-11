@@ -227,9 +227,9 @@
                   </div>
 
                   {/* Right Column: Multi Time Analysis spanning full height */}
-                  {/* Mobile: fixed height with internal scroll, Desktop: min-h-0 flex behavior */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-[820px] lg:h-[26rem] lg:min-h-0">
-                    <div className="h-full overflow-y-auto overflow-x-auto lg:overflow-x-hidden">
+                  {/* Mobile: max-height with auto content, Desktop: min-h-0 flex behavior */}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 max-h-[600px] lg:h-[26rem] lg:min-h-0">
+                    <div className="max-h-full overflow-y-auto overflow-x-auto lg:h-full lg:overflow-x-hidden">
                       <MultiTimeAnalysis />
                     </div>
                   </div>

@@ -411,9 +411,9 @@ const ForexMarketTimeZone = () => {
   ];
 
   return (
-  <div className="bg-white dark:bg-gray-800 p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none overflow-x-auto lg:overflow-x-hidden border-0">
+  <div className="bg-white dark:bg-gray-800 p-2 sm:p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none overflow-x-auto lg:overflow-x-hidden border-0">
       {/* Time Format Toggle - Top Right */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center gap-2">
         <span className="text-xs text-gray-500 dark:text-gray-400">12h</span>
         <button
           onClick={() => setIs24Hour(!is24Hour)}
@@ -433,7 +433,7 @@ const ForexMarketTimeZone = () => {
       </div>
 
       {/* Header and Timezone Selector */}
-      <div className="flex items-center justify-between mb-3 pr-16">
+      <div className="flex items-center justify-between mb-2 sm:mb-3 pr-14 sm:pr-16">
         <div className="flex items-center gap-3">
           <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
             <Globe2 className="w-5 h-5 sm:w-5 sm:h-5 mr-2 mt-0.5 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
@@ -502,7 +502,7 @@ const ForexMarketTimeZone = () => {
       {/* Timeline */}
       <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
         {/* Top hours - Real-time (aligned after market info column) - Clickable to move time indicator */}
-        <div className="flex items-center px-6 mb-2">
+        <div className="flex items-center px-4 sm:px-6 mb-1 sm:mb-2">
           <div className="w-48"></div> {/* Spacer for market info column */}
           <div 
             ref={trackRef}
@@ -610,7 +610,7 @@ const ForexMarketTimeZone = () => {
 
         {/* Global Weekend Closure Message */}
         {!marketData.viewer.retailGateOpen && (
-          <div className="flex items-center px-6 mt-3 mb-2">
+          <div className="flex items-center px-4 sm:px-6 mt-2 sm:mt-3 mb-1 sm:mb-2">
             <div className="w-48"></div> {/* Spacer for market info column */}
             <div className="flex-1 ml-2">
               <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
@@ -621,11 +621,11 @@ const ForexMarketTimeZone = () => {
         )}
 
         {/* Market Rows */}
-        <div className="space-y-4 mt-4 min-w-[800px] lg:min-w-0">
+        <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-4 min-w-[800px] lg:min-w-0">
           {markets.map((m, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-shadow"
             >
               {/* Currency + Info */}
               <div className="flex items-center gap-3 w-48">

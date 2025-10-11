@@ -94,7 +94,27 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Widget Icons - Mobile View Alignment & Sizing Fix (Latest)
+### Forex Market Time Zone Converter - Mobile View Spacing Fix (Latest)
+- **Eliminated excessive vertical spacing in mobile view**: Fixed excessive empty space below the widget using flexible max-height approach instead of fixed height
+  - **Dashboard container approach** (Key Fix): Changed from fixed height `h-[820px]` to flexible `max-h-[600px]` on mobile
+    - **Why this is better**: Content now uses its natural height (no empty space), but won't exceed 600px (scrolls if needed)
+    - **Result**: Dynamic, responsive layout that adapts to content without forcing empty space
+    - **Inner container**: Changed from `h-full` to `max-h-full` for proper height inheritance
+  - **Component padding**: Changed from `p-3` to `p-2 sm:p-3` (reduced padding on mobile from 12px to 8px)
+  - **Toggle position**: Adjusted absolute positioning from `top-4 right-4` to `top-3 sm:top-4 right-3 sm:right-4` for tighter mobile layout
+  - **Header margin**: Reduced bottom margin from `mb-3` to `mb-2 sm:mb-3` (8px on mobile, 12px on desktop)
+  - **Header padding-right**: Reduced from `pr-16` to `pr-14 sm:pr-16` for tighter mobile layout
+  - **Timeline hours padding**: Changed from `px-6` to `px-4 sm:px-6` (reduced horizontal padding on mobile)
+  - **Timeline hours margin**: Reduced bottom margin from `mb-2` to `mb-1 sm:mb-2` for tighter spacing
+  - **Weekend message spacing**: Adjusted margins from `mt-3 mb-2` to `mt-2 sm:mt-3 mb-1 sm:mb-2` and padding from `px-6` to `px-4 sm:px-6`
+  - **Market rows container**: Changed spacing from `space-y-4 mt-4` to `space-y-2 sm:space-y-3 mt-2 sm:mt-4` (reduced gap between rows from 16px to 8px on mobile)
+  - **Market row cards**: Reduced padding from `gap-3 px-4 py-3` to `gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3` for tighter mobile layout
+  - **Impact**: Completely eliminated empty space below the widget using flexible max-height instead of rigid fixed height - content adapts naturally
+- **Files affected**: 
+  - `src/pages/Dashboard.jsx` - Changed from fixed `h-[820px]` to flexible `max-h-[600px]` approach
+  - `src/components/MultiTimeAnalysis.jsx` - All internal spacing adjustments with responsive breakpoints
+
+### Widget Icons - Mobile View Alignment & Sizing Fix
 - **Fixed icon alignment and size in mobile view**: Icons in Forex Market Time Zone Converter, Lot Size Calculator, and Quantum Analysis now align properly and maintain consistent size across all screen sizes
   - **Vertical alignment**: Changed from `items-center` to `items-start` to align icons to the top of title text instead of middle
   - **Icon positioning**: Added `mt-0.5` (2px top margin) to align icon baseline with text baseline
