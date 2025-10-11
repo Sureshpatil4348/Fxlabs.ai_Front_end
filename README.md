@@ -2,7 +2,28 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Live Quantum Analysis in Hero Section (Latest)
+## Lottie Animation Update (Latest)
+
+The landing page Community Section (above FAQ) now uses the modern `@lottiefiles/dotlottie-react` library for better performance and React integration.
+
+### Changes
+- **Upgraded from Web Component**: Replaced `dotlottie-wc` web component with native React component
+- **Better React Integration**: Uses `DotLottieReact` component from `@lottiefiles/dotlottie-react` package
+- **Same Animation**: Maintains the same Lottie animation URL and behavior (loop, autoplay)
+- **Improved Performance**: React component offers better performance and tree-shaking
+
+### Implementation Details
+- Added dependency: `@lottiefiles/dotlottie-react`
+- Updated component: `src/components/CommunitySection.jsx`
+- Wrapped component in container div to maintain responsive sizing
+- Files affected: `src/components/CommunitySection.jsx`
+
+### Installation
+```bash
+npm install @lottiefiles/dotlottie-react
+```
+
+## Live Quantum Analysis in Hero Section
 
 The landing page hero section now displays real-time quantum analysis data for EUR/USD and XAU/USD pairs, driven by live market data from the Quantum Analysis meter.
 

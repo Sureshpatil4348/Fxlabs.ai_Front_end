@@ -1,3 +1,4 @@
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { Calendar, FileText, Users, Zap } from 'lucide-react';
 import React from 'react';
 
@@ -67,17 +68,18 @@ const CommunitySection = () => {
           </div>
 
           <div className="w-full lg:w-1/2 flex justify-center items-center">
-             <dotlottie-wc
+            <div style={{
+              width: '100%',
+              maxWidth: '800px',
+              height: 'auto',
+              aspectRatio: '1'
+            }}>
+              <DotLottieReact
                 src="https://lottie.host/5aac16a1-7616-456a-b1e9-b23092a2e61a/qzjLKUxjiD.lottie"
-                style={{
-                  width: '100%',
-                  maxWidth: '800px',
-                  height: 'auto',
-                  aspectRatio: '1'
-                }}
-                autoplay
                 loop
+                autoplay
               />
+            </div>
           </div>
         </div>
       </div>
