@@ -94,7 +94,26 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Currency Strength Meter - Alert Config Modal Z-Index Fix (Latest)
+### Currency Strength Meter - Loading State with Shimmer Animation (Latest)
+- **Enhanced loading UX**: Currency strength values now show "--" with shimmer animation on grey cards instead of "0" when data hasn't loaded
+  - **Root cause**: Before data loaded, all currency strengths defaulted to 0, which could be confusing for users
+  - **Solution implemented**:
+    - **Loading state detection**: Added `isDataLoading` memo that checks if data is genuinely loading (all values at neutral/default state or no connection/subscriptions)
+    - **Visual indicator**: Currency cards now display "--" instead of numeric values during loading
+    - **Grey neutral cards**: Cards show light grey background (`bg-gray-200` light mode, `bg-gray-700` dark mode) during loading instead of strength-based colors
+    - **Shimmer animation**: Added smooth opacity animation (1.2s ease-in-out infinite) on the "--" text to indicate active loading state
+    - **Smart detection**: Considers data loading if all values are 0 or within narrow neutral range (49-51), or if no subscriptions/connection exists
+  - **Components updated**:
+    - `src/components/CurrencyStrengthMeter.js` - Added loading state detection, conditional card styling, and shimmer effect
+    - `src/index.css` - Added shimmer keyframe animation for loading indicator
+  - **User experience**: Users now have clear visual feedback when currency strength data is still loading vs when actual values are displayed
+  - **Technical details**: 
+    - Loading detection uses `useMemo` for performance optimization
+    - Shimmer animation cycles opacity between 0.3 and 1.0 for noticeable pulsing effect (faster at 1.2s)
+    - Grey cards provide neutral backdrop distinguishing loading state from actual strength values
+    - Applied to both strongest and weakest currency displays
+
+### Currency Strength Meter - Alert Config Modal Z-Index Fix
 - **Fixed navbar appearing over alert config modal**: Implemented React Portal solution to render modals outside component tree, bypassing all CSS stacking context issues
   - **Root cause**: Multiple issues causing navbar overlay:
     1. Alert config modal was rendered inside CurrencyStrengthMeter component, subject to parent CSS stacking contexts

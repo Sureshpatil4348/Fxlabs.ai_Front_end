@@ -210,3 +210,21 @@
 .ticker-tape:hover .animate-scroll {
   animation-play-state: paused;
 }
+
+/* Shimmer Animation for Loading State */
+@keyframes shimmer {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.shimmer-text {
+  animation: shimmer 1.2s ease-in-out infinite;
+  display: inline-block;
+}

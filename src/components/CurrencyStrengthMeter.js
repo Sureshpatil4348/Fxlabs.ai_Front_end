@@ -10,7 +10,7 @@ import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { getCurrencyStrengthColor } from '../utils/formatters';
 
 
-const CurrencyHeatmap = ({ strengthData }) => {
+const CurrencyHeatmap = ({ strengthData, isLoading }) => {
   // Split currencies into strongest top 4 and weakest bottom 4 (no duplicates)
   const strongestCurrencies = [...strengthData]
     .sort((a, b) => b.strength - a.strength)
@@ -22,13 +22,21 @@ const CurrencyHeatmap = ({ strengthData }) => {
     .sort((a, b) => a.strength - b.strength)
     .slice(0, 4);
 
-  const CurrencyCard = ({ currency, strength }) => (
+  const CurrencyCard = ({ currency, strength, isLoading }) => (
     <div
-      className={`py-4 px-3 rounded-lg transition-all duration-300 ${getCurrencyStrengthColor(strength)}`}
+      className={`py-4 px-3 rounded-lg transition-all duration-300 ${
+        isLoading 
+          ? 'bg-gray-200 dark:bg-gray-700' 
+          : getCurrencyStrengthColor(strength)
+      }`}
     >
       <div className="flex items-center justify-between text-sm leading-none font-semibold">
         <span className="truncate pr-2">{currency}</span>
-        <span className="tabular-nums">{strength.toFixed(0)}</span>
+        {isLoading ? (
+          <span className="tabular-nums shimmer-text">--</span>
+        ) : (
+          <span className="tabular-nums">{strength.toFixed(0)}</span>
+        )}
       </div>
     </div>
   );
@@ -40,7 +48,7 @@ const CurrencyHeatmap = ({ strengthData }) => {
         <h4 className="text-sm font-medium text-green-700 dark:text-green-400 mb-2 px-1">Strongest Currencies</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {strongestCurrencies.map((item) => (
-            <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} />
+            <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} isLoading={isLoading} />
           ))}
         </div>
       </div>
@@ -50,7 +58,7 @@ const CurrencyHeatmap = ({ strengthData }) => {
         <h4 className="text-sm font-medium text-red-700 dark:text-red-400 mb-2 px-1">Weakest Currencies</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {weakestCurrencies.map((item) => (
-            <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} />
+            <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} isLoading={isLoading} />
           ))}
         </div>
       </div>
@@ -278,6 +286,23 @@ const CurrencyStrengthMeter = () => {
     }
   }, [currencyStrength]);
 
+  // Detect if data is still loading (all values are 0 or very close to default neutral values)
+  const isDataLoading = useMemo(() => {
+    if (strengthData.length === 0) return true;
+    
+    // Check if all values are at their initial/default state (0 or very close to it)
+    const allZeroOrDefault = strengthData.every(item => {
+      const strength = item.strength;
+      // Consider loading if all values are 0 or within a very narrow range around neutral
+      return strength === 0 || (strength >= 49 && strength <= 51);
+    });
+    
+    // Also check if we have subscriptions and connection
+    const hasNoData = subscriptions.size === 0 || !isConnected;
+    
+    return allZeroOrDefault || hasNoData;
+  }, [strengthData, subscriptions.size, isConnected]);
+
   
 
 
@@ -335,7 +360,7 @@ const CurrencyStrengthMeter = () => {
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto min-h-0 p-2">
         {strengthData.length > 0 ? (
-          <CurrencyHeatmap strengthData={strengthData} />
+          <CurrencyHeatmap strengthData={strengthData} isLoading={isDataLoading} />
         ) : (
           <div className="text-center py-12">
             <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center"></div>
