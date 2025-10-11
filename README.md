@@ -94,6 +94,17 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - Risk:Reward Ratio Enhancement (Latest)
+- **Added Risk:Reward Ratio display**: Calculator now shows the Risk:Reward ratio in the results section
+  - **New input field**: Added "Take Profit" field to capture target profit level
+  - **Ratio calculation**: Risk:Reward ratio calculated as Take Profit / Stop Loss
+  - **Display format**: Shown as "1:X.XX" format with blue styling to distinguish from other metrics
+  - **Validation**: Take Profit field requires a value greater than 0
+  - **State persistence**: Take Profit value is saved and restored with other calculator inputs
+  - **Default values**: Default Take Profit set to 200 (2:1 ratio with default 100 stop loss)
+  - **Impact**: Traders can now quickly assess if their trade setup meets their risk management criteria
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Lot Size Calculator - Full Height Cards Layout (Latest)
 - **Made input and output cards extend to full height**: Cards now maintain consistent height even with minimal content
   - **Grid container**: Removed forced minimum height to prevent unnecessary scrollbars

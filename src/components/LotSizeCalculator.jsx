@@ -10,6 +10,7 @@ const LotSizeCalculator = () => {
     accountBalance: '1000',
     riskPercentage: '1',
     stopLoss: '100',
+    takeProfit: '200',
     instrumentType: 'forex',
     currencyPair: 'EURUSDm',
     contractSize: '100000',
@@ -196,6 +197,10 @@ const LotSizeCalculator = () => {
       newErrors.stopLoss = 'Stop loss must be greater than 0';
     }
 
+    if (!formData.takeProfit || parseFloat(formData.takeProfit) <= 0) {
+      newErrors.takeProfit = 'Take profit must be greater than 0';
+    }
+
     if ((formData.instrumentType === 'crypto' || formData.instrumentType === 'commodities') && (!formData.currentPrice || parseFloat(formData.currentPrice) <= 0)) {
       newErrors.currentPrice = `Current price is required for ${formData.instrumentType} calculations`;
     }
@@ -210,15 +215,20 @@ const LotSizeCalculator = () => {
     const accountBalance = parseFloat(formData.accountBalance);
     const riskPercentage = parseFloat(formData.riskPercentage) / 100;
     const stopLoss = parseFloat(formData.stopLoss);
+    const takeProfit = parseFloat(formData.takeProfit);
     const pipValue = parseFloat(formData.pipValue);
     const contractSize = parseFloat(formData.contractSize);
 
     let lotSize = 0;
     let riskAmount = 0;
     let calculation = '';
+    let riskRewardRatio = 0;
 
     // Calculate risk amount
     riskAmount = accountBalance * riskPercentage;
+
+    // Calculate Risk:Reward Ratio
+    riskRewardRatio = takeProfit / stopLoss;
 
     if (formData.instrumentType === 'forex') {
       // Forex calculation: Lot Size = (Account Balance × Risk %) / (Stop Loss (pips) × Pip Value)
@@ -242,6 +252,7 @@ const LotSizeCalculator = () => {
     setResult({
       lotSize: lotSize,
       riskAmount: riskAmount,
+      riskRewardRatio: riskRewardRatio,
       calculation: calculation,
       instrumentType: formData.instrumentType,
       resultUnit: instrumentConfigs[formData.instrumentType].resultUnit
@@ -263,13 +274,13 @@ const LotSizeCalculator = () => {
   useEffect(() => {
     if (isStateLoaded && !result) {
       // Check if we have default values (indicating no saved state was loaded)
-      if (formData.accountBalance === '1000' && formData.riskPercentage === '1' && formData.stopLoss === '100') {
+      if (formData.accountBalance === '1000' && formData.riskPercentage === '1' && formData.stopLoss === '100' && formData.takeProfit === '200') {
         setTimeout(() => {
           calculateLotSize();
         }, 100);
       }
     }
-  }, [isStateLoaded, result, formData.accountBalance, formData.riskPercentage, formData.stopLoss, calculateLotSize]);
+  }, [isStateLoaded, result, formData.accountBalance, formData.riskPercentage, formData.stopLoss, formData.takeProfit, calculateLotSize]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -291,6 +302,7 @@ const LotSizeCalculator = () => {
       accountBalance: '1000',
       riskPercentage: '1',
       stopLoss: '100',
+      takeProfit: '200',
       instrumentType: 'forex',
       currencyPair: 'EURUSDm',
       contractSize: '100000',
@@ -447,6 +459,32 @@ const LotSizeCalculator = () => {
               )}
             </div>
 
+            {/* Take Profit */}
+            <div>
+              <div className="flex items-center gap-3">
+                <label htmlFor="takeProfit" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px]">
+                  Take Profit
+                </label>
+                <div className="relative group flex-1">
+                  <input
+                    id="takeProfit"
+                    type="number"
+                    step="0.01"
+                    value={formData.takeProfit}
+                    onChange={(e) => handleInputChange('takeProfit', e.target.value)}
+                    className={`w-full h-10 pl-3 pr-16 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                      errors.takeProfit ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder={formData.instrumentType === 'forex' ? '100' : '200'}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">{instrumentConfigs[formData.instrumentType].stopLossUnit}</span>
+                </div>
+              </div>
+              {errors.takeProfit && (
+                <p className="text-red-500 text-xs mt-1 ml-[132px]">{errors.takeProfit}</p>
+              )}
+            </div>
+
             {/* Current Price (for crypto and commodities) */}
             {(formData.instrumentType === 'crypto' || formData.instrumentType === 'commodities') && (
               <div>
@@ -558,6 +596,21 @@ const LotSizeCalculator = () => {
                         {result.resultUnit} to trade for this position
                       </p>
                     </div>
+
+                    {/* Risk:Reward Ratio Card */}
+                    {result.riskRewardRatio !== undefined && (
+                      <div className="p-3">
+                        <div className="mb-2">
+                          <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk:Reward Ratio</span>
+                        </div>
+                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                          1:{result.riskRewardRatio.toFixed(2)}
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          Expected reward per unit of risk
+                        </p>
+                      </div>
+                    )}
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
