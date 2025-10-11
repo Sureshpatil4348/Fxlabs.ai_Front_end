@@ -94,7 +94,22 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Forex Market Time Zone Converter - Mobile View Spacing Fix (Latest)
+### Lot Size Calculator - Mobile View Responsive Improvements (Latest)
+- **Fixed tab switcher cutoff in mobile view**: The Forex/Commodities/Crypto tab switcher now displays properly on smaller screens
+  - **Responsive text sizing**: Changed button text from `text-sm` to `text-xs sm:text-sm` for better mobile fit
+  - **Responsive padding**: Changed button padding from `px-3` to `px-2 sm:px-3` to reduce width on mobile
+  - **Header gap adjustment**: Changed gap from `gap-3` to `gap-2 sm:gap-3` for tighter mobile spacing
+  - **Title responsiveness**: Added responsive title display - "Calculator" on mobile, "Lot Size Calculator" on larger screens
+  - **Icon sizing**: Updated icon size from fixed `w-5 h-5` to responsive `w-4 h-4 sm:w-5 sm:h-5` and margin from `mr-2` to `mr-1.5 sm:mr-2`
+  - **Prevent shrinkage**: Added `flex-shrink-0` to tab switcher container to prevent unwanted compression
+- **Fixed input section margins**: Input fields now have proper spacing on mobile screens
+  - **Left panel margins**: Changed from `pl-4` to `px-4 sm:pl-4 sm:pr-2` for consistent mobile padding
+  - **Right panel margins**: Changed from `pl-4` to `px-4 lg:pl-4 lg:pr-2` for proper mobile spacing
+  - **Impact**: Eliminates cramped appearance and ensures adequate touch targets on mobile devices
+- **Files affected**: 
+  - `src/components/LotSizeCalculator.jsx` - All responsive improvements applied
+
+### Forex Market Time Zone Converter - Mobile View Spacing Fix
 - **Eliminated excessive vertical spacing in mobile view**: Fixed excessive empty space below the widget using flexible max-height approach instead of fixed height
   - **Dashboard container approach** (Key Fix): Changed from fixed height `h-[820px]` to flexible `max-h-[600px]` on mobile
     - **Why this is better**: Content now uses its natural height (no empty space), but won't exceed 600px (scrolls if needed)

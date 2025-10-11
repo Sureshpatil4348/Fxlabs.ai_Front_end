@@ -319,16 +319,17 @@ const LotSizeCalculator = () => {
     <div className="space-y-3">
       {/* Header */}
       <div className="px-2 pt-3 pb-2">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
-            <svg className="w-5 h-5 sm:w-5 sm:h-5 mr-2 mt-0.5 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 mt-0.5 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            Lot Size Calculator
+            <span className="hidden xs:inline">Lot Size Calculator</span>
+            <span className="xs:hidden">Calculator</span>
           </h3>
           
           {/* Instrument Type Selection */}
-          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 whitespace-nowrap overflow-hidden shadow-sm">
+          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 whitespace-nowrap shadow-sm flex-shrink-0">
             {Object.entries(instrumentConfigs).map(([key, config], idx) => (
               <button
                 key={key}
@@ -337,7 +338,7 @@ const LotSizeCalculator = () => {
                   formData.instrumentType === key
                     ? 'bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm'
                     : 'bg-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                } px-3 py-1 text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
+                } px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
                 title={`${config.name} (${config.resultUnit})`}
               >
                 {config.name}
@@ -351,7 +352,7 @@ const LotSizeCalculator = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             
             {/* LEFT SIDE - Input Panel */}
-            <div className="flex flex-col pl-4">
+            <div className="flex flex-col px-4 sm:pl-4 sm:pr-2">
               {/* Input Form */}
               <div className="space-y-2.5 flex-1">
             {/* Account Balance */}
@@ -568,7 +569,7 @@ const LotSizeCalculator = () => {
             </div>
 
             {/* RIGHT SIDE - Result Display */}
-            <div className="flex flex-col pl-4">
+            <div className="flex flex-col px-4 lg:pl-4 lg:pr-2">
               {result ? (
                 <div ref={resultRef} className="space-y-2">
                     {/* Risk Amount Card */}
