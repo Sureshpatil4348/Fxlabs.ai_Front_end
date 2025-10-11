@@ -846,8 +846,111 @@ useEffect(() => {
         </div>
         </div>
 
-        {/* Mobile Layout - Table and Meter Stacked Vertically */}
+        {/* Mobile Layout - Trading Meter First, Then Table */}
         <div className="lg:hidden flex flex-col gap-3 pt-1.5">
+          {/* Trading Meter Section - Above Table on Mobile */}
+          <div className="w-full px-2">
+            <div className="text-center py-1 mb-2 border-b border-gray-200 dark:border-slate-600 pb-3">
+              <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Trading Meter</span>
+            </div>
+            {(() => {
+              const mcState = useMarketCacheStore.getState();
+              const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
+              const qe = mcState.quantumBySymbol.get(currentSymbol);
+              const ov = qe && qe.overall ? qe.overall[styleKey] : null;
+              const buyPct = typeof ov?.buy_percent === 'number' ? ov.buy_percent : 50;
+              const sellPct = typeof ov?.sell_percent === 'number' ? ov.sell_percent : (100 - buyPct);
+              const score = buyPct - sellPct;
+              const angle = Math.max(-90, Math.min(90, (score / 100) * 90));
+              let dominant;
+              if (buyPct > 75) {
+                dominant = 'STRONG BUY';
+              } else if (sellPct > 75) {
+                dominant = 'STRONG SELL';
+              } else if (buyPct >= sellPct) {
+                dominant = 'BUY';
+              } else {
+                dominant = 'SELL';
+              }
+
+              return (
+                <Card className="shadow-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-3">
+                  <div className="relative w-full" style={{ height: 130 }}>
+                    <svg viewBox="0 0 200 110" className="w-full h-full">
+                      <defs>
+                        <linearGradient id="gaugeStrokeMobile" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#ef4444"/>
+                          <stop offset="50%" stopColor="#9ca3af"/>
+                          <stop offset="100%" stopColor="#10b981"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M10,100 A90,90 0 0,1 190,100" fill="none" stroke="#e5e7eb" strokeWidth="10" strokeLinecap="round" />
+                      <path d="M10,100 A90,90 0 0,1 190,100" fill="none" stroke="url(#gaugeStrokeMobile)" strokeWidth="10" strokeLinecap="round" opacity="0.9" />
+                      {Array.from({length: 11}).map((_, i) => {
+                        const t = i / 10;
+                        const ang = (-Math.PI / 2) + (Math.PI * t);
+                        const x1 = 100 + 85 * Math.cos(ang);
+                        const y1 = 100 + 85 * Math.sin(ang);
+                        const x2 = 100 + 95 * Math.cos(ang);
+                        const y2 = 100 + 95 * Math.sin(ang);
+                        const labels = ['-100', '-80', '-60', '-40', '-20', '0', '20', '40', '60', '80', '100'];
+                        return (
+                          <g key={i}>
+                            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#6b7280" strokeWidth="2" strokeLinecap="round" />
+                            {i % 2 === 0 && (
+                              <text 
+                                x={100 + 70 * Math.cos(ang)} 
+                                y={100 + 70 * Math.sin(ang)} 
+                                textAnchor="middle" 
+                                dominantBaseline="middle"
+                                className="fill-emerald-600"
+                                style={{ fontSize: 8, fontWeight: 600 }}
+                              >
+                                {labels[i]}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      })}
+                      {/* Needle */}
+                      <g transform={`rotate(${angle} 100 100)`}>
+                        <polygon points="100,22 95,100 105,100" fill="#7c3aed" />
+                      </g>
+                      {/* Pivot */}
+                      <circle cx="100" cy="100" r="6" fill="#ffffff" stroke="#374151" strokeWidth="2" />
+                    </svg>
+                    {/* Labels */}
+                    <div className="absolute top-2 left-2">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800 text-xs font-semibold">
+                        <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                        SELL
+                      </span>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800 text-xs font-semibold">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        BUY
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <div className={`text-sm font-bold ${buyPct > sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
+                    <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
+                        <div className="text-gray-500 dark:text-gray-400">Sell</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-emerald-600">{buyPct.toFixed(0)}%</div>
+                        <div className="text-gray-500 dark:text-gray-400">Buy</div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })()}
+          </div>
+
           {/* Table Section with Header - Single Scrollable Container */}
           <div className="w-full overflow-x-auto overflow-y-hidden">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
@@ -966,112 +1069,6 @@ useEffect(() => {
           </table>
         </div>
 
-        {/* Trading Meter Section - Below Table on Mobile */}
-        <div className="w-full px-2">
-          <div className="text-center py-1 mb-2 border-t border-gray-200 dark:border-slate-600 pt-3">
-            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Trading Meter</span>
-          </div>
-          {(() => {
-            const mcState = useMarketCacheStore.getState();
-            const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
-            const qe = mcState.quantumBySymbol.get(currentSymbol);
-            const ov = qe && qe.overall ? qe.overall[styleKey] : null;
-            const buyPct = typeof ov?.buy_percent === 'number' ? ov.buy_percent : 50;
-            const sellPct = typeof ov?.sell_percent === 'number' ? ov.sell_percent : (100 - buyPct);
-            const score = buyPct - sellPct;
-            const angle = Math.max(-90, Math.min(90, (score / 100) * 90));
-            let dominant;
-            if (buyPct > 75) {
-              dominant = 'STRONG BUY';
-            } else if (sellPct > 75) {
-              dominant = 'STRONG SELL';
-            } else if (buyPct >= sellPct) {
-              dominant = 'BUY';
-            } else {
-              dominant = 'SELL';
-            }
-
-            return (
-              <Card className="shadow-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-3">
-                <div className="relative w-full" style={{ height: 130 }}>
-                  <svg viewBox="0 0 200 110" className="w-full h-full">
-                    <defs>
-                      <linearGradient id="gaugeStrokeMobile" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#ef4444"/>
-                        <stop offset="50%" stopColor="#9ca3af"/>
-                        <stop offset="100%" stopColor="#10b981"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M10,100 A90,90 0 0,1 190,100" fill="none" stroke="#e5e7eb" strokeWidth="10" strokeLinecap="round" />
-                    <path d="M10,100 A90,90 0 0,1 190,100" fill="none" stroke="url(#gaugeStrokeMobile)" strokeWidth="10" strokeLinecap="round" opacity="0.9" />
-                    {Array.from({length: 11}).map((_, i) => {
-                      const t = i / 10;
-                      const ang = (-Math.PI / 2) + (Math.PI * t);
-                      const inner = 82;
-                      const outer = i % 5 === 0 ? 94 : 90;
-                      const x1 = 100 + Math.cos(ang) * inner;
-                      const y1 = 100 + Math.sin(ang) * inner;
-                      const x2 = 100 + Math.cos(ang) * outer;
-                      const y2 = 100 + Math.sin(ang) * outer;
-                      return (
-                        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#cbd5e1" strokeWidth={i % 5 === 0 ? 2 : 1} strokeLinecap="round" />
-                      );
-                    })}
-                    {([0.5, 1]).map((t, idx) => {
-                      const values = ['0', '100'];
-                      const labels = ['', 'BUY'];
-                      const ang = (-Math.PI / 2) + (Math.PI * t);
-                      const r = 74;
-                      const tx = 100 + Math.cos(ang) * r;
-                      const ty = 100 + Math.sin(ang) * r;
-                      return (
-                        <g key={`lbl-${idx}`}>
-                          <text x={tx} y={ty - 4} textAnchor="middle" dominantBaseline="middle" className="fill-gray-600" style={{ fontSize: 11, fontWeight: 600 }}>
-                            {values[idx]}
-                          </text>
-                          {labels[idx] && (
-                            <text x={tx} y={ty + 8} textAnchor="middle" dominantBaseline="middle" className="fill-emerald-600" style={{ fontSize: 8, fontWeight: 600 }}>
-                              {labels[idx]}
-                            </text>
-                          )}
-                        </g>
-                      );
-                    })}
-                    <g transform={`rotate(${angle} 100 100)`}>
-                      <polygon points="100,22 95,100 105,100" fill="#7c3aed" />
-                    </g>
-                    <circle cx="100" cy="100" r="6" fill="#ffffff" stroke="#374151" strokeWidth="2" />
-                  </svg>
-                  <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800 text-xs font-semibold">
-                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                      SELL
-                    </span>
-                  </div>
-                  <div className="absolute top-2 right-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800 text-xs font-semibold">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      BUY
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-2 text-center">
-                  <div className={`text-sm font-bold ${buyPct > sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
-                  <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
-                      <div className="text-gray-500 dark:text-gray-400">Sell</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-emerald-600">{buyPct.toFixed(0)}%</div>
-                      <div className="text-gray-500 dark:text-gray-400">Buy</div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            );
-          })()}
-        </div>
         </div>
       </div>
       </div>
