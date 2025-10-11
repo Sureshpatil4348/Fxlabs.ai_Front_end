@@ -94,6 +94,19 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - UI Alignment (Latest)
+- **Reduced excessive border radius and margins**: Aligned Lot Size Calculator cards with other widgets
+  - **Container cards**: Changed border radius from `rounded-2xl` to `rounded-lg` for consistency
+  - **CardHeader padding**: Override default `p-6` with `!px-2 !pt-3 !pb-2` for minimal horizontal margin
+  - **CardContent padding**: Override default `p-6 pt-0` with `!p-2 !pt-1` for minimal outer margin
+  - **Grid spacing**: Reduced from `gap-4` to `gap-2` for tight spacing between input and result panels
+  - **Panel padding**: Maintained at `p-3` for comfortable internal spacing
+  - **Inner result cards**: Changed spacing from `space-y-3` to `space-y-2` for minimal margins
+  - **Input fields**: Changed border radius from `rounded-xl` to `rounded-lg` (all inputs, selects)
+  - **Buttons**: Changed border radius from `rounded-xl` to `rounded-lg` for consistency
+  - **Calculate button**: Changed from blue gradient to emerald-green gradient (`from-emerald-500 via-emerald-400 to-green-600`) to match Analysis/Tools header buttons
+  - **Impact**: Calculator now has a compact, cohesive look that aligns with Currency Strength Meter, Quantum Analysis, and other dashboard widgets
+
 ### Forex Market Time Zone Converter - Multi-Segment Rendering (Latest)
 - **Fixed timezone change reactivity**: Time labels inside market bars now update immediately when timezone changes
   - **Root cause**: `getSessionHoursInTimezone` function wasn't memoized with proper dependencies

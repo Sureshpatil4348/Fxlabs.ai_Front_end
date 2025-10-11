@@ -295,7 +295,7 @@ const LotSizeCalculator = () => {
   return (
     <div className="h-full">
       <Card className="bg-transparent shadow-none border-0 relative">
-        <CardHeader className="p-4 pt-3 pb-2 relative">
+        <CardHeader className="!px-2 !pt-3 !pb-2 relative">
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
               <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,12 +324,12 @@ const LotSizeCalculator = () => {
           </div>
         </CardHeader>
         
-        <CardContent className="p-4 pt-1">
+        <CardContent className="!p-2 !pt-1">
           {/* Two Column Layout: Inputs Left, Results Right */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             
             {/* LEFT SIDE - Input Panel */}
-            <div className="rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-4 md:p-5 backdrop-blur-sm">
+            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm">
               {/* Input Form */}
               <div className="space-y-2.5">
             {/* Account Balance */}
@@ -346,7 +346,7 @@ const LotSizeCalculator = () => {
                     step="0.01"
                     value={formData.accountBalance}
                     onChange={(e) => handleInputChange('accountBalance', e.target.value)}
-                    className={`w-full h-10 pl-8 pr-3 text-base border rounded-xl shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                    className={`w-full h-10 pl-8 pr-3 text-base border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.accountBalance ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="10000"
@@ -371,7 +371,7 @@ const LotSizeCalculator = () => {
                     step="0.1"
                     value={formData.riskPercentage}
                     onChange={(e) => handleInputChange('riskPercentage', e.target.value)}
-                    className={`w-full h-10 pl-3 pr-8 text-base border rounded-xl shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                    className={`w-full h-10 pl-3 pr-8 text-base border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.riskPercentage ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="2"
@@ -396,7 +396,7 @@ const LotSizeCalculator = () => {
                     id="currencyPair"
                     value={formData.currencyPair}
                     onChange={(e) => handleInputChange('currencyPair', e.target.value)}
-                    className="w-full h-10 pl-3 pr-8 text-base border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white appearance-none transition-all duration-200 group-hover:shadow-md"
+                    className="w-full h-10 pl-3 pr-8 text-base border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white appearance-none transition-all duration-200 group-hover:shadow-md"
                   >
                     {instrumentConfigs[formData.instrumentType].pairs.map((pair) => (
                       <option key={pair.symbol} value={pair.symbol}>
@@ -424,7 +424,7 @@ const LotSizeCalculator = () => {
                     step="0.01"
                     value={formData.stopLoss}
                     onChange={(e) => handleInputChange('stopLoss', e.target.value)}
-                    className={`w-full h-10 pl-3 pr-16 text-base border rounded-xl shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                    className={`w-full h-10 pl-3 pr-16 text-base border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.stopLoss ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder={formData.instrumentType === 'forex' ? '50' : '100'}
@@ -457,7 +457,7 @@ const LotSizeCalculator = () => {
                       step="0.01"
                       value={formData.currentPrice}
                       onChange={(e) => handleInputChange('currentPrice', e.target.value)}
-                      className={`w-full h-10 pl-8 pr-10 text-base border rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                      className={`w-full h-10 pl-8 pr-10 text-base border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                         errors.currentPrice ? 'border-red-500' : 'border-gray-300'
                       } ${isConnected && formData.currentPrice ? 'bg-green-50 dark:bg-green-900/10' : ''}`}
                       placeholder={isConnected ? "Auto-populated" : "50000"}
@@ -499,7 +499,7 @@ const LotSizeCalculator = () => {
               <div className="mt-4 flex gap-3">
                 <Button
                   onClick={calculateLotSize}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold h-11 px-4 rounded-xl transition-all duration-200 text-base shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="flex-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-600 hover:via-emerald-500 hover:to-green-700 text-white font-semibold h-11 px-4 rounded-lg transition-all duration-200 text-base shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -509,7 +509,7 @@ const LotSizeCalculator = () => {
                 <Button
                   onClick={resetCalculator}
                   variant="outline"
-                  className="px-6 h-11 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-base shadow-sm hover:shadow-md transform hover:scale-105"
+                  className="px-6 h-11 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 text-base shadow-sm hover:shadow-md transform hover:scale-105"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -520,12 +520,12 @@ const LotSizeCalculator = () => {
             </div>
 
             {/* RIGHT SIDE - Result Display */}
-            <div className="rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-4 md:p-5 backdrop-blur-sm min-h-[400px] flex flex-col">
+            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm min-h-[400px] flex flex-col">
               {result ? (
                 <div ref={resultRef} className="flex-1 flex flex-col justify-center">
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {/* Risk Amount Card */}
-                    <div className="bg-white/90 dark:bg-gray-900/90 rounded-xl border border-red-200/50 dark:border-red-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg border border-red-200/50 dark:border-red-700/50 p-3 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center gap-2 mb-2">
                         <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -541,7 +541,7 @@ const LotSizeCalculator = () => {
                     </div>
 
                     {/* Position Size Card */}
-                    <div className="bg-white/90 dark:bg-gray-900/90 rounded-xl border border-green-200/50 dark:border-green-700/50 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg border border-green-200/50 dark:border-green-700/50 p-3 shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="flex items-center gap-2 mb-2">
                         <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -557,7 +557,7 @@ const LotSizeCalculator = () => {
                     </div>
 
                     {/* Calculation Formula */}
-                    <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-200/50 dark:border-blue-700/50 p-3">
+                    <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-200/50 dark:border-blue-700/50 p-3">
                       <p className="text-xs font-medium text-blue-800 dark:text-blue-300 mb-1">Formula Used:</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 font-mono break-all">
                         {result.calculation}
