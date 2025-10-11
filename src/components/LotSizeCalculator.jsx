@@ -605,7 +605,7 @@ const LotSizeCalculator = () => {
                           <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Risk:Reward Ratio</span>
                         </div>
                         <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                          1:{result.riskRewardRatio.toFixed(2)}
+                          1:{Math.round(result.riskRewardRatio)}
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           Expected reward per unit of risk

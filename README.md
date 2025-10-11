@@ -94,6 +94,13 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - Risk:Reward Ratio Integer Display (Latest)
+- **Integer risk:reward ratio**: Risk:Reward ratio now displays as whole numbers without decimal fractions
+  - **Display format**: Changed from `1:2.50` to `1:3` (rounded to nearest integer)
+  - **Implementation**: Used `Math.round()` to convert decimal ratio to integer
+  - **Impact**: Cleaner, more intuitive risk:reward ratio display for traders
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Lot Size Calculator - Decimal Precision Standardization (Latest)
 - **Standardized decimal places**: All calculation results now display with maximum 2 decimal places for consistency
   - **Forex calculations**: Changed from 4 decimal places to 2 decimal places
