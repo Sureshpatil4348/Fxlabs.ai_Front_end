@@ -242,19 +242,19 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* Economic Data - Moved to third position - Only show if at least one value exists */}
           {(news.previous || news.forecast || (news.actual && news.actual !== 'N/A' && news.actual !== null)) && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Economic Data</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2">Economic Data</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Previous</div>
-                  <div className="text-sm font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
+                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-base">Previous</div>
+                  <div className="text-base font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
                 </div>
                 <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Forecast</div>
-                  <div className="text-sm font-bold text-blue-900 dark:text-blue-300">{news.forecast || '--'}</div>
+                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-base">Forecast</div>
+                  <div className="text-base font-bold text-blue-900 dark:text-blue-300">{news.forecast || '--'}</div>
                 </div>
                 <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-sm">Actual</div>
-                  <div className="text-sm font-bold text-green-900 dark:text-green-300">
+                  <div className="text-gray-600 dark:text-slate-400 mb-1 text-base">Actual</div>
+                  <div className="text-base font-bold text-green-900 dark:text-green-300">
                     {news.actual !== 'N/A' && news.actual !== null ? news.actual : 'TBA'}
                   </div>
                 </div>
@@ -265,9 +265,9 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* Detailed Analysis - Moved to bottom */}
           {analysis && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Detailed Analysis</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2">Detailed Analysis</h3>
               <div 
-                className="text-gray-700 dark:text-slate-300 leading-relaxed p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-sm"
+                className="text-gray-700 dark:text-slate-300 leading-relaxed p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-base"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(analysis.explanation)
                 }}
@@ -317,27 +317,27 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
            <div className="flex items-center space-x-2 mb-1">
-             <span className="text-xs font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
-             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
+             <span className="text-sm font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
+             <span className={`text-sm px-2 py-1 rounded-full font-medium ${getImpactColor(news.impact)}`}>
                {news.impact?.toUpperCase() || 'MEDIUM'}
              </span>
              {eventTiming.isUpcoming && (
-               <span className="text-xs px-2 py-1 rounded-full font-medium bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">
+               <span className="text-sm px-2 py-1 rounded-full font-medium bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200">
                  <CountdownTimer newsItem={news} />
                </span>
              )}
              {eventTiming.isPast && (
-               <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
+               <span className="text-sm px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
                  RELEASED
                </span>
              )}
            </div>
           
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-1">
             {news.title.split('(')[0]}
           </h3>
           
-           <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-slate-400">
+           <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-slate-400">
              <div className="flex items-center space-x-1">
                <Clock className="w-3 h-3" />
                <span>{date} {time}</span>
@@ -380,7 +380,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="w-4 h-4 text-primary-600" />
-              <span className="text-xs text-gray-600 dark:text-slate-400">AI Analysis</span>
+              <span className="text-sm text-gray-600 dark:text-slate-400">AI Analysis</span>
             </div>
             <div className="flex items-center space-x-1">
               {analysis.effect === 'Bullish' ? (
@@ -390,7 +390,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
               ) : (
                 <AlertCircle className="w-3 h-3 text-gray-600" />
               )}
-              <span className={`text-xs font-medium ${
+              <span className={`text-sm font-medium ${
                 analysis.effect === 'Bullish' ? 'text-success-600' :
                 analysis.effect === 'Bearish' ? 'text-danger-600' :
                 'text-gray-600'
@@ -559,11 +559,11 @@ const AINewsAnalysis = () => {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0">
         {/* Header */}
-        <div className="widget-header flex items-center justify-between mb-3 text-[12px]">
+        <div className="widget-header flex items-center justify-between mb-3 text-[14px]">
         <div className="flex items-center space-x-2">
           <Newspaper className="w-4 h-4 text-primary-600" />
           <div>
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-slate-100">AI News Analysis</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">AI News Analysis</h2>
           </div>
         </div>
         {!apiAvailable && (
@@ -574,12 +574,12 @@ const AINewsAnalysis = () => {
         </div>
 
         {/* Filter Tabs (match RSI Tracker styles) */}
-        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg text-[12px]">
+        <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg text-[14px]">
         {filters.map((filterOption) => (
           <button
             key={filterOption.id}
             onClick={() => handleFilterChange(filterOption.id)}
-            className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[11px] font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[13px] font-medium transition-colors ${
               newsFilter === filterOption.id
                 ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
                 : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'

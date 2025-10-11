@@ -75,7 +75,7 @@ const AINewsAnalysisSection = () => {
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20 border border-green-500/20 dark:border-green-500/30 rounded-full px-6 py-3 mb-6">
             <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <span className="text-green-600 dark:text-green-400 font-semibold text-sm">AI-Powered News Analysis</span>
+            <span className="text-green-600 dark:text-green-400 font-semibold text-base">AI-Powered News Analysis</span>
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-6">
@@ -84,7 +84,7 @@ const AINewsAnalysisSection = () => {
             </span>
           </h2>
           
-          <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 text-xl max-w-2xl mx-auto">
             Get instant AI-powered analysis of market news with sentiment scoring and impact assessment
           </p>
         </div>
@@ -146,7 +146,7 @@ const AINewsAnalysisSection = () => {
                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)'
                      }}>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-gray-800 dark:text-white font-semibold text-lg">{newsData[currentNews].title}</h4>
+                    <h4 className="text-gray-800 dark:text-white font-semibold text-xl">{newsData[currentNews].title}</h4>
                     <div className="flex items-center space-x-1">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-500 dark:text-yellow-400 fill-current' : 'text-gray-400 dark:text-gray-600'}`} />
@@ -156,7 +156,7 @@ const AINewsAnalysisSection = () => {
                   
                   <div className="grid grid-cols-2 gap-6 mb-6">
                     <div className="bg-gradient-to-br from-green-500/5 to-emerald-500/5 dark:from-green-500/10 dark:to-emerald-500/10 rounded-xl p-4 backdrop-blur-sm">
-                      <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Sentiment</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-base font-medium">Sentiment</span>
                       <div className={`font-bold text-xl ${
                         newsData[currentNews].sentiment === 'Bullish' ? 'text-green-600 dark:text-green-400' :
                         newsData[currentNews].sentiment === 'Bearish' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
@@ -165,12 +165,12 @@ const AINewsAnalysisSection = () => {
                       </div>
                     </div>
                     <div className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 dark:from-blue-500/10 dark:to-cyan-500/10 rounded-xl p-4 backdrop-blur-sm">
-                      <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Impact</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-base font-medium">Impact</span>
                       <div className="text-gray-800 dark:text-white font-bold text-xl">{newsData[currentNews].impact}</div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-base">
                     <span className="text-gray-600 dark:text-gray-400">Source: {newsData[currentNews].source}</span>
                     <span className="text-blue-600 dark:text-blue-400">{newsData[currentNews].time}</span>
                   </div>
