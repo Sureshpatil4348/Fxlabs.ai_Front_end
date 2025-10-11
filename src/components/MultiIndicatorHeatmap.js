@@ -574,20 +574,41 @@ useEffect(() => {
 
       
       {/* Heatmap Table + Meter */}
-      <div className="flex gap-1.5 h-full">
-        {/* Left: Compact Table */}
-        <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
-          <table className="w-full border-collapse min-w-[560px]">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-slate-600">
-                <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
-                {indicators.map(indicator => (
-                  <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200">
-                    <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
+      <div className="flex flex-col gap-0 h-full">
+        {/* Header Row for both Table and Meter */}
+        <div className="flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-0.5">
+          {/* Left: Table Headers */}
+          <div className="flex-1 min-w-0">
+            <div className="flex min-w-[560px]">
+              <div className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></div>
+              {indicators.map(indicator => (
+                <div key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200 flex-1">
+                  <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Right: Trading Meter Header (desktop only) */}
+          <div className="hidden lg:block w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
+            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Trading Meter</span>
+          </div>
+        </div>
+
+        {/* Content Row */}
+        <div className="flex gap-1.5 h-full">
+          {/* Left: Compact Table */}
+          <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
+            <table className="w-full border-collapse min-w-[560px]">
+              <thead className="sr-only">
+                <tr>
+                  <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
+                  {indicators.map(indicator => (
+                    <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200">
+                      <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
             <tbody>
               {(() => {
                 const mcState = useMarketCacheStore.getState();
@@ -717,9 +738,6 @@ useEffect(() => {
 
             return (
               <div className="h-full rounded-xl bg-white dark:bg-gray-800 p-3">
-                <div className="text-center mb-2">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">Trading Meter</h3>
-                </div>
                 {/* Gauge */}
                 <div className="relative w-full" style={{ height: 130 }}>
                   <svg viewBox="0 0 200 110" className="w-full h-full">
@@ -832,6 +850,7 @@ useEffect(() => {
               </div>
             );
           })()}
+        </div>
         </div>
       </div>
       </div>

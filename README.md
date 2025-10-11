@@ -187,9 +187,19 @@ All features that relied on client-side calculations now expect server-provided 
     - `src/components/CurrencyStrengthMeter.js`
 
 ### Quantum Analysis UI
-- Hidden the “Custom Indicator Alert” button (Sliders icon) from the Quantum Analysis header as requested. No cleanup of related state/logic; only the add/configure button is removed.
+- Hidden the "Custom Indicator Alert" button (Sliders icon) from the Quantum Analysis header as requested. No cleanup of related state/logic; only the add/configure button is removed.
   - Files affected: `src/components/MultiIndicatorHeatmap.js`
   - Lint: Aliased unused `Sliders` import and unused `handleIndicatorConfigOpen` handler with underscore prefix to satisfy ESLint without functional cleanup.
+
+### Quantum Analysis Header Enhancement (Latest)
+- Added "Trading Meter" as a header label above the meter section, matching the style of indicator headers (EMA 21, EMA 50, etc.)
+- Extended the header line (border) to span across both the indicator table and the Trading Meter section for unified visual appearance
+- Restructured layout:
+  - Header row now includes both table indicator headers and Trading Meter header
+  - Single continuous border line below all headers
+  - Removed duplicate "Trading Meter" title from within the meter component
+  - Desktop-only display (hidden on mobile via `lg:block` breakpoint)
+- Files affected: `src/components/MultiIndicatorHeatmap.js`
 
 ### Currency Strength Stability (Latest)
 - Source of truth is now the server snapshot and websocket updates:
