@@ -372,7 +372,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
 
       {/* Quick Analysis Preview - Compact with Pastel Background */}
       {analysis && (
-        <div className={`border-t pt-2 -mx-3 -mb-3 px-3 pb-3 mt-2 rounded-b-lg ${
+       <div className={`border-t pt-2 -mx-3 -mb-3 px-3 pb-2 mt-2 rounded-b-lg ${
           analysis.effect === 'Bullish' ? 'bg-green-50 dark:bg-green-900/20' :
           analysis.effect === 'Bearish' ? 'bg-red-50 dark:bg-red-900/20' :
           ''

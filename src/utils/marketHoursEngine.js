@@ -169,7 +169,10 @@ function friendlyNameFromZone(tz) {
 
 // List all supported IANA timezones with their current GMT offset for a given UTC instant
 export function listTimezonesWithOffsets(viewInstantUTC = new Date()) {
-  const zones = (typeof Intl.supportedValuesOf === 'function')
+  // Get system timezone to ensure it's always included
+  const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  
+  let zones = (typeof Intl.supportedValuesOf === 'function')
     ? Intl.supportedValuesOf('timeZone')
     : [
         'UTC',
@@ -178,6 +181,11 @@ export function listTimezonesWithOffsets(viewInstantUTC = new Date()) {
         'Europe/London', 'Europe/Berlin', 'Europe/Zurich',
         'America/New_York', 'America/Toronto', 'America/Los_Angeles'
       ];
+  
+  // Ensure system timezone is in the list
+  if (!zones.includes(systemTimezone)) {
+    zones = [systemTimezone, ...zones];
+  }
 
   const items = zones.map((tz) => {
     const offsetMin = getOffsetMinutesAt(viewInstantUTC, tz);

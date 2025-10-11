@@ -291,6 +291,14 @@ const ForexMarketTimeZone = () => {
     gmt: item.gmt
   })), []);
 
+  // Get currently selected timezone option with fallback
+  const currentTimezoneOption = React.useMemo(() => {
+    const found = timezoneOptions.find(opt => opt.value === selectedTimezone);
+    if (found) return found;
+    // Fallback: if not found, use first option (shouldn't happen with the fix above)
+    return timezoneOptions[0] || { label: 'UTC', gmt: '+00:00', value: 'UTC' };
+  }, [timezoneOptions, selectedTimezone]);
+
   // Filter timezones by query across label, zone id, and offset
   const filteredTimezones = React.useMemo(() => {
     const q = tzQuery.trim().toLowerCase();
@@ -441,10 +449,10 @@ const ForexMarketTimeZone = () => {
             >
               <div className="flex items-center gap-1 whitespace-nowrap">
                 <span className="text-xs font-medium">
-                  {timezoneOptions.find(opt => opt.value === selectedTimezone)?.label}
+                  {currentTimezoneOption.label}
                 </span>
                 <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                  (GMT {timezoneOptions.find(opt => opt.value === selectedTimezone)?.gmt})
+                  (GMT {currentTimezoneOption.gmt})
                 </span>
               </div>
               <svg 

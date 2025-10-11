@@ -167,6 +167,7 @@ All features that relied on client-side calculations now expect server-provided 
   - **Visual consistency**: Colors match the pastel shades used in Currency Strength Meter for cohesive design
   - **Enhanced UX**: Quick visual identification of market sentiment at a glance
   - **Preserved borders**: Green/red borders remain on news cards for bullish/bearish news
+  - **Fixed spacing**: AI Analysis section now has even padding (8px top and bottom) for balanced appearance
   - Files affected: `src/components/AINewsAnalysis.js`
 
 - **Currency Strength Meter Improvements**: Increased currency card height
@@ -239,6 +240,9 @@ All features that relied on client-side calculations now expect server-provided 
   - Timezone dropdown now lists real IANA timezones with their current GMT offsets, auto-detects the system default, and supports override.
   - Dropdown no longer shows flag icons; labels are concise like "Kolkata (GMT +05:30)".
   - Added search-as-you-type in the timezone dropdown; filters by label, IANA id, or offset.
+  - **Fixed timezone dropdown initialization**: System/browser timezone is now always included in the options list and properly displays on page load
+  - Added robust fallback handling to prevent "(GMT)" display when timezone not found
+  - Improved performance by memoizing current timezone option to avoid repeated array searches
 
 Engine:
 - Added `src/utils/marketHoursEngine.js` implementing a DST-aware specification:
