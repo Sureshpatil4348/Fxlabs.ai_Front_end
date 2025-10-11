@@ -1,4 +1,4 @@
-// Utility functions for formatting data in the FXLabs.AI dashboard
+// Utility functions for formatting data in the FxLabs Prime dashboard
 
 export const formatPrice = (price, precision = 5) => {
   if (typeof price !== 'number' || isNaN(price)) return '0.00000';

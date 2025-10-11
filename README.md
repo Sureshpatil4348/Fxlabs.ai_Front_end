@@ -1,4 +1,4 @@
-# FX Labs Trading Dashboard
+# FxLabs Prime Trading Dashboard
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
@@ -78,7 +78,7 @@ The mobile navigation has been enhanced to show all navigation items directly in
 - **Analysis & Tools tabs visible**: When on the dashboard, Analysis and Tools tabs are now always visible in the center of the navbar on all screen sizes
 - **Account always accessible**: The account dropdown or login button is now always visible on the right side of the navbar
 - **Three-column layout**: 
-  - Left: FXLabs logo (flex-shrink-0)
+  - Left: FxLabs Prime logo (flex-shrink-0)
   - Center: Analysis/Tools tabs (when on dashboard)
   - Right: Account/Login button (flex-shrink-0)
 - **Responsive sizing**: All navbar elements now scale appropriately for mobile screens with smaller text and padding
@@ -1374,7 +1374,7 @@ Auth headers: When `API_TOKEN` is required server-side, configure the deployment
 
 ## Supported Trading Pairs
 
-The FX Labs Trading Dashboard supports **32 trading pairs** across multiple asset classes. All pairs use the broker-specific suffix 'm' (e.g., EURUSDm) for MT5 compatibility.
+The FxLabs Prime Trading Dashboard supports **32 trading pairs** across multiple asset classes. All pairs use the broker-specific suffix 'm' (e.g., EURUSDm) for MT5 compatibility.
 
 ### Major Currency Pairs (7 pairs)
 - **EURUSD** - Euro/US Dollar
@@ -1577,7 +1577,7 @@ The application now includes comprehensive dashboard settings persistence:
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd Fxlabs.ai_Front_end
+   cd Fxlabsprime.com_Front_end
    ```
 
 2. **Install dependencies**:

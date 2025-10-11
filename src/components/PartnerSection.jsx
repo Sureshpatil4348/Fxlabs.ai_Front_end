@@ -28,7 +28,7 @@ const PartnersSection = () => {
               </p>
             </div>
             <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Zero switching cost—FXLabs syncs with existing OMS, EMS and analytics vendors for a seamless rollout.
+              Zero switching cost—FxLabs Prime syncs with existing OMS, EMS and analytics vendors for a seamless rollout.
             </p>
           </div>
 

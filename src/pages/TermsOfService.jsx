@@ -33,7 +33,7 @@ const TermsOfService = () => {
           <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             <p><strong>Effective Date:</strong> 01/10/2025</p>
             <p><strong>Entity:</strong> Pinaxa Labs LLP (India)</p>
-            <p><strong>Brand:</strong> FX Labs</p>
+            <p><strong>Brand:</strong> FxLabs Prime</p>
           </div>
         </div>
 
@@ -45,7 +45,7 @@ const TermsOfService = () => {
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Table of Contents</h2>
             <ol className={`list-decimal pl-6 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li>Acceptance & Eligibility</li>
-              <li>About FX Labs (Nature of Services)</li>
+              <li>About FxLabs Prime (Nature of Services)</li>
               <li>Regulatory Notice (India & Other Jurisdictions)</li>
               <li>Account Registration & Security</li>
               <li>Plans, Billing, Taxes, Auto-Renewal, No Refunds</li>
@@ -72,15 +72,15 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>1) Acceptance & Eligibility</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              By accessing or using FX Labs, you agree to these Terms and our Privacy Policy. You must be <strong>18+</strong> and legally competent to contract.
+              By accessing or using FxLabs Prime, you agree to these Terms and our Privacy Policy. You must be <strong>18+</strong> and legally competent to contract.
             </p>
           </section>
 
-          {/* 2. About FX Labs */}
+          {/* 2. About FxLabs Prime */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>2) About FX Labs (Nature of Services)</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>2) About FxLabs Prime (Nature of Services)</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              FX Labs provides <strong>software, analytics dashboards, alerts, news analysis, charts, risk tools, and educational content</strong>. We <strong>do not</strong>: (a) execute trades, (b) manage money, or (c) give individualized financial advice.
+              FxLabs Prime provides <strong>software, analytics dashboards, alerts, news analysis, charts, risk tools, and educational content</strong>. We <strong>do not</strong>: (a) execute trades, (b) manage money, or (c) give individualized financial advice.
             </p>
           </section>
 
@@ -88,7 +88,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>3) Regulatory Notice (India & Other Jurisdictions)</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <li><strong>India:</strong> Retail <strong>Forex trading in overseas pairs is restricted/illegal</strong> for Indian residents outside RBI-permitted channels. <strong>If you are an Indian resident, you may use FX Labs only for education/research; you agree not to use it to violate Indian law.</strong></li>
+              <li><strong>India:</strong> Retail <strong>Forex trading in overseas pairs is restricted/illegal</strong> for Indian residents outside RBI-permitted channels. <strong>If you are an Indian resident, you may use FxLabs Prime only for education/research; you agree not to use it to violate Indian law.</strong></li>
               <li><strong>Your Responsibility:</strong> You must ensure your use complies with the laws of your jurisdiction.</li>
             </ul>
           </section>
@@ -124,7 +124,7 @@ const TermsOfService = () => {
               <li>Circumvent security, scrape excessively, or stress/attack the Services;</li>
               <li>Reverse-engineer, decompile, or create derivative works without permission;</li>
               <li>Upload malware, attempt unauthorized access, or interfere with other users;</li>
-              <li>Use FX Labs to signal or coordinate market manipulation, wash trading, or prohibited FX activity under your jurisdiction (including India).</li>
+              <li>Use FxLabs Prime to signal or coordinate market manipulation, wash trading, or prohibited FX activity under your jurisdiction (including India).</li>
             </ul>
             <p className={`mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               We may throttle, suspend, or terminate accounts that breach this section.
@@ -135,7 +135,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>7) Third-Party Brokers, IB Links & Integrations</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              FX Labs may provide <strong>introducing-broker (IB) or affiliate links</strong>. We do not control brokers, their pricing, swaps, or execution. Your relationship with a broker is governed by <strong>their</strong> terms. <strong>We are not a party</strong> to that contract, receive no trading credentials, and assume <strong>no liability</strong> for broker actions.
+              FxLabs Prime may provide <strong>introducing-broker (IB) or affiliate links</strong>. We do not control brokers, their pricing, swaps, or execution. Your relationship with a broker is governed by <strong>their</strong> terms. <strong>We are not a party</strong> to that contract, receive no trading credentials, and assume <strong>no liability</strong> for broker actions.
             </p>
           </section>
 
@@ -143,7 +143,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>8) Intellectual Property; Feedback</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              All Services, software, UI, content, and trademarks (including <strong>FX Labs</strong>, a trademark of <strong>Pinaxa Labs LLP</strong>) are our property or licensed. We grant you a <strong>limited, revocable, non-exclusive, non-transferable</strong> license to use the Services during your subscription.
+              All Services, software, UI, content, and trademarks (including <strong>FxLabs Prime</strong>, a trademark of <strong>Pinaxa Labs LLP</strong>) are our property or licensed. We grant you a <strong>limited, revocable, non-exclusive, non-transferable</strong> license to use the Services during your subscription.
             </p>
             <p className={`mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <strong>Feedback</strong> you provide may be used by us without restriction, without attribution or compensation.

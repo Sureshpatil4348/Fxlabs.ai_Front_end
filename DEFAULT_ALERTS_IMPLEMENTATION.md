@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation provides automatic alert initialization for first-time users logging into the FX Labs dashboard. When a user logs in for the first time, the system automatically creates three pre-configured alerts to help them get started immediately with the platform's alerting capabilities.
+This implementation provides automatic alert initialization for first-time users logging into the FxLabs Prime dashboard. When a user logs in for the first time, the system automatically creates three pre-configured alerts to help them get started immediately with the platform's alerting capabilities.
 
 ## Key Features
 

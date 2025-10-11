@@ -1,11 +1,11 @@
-// News service for FX Labs API integration and AI analysis
+// News service for FxLabs Prime API integration and AI analysis
 
-// FX Labs API configuration
+// FxLabs Prime API configuration
 const FXLABS_API_BASE_URL = "https://api.fxlabsprime.com/api/news/analysis";
 /**
- * Transform FX Labs API response to match our existing data format
+ * Transform FxLabs Prime API response to match our existing data format
  */
-const transformFXLabsData = (apiResponse) => {
+const transformFxLabsPrimeData = (apiResponse) => {
   if (!apiResponse.data || !Array.isArray(apiResponse.data)) {
     return [];
   }
@@ -100,12 +100,12 @@ const transformFXLabsData = (apiResponse) => {
 };
 
 /**
- * Fetch news data from FX Labs API
+ * Fetch news data from FxLabs Prime API
  */
 export const fetchForexFactoryNews = async () => {
   try {
     // eslint-disable-next-line no-console
-    console.log('Fetching news from FX Labs API...');
+    console.log('Fetching news from FxLabs Prime API...');
     // eslint-disable-next-line no-console
     console.log('API URL:', FXLABS_API_BASE_URL);
     
@@ -129,17 +129,17 @@ export const fetchForexFactoryNews = async () => {
     
     const data = await response.json();
     // eslint-disable-next-line no-console
-    console.log('FX Labs API response:', data);
+    console.log('FxLabs Prime API response:', data);
     
     // Transform the API response to match our existing format
-    const transformedData = transformFXLabsData(data);
+    const transformedData = transformFxLabsPrimeData(data);
     // eslint-disable-next-line no-console
     console.log('Transformed news data:', transformedData);
     
     return transformedData;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Error fetching FX Labs news:', error);
+    console.error('Error fetching FxLabs Prime news:', error);
     // eslint-disable-next-line no-console
     console.error('Error details:', {
       message: error.message,
@@ -169,7 +169,7 @@ export const pollForNews = async () => {
 };
 
 /**
- * Analyze news using FX Labs API data
+ * Analyze news using FxLabs Prime API data
  * This function now uses the pre-analyzed data from the API
  */
 export const analyzeNewsWithAI = async (newsItem) => {
@@ -217,7 +217,7 @@ export const analyzeNewsWithAI = async (newsItem) => {
         effect: effectTitle,
         impactedCurrencies: impactedCurrency ? [impactedCurrency] : [],
         suggestedPairs,
-        explanation: analysis.full_analysis || 'Analysis available from FX Labs API.'
+        explanation: analysis.full_analysis || 'Analysis available from FxLabs Prime API.'
       };
     }
 
@@ -280,10 +280,10 @@ export const getHighImpactNews = async () => {
 
 /**
  * Subscribe to real-time news updates
- * This will fetch fresh data from the FX Labs API every 5 minutes
+ * This will fetch fresh data from the FxLabs Prime API every 5 minutes
  */
 export const subscribeToNewsUpdates = (callback) => {
-  // Fetch fresh data from FX Labs API every 5 minutes
+  // Fetch fresh data from FxLabs Prime API every 5 minutes
   const interval = setInterval(async () => {
     try {
       const news = await fetchForexFactoryNews();

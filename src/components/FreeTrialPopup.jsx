@@ -108,12 +108,12 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
         {/* CTA */}
         <div className="mt-6 text-center">
           <button
-            onClick={() => window.open('https://t.me/Fxlabs_ai', '_blank')}
+            onClick={() => window.open('https://t.me/fxlabsprime', '_blank')}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold shadow-lg hover:shadow-[#03c05d]/25 transition-all duration-300 transform hover:scale-105"
           >
             <Send className="w-5 h-5" /> Message Us on Telegram
           </button>
-          <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Telegram: Fxlabs_ai</p>
+          <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Telegram: fxlabsprime</p>
         </div>
       </motion.div>
     </div>

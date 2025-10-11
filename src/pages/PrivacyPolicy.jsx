@@ -33,7 +33,7 @@ const PrivacyPolicy = () => {
           <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             <p><strong>Effective Date:</strong> 01/10/2025</p>
             <p><strong>Entity:</strong> Pinaxa Labs LLP (&quot;Company&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;)</p>
-            <p><strong>Brand:</strong> FX Labs (&quot;FX Labs&quot;, &quot;Service&quot;, &quot;Platform&quot;)</p>
+            <p><strong>Brand:</strong> FxLabs Prime (&quot;FxLabs Prime&quot;, &quot;Service&quot;, &quot;Platform&quot;)</p>
             <p><strong>Registered Office:</strong> #253, Junnur, Mudhol, Karnataka - 587204</p>
             <p><strong>Legal / Privacy Email:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></p>
             <p><strong>Data Protection Contact:</strong> Suresh Patil, support@fxlabsprime.com</p>
@@ -72,7 +72,7 @@ const PrivacyPolicy = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>1) Scope & Role</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              This Privacy Policy explains how <strong>Pinaxa Labs LLP</strong> processes personal data when you visit <strong>FX Labs</strong> websites, apps, dashboards, APIs, and communications (collectively, the <strong>Services</strong>). For Indian residents, we comply with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and the <strong>IT Act 2000/Intermediary Rules 2021</strong>. For users in the EEA/UK we act as a <strong>data controller</strong> under <strong>GDPR/UK GDPR</strong>; for California residents we provide notices required by <strong>CCPA/CPRA</strong>.
+              This Privacy Policy explains how <strong>Pinaxa Labs LLP</strong> processes personal data when you visit <strong>FxLabs Prime</strong> websites, apps, dashboards, APIs, and communications (collectively, the <strong>Services</strong>). For Indian residents, we comply with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and the <strong>IT Act 2000/Intermediary Rules 2021</strong>. For users in the EEA/UK we act as a <strong>data controller</strong> under <strong>GDPR/UK GDPR</strong>; for California residents we provide notices required by <strong>CCPA/CPRA</strong>.
             </p>
           </section>
 

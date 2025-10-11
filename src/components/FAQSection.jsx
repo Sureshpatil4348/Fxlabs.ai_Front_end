@@ -5,20 +5,20 @@ const FAQSection = () => {
 
   const faqData = [
     {
-      question: "What is FxLabs?",
-      answer: "FxLabs is a smart trading tool. It helps you see market signals, news impact, and analysis in one place. We do not trade for you. You use our tools to make your own trading choices."
+      question: "What is FxLabs Prime?",
+      answer: "FxLabs Prime is a smart trading tool. It helps you see market signals, news impact, and analysis in one place. We do not trade for you. You use our tools to make your own trading choices."
     },
     {
       question: "On which email id i will receive the alerts?",
       answer: "You will receive the alerts to the registered mail id"
     },
     {
-      question: "How can I start using FxLabs?",
+      question: "How can I start using FxLabs Prime?",
       answer: "Just sign up on our website, choose a plan (Free, Quarterly, or Yearly), and pay online. After payment, you will get login details by email."
     },
     {
-      question: "Can I use FxLabs on my phone?",
-      answer: "Yes. FxLabs works on mobile, tablet, and computer. You only need internet and a browser to use it."
+      question: "Can I use FxLabs Prime on my phone?",
+      answer: "Yes. FxLabs Prime works on mobile, tablet, and computer. You only need internet and a browser to use it."
     },
     {
       question: "What if my payment fails?",
@@ -29,7 +29,7 @@ const FAQSection = () => {
       answer: "No refunds for normal use. Refunds are only given if:\n\n1.You paid twice by mistake.\n\n2.There was a system error and you could not use the service."
     },
     {
-      question: "Is my data safe with FxLabs?",
+      question: "Is my data safe with FxLabs Prime?",
       answer: "Yes. We use strong security, encryption, and do not sell your data. Your info is safe and private."
     },
     {

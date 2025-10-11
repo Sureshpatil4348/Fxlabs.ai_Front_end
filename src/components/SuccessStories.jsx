@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext'
 
 const testimonials = [
   {
-    quote: 'FXLabs gives our macro and quant teams a single view of the market. We\'ve cut mis-trades by 30% and improved execution alignment across desks.',
+    quote: 'FxLabs Prime gives our macro and quant teams a single view of the market. We\'ve cut mis-trades by 30% and improved execution alignment across desks.',
     name: 'Global Macro Lead',
     firm: 'Tier-1 Prop Fund'
   },
@@ -39,7 +39,7 @@ const SuccessStories = () => {
             </h2>
           </div>
           <p className={`max-w-xl text-base leading-relaxed sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            Elite teams across FX, commodities and crypto rely on FXLabs for decisive, real-time intelligence. Here’s how they describe the shift.
+            Elite teams across FX, commodities and crypto rely on FxLabs Prime for decisive, real-time intelligence. Here's how they describe the shift.
           </p>
         </div>
 

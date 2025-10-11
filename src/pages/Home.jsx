@@ -32,10 +32,10 @@ const Home = () => {
           window.__FX_IP_INFO__ = data
         }
         // Requirement: print the result (visible in DevTools)
-        console.log('[FXLabs] IP info:', data)
+        console.log('[FxLabs Prime] IP info:', data)
       } catch (err) {
         if (!cancelled) {
-          console.warn('[FXLabs] IP info fetch error:', err?.message || err)
+          console.warn('[FxLabs Prime] IP info fetch error:', err?.message || err)
         }
       }
     })()

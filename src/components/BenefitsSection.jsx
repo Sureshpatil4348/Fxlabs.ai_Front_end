@@ -51,13 +51,13 @@ import {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-8 pb-16 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-4">
-              <p className="text-[11px] uppercase tracking-[0.5em] text-gray-500">The FXLabs edge</p>
+              <p className="text-[11px] uppercase tracking-[0.5em] text-gray-500">The FxLabs Prime edge</p>
               <h2 className={`text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 Precision infrastructure for trading leaders
               </h2>
             </div>
             <p className={`max-w-xl text-base leading-relaxed sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Every workflow is distilled to the essentials—clarity, speed and confidence. FXLabs orchestrates your data, signals and execution into a single, premium surface.
+              Every workflow is distilled to the essentials—clarity, speed and confidence. FxLabs Prime orchestrates your data, signals and execution into a single, premium surface.
             </p>
           </div>
   

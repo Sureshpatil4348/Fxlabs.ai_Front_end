@@ -287,7 +287,7 @@ const HeroSection = () => {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
                     <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-[#03c05d]" />
                   </div>
-                  <span className="text-gray-800 dark:text-white text-sm sm:text-base font-bold font-poppins">FXLabs - decode the Market with AI</span>
+                  <span className="text-gray-800 dark:text-white text-sm sm:text-base font-bold font-poppins">FxLabs Prime - decode the Market with AI</span>
                 </div>
                 <div className="flex items-center space-x-2 bg-[#03c05d]/20 backdrop-blur-md rounded-lg px-3 py-2 border border-[#03c05d]/30">
                   <div className="w-2 h-2 bg-[#03c05d] rounded-full animate-pulse"></div>

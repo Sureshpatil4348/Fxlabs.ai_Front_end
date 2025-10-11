@@ -1,8 +1,8 @@
-# FXLabs.AI Dashboard - Advanced Forex Analysis Platform
+# FxLabs Prime Dashboard - Advanced Forex Analysis Platform
 
 ## Overview
 
-The FXLabs.AI Dashboard is a comprehensive forex analysis platform that transforms the original MT5 React Frontend into an advanced trading intelligence system. It provides currency strength monitoring and AI-powered news analysis.
+The FxLabs Prime Dashboard is a comprehensive forex analysis platform that transforms the original MT5 React Frontend into an advanced trading intelligence system. It provides currency strength monitoring and AI-powered news analysis.
 
 ## 🚀 New Features
 
@@ -235,4 +235,4 @@ npm start
 
 For technical support or feature requests, please refer to the development team or create an issue in the project repository.
 
-**FXLabs.AI Dashboard v2.0** - Transforming Forex Analysis with AI Intelligence
+**FxLabs Prime Dashboard v2.0** - Transforming Forex Analysis with AI Intelligence

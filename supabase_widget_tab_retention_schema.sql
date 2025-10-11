@@ -1,5 +1,5 @@
 -- =====================================================================
--- Widget Tab Retention Schema for FXLabs.ai
+-- Widget Tab Retention Schema for FxLabs Prime
 -- =====================================================================
 -- Purpose: Store user-specific widget states, configurations, and preferences
 --          for tools tab widgets (LotSizeCalculator, MultiTimeAnalysis, MultiIndicatorHeatmap)

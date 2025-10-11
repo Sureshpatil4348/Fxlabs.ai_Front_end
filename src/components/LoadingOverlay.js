@@ -6,7 +6,7 @@ const LoadingOverlay = ({ status, connectionAttempts, onRetry }) => {
     switch (status) {
       case 'INITIALIZING':
         return {
-          title: 'Initializing FXLabs Dashboard',
+          title: 'Initializing FxLabs Prime Dashboard',
           message: 'Preparing to connect to market data servers...',
           icon: <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />,
           showProgress: false

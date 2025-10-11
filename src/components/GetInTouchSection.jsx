@@ -50,7 +50,7 @@ const GetInTouchSection = () => {
             Get in Touch
           </h2>
           <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            Our team of experts is ready to answer your questions and help you discover how FXLabs can transform your trading.
+            Our team of experts is ready to answer your questions and help you discover how FxLabs Prime can transform your trading.
           </p>
         </div>
 

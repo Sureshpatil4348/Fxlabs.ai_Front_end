@@ -511,7 +511,7 @@ const useCurrencyStrengthStore = create(
           meta[tf] = bar;
         });
         const payload = { strengths: obj, bars: meta };
-        localStorage.setItem('fxlabs.currencyStrength.snapshots', JSON.stringify(payload));
+        localStorage.setItem('fxlabsprime.currencyStrength.snapshots', JSON.stringify(payload));
       } catch (_e) {
         // ignore persistence errors (e.g., SSR)
       }
@@ -520,7 +520,7 @@ const useCurrencyStrengthStore = create(
     // Read a snapshot for a timeframe from localStorage
     readStrengthSnapshotFromLocalStorage: (tf) => {
       try {
-        const raw = localStorage.getItem('fxlabs.currencyStrength.snapshots');
+        const raw = localStorage.getItem('fxlabsprime.currencyStrength.snapshots');
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         const strengths = parsed?.strengths || {};

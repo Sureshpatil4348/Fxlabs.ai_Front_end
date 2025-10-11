@@ -48,7 +48,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                   >
                     <img 
                       src={require('../assets/blacklogo.png')} 
-                      alt="FXLabs Logo" 
+                      alt="FxLabs Prime Logo" 
                       className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain transition-all duration-300 group-hover:scale-105"
                     />
                   </a>

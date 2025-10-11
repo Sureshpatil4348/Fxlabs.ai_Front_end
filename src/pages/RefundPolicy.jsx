@@ -32,7 +32,7 @@ const RefundPolicy = () => {
           </h1>
           <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             <p><strong>Effective Date:</strong> 01/10/2025</p>
-            <p><strong>Entity:</strong> Pinaxa Labs LLP (brand: FX Labs)</p>
+            <p><strong>Entity:</strong> Pinaxa Labs LLP (brand: FxLabs Prime)</p>
           </div>
         </div>
 

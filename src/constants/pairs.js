@@ -47,7 +47,7 @@ export const SUPPORTED_PAIRS = [
   ...CRYPTO_PAIRS
 ];
 
-// Broker symbol helpers (FxLabs typically uses trailing 'm')
+// Broker symbol helpers (FxLabs Prime typically uses trailing 'm')
 export const BROKER_SUFFIX = 'm';
 
 export function toBrokerSymbol(symbol = '') {
