@@ -10,12 +10,16 @@ import { formatSymbolDisplay } from '../utils/formatters'
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(1)
   const { connect, isConnected } = useMarketStore()
-  const { ticksBySymbol, pricingBySymbol } = useMarketCacheStore()
+  const { ticksBySymbol, pricingBySymbol, quantumBySymbol } = useMarketCacheStore()
   const [eurChangePct, setEurChangePct] = useState(null)
   const [xauChangePct, setXauChangePct] = useState(null)
   const [_isFreeTrialOpen, _setIsFreeTrialOpen] = useState(false)
   
   const [_marketTrend] = useState('Bearish')
+
+  // Quantum analysis data for EUR/USD and XAU/USD
+  const [eurQuantum, setEurQuantum] = useState(null)
+  const [xauQuantum, setXauQuantum] = useState(null)
 
   // Ensure live connection for hero pricing
   useEffect(() => {
@@ -31,6 +35,10 @@ const HeroSection = () => {
         const cacheStore = useMarketCacheStore.getState()
         // Use the ensureSubscriptionsForTrending method to subscribe
         cacheStore.ensureSubscriptionsForTrending(['EURUSDm', 'XAUUSDm'])
+        
+        // Hydrate quantum data for both symbols
+        cacheStore.hydrateQuantumForSymbol('EURUSDm')
+        cacheStore.hydrateQuantumForSymbol('XAUUSDm')
       } catch (error) {
         // Silent error handling
       }
@@ -54,6 +62,63 @@ const HeroSection = () => {
       setXauChangePct(xauPricing.daily_change_pct)
     }
   }, [ticksBySymbol, pricingBySymbol])
+
+  // Track quantum analysis data for EUR/USD and XAU/USD
+  useEffect(() => {
+    const eurQuantumData = quantumBySymbol?.get('EURUSDm')
+    const xauQuantumData = quantumBySymbol?.get('XAUUSDm')
+    
+    if (eurQuantumData) {
+      setEurQuantum(eurQuantumData)
+    }
+    
+    if (xauQuantumData) {
+      setXauQuantum(xauQuantumData)
+    }
+  }, [quantumBySymbol])
+
+  // Helper function to calculate success probability and trend from quantum data
+  const getQuantumAnalysis = (quantumData) => {
+    if (!quantumData || !quantumData.overall) {
+      return { successProbability: 35, trendText: 'Weak Downtrend', trendColor: 'text-red-500 dark:text-red-400' }
+    }
+    
+    // Use swingTrader style for landing page display
+    const styleData = quantumData.overall.swingtrader || quantumData.overall.scalper
+    if (!styleData) {
+      return { successProbability: 35, trendText: 'Weak Downtrend', trendColor: 'text-red-500 dark:text-red-400' }
+    }
+    
+    const buyPct = typeof styleData.buy_percent === 'number' ? styleData.buy_percent : 50
+    const sellPct = typeof styleData.sell_percent === 'number' ? styleData.sell_percent : 50
+    
+    // Success probability = whichever is above 50%
+    const successProbability = Math.max(buyPct, sellPct)
+    
+    // Determine trend text and color
+    let trendText = 'Neutral'
+    let trendColor = 'text-gray-500 dark:text-gray-400'
+    
+    if (buyPct >= 70) {
+      trendText = 'Strong Uptrend'
+      trendColor = 'text-green-600 dark:text-green-400'
+    } else if (sellPct >= 70) {
+      trendText = 'Strong Downtrend'
+      trendColor = 'text-red-600 dark:text-red-400'
+    } else if (buyPct > sellPct && buyPct > 50) {
+      trendText = 'Weak Uptrend'
+      trendColor = 'text-green-500 dark:text-green-400'
+    } else if (sellPct > buyPct && sellPct > 50) {
+      trendText = 'Weak Downtrend'
+      trendColor = 'text-red-500 dark:text-red-400'
+    } else if (Math.abs(buyPct - sellPct) <= 5) {
+      // If within 5% of each other, consider it neutral
+      trendText = 'Neutral'
+      trendColor = 'text-gray-500 dark:text-gray-400'
+    }
+    
+    return { successProbability, trendText, trendColor }
+  }
 
   const LivePrice = ({ symbol, precision = 5 }) => {
     // Get pricing data from market cache store
@@ -255,25 +320,32 @@ const HeroSection = () => {
                   
                   
                   <div className="space-y-1.5 sm:space-y-2">
-                    <div>
-                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                        <div className="bg-[#03c05d] h-1.5 rounded-full" style={{width: '35%'}}></div>
-                      </div>
-                      <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">35%</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1.5">
-                        <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                        <span className="text-red-500 dark:text-red-400 text-xs sm:text-sm">Weak Downtrend</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                        <Clock className="w-2.5 h-2.5" />
-                        <span>Just now</span>
-                      </div>
-                    </div>
+                    {(() => {
+                      const { successProbability, trendText, trendColor } = getQuantumAnalysis(eurQuantum)
+                      return (
+                        <>
+                          <div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                              <div className="bg-[#03c05d] h-1.5 rounded-full transition-all duration-500" style={{width: `${successProbability}%`}}></div>
+                            </div>
+                            <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">{Math.round(successProbability)}%</div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-1.5">
+                              <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">✓</span>
+                              </div>
+                              <span className={`${trendColor} text-xs sm:text-sm font-medium`}>{trendText}</span>
+                            </div>
+                            <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span>Just now</span>
+                            </div>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
 
@@ -300,25 +372,32 @@ const HeroSection = () => {
                   
                   
                   <div className="space-y-1.5 sm:space-y-2">
-                    <div>
-                      <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
-                      <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-1.5">
-                        <div className="bg-[#03c05d] h-1.5 rounded-full" style={{width: '35%'}}></div>
-                      </div>
-                      <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">35%</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1.5">
-                        <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                        <span className="text-red-500 dark:text-red-400 text-xs sm:text-sm">Weak Downtrend</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                        <Clock className="w-2.5 h-2.5" />
-                        <span>Just now</span>
-                      </div>
-                    </div>
+                    {(() => {
+                      const { successProbability, trendText, trendColor } = getQuantumAnalysis(xauQuantum)
+                      return (
+                        <>
+                          <div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                              <div className="bg-[#03c05d] h-1.5 rounded-full transition-all duration-500" style={{width: `${successProbability}%`}}></div>
+                            </div>
+                            <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">{Math.round(successProbability)}%</div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-1.5">
+                              <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">✓</span>
+                              </div>
+                              <span className={`${trendColor} text-xs sm:text-sm font-medium`}>{trendText}</span>
+                            </div>
+                            <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span>Just now</span>
+                            </div>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
               </div>

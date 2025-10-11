@@ -2,6 +2,33 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Live Quantum Analysis in Hero Section (Latest)
+
+The landing page hero section now displays real-time quantum analysis data for EUR/USD and XAU/USD pairs, driven by live market data from the Quantum Analysis meter.
+
+### Changes
+- **Live Success Probability**: Success probability % now shows the higher value between buy and sell percentages (whichever is above 50%)
+- **Dynamic Trend Indicators**: Trend text is calculated based on buy/sell percentages:
+  - **Strong Uptrend**: Buy percentage ≥ 70%
+  - **Strong Downtrend**: Sell percentage ≥ 70%
+  - **Weak Uptrend**: Buy percentage > Sell and Buy > 50% (but < 70%)
+  - **Weak Downtrend**: Sell percentage > Buy and Sell > 50% (but < 70%)
+  - **Neutral**: Buy and Sell percentages within 5% of each other
+- **Real-time updates**: Data automatically refreshes as quantum analysis data updates via WebSocket
+- **Smooth transitions**: Progress bars animate smoothly when values change
+
+### Implementation Details
+- Integrated `useMarketCacheStore` to access `quantumBySymbol` Map
+- Added automatic hydration of quantum data for EURUSDm and XAUUSDm symbols on component mount
+- Uses `swingtrader` style data for landing page display (fallback to `scalper` if not available)
+- Color-coded trend indicators: green for uptrends, red for downtrends, gray for neutral
+- Files affected: `src/components/HeroSection.jsx`
+
+### Data Source
+- Quantum data comes from the Multi-Indicator Heatmap (Quantum Analysis) component
+- Data includes buy_percent and sell_percent for multiple trading styles
+- WebSocket updates ensure real-time accuracy
+
 ## Tools Tab Mobile View Reordering (Latest)
 
 The tools tab items have been reordered specifically for mobile view to improve user experience:
