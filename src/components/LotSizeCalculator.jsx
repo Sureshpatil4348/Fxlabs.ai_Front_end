@@ -234,17 +234,17 @@ const LotSizeCalculator = () => {
     if (formData.instrumentType === 'forex') {
       // Forex calculation: Lot Size = (Account Balance × Risk %) / (Stop Loss (pips) × Pip Value)
       lotSize = riskAmount / (stopLoss * pipValue);
-      calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / (${stopLoss} pips × $${pipValue}) = ${lotSize.toFixed(4)} lots`;
+      calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / (${stopLoss} pips × $${pipValue}) = ${lotSize.toFixed(2)} lots`;
     } else if (formData.instrumentType === 'commodities') {
       // Commodities calculation: Lot Size = (Account Balance × Risk %) / (Stop Loss (price difference) × Contract Size)
       lotSize = riskAmount / (stopLoss * contractSize);
-      calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / (${stopLoss} × ${contractSize}) = ${lotSize.toFixed(4)} contracts`;
+      calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / (${stopLoss} × ${contractSize}) = ${lotSize.toFixed(2)} contracts`;
     } else if (formData.instrumentType === 'crypto') {
       // Crypto calculation: Position Size = (Account Balance × Risk %) / Stop Loss (price difference)
       lotSize = riskAmount / stopLoss;
       const currentPrice = parseFloat(formData.currentPrice) || 0;
       const baseCurrency = formData.currencyPair.replace('USDm', '').replace('USD', '');
-      calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / ${stopLoss} = ${lotSize.toFixed(8)} ${baseCurrency}`;
+      calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / ${stopLoss} = ${lotSize.toFixed(2)} ${baseCurrency}`;
       if (currentPrice > 0) {
         calculation += ` (at $${currentPrice.toFixed(2)})`;
       }
@@ -591,7 +591,7 @@ const LotSizeCalculator = () => {
                         <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Position Size</span>
                       </div>
                       <div className="text-xl font-bold text-green-600 dark:text-green-400">
-                        {result.lotSize.toFixed(result.instrumentType === 'crypto' ? 8 : 4)}
+                        {result.lotSize.toFixed(2)}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {result.resultUnit.charAt(0).toUpperCase() + result.resultUnit.slice(1)} to trade for this position

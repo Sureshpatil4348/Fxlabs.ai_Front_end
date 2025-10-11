@@ -94,6 +94,15 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Lot Size Calculator - Decimal Precision Standardization (Latest)
+- **Standardized decimal places**: All calculation results now display with maximum 2 decimal places for consistency
+  - **Forex calculations**: Changed from 4 decimal places to 2 decimal places
+  - **Commodities calculations**: Changed from 4 decimal places to 2 decimal places  
+  - **Crypto calculations**: Changed from 8 decimal places to 2 decimal places
+  - **Position size display**: Updated result display to consistently show 2 decimal places
+- **Impact**: Cleaner, more readable calculation results across all instrument types
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ### Lot Size Calculator Result Unit Capitalization (Latest)
 - **Fixed text display**: The result unit (lots/contracts/units) now displays with proper capitalization
   - **Position Size description**: Changed from "lots to trade for this position" to "Lots to trade for this position"
