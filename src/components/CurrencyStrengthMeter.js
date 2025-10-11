@@ -42,10 +42,10 @@ const CurrencyHeatmap = ({ strengthData, isLoading }) => {
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Strongest Currencies Row */}
       <div>
-        <h4 className="text-sm font-medium text-green-700 dark:text-green-400 mb-2 px-1">Strongest Currencies</h4>
+        <h4 className="text-sm font-medium text-green-700 dark:text-green-400 mb-1.5 px-1">Strongest Currencies</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {strongestCurrencies.map((item) => (
             <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} isLoading={isLoading} />
@@ -55,7 +55,7 @@ const CurrencyHeatmap = ({ strengthData, isLoading }) => {
 
       {/* Weakest Currencies Row */}
       <div>
-        <h4 className="text-sm font-medium text-red-700 dark:text-red-400 mb-2 px-1">Weakest Currencies</h4>
+        <h4 className="text-sm font-medium text-red-700 dark:text-red-400 mb-1.5 px-1">Weakest Currencies</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {weakestCurrencies.map((item) => (
             <CurrencyCard key={item.currency} currency={item.currency} strength={item.strength} isLoading={isLoading} />
@@ -308,9 +308,9 @@ const CurrencyStrengthMeter = () => {
 
 
   return (
-    <div className="widget-card px-3 pb-2 z-10 relative h-full flex flex-col">
-      {/* Fixed Header Section */}
-      <div className="flex-shrink-0 pt-1">
+    <div className="widget-card px-3 pb-2 z-10 relative">
+      {/* Header Section */}
+      <div className="pt-1">
         {/* Header */}
         <div className="widget-header flex items-center justify-between mb-3">
           <div>
@@ -357,8 +357,8 @@ const CurrencyStrengthMeter = () => {
 
       </div>
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-2">
+      {/* Content Area */}
+      <div className="px-1 pb-2">
         {strengthData.length > 0 ? (
           <CurrencyHeatmap strengthData={strengthData} isLoading={isDataLoading} />
         ) : (
