@@ -321,80 +321,83 @@ const InteractiveFooter = () => {
             </div>
           </div>
 
-          {/* Quick Links Column */}
-          <div className="space-y-4">
-            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Quick Links
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link 
-                  to="/" 
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => scrollToSection('subscription')}
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  Pricing
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => scrollToSection('video-explanation')}
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  About
-                </button>
-              </li>
-              <li>
-                <Link 
-                  to="/contact" 
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Quick Links and Legal - Side by Side on Mobile */}
+          <div className="grid grid-cols-2 gap-6 sm:col-span-1 lg:col-span-2">
+            {/* Quick Links Column */}
+            <div className="space-y-4">
+              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Quick Links
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link 
+                    to="/" 
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection('subscription')}
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    Pricing
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection('video-explanation')}
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    About
+                  </button>
+                </li>
+                <li>
+                  <Link 
+                    to="/contact" 
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Legal Column */}
-          <div className="space-y-4">
-            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Legal
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link 
-                  to="/privacy-policy" 
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/terms-of-service" 
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/refund-policy" 
-                  className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  Refund Policy
-                </Link>
-              </li>
-            </ul>
+            {/* Legal Column */}
+            <div className="space-y-4">
+              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link 
+                    to="/privacy-policy" 
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/terms-of-service" 
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/refund-policy" 
+                    className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  >
+                    Refund Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Contact Us Column */}
