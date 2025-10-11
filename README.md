@@ -562,7 +562,7 @@ All technical indicator calculations are now performed server-side:
 #### TradingView Widget replaces Heatmap (Latest)
 
 - Replaced `MultiIndicatorHeatmap` with `TradingViewWidget` on Dashboard.
-- Mobile: TradingView shown in the first section (h-96).
+- Mobile: TradingView widget is hidden (removed from mobile view for better performance).
 - Desktop: TradingView occupies the top-left large area (col-span 8, row-span 7).
 - Component: `src/components/TradingViewWidget.jsx`.
 
