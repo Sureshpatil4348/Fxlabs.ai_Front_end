@@ -167,7 +167,9 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
     // Backward-compat single segment (first), if any
     const projectedSegmentInViewer = projectedSegmentsInViewer[0] || null;
     
-    // Debug logging for New York session
+    // Debug logging disabled for production performance
+    // Uncomment below for debugging session calculations
+    /*
     if (def.tz === 'America/New_York' && process.env.NODE_ENV === 'development') {
       console.log(`\n=== NY Session Debug ===`);
       console.log(`Viewer window: ${viewerWindow.startUTC.toISOString()} → ${viewerWindow.endUTC.toISOString()}`);
@@ -192,6 +194,7 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
       console.log(`  isOpenNow: ${isOpenNow}`);
       console.log(`======================\n`);
     }
+    */
     
     const projected = projectedSegmentInViewer;
 

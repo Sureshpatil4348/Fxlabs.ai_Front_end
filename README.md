@@ -94,6 +94,15 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
+### Forex Market Time Zone Converter - Performance Optimization (Latest)
+- **Reduced update frequency**: Changed time update interval from 1 second to 10 seconds
+  - **Timer interval**: Modified `setInterval` from 1000ms to 10000ms for better performance
+  - **Debug logs**: Commented out verbose NY Session debug logs that were flooding the console
+  - **Impact**: Significantly reduced console log spam and improved browser performance
+  - **Files affected**: 
+    - `src/components/MultiTimeAnalysis.jsx` - Timer interval update
+    - `src/utils/marketHoursEngine.js` - Debug logs disabled
+
 ### Lot Size Calculator - Risk:Reward Ratio Enhancement (Latest)
 - **Added Risk:Reward Ratio display**: Calculator now shows the Risk:Reward ratio in the results section
   - **New input field**: Added "Take Profit" field to capture target profit level

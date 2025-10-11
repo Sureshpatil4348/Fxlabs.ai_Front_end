@@ -36,11 +36,11 @@ const ForexMarketTimeZone = () => {
   const lastMinuteRef = useRef(null);
   const [indicatorLeft, setIndicatorLeft] = useState(0);
 
-  // Real-time updates
+  // Real-time updates (every 10 seconds for better performance)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 10000);
 
     return () => clearInterval(timer);
   }, []);
