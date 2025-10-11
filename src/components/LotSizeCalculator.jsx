@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 
 import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS, toBrokerSymbol } from '../constants/pairs';
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
-import useRSITrackerStore from '../store/useRSITrackerStore';
 import { Button } from './ui/button';
 import { CardTitle } from './ui/card';
 
@@ -15,8 +14,7 @@ const LotSizeCalculator = () => {
     instrumentType: 'forex',
     currencyPair: 'EURUSDm',
     contractSize: '100000',
-    pipValue: '10',
-    currentPrice: ''
+    pipValue: '10'
   });
 
   const [result, setResult] = useState(null);
@@ -25,11 +23,6 @@ const LotSizeCalculator = () => {
   const resultRef = useRef(null);
   const saveTimeoutRef = useRef(null);
 
-  // Get real-time data from RSI tracker store
-  const { 
-    isConnected, 
-    getLatestTickForSymbol
-  } = useRSITrackerStore();
 
   // Instrument configurations with all available pairs
   const instrumentConfigs = useMemo(() => {
@@ -88,7 +81,7 @@ const LotSizeCalculator = () => {
     };
   }, []);
 
-  // Update pip value, contract size, and current price when currency pair or instrument type changes
+  // Update pip value and contract size when currency pair or instrument type changes
   useEffect(() => {
     const config = instrumentConfigs[formData.instrumentType];
     let selectedPair = config.pairs.find(pair => pair.symbol === formData.currencyPair);
@@ -109,70 +102,15 @@ const LotSizeCalculator = () => {
     }
     
     if (selectedPair) {
-      // Store the current symbol to check for stale updates
-      const currentSymbol = selectedPair.symbol;
-      
-      // Get real-time price for the selected pair
-      const latestTick = getLatestTickForSymbol(currentSymbol);
-      const currentPrice = latestTick?.bid || 0;
-      
-      // Update form data, ensuring we're still on the same symbol (prevent race conditions)
-      setFormData(prev => {
-        // Only update if we're still on the same symbol
-        if (prev.currencyPair !== currentSymbol) {
-          return prev;
-        }
-        
-        return {
-          ...prev,
-          pipValue: selectedPair.pipValue.toString(),
-          contractSize: selectedPair.contractSize.toString(),
-          currentPrice: currentPrice > 0 ? currentPrice.toFixed(5) : ''
-        };
-      });
+      // Update form data with pip value and contract size
+      setFormData(prev => ({
+        ...prev,
+        pipValue: selectedPair.pipValue.toString(),
+        contractSize: selectedPair.contractSize.toString()
+      }));
     }
-  }, [formData.currencyPair, formData.instrumentType, instrumentConfigs, getLatestTickForSymbol]);
+  }, [formData.currencyPair, formData.instrumentType, instrumentConfigs]);
 
-  // Auto-update current price when real-time data changes (only for crypto and commodities)
-  useEffect(() => {
-    if (!isConnected) return;
-    if (formData.instrumentType !== 'crypto' && formData.instrumentType !== 'commodities') return;
-    if (!formData.currencyPair) return;
-    
-    // Store the current symbol at the time of effect execution
-    const currentSymbol = formData.currencyPair;
-    
-    // Set up interval for real-time price updates
-    const intervalId = setInterval(() => {
-      const latestTick = getLatestTickForSymbol(currentSymbol);
-      const currentPrice = latestTick?.bid || 0;
-      
-      if (currentPrice > 0) {
-        setFormData(prev => {
-          // Critical check: only update if still on the same symbol
-          if (prev.currencyPair !== currentSymbol) {
-            return prev;
-          }
-          
-          // Only update if price has changed (avoid unnecessary re-renders)
-          const prevPrice = parseFloat(prev.currentPrice) || 0;
-          if (Math.abs(prevPrice - currentPrice) < 0.00001) {
-            return prev;
-          }
-          
-          return {
-            ...prev,
-            currentPrice: currentPrice.toFixed(5)
-          };
-        });
-      }
-    }, 1000); // Update every second
-    
-    // Cleanup interval when symbol changes or component unmounts
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [isConnected, formData.currencyPair, formData.instrumentType, getLatestTickForSymbol]);
 
   // Load saved widget state on mount
   useEffect(() => {
@@ -182,7 +120,15 @@ const LotSizeCalculator = () => {
         if (savedState && Object.keys(savedState).length > 0) {
           // Only restore form inputs, not calculated results
           const { lastCalculation, ...restState } = savedState;
-          setFormData(prev => ({ ...prev, ...restState }));
+          
+          // Ensure stopLoss and takeProfit have default values if empty
+          const mergedState = {
+            ...restState,
+            stopLoss: restState.stopLoss || '100',
+            takeProfit: restState.takeProfit || '200'
+          };
+          
+          setFormData(prev => ({ ...prev, ...mergedState }));
           
           // Restore last calculation if it exists
           if (lastCalculation) {
@@ -256,9 +202,6 @@ const LotSizeCalculator = () => {
       newErrors.takeProfit = 'Take profit must be greater than 0';
     }
 
-    if ((formData.instrumentType === 'crypto' || formData.instrumentType === 'commodities') && (!formData.currentPrice || parseFloat(formData.currentPrice) <= 0)) {
-      newErrors.currentPrice = `Current price is required for ${formData.instrumentType} calculations`;
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -298,12 +241,8 @@ const LotSizeCalculator = () => {
     } else if (formData.instrumentType === 'crypto') {
       // Crypto calculation: Position Size = (Account Balance × Risk %) / Stop Loss (price difference)
       lotSize = riskAmount / stopLoss;
-      const currentPrice = parseFloat(formData.currentPrice) || 0;
       const baseCurrency = formData.currencyPair.replace('USDm', '').replace('USD', '');
       calculation = `(${accountBalance.toFixed(2)} × ${(riskPercentage * 100).toFixed(1)}%) / ${stopLoss} = ${lotSize.toFixed(2)} ${baseCurrency}`;
-      if (currentPrice > 0) {
-        calculation += ` (at $${currentPrice.toFixed(2)})`;
-      }
     }
 
     setResult({
@@ -364,8 +303,7 @@ const LotSizeCalculator = () => {
       instrumentType: 'forex',
       currencyPair: 'EURUSDm',
       contractSize: '100000',
-      pipValue: '10',
-      currentPrice: ''
+      pipValue: '10'
     });
     setResult(null);
     setErrors({});
@@ -411,7 +349,7 @@ const LotSizeCalculator = () => {
             {/* LEFT SIDE - Input Panel */}
             <div className="flex flex-col px-4 sm:pl-4 sm:pr-2">
               {/* Input Form */}
-              <div className="space-y-2.5 flex-1">
+                <div className="space-y-2.5">
             {/* Account Balance */}
             <div>
               <div className="flex items-center gap-3">
@@ -507,9 +445,10 @@ const LotSizeCalculator = () => {
                     className={`w-full h-10 pl-3 pr-16 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.stopLoss ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder={formData.instrumentType === 'forex' ? '50' : '100'}
                   />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">{instrumentConfigs[formData.instrumentType].stopLossUnit}</span>
+                  {(!formData.stopLoss || !formData.stopLoss.trim()) && (
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">{instrumentConfigs[formData.instrumentType].stopLossUnit}</span>
+                  )}
                 </div>
               </div>
               {errors.stopLoss && (
@@ -533,9 +472,10 @@ const LotSizeCalculator = () => {
                     className={`w-full h-10 pl-3 pr-16 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.takeProfit ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder={formData.instrumentType === 'forex' ? '100' : '200'}
                   />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">{instrumentConfigs[formData.instrumentType].stopLossUnit}</span>
+                  {(!formData.takeProfit || !formData.takeProfit.trim()) && (
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">{instrumentConfigs[formData.instrumentType].stopLossUnit}</span>
+                  )}
                 </div>
               </div>
               {errors.takeProfit && (
@@ -543,62 +483,6 @@ const LotSizeCalculator = () => {
               )}
             </div>
 
-            {/* Current Price (for crypto and commodities) */}
-            {(formData.instrumentType === 'crypto' || formData.instrumentType === 'commodities') && (
-              <div>
-                <div className="flex items-center gap-3">
-                  <label htmlFor="currentPrice" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px] flex items-center gap-1">
-                    Current Price
-                    {isConnected && formData.currentPrice && (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                        Live
-                      </span>
-                    )}
-                  </label>
-                  <div className="relative group flex-1">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
-                    <input
-                      id="currentPrice"
-                      type="number"
-                      step="0.01"
-                      value={formData.currentPrice}
-                      onChange={(e) => handleInputChange('currentPrice', e.target.value)}
-                      className={`w-full h-10 pl-8 pr-10 text-sm border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
-                        errors.currentPrice ? 'border-red-500' : 'border-gray-300'
-                      } ${isConnected && formData.currentPrice ? 'bg-green-50 dark:bg-green-900/10' : ''}`}
-                      placeholder={isConnected ? "Auto-populated" : "50000"}
-                      readOnly={isConnected && formData.currentPrice}
-                    />
-                    {isConnected && formData.currentPrice && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const latestTick = getLatestTickForSymbol(formData.currencyPair);
-                          const currentPrice = latestTick?.bid || 0;
-                          if (currentPrice > 0) {
-                            handleInputChange('currentPrice', currentPrice.toFixed(5));
-                          }
-                        }}
-                        className="absolute right-2.5 top-1/2 transform -translate-y-1/2 p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
-                        title="Refresh current price"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {errors.currentPrice && (
-                  <p className="text-red-500 text-xs mt-1 ml-[132px]">{errors.currentPrice}</p>
-                )}
-                {isConnected && formData.currentPrice && !errors.currentPrice && (
-                  <p className="text-green-600 dark:text-green-400 text-xs mt-1 ml-[132px]">
-                    Live price from market data
-                  </p>
-                )}
-              </div>
-            )}
               </div>
 
               {/* Action Buttons */}
@@ -628,11 +512,11 @@ const LotSizeCalculator = () => {
             {/* RIGHT SIDE - Result Display */}
             <div className="flex flex-col px-4 lg:pl-4 lg:pr-2 pb-2 sm:pb-0">
               {result ? (
-                <div ref={resultRef} className="space-y-0 sm:space-y-2">
+                <div ref={resultRef} className="space-y-0 sm:space-y-0">
                     {/* All cards in one row on mobile, stacked on desktop */}
-                    <div className="grid grid-cols-3 gap-1 sm:space-y-2 sm:grid-cols-1">
+                    <div className="grid grid-cols-3 gap-1 sm:space-y-0 sm:grid-cols-1">
                       {/* Risk Amount Card */}
-                      <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                      <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
                         <div className="mb-0.5 sm:mb-2">
                           <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Amount</span>
                         </div>
@@ -645,7 +529,7 @@ const LotSizeCalculator = () => {
                       </div>
 
                       {/* Position Size Card */}
-                      <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                      <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
                         <div className="mb-0.5 sm:mb-2">
                           <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Position Size</span>
                         </div>
@@ -659,7 +543,7 @@ const LotSizeCalculator = () => {
 
                       {/* Risk Reward Ratio Card - Only show if take profit is provided */}
                       {result.hasTakeProfit && result.riskRewardRatio !== null ? (
-                        <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                        <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
                           <div className="mb-0.5 sm:mb-2">
                             <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward</span>
                           </div>
@@ -671,7 +555,7 @@ const LotSizeCalculator = () => {
                           </p>
                         </div>
                       ) : (
-                        <div className="px-1.5 pt-1 pb-0 sm:p-3">
+                        <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
                           <div className="mb-0.5 sm:mb-2">
                             <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward</span>
                           </div>

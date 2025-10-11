@@ -234,10 +234,10 @@ All features that relied on client-side calculations now expect server-provided 
     - Detects invalid pair for current instrument type and auto-selects first available pair
     - Triggers re-render with new pair, which then fetches correct price
   - **User experience improvement**:
-    - Switching from Forex → Commodities: Automatically selects Gold (XAU/USD) with current price
-    - Switching from Commodities → Crypto: Automatically selects BTC/USD with current price  
-    - Switching from Crypto → Forex: Automatically selects EUR/USD with current price
-    - No more blank prices or stale data when switching tabs
+    - Switching from Forex → Commodities: Automatically selects Gold (XAU/USD)
+    - Switching from Commodities → Crypto: Automatically selects BTC/USD  
+    - Switching from Crypto → Forex: Automatically selects EUR/USD
+    - Seamless instrument type switching without data loss
   - **Technical details**:
     - Lines 96-109: Added pair validation and auto-selection logic
     - Early return pattern triggers effect re-run with correct pair
@@ -245,25 +245,24 @@ All features that relied on client-side calculations now expect server-provided 
   - **Impact**: Seamless tab switching with immediate price updates for the selected instrument
 - **Files affected**: `src/components/LotSizeCalculator.jsx`
 
-### Lot Size Calculator - Price Fetching Race Condition Fix (Latest)
-- **Fixed critical bug with lingering old prices**: Eliminated race conditions when switching between instruments/pairs
-  - **Root cause**: Two separate useEffect hooks updating current price caused race conditions where old prices could briefly appear or linger
-  - **Solution implemented**: 
-    - Added symbol validation checks in `setFormData` callbacks to prevent stale updates
-    - Combined price fetching logic with proper cleanup mechanisms
-    - Added interval-based real-time updates for crypto/commodities with symbol consistency checks
-    - Added price change detection to prevent unnecessary re-renders (0.00001 threshold)
-  - **Key improvements**:
-    - **Race condition prevention**: All price updates now verify the symbol hasn't changed before applying
-    - **Proper cleanup**: Intervals are cleared when symbols change or component unmounts
-    - **Performance optimization**: Price updates only trigger when actual price changes exceed threshold
-    - **Type-specific updates**: Real-time polling only for crypto and commodities (forex uses WebSocket updates)
+### Lot Size Calculator - Current Price Removal (Latest)
+- **Removed Current Price functionality**: Simplified the calculator by removing current price input and real-time price updates
+  - **Changes made**: 
+    - Removed current price input field from the UI
+    - Removed real-time price fetching logic and related useEffect hooks
+    - Removed current price validation from form validation
+    - Simplified calculation logic to not depend on current price
+    - Removed unused imports (useRSITrackerStore)
+  - **Benefits**:
+    - **Simplified UI**: Cleaner interface without current price complexity
+    - **Better performance**: No real-time price fetching reduces API calls and component re-renders
+    - **Easier maintenance**: Less complex state management and fewer edge cases
   - **Technical details**:
-    - Lines 105-117: Added symbol validation in main price update effect
-    - Lines 126-165: New real-time price update effect with proper cleanup and validation
-    - Used closure-based symbol tracking to detect stale updates
-    - 1-second update interval for smooth real-time price tracking
-  - **Impact**: Users can now switch between instruments/pairs without any lingering old price values
+    - Removed currentPrice from formData state
+    - Removed real-time price update useEffect hooks
+    - Simplified calculation logic in calculateLotSize function
+    - Cleaned up unused imports and dependencies
+  - **Impact**: Simplified calculator interface with better performance and easier maintenance
 - **Files affected**: `src/components/LotSizeCalculator.jsx`
 
 ### Lot Size Calculator - Risk Reward Ratio Text Format (Latest)
