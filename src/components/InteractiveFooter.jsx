@@ -413,6 +413,17 @@ const InteractiveFooter = () => {
                 </span>
               </div>
               <div className="flex items-start space-x-3">
+                <MessageCircle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                <a 
+                  href="https://t.me/fxlabsprime" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={`text-sm transition-colors duration-200 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  t.me/fxlabsprime
+                </a>
+              </div>
+              <div className="flex items-start space-x-3">
                 <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   253,Junnur, Mudhol - 587313 Karnataka, India
