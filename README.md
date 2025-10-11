@@ -94,7 +94,20 @@ All features that relied on client-side calculations now expect server-provided 
 
 ## Recent Fixes (Latest)
 
-### Lot Size Calculator - UI Alignment (Latest)
+### Lot Size Calculator - Full Height Cards Layout (Latest)
+- **Made input and output cards extend to full height**: Cards now maintain consistent height even with minimal content
+  - **Grid container**: Removed forced minimum height to prevent unnecessary scrollbars
+  - **Input card**: Added `flex flex-col` and made input form area `flex-1` to fill available space naturally
+  - **Output card**: Already had `flex flex-col` with `flex-1` content area for proper expansion
+  - **Impact**: Both cards now have equal height based on content needs, creating balanced appearance without forced scrollbars
+
+### Lot Size Calculator - Extra Space & Scrollbar Fix
+- **Removed unnecessary height constraints and outer card wrapper**: Fixed extra space below calculator causing unnecessary scrollbar
+  - **Root cause**: Outer container had `h-full` class AND result panel had `min-h-[400px]` forcing minimum height, plus unnecessary outer Card wrapper
+  - **Solution**: Removed `h-full` class from line 296, `min-h-[400px]` from line 523, and entire outer Card wrapper, keeping only the two inner cards (input and output panels)
+  - **Impact**: Calculator now has clean layout with only the essential input and output cards, eliminating unnecessary scrollbars and improving UX
+
+### Lot Size Calculator - UI Alignment
 - **Reduced excessive border radius and margins**: Aligned Lot Size Calculator cards with other widgets
   - **Container cards**: Changed border radius from `rounded-2xl` to `rounded-lg` for consistency
   - **CardHeader padding**: Override default `p-6` with `!px-2 !pt-3 !pb-2` for minimal horizontal margin

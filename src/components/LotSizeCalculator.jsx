@@ -4,7 +4,6 @@ import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS, toBrok
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { Button } from './ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 
 const LotSizeCalculator = () => {
   const [formData, setFormData] = useState({
@@ -293,45 +292,44 @@ const LotSizeCalculator = () => {
 
 
   return (
-    <div className="h-full">
-      <Card className="bg-transparent shadow-none border-0 relative">
-        <CardHeader className="!px-2 !pt-3 !pb-2 relative">
-          <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
-              <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Lot Size Calculator
-            </CardTitle>
-            
-            {/* Instrument Type Selection */}
-            <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 whitespace-nowrap overflow-hidden shadow-sm">
-              {Object.entries(instrumentConfigs).map(([key, config], idx) => (
-                <button
-                  key={key}
-                  onClick={() => handleInputChange('instrumentType', key)}
-                  className={`${
-                    formData.instrumentType === key
-                      ? 'bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm'
-                      : 'bg-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  } px-3 py-1 text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
-                  title={`${config.name} (${config.resultUnit})`}
-                >
-                  {config.name}
-                </button>
-              ))}
-            </div>
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="px-2 pt-3 pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center tools-heading">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Lot Size Calculator
+          </h3>
+          
+          {/* Instrument Type Selection */}
+          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 whitespace-nowrap overflow-hidden shadow-sm">
+            {Object.entries(instrumentConfigs).map(([key, config], idx) => (
+              <button
+                key={key}
+                onClick={() => handleInputChange('instrumentType', key)}
+                className={`${
+                  formData.instrumentType === key
+                    ? 'bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm'
+                    : 'bg-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                } px-3 py-1 text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
+                title={`${config.name} (${config.resultUnit})`}
+              >
+                {config.name}
+              </button>
+            ))}
           </div>
-        </CardHeader>
-        
-        <CardContent className="!p-2 !pt-1">
-          {/* Two Column Layout: Inputs Left, Results Right */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+        </div>
+      </div>
+      
+      {/* Two Column Layout: Inputs Left, Results Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             
             {/* LEFT SIDE - Input Panel */}
-            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm">
+            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm flex flex-col">
               {/* Input Form */}
-              <div className="space-y-2.5">
+              <div className="space-y-2.5 flex-1">
             {/* Account Balance */}
             <div>
               <div className="flex items-center gap-3">
@@ -520,7 +518,7 @@ const LotSizeCalculator = () => {
             </div>
 
             {/* RIGHT SIDE - Result Display */}
-            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm min-h-[400px] flex flex-col">
+            <div className="rounded-lg border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 shadow-lg p-3 backdrop-blur-sm flex flex-col">
               {result ? (
                 <div ref={resultRef} className="flex-1 flex flex-col justify-center">
                   <div className="space-y-2">
@@ -582,8 +580,6 @@ const LotSizeCalculator = () => {
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
