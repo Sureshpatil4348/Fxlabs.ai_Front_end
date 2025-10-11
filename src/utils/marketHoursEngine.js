@@ -222,9 +222,11 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
   };
 }
 
-export default {
+const marketHoursEngine = {
   computeMarketHours
 };
+
+export default marketHoursEngine;
 
 // Friendly name derived from IANA zone (last path token)
 function friendlyNameFromZone(tz) {
