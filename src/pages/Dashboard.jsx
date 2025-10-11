@@ -12,6 +12,7 @@
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
   import TradingViewWidget from '../components/TradingViewWidget'
   import TrendingPairs from '../components/TrendingParis'
+  import defaultAlertsService from '../services/defaultAlertsService'
   import widgetTabRetentionService from '../services/widgetTabRetentionService'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketCacheStore from '../store/useMarketCacheStore'
@@ -31,6 +32,7 @@
   const [activeTab, setActiveTab] = React.useState(null) // Start with null to indicate loading
   const isInitialLoadRef = React.useRef(true) // Track if this is the initial load
   const hasLoadedFromDbRef = React.useRef(false) // Track if we've loaded from DB
+  const defaultAlertsInitializedRef = React.useRef(false) // Track if default alerts check has been done
 
     React.useEffect(() => {
       // Only reset if we're dealing with a different user
@@ -39,12 +41,34 @@
         // Reset tab loading refs for new user
         isInitialLoadRef.current = true
         hasLoadedFromDbRef.current = false
+        defaultAlertsInitializedRef.current = false
         setActiveTab(null) // Reset to loading state
         useMarketStore.getState().initiateGlobalConnection()
         // Initialize centralized market cache (REST + WS)
         useMarketCacheStore.getState().initialize()
       }
     }, [user?.id])
+
+  // Initialize default alerts for first-time users
+  React.useEffect(() => {
+    if (user?.id && !defaultAlertsInitializedRef.current) {
+      defaultAlertsInitializedRef.current = true;
+      console.log('[Dashboard] Checking if user needs default alerts initialization...');
+      
+      defaultAlertsService.checkAndInitialize()
+        .then(result => {
+          if (result.initialized) {
+            console.log('[Dashboard] ✓ Default alerts initialized for first-time user');
+            console.log('[Dashboard] Initialization results:', result.results);
+          } else {
+            console.log('[Dashboard] User already has alerts or initialization skipped');
+          }
+        })
+        .catch(error => {
+          console.error('[Dashboard] Failed to initialize default alerts:', error);
+        });
+    }
+  }, [user?.id])
 
   // Load active tab from Supabase on mount (only run once when user is available)
   React.useEffect(() => {

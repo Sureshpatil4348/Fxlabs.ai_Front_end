@@ -571,6 +571,59 @@ Frontend config only; backend evaluates and sends notifications.
 - Backend: evaluates conditions and inserts trigger rows, then handles delivery.
 - See `ALERTS.md` for alert types, fields, and schema.
 
+### Default Alerts for First-Time Users (Latest)
+
+**Automatic Alert Initialization**: When a user logs into the dashboard for the first time, the system automatically creates default alerts to help them get started immediately.
+
+#### Default Alerts Created
+
+1. **RSI Tracker Alert**
+   - Timeframe: 4H
+   - RSI Period: 14
+   - Overbought: 70
+   - Oversold: 30
+   - Status: Active
+
+2. **Currency Strength Alert**
+   - Timeframe: 4H
+   - Status: Active
+
+3. **Quantum Analysis (Heatmap) Alert**
+   - Pairs: EUR/USD, XAU/USD, BTC/USD
+   - Trading Style: Scalper
+   - Buy Threshold: 70
+   - Sell Threshold: 70
+   - Status: Active
+
+#### How It Works
+
+**First-Time User Detection**:
+- System tracks initialization status in `user_profiles` table with `default_alerts_initialized` boolean flag
+- On first dashboard access, the system checks if user needs initialization
+- Distinguishes between:
+  - **First-time users** (never initialized): Receive default alerts
+  - **Returning users** who deleted all alerts: Do NOT receive alerts again (respects user preference)
+
+**Implementation Details**:
+- **Database Schema**: `supabase_user_profiles_schema.sql` - Tracks user initialization status
+- **Services**:
+  - `src/services/userProfileService.js` - Manages user profile and initialization flag
+  - `src/services/defaultAlertsService.js` - Creates and coordinates default alerts
+- **Dashboard Integration**: `src/pages/Dashboard.jsx` - Checks and initializes on user login
+- **Timing**: Initialization happens automatically when user first loads the dashboard
+- **Error Handling**: If any individual alert fails, others still get created; user profile is marked as initialized regardless to prevent retry loops
+
+**Logging**:
+- Console logs show initialization status and results for debugging
+- Check browser DevTools Console for messages prefixed with `[DefaultAlertsService]` and `[Dashboard]`
+
+#### Benefits
+
+- **Immediate Value**: Users can start receiving alerts right away without manual setup
+- **Guided Experience**: Pre-configured alerts showcase the system's capabilities
+- **Smart Detection**: System respects user choices and doesn't recreate alerts for users who intentionally removed them
+- **Non-intrusive**: Runs silently in the background during dashboard load
+
 ## Debug Logging (AI News)
 - Browser console now logs AI News data for easier verification:
   - Raw fetched news: total count and items
