@@ -2,7 +2,26 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Mobile Navigation Enhancement (Latest)
+## Tools Tab Mobile View Reordering (Latest)
+
+The tools tab items have been reordered specifically for mobile view to improve user experience:
+
+### Changes
+- **Mobile order**: 
+  1. Lot Size Calculator (first)
+  2. Quantum Analysis (second)
+  3. Forex Market Time Zone Converter (third)
+- **Desktop layout preserved**: Desktop maintains the original two-column layout with Quantum Analysis spanning full width at the bottom
+- **Implementation**: Uses Tailwind's responsive `order` utilities (`order-1`, `order-2 lg:order-3`, `order-3 lg:order-2`)
+- **No layout breaks**: The reordering only affects mobile view; desktop grid layout remains unchanged
+
+### Technical Details
+- Applied `order-1` to Lot Size Calculator (stays first on all screens)
+- Applied `order-2 lg:order-3` to Quantum Analysis (second on mobile, third on desktop)
+- Applied `order-3 lg:order-2` to Multi Time Analysis (third on mobile, second on desktop)
+- Files affected: `src/pages/Dashboard.jsx`
+
+## Mobile Navigation Enhancement
 
 The mobile navigation has been enhanced to show all navigation items directly in the navbar instead of hiding them behind a hamburger menu:
 
