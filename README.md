@@ -2,6 +2,30 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Mobile Navigation Enhancement (Latest)
+
+The mobile navigation has been enhanced to show all navigation items directly in the navbar instead of hiding them behind a hamburger menu:
+
+### Changes
+- **Removed hamburger menu**: The mobile menu icon and popup overlay have been completely removed
+- **Analysis & Tools tabs visible**: When on the dashboard, Analysis and Tools tabs are now always visible in the center of the navbar on all screen sizes
+- **Account always accessible**: The account dropdown or login button is now always visible on the right side of the navbar
+- **Three-column layout**: 
+  - Left: FXLabs logo (flex-shrink-0)
+  - Center: Analysis/Tools tabs (when on dashboard)
+  - Right: Account/Login button (flex-shrink-0)
+- **Responsive sizing**: All navbar elements now scale appropriately for mobile screens with smaller text and padding
+- **Improved UX**: Users can now switch between Analysis and Tools with a single tap, without needing to open a menu first
+
+### Implementation Details
+- Removed unused imports: `Menu`, `X` icons from lucide-react
+- Removed state management: `isMobileMenuOpen` state and `toggleMobileMenu` function
+- Made Analysis/Tools tabs visible on all screen sizes (removed `hidden lg:flex`)
+- Made Account section visible on all screen sizes (removed `hidden lg:flex`)
+- Added responsive classes for mobile: `text-xs sm:text-base`, `px-2 sm:px-5`, etc.
+- **Size Balancing**: Made Analysis/Tools buttons larger (`px-3 sm:px-5 py-1.5 sm:py-1.5 text-sm sm:text-base`) and Account icon smaller (`w-8 h-8 sm:w-10 sm:h-10`) for better visual balance
+- Files affected: `src/components/Navbar.jsx`, `src/components/UserProfileDropdown.jsx`
+
 ## IP Info Integration (Landing Page)
 
 To enable future geo-based pricing, the landing page now calls an IP information API on load and prints the result to the browser console.

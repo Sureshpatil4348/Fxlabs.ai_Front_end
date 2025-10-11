@@ -63,9 +63,9 @@ const UserProfileDropdown = () => {
         {/* Avatar Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
+          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 flex items-center justify-center text-white font-semibold text-sm shadow-lg border-2 border-white/20">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg border-2 border-white/20">
             {getUserInitials(user?.email)}
           </div>
         </button>
