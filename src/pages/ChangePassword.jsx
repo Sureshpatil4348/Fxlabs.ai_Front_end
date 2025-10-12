@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-import { supabase } from '../lib/supabaseClient'
 import mainLogo from '../assets/main.png'
+import { supabase } from '../lib/supabaseClient'
 
 const ChangePassword = () => {
   const [step, setStep] = useState(1) // 1: new password, 2: OTP
@@ -86,7 +86,7 @@ const ChangePassword = () => {
   return (
     <div className="min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center justify-center mb-8">
-        <img src={mainLogo} alt="FXLabs" className="h-16 w-auto" />
+        <img src={mainLogo} alt="FxLabs Prime" className="h-16 w-auto" />
       </div>
       <div className="max-w-md w-full space-y-8">
         <div>

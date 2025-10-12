@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 
+import mainLogo from '../assets/main.png'
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabaseClient'
 
@@ -109,8 +110,8 @@ const Reset = () => {
       return
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long')
+    if (password.length < 8) {
+      setError('Password should be at least 8 characters.')
       return
     }
 
@@ -156,7 +157,10 @@ const Reset = () => {
   // Show error if not authenticated and no valid reset token
   if (!isAuthenticated && error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-center mb-8">
+          <img src={mainLogo} alt="FxLabs Prime" className="h-16 w-auto" />
+        </div>
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -180,7 +184,10 @@ const Reset = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-center justify-center mb-8">
+        <img src={mainLogo} alt="FXLabs" className="h-16 w-auto" />
+      </div>
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
