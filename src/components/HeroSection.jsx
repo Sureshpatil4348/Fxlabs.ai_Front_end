@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react'
 
 import PremiumHeroBackground from './PremiumHeroBackground'
 import aiIcon from '../assets/artificial-intelligence.png'
+import slideshowImage1 from '../assets/slideshow_image_1.png'
+import slideshowImage2 from '../assets/slideshow_image_2.png'
+import slideshowImage3 from '../assets/slideshow_image_3.png'
 import useMarketCacheStore from '../store/useMarketCacheStore'
 import useMarketStore from '../store/useMarketStore'
 import { formatSymbolDisplay } from '../utils/formatters'
@@ -449,28 +452,28 @@ const HeroSection = () => {
             <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-200/50 dark:border-gray-700/50">
               
               {/* Slides */}
-              <div className="relative h-[500px] md:h-[600px]">
+              <div className="relative aspect-[1419/727] w-full">
                 <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${currentSlide === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                   <img 
-                    src="https://i.ibb.co/vCJCmq6B/Screenshot-2025-07-02-at-6-32-35-PM.png" 
+                    src={slideshowImage1} 
                     alt="Trading Results 1"
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-full object-contain object-center"
                   />
                 </div>
                 
                 <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${currentSlide === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                   <img 
-                    src="https://www.milesweb.in/blog/wp-content/uploads/2023/03/forex-trading-software-top-picks-for-your-capital-gain.png" 
+                    src={slideshowImage2} 
                     alt="Trading Results 2"
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-full object-contain object-center"
                   />
                 </div>
                 
                 <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${currentSlide === 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                   <img 
-                    src="https://www.shareindia.com/wp-content/uploads/2023/12/Decoding-Forex-Trading.webp" 
+                    src={slideshowImage3} 
                     alt="Trading Results 3"
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-full object-contain object-center"
                   />
                 </div>
               </div>
