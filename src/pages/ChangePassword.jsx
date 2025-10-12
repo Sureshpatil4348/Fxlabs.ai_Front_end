@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import { supabase } from '../lib/supabaseClient'
+import mainLogo from '../assets/main.png'
 
 const ChangePassword = () => {
   const [step, setStep] = useState(1) // 1: new password, 2: OTP
@@ -19,8 +20,8 @@ const ChangePassword = () => {
       return
     }
 
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long')
+    if (newPassword.length < 8) {
+      setError('Password should be at least 8 characters.')
       return
     }
 
@@ -84,9 +85,8 @@ const ChangePassword = () => {
 
   return (
     <div className="min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold"><span className="text-green-600">FX</span><span className="text-gray-500 font-light">LABS</span></div>
-        <div className="text-sm text-gray-500">Decode the Market</div>
+      <div className="flex flex-col items-center justify-center mb-8">
+        <img src={mainLogo} alt="FXLabs" className="h-16 w-auto" />
       </div>
       <div className="max-w-md w-full space-y-8">
         <div>
@@ -151,9 +151,39 @@ const ChangePassword = () => {
           </form>
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleStep2}>
-            <div>
-              <label htmlFor="otpCode" className="sr-only">
-                OTP Code
+            {/* Show password fields as read-only for verification */}
+            <div className="space-y-4 opacity-60">
+              <div>
+                <label htmlFor="newPasswordReadonly" className="block text-sm font-medium text-gray-700 mb-1">
+                  New Password (set in previous step)
+                </label>
+                <input
+                  id="newPasswordReadonly"
+                  type="password"
+                  disabled
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-900 sm:text-sm cursor-not-allowed"
+                  value={newPassword}
+                  readOnly
+                />
+              </div>
+              <div>
+                <label htmlFor="confirmPasswordReadonly" className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password (set in previous step)
+                </label>
+                <input
+                  id="confirmPasswordReadonly"
+                  type="password"
+                  disabled
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-900 sm:text-sm cursor-not-allowed"
+                  value={confirmPassword}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-6">
+              <label htmlFor="otpCode" className="block text-sm font-medium text-gray-700 mb-2 text-center">
+                Enter 6-digit OTP Code
               </label>
               <input
                 id="otpCode"
