@@ -2,6 +2,16 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Hero Stats Overlay Mobile Layout Fix (Latest)
+
+The stats card below the hero slideshow ("80%+ Accuracy", "17+ Trading Tools", "$580k+ Profit Generated") now remains compact and horizontal on mobile, preventing it from covering the slideshow images.
+
+### Changes
+- Forced horizontal layout on mobile, reduced spacing, and font sizes
+- Always show thin dividers between stats on all screen sizes
+- Slightly adjusted bottom offset and rounded radius for smaller screens
+- Files affected: `src/components/HeroSection.jsx`
+
 ## Lottie Animation Update (Latest)
 
 The landing page Community Section (above FAQ) now uses the modern `@lottiefiles/dotlottie-react` library for better performance and React integration.

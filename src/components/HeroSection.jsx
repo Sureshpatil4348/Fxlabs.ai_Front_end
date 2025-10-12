@@ -519,21 +519,21 @@ const HeroSection = () => {
             </div>
 
             {/* Premium Stats Overlay */}
-            <div className="absolute -bottom-8 sm:-bottom-6 left-1/2 transform -translate-x-1/2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl px-5 sm:px-6 py-4 shadow-xl w-full max-w-xs sm:max-w-md">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-center sm:text-left">
-                <div className="flex flex-col items-center sm:items-start">
-                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>80% +</div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Accuracy</p>
+            <div className="absolute -bottom-4 sm:-bottom-6 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl px-3 sm:px-6 py-2.5 sm:py-4 shadow-xl w-auto max-w-[92%] sm:max-w-md">
+              <div className="flex flex-row items-center justify-center gap-3 sm:gap-6 text-center whitespace-nowrap">
+                <div className="flex flex-col items-center">
+                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>80% +</div>
+                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Accuracy</p>
                 </div>
-                <div className="hidden sm:block w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
-                <div className="flex flex-col items-center sm:items-start">
-                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>17+</div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Trading Tools</p>
+                <div className="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
+                <div className="flex flex-col items-center">
+                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>17+</div>
+                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Trading Tools</p>
                 </div>
-                <div className="hidden sm:block w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
-                <div className="flex flex-col items-center sm:items-start">
-                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>$580k+</div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Profit Generated</p>
+                <div className="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
+                <div className="flex flex-col items-center">
+                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>$580k+</div>
+                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Profit Generated</p>
                 </div>
               </div>
             </div>
