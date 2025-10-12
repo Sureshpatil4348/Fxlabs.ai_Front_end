@@ -59,7 +59,9 @@ const CommunitySection = () => {
             
             <div className="mt-auto">
               <a
-                href="https://t.me/+NgzWiBMfEj02YTM1"
+                href="https://t.me/fxlabsprime"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-500 hover:via-emerald-500 hover:to-emerald-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_12px_40px_rgba(16,185,129,0.45)] hover:shadow-[0_16px_50px_rgba(16,185,129,0.55)] ring-1 ring-white/20 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto"
               >
                 Join the Community <i className="fas fa-arrow-right ml-2"></i>

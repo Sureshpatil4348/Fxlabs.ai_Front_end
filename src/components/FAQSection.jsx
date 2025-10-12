@@ -76,7 +76,7 @@ const FAQSection = () => {
         <div className="mt-8 md:mt-12 text-center">
           <p className="text-lg md:text-xl mb-4 md:mb-6 text-gray-900 dark:text-white transition-colors duration-300">Still have questions?</p>
           <a 
-            href="https://t.me/+NgzWiBMfEj02YTM1" 
+            href="https://t.me/fxlabsprime" 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition duration-300"

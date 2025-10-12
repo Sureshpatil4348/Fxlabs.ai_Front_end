@@ -306,7 +306,7 @@ const InteractiveFooter = () => {
                 <Youtube className="w-4 h-4" />
               </a>
               <a 
-                href="https://t.me/Fxlabs_prime" 
+                href="https://t.me/fxlabsprime" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
