@@ -254,17 +254,6 @@ const LotSizeCalculator = () => {
       resultUnit: instrumentConfigs[formData.instrumentType].resultUnit,
       hasTakeProfit: takeProfit !== null
     });
-
-    // Scroll to result section after a brief delay to ensure DOM update
-    setTimeout(() => {
-      if (resultRef.current) {
-        resultRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start',
-          inline: 'nearest'
-        });
-      }
-    }, 100);
   }, [formData, instrumentConfigs, validateForm]);
 
   // Auto-calculate with default values when no saved state exists
