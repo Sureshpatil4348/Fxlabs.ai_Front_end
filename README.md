@@ -2817,3 +2817,9 @@ Benefits:
   - Trending pairs snapshot fetch moved to `marketCache` connection callback.
   - News polling already starts only after global status becomes `CONNECTED`.
 - You can tune the connection timeout using `REACT_APP_WS_CONNECT_TIMEOUT_MS` (default 15000ms).
+
+### Favicon Update (Latest)
+- **Updated favicon**: Replaced the previous SVG-based favicon with the new `fxlabs_favicon.png` image
+- **File location**: `public/fxlabs_favicon.png`
+- **HTML references**: Updated `public/index.html` to reference the new favicon file
+- **Browser compatibility**: PNG format ensures better cross-browser compatibility and visual quality
