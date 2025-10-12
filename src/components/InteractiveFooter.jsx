@@ -254,7 +254,7 @@ const InteractiveFooter = () => {
             {/* Social Media Icons */}
             <div className="flex items-center flex-wrap gap-3 pt-2">
               <a 
-                href="https://x.com/fxlabs_ai" 
+                href="https://x.com/fxlabsprime" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -267,7 +267,7 @@ const InteractiveFooter = () => {
                 <Twitter className="w-4 h-4" />
               </a>
               <a 
-                href="https://www.instagram.com/thesureshpatil/" 
+                href="https://www.instagram.com/thesureshpatiel" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -420,7 +420,7 @@ const InteractiveFooter = () => {
                   rel="noopener noreferrer"
                   className={`text-sm transition-colors duration-200 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
-                  t.me/fxlabsprime
+                  @Fxlabs_prime
                 </a>
               </div>
               <div className="flex items-start space-x-3">
