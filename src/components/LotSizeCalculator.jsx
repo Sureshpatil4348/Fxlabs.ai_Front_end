@@ -509,8 +509,8 @@ const LotSizeCalculator = () => {
               </div>
             </div>
 
-            {/* RIGHT SIDE - Result Display */}
-            <div className="flex flex-col px-4 lg:pl-4 lg:pr-2 pb-2 sm:pb-0">
+            {/* RIGHT SIDE - Result Display - Hidden on mobile when no results, always visible on desktop */}
+            <div className={`flex flex-col px-4 lg:pl-4 lg:pr-2 pb-2 sm:pb-0 ${!result ? 'hidden lg:flex' : ''}`}>
               {result ? (
                 <div ref={resultRef} className="space-y-0 sm:space-y-0">
                     {/* All cards in one row on mobile, stacked on desktop */}

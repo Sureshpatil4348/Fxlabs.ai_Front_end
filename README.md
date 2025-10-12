@@ -2,6 +2,18 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Lot Size Calculator - Mobile View Space Optimization (Latest)
+
+The Lot Size Calculator now optimizes mobile space by hiding the result section when no calculations are present, automatically shrinking the widget height to save screen space.
+
+### Changes
+- **Mobile space optimization**: Result section is hidden on mobile when no calculation results exist
+- **Dynamic height adjustment**: Widget automatically shrinks when no results, expands when results are available
+- **Desktop behavior preserved**: Desktop view always shows the result section with "No calculation yet" message
+- **Responsive design**: Uses CSS classes `hidden lg:flex` to control visibility based on screen size and result state
+
+- **Files affected**: `src/components/LotSizeCalculator.jsx`
+
 ## Hero Stats Overlay Mobile Layout Fix (Latest)
 
 The stats card below the hero slideshow ("80%+ Accuracy", "17+ Trading Tools", "$580k+ Profit Generated") now remains compact and horizontal on mobile, preventing it from covering the slideshow images.
