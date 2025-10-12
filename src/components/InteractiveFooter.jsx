@@ -259,8 +259,8 @@ const InteractiveFooter = () => {
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
                   isDarkMode 
-                    ? 'bg-gray-700 hover:bg-black text-gray-300 hover:text-white' 
-                    : 'bg-gray-100 hover:bg-black text-gray-600 hover:text-white'
+                    ? 'bg-gray-700 text-gray-300 hover:text-white hover:bg-[#19235d]' 
+                    : 'bg-gray-100 text-gray-600 hover:text-white hover:bg-[#19235d]'
                 }`}
                 aria-label="X (Twitter)"
               >

@@ -139,7 +139,7 @@ const HeroSection = () => {
     const formatted = Number(price).toLocaleString('en-US', { minimumFractionDigits: precision, maximumFractionDigits: precision })
     return (
       <div className="flex items-center space-x-2">
-        <span className="text-black dark:text-white font-bold">${formatted}</span>
+        <span className="font-bold text-[#19235d] dark:text-white">${formatted}</span>
         <div className="w-2 h-2 bg-green-400 rounded-full" title="Live Data"></div>
       </div>
     )

@@ -741,7 +741,7 @@ useEffect(() => {
                         <stop offset="100%" stopColor="#10b981"/>
                       </linearGradient>
                       <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="0" dy="1" stdDeviation="1.2" floodColor="#000" floodOpacity="0.35" />
+                        <feDropShadow dx="0" dy="1" stdDeviation="1.2" floodColor="#19235d" floodOpacity="0.35" />
                       </filter>
                     </defs>
                     {/* Track */}
