@@ -132,7 +132,7 @@ const SubscriptionSection = () => {
           popular: true,
           badge: 'MOST POPULAR',
           description: 'Maximum savings for committed traders',
-          link: 'https://tagmango.app/9c4d769ec5',
+          link: 'https://tagmango.app/79169abbdf',
           features: [
             'TradingView Integration',
             'RSI Analysis & Tracking',
