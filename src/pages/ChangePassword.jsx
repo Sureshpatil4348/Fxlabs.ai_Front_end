@@ -66,7 +66,7 @@ const ChangePassword = () => {
       if (error) {
         setError(error.message)
       } else {
-        setSuccess('Password updated successfully! Redirecting to dashboard...')
+        setSuccess('Password updated successfully! Redirecting to home...')
         window.location.href = '/'
       }
     } catch (err) {
