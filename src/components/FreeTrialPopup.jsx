@@ -61,7 +61,7 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
             <Rocket className="w-10 h-10 text-[#03c05d]" />
           </div>
           <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Get Your Free Trial of <span className="text-[#03c05d]">FXLAB</span>
+            Get Your Free Trial of FxLabs Prime
           </h2>
           <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-500'} mt-2`}>
             Unlock premium trading insights with just a quick registration.
@@ -108,12 +108,12 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
         {/* CTA */}
         <div className="mt-6 text-center">
           <button
-            onClick={() => window.open('https://t.me/fxlabsprime', '_blank')}
+            onClick={() => window.open('https://t.me/Fxlabs_prime?text=Request%20for%20Free%20Trial%20of%20FxLabs%20Prime', '_blank')}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#03c05d] hover:bg-[#02a04a] text-white font-semibold shadow-lg hover:shadow-[#03c05d]/25 transition-all duration-300 transform hover:scale-105"
           >
             <Send className="w-5 h-5" /> Message Us on Telegram
           </button>
-          <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Telegram: fxlabsprime</p>
+          <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Telegram: Fxlabs_prime</p>
         </div>
       </motion.div>
     </div>
