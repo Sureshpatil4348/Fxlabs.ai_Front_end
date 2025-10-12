@@ -517,7 +517,7 @@ const LotSizeCalculator = () => {
                     <div className="grid grid-cols-3 gap-1 sm:space-y-0 sm:grid-cols-1">
                       {/* Risk Amount Card */}
                       <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
-                        <div className="mb-0.5 sm:mb-2">
+                        <div className="mb-0.5 sm:mb-0">
                           <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Amount</span>
                         </div>
                         <div className="text-sm sm:text-xl font-bold text-red-600 dark:text-red-400">
@@ -530,7 +530,7 @@ const LotSizeCalculator = () => {
 
                       {/* Position Size Card */}
                       <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
-                        <div className="mb-0.5 sm:mb-2">
+                        <div className="mb-0.5 sm:mb-0">
                           <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Position Size</span>
                         </div>
                         <div className="text-sm sm:text-xl font-bold text-green-600 dark:text-green-400">
@@ -543,8 +543,8 @@ const LotSizeCalculator = () => {
 
                       {/* Risk Reward Ratio Card - Only show if take profit is provided */}
                       {result.hasTakeProfit && result.riskRewardRatio !== null ? (
-                        <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
-                          <div className="mb-0.5 sm:mb-2">
+                        <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-1">
+                          <div className="mb-0.5 sm:mb-0">
                             <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward</span>
                           </div>
                           <div className="text-sm sm:text-xl font-bold text-blue-600 dark:text-blue-400">
@@ -553,10 +553,20 @@ const LotSizeCalculator = () => {
                           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
                             Expected reward per unit of risk
                           </p>
+                          {/* Calculation Methods Note - Desktop Only */}
+                          <div className="hidden lg:block mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                              <strong>Note:</strong> {formData.instrumentType === 'forex' 
+                                ? 'Uses pip-based calculations with standard lot sizes' 
+                                : formData.instrumentType === 'commodities' 
+                                ? 'Uses price difference with contract-based sizing' 
+                                : 'Uses direct price difference calculations'}
+                            </p>
+                          </div>
                         </div>
                       ) : (
                         <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
-                          <div className="mb-0.5 sm:mb-2">
+                          <div className="mb-0.5 sm:mb-0">
                             <span className="text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300">Risk Reward</span>
                           </div>
                           <div className="text-sm sm:text-xl font-bold text-gray-400 dark:text-gray-500">
