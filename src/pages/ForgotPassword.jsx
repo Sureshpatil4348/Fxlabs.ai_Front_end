@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import { supabase } from '../lib/supabaseClient'
+import mainLogo from '../assets/main.png'
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
@@ -33,9 +34,8 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold"><span className="text-green-600">FX</span><span className="text-gray-500 font-light">LABS</span></div>
-        <div className="text-sm text-gray-500">Decode the Market</div>
+      <div className="flex flex-col items-center justify-center mb-8">
+        <img src={mainLogo} alt="FXLabs" className="h-16 w-auto" />
       </div>
       <div className="max-w-md w-full space-y-8">
         <div>
