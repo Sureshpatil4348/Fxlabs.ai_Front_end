@@ -1,3 +1,4 @@
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import {
   Grid3x3,
   Wallet,
@@ -92,7 +93,12 @@ const VideoExplanationSection = () => {
               
               {/* Video Container */}
               <div className="relative bg-gray-900 rounded-2xl overflow-hidden aspect-video">
-                <iframe 
+                {/* 
+                  ⚠️ TEMPORARY: YouTube video hidden, showing Lottie animation instead
+                  TODO: Restore YouTube embed when ready
+                  Original video: https://www.youtube.com/embed/1CcpagwYKNQ
+                */}
+                {/* <iframe 
                   width="100%" 
                   height="100%" 
                   src="https://www.youtube.com/embed/1CcpagwYKNQ" 
@@ -101,7 +107,16 @@ const VideoExplanationSection = () => {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen 
                   className="aspect-video w-full h-full"
-                ></iframe>
+                ></iframe> */}
+                
+                {/* Temporary Lottie Animation */}
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+                  <DotLottieReact
+                    src="https://lottie.host/75587a54-4960-4ae1-9cc6-e85a70741c59/lvgTVE0ecb.lottie"
+                    loop
+                    autoplay
+                  />
+                </div>
               </div>
 
               {/* Video Badge */}
