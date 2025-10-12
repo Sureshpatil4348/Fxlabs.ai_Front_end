@@ -119,13 +119,16 @@ const VideoExplanationSection = () => {
                 </div>
               </div>
 
-              {/* Video Badge */}
-              <div className="absolute top-6 left-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-white/30 dark:border-gray-700/30 rounded-full px-4 py-2 shadow-lg">
+              {/* 
+                ⚠️ TEMPORARY: Live Demo badge hidden along with YouTube video
+                TODO: Restore badge when YouTube video is restored
+              */}
+              {/* <div className="absolute top-6 left-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-white/30 dark:border-gray-700/30 rounded-full px-4 py-2 shadow-lg">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">Live Demo</span>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
