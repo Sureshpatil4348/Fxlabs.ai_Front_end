@@ -38,7 +38,7 @@ const SubscriptionSection = () => {
         if (data.country_code === 'IN') {
           console.log('🇮🇳 User is from India - India specific pricing should be shown')
         } else {
-          console.log(`🌎 User is from ${data.country_name} (${data.country_code}) - Standard pricing should be shown`)
+          console.log(`🌎 User is from ${data.country_name} (${data.country_code}) - International pricing with Free Trial should be shown`)
         }
         
       } catch (error) {
@@ -57,7 +57,7 @@ const SubscriptionSection = () => {
           if (fallbackData.country === 'IN') {
             console.log('🇮🇳 User is from India (fallback) - India specific pricing should be shown')
           } else {
-            console.log(`🌎 User is from ${fallbackData.country} (fallback) - Standard pricing should be shown`)
+            console.log(`🌎 User is from ${fallbackData.country} (fallback) - International pricing with Free Trial should be shown`)
           }
           
         } catch (fallbackError) {
@@ -148,8 +148,29 @@ const SubscriptionSection = () => {
         }
       ]
     } else {
-      // Non-Indian pricing (USD) - Only 2 options
+      // Non-Indian pricing (USD) - Now includes Free Trial option
       return [
+        {
+          id: 'free',
+          name: 'Free Trial',
+          duration: '1 Month',
+          price: '0',
+          period: 'Free for 1 month',
+          popular: false,
+          description: 'Experience the full power of our platform',
+          features: [
+            'TradingView Integration',
+            'RSI Analysis & Tracking',
+            'Currency Strength Meter',
+            'Lot Size Calculator',
+            'All-in-One Indicator Analysis',
+            'Market Session Tracker',
+            'Live Email Notifications',
+            'News & Market Alerts',
+            'Multi-Timeframe Analysis',
+            'Professional Dashboard'
+          ]
+        },
         {
           id: 'quarterly',
           name: '3 Months Plan',
@@ -234,9 +255,7 @@ const SubscriptionSection = () => {
 
         {/* Pricing Cards */}
         <div className="flex justify-center">
-          <div className={`grid grid-cols-1 items-center ${
-            isIndianUser ? 'md:grid-cols-3 gap-6 lg:gap-4 max-w-7xl' : 'md:grid-cols-2 gap-6 lg:gap-4 max-w-6xl'
-          }`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 lg:gap-4 max-w-7xl">
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
