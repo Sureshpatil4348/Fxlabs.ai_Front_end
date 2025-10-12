@@ -306,7 +306,7 @@ const InteractiveFooter = () => {
                 <Youtube className="w-4 h-4" />
               </a>
               <a 
-                href="https://t.me/fxlabsprime" 
+                href="https://t.me/Fxlabs_prime" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -415,7 +415,7 @@ const InteractiveFooter = () => {
               <div className="flex items-start space-x-3">
                 <MessageCircle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <a 
-                  href="https://t.me/fxlabsprime" 
+                  href="https://t.me/Fxlabs_prime" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className={`text-sm transition-colors duration-200 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
