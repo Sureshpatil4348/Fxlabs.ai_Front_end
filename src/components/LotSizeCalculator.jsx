@@ -555,7 +555,7 @@ const LotSizeCalculator = () => {
                           </p>
                           {/* Calculation Methods Note - Desktop Only */}
                           <div className="hidden lg:block mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            <p className="text-xs text-red-500 dark:text-red-400 leading-relaxed">
                               <strong>Note:</strong> {formData.instrumentType === 'forex' 
                                 ? 'Uses pip-based calculations with standard lot sizes' 
                                 : formData.instrumentType === 'commodities' 
