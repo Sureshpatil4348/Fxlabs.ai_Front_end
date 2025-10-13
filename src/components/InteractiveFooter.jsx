@@ -426,7 +426,7 @@ const InteractiveFooter = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                 <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  253,Junnur, Mudhol - 587313 Karnataka, India
+                  UAE
                 </span>
               </div>
             </div>
