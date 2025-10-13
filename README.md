@@ -648,6 +648,16 @@ All technical indicator calculations are now performed server-side:
   - `src/store/useRSITrackerStore.js` exposes `ingestPricingSnapshot(entries)` to merge REST snapshots into `tickData` as synthetic ticks.
   - `src/components/RSIOverboughtOversoldTracker.js` fetches pricing on mount and whenever the visible pair set changes (RSI lists or Watchlist), then relies on `ticks` for live updates.
 
+#### Home Footer Live Prices (New)
+- The home page footer ticker now shows live quotes (polled) for: `EURUSD`, `GBPUSD`, `USDJPY`, `USDCHF`, `XAUUSD`.
+- Implementation details:
+  - Component: `src/components/InteractiveFooter.jsx`
+  - Source: `pricingService.fetchPricingSnapshot({ pairs: ["EURUSDm","GBPUSDm","USDJPYm","USDCHFm","XAUUSDm"] })`
+  - Poll interval: 5 seconds; values update ask/bid and compute spread = ask - bid
+  - Fallback: If API fails temporarily, previous values remain visible (no UI flicker)
+  - Formatting: `formatPrice(value, precision)` controls decimals per existing UI
+
+
 ### Migration Notes
 - **No OHLC data**: Components that previously used OHLC data now use tick data or indicator data
 - **No client-side calculations**: All technical indicators are provided by the server

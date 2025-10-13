@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useTheme } from '../contexts/ThemeContext'
+import pricingService from '../services/pricingService'
 import { formatPrice } from '../utils/formatters'
 
 const InteractiveFooter = () => {
@@ -23,46 +24,57 @@ const InteractiveFooter = () => {
     }
   }
 
-  // Simulate loading and data updates
+  // Live pricing polling using backend snapshot API
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+    let mounted = true
+    let pollTimer = null
 
-    // Simulate real-time updates
-    const updateInterval = setInterval(() => {
-      setForexData(prev => ({
-        EURUSD: { 
-          ask: prev.EURUSD.ask + (Math.random() - 0.5) * 0.0001, 
-          bid: prev.EURUSD.bid + (Math.random() - 0.5) * 0.0001, 
-          spread: 0.0002 
-        },
-        GBPUSD: { 
-          ask: prev.GBPUSD.ask + (Math.random() - 0.5) * 0.0001, 
-          bid: prev.GBPUSD.bid + (Math.random() - 0.5) * 0.0001, 
-          spread: 0.0002 
-        },
-        USDJPY: { 
-          ask: prev.USDJPY.ask + (Math.random() - 0.5) * 0.01, 
-          bid: prev.USDJPY.bid + (Math.random() - 0.5) * 0.01, 
-          spread: 0.02 
-        },
-        USDCHF: { 
-          ask: prev.USDCHF.ask + (Math.random() - 0.5) * 0.0001, 
-          bid: prev.USDCHF.bid + (Math.random() - 0.5) * 0.0001, 
-          spread: 0.0002 
-        },
-        XAUUSD: { 
-          ask: prev.XAUUSD.ask + (Math.random() - 0.5) * 0.1, 
-          bid: prev.XAUUSD.bid + (Math.random() - 0.5) * 0.1, 
-          spread: 0.20 
+    const BASE_PAIRS = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'XAUUSD']
+    const REQUEST_SYMBOLS = BASE_PAIRS.map((p) => `${p}m`)
+
+    const mapResponseToState = (res) => {
+      const entries = Array.isArray(res?.pairs) ? res.pairs : []
+      const bySymbol = {}
+      const normalize = (s) => String(s || '').toUpperCase()
+      const index = new Map()
+      entries.forEach((e) => {
+        const sym = normalize(e?.symbol)
+        if (sym) index.set(sym, e)
+      })
+      BASE_PAIRS.forEach((base) => {
+        const sym = `${base}m`
+        const item = index.get(normalize(sym))
+        if (item && typeof item.bid === 'number' && typeof item.ask === 'number') {
+          bySymbol[base] = {
+            ask: item.ask,
+            bid: item.bid,
+            spread: Math.max(0, item.ask - item.bid)
+          }
         }
-      }))
-    }, 3000)
+      })
+      return bySymbol
+    }
+
+    const fetchOnce = async () => {
+      try {
+        const res = await pricingService.fetchPricingSnapshot({ pairs: REQUEST_SYMBOLS })
+        if (!mounted) return
+        const updates = mapResponseToState(res)
+        if (Object.keys(updates).length > 0) {
+          setForexData((prev) => ({ ...prev, ...updates }))
+          setLoading(false)
+        }
+      } catch (_e) {
+        // silent failure; keep previous data
+      }
+    }
+
+    fetchOnce()
+    pollTimer = setInterval(fetchOnce, 5000)
 
     return () => {
-      clearTimeout(timer)
-      clearInterval(updateInterval)
+      mounted = false
+      if (pollTimer) clearInterval(pollTimer)
     }
   }, [])
   
