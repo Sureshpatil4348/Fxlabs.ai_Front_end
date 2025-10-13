@@ -101,14 +101,14 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white dark:bg-[#19235d] rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
           <div className="flex items-center space-x-2">
             <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
               <Sliders className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">Custom Indicator Alert</h2>
+              <h2 className="text-base font-bold text-[#19235d] dark:text-slate-100">Custom Indicator Alert</h2>
               <p className="text-xs text-gray-500 dark:text-slate-400">One indicator, one timeframe, up to 3 pairs.</p>
             </div>
           </div>
@@ -145,7 +145,7 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
                   id="heatmap-indicator-timeframe"
                   value={form.timeframe}
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {filteredTimeframes.map(tf => (
                     <option key={tf} value={tf}>{tf}</option>
@@ -159,7 +159,7 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
                   id="heatmap-indicator-select"
                   value={form.indicator}
                   onChange={(e) => setForm({ ...form, indicator: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {INDICATORS.map(ind => (
                     <option key={ind} value={ind}>{ind}</option>

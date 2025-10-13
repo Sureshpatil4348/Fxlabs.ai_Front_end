@@ -57,7 +57,7 @@ const TickDataView = ({ symbol }) => {
       {latestTick && (
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{formatSymbolDisplay(symbol.replace(/m$/,''))}</h3>
+            <h3 className="text-lg font-semibold text-[#19235d]">{formatSymbolDisplay(symbol.replace(/m$/,''))}</h3>
             <span className="text-sm text-gray-500">
               {formatTime(latestTick.time)}
             </span>
@@ -67,7 +67,7 @@ const TickDataView = ({ symbol }) => {
             <div className="text-center">
               <div className="flex items-center justify-center mb-1">
                 <TrendingDown className="w-4 h-4 text-danger-600 mr-1" />
-                <span className="text-sm text-gray-600">Bid</span>
+                <span className="text-sm text-[#19235d]">Bid</span>
               </div>
               <div className="text-xl font-bold text-danger-600">
                 {formatPrice(latestTick.bid)}
@@ -77,7 +77,7 @@ const TickDataView = ({ symbol }) => {
             <div className="text-center">
               <div className="flex items-center justify-center mb-1">
                 <TrendingUp className="w-4 h-4 text-success-600 mr-1" />
-                <span className="text-sm text-gray-600">Ask</span>
+                <span className="text-sm text-[#19235d]">Ask</span>
               </div>
               <div className="text-xl font-bold text-success-600">
                 {formatPrice(latestTick.ask)}
@@ -87,7 +87,7 @@ const TickDataView = ({ symbol }) => {
           
           <div className="mt-3 pt-3 border-t border-gray-200">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Spread:</span>
+              <span className="text-[#19235d]">Spread:</span>
               <span className={getSpreadColor(latestTick.bid, latestTick.ask)}>
                 {latestTick.bid && latestTick.ask 
                   ? (latestTick.ask - latestTick.bid).toFixed(5)
@@ -97,8 +97,8 @@ const TickDataView = ({ symbol }) => {
             </div>
             {latestTick.volume && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Volume:</span>
-                <span className="text-gray-900">{latestTick.volume}</span>
+                <span className="text-[#19235d]">Volume:</span>
+                <span className="text-[#19235d]">{latestTick.volume}</span>
               </div>
             )}
           </div>
@@ -107,7 +107,7 @@ const TickDataView = ({ symbol }) => {
 
       {/* Tick History */}
       <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <h4 className="text-sm font-medium text-[#19235d] mb-3">
           Recent Ticks ({ticks.length})
         </h4>
         
@@ -138,7 +138,7 @@ const TickDataView = ({ symbol }) => {
                       key={`${tick.time}-${index}`}
                       className={`hover:bg-gray-50 ${index === 0 ? 'bg-blue-50' : ''}`}
                     >
-                      <td className="px-4 py-2 text-sm text-gray-900 font-mono">
+                      <td className="px-4 py-2 text-sm text-[#19235d] font-mono">
                         {formatTime(tick.time)}
                       </td>
                       <td className="px-4 py-2 text-sm text-danger-600 font-mono text-right">

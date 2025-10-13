@@ -139,13 +139,13 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
       aria-labelledby="news-modal-title"
       aria-describedby="news-modal-content"
     >
-      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+      <div className="bg-white dark:bg-[#19235d] rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between py-2 px-4 border-b dark:border-slate-600">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-bold px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">{news.currency}</span>
             <div className="flex flex-row items-center w-full justify-between">
-              <h2 id="news-modal-title" className="text-sm font-semibold text-gray-900 dark:text-slate-100">{news.title.split('(')[0]}</h2>
+              <h2 id="news-modal-title" className="text-sm font-semibold text-[#19235d] dark:text-slate-100">{news.title.split('(')[0]}</h2>
             </div>
           </div>
           <button
@@ -176,7 +176,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* AI Analysis - Moved to top */}
           {analysis && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3 flex items-center space-x-2">
+              <h3 className="text-sm font-semibold text-[#19235d] dark:text-slate-100 mb-3 flex items-center space-x-2">
                 <Brain className="w-4 h-4 text-primary-600" />
                 <span>AI Analysis</span>
               </h3>
@@ -242,11 +242,11 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* Economic Data - Moved to third position - Only show if at least one value exists */}
           {(news.previous || news.forecast || (news.actual && news.actual !== 'N/A' && news.actual !== null)) && (
             <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2">Economic Data</h3>
+              <h3 className="text-base font-semibold text-[#19235d] dark:text-slate-100 mb-2">Economic Data</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
                   <div className="text-gray-600 dark:text-slate-400 mb-1 text-base">Previous</div>
-                  <div className="text-base font-bold text-gray-900 dark:text-slate-100">{news.previous || '--'}</div>
+                  <div className="text-base font-bold text-[#19235d] dark:text-slate-100">{news.previous || '--'}</div>
                 </div>
                 <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="text-gray-600 dark:text-slate-400 mb-1 text-base">Forecast</div>
@@ -265,7 +265,7 @@ const NewsModal = ({ news, analysis, isOpen, onClose }) => {
           {/* Detailed Analysis - Moved to bottom */}
           {analysis && (
             <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2">Detailed Analysis</h3>
+              <h3 className="text-base font-semibold text-[#19235d] dark:text-slate-100 mb-2">Detailed Analysis</h3>
               <div 
                 className="text-gray-700 dark:text-slate-300 leading-relaxed p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-base"
                 dangerouslySetInnerHTML={{
@@ -303,7 +303,7 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
     effect === 'Bullish' ? 'border-success-600 border-2' :
     effect === 'Bearish' ? 'border-danger-600 border-2' :
     'border-gray-200 dark:border-slate-600';
-  const backgroundClass = 'bg-white dark:bg-slate-800';
+  const backgroundClass = 'bg-white dark:bg-[#19235d]';
 
   return (
     <div
@@ -327,13 +327,13 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
                </span>
              )}
              {eventTiming.isPast && (
-               <span className="text-sm px-2 py-1 rounded-full bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200 font-medium">
+               <span className="text-sm px-2 py-1 rounded-full bg-gray-100 dark:bg-[#19235d] text-[#19235d] dark:text-slate-200 font-medium">
                  RELEASED
                </span>
              )}
            </div>
           
-          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-1">
+          <h3 className="text-base font-semibold text-[#19235d] dark:text-slate-100 mb-1">
             {news.title.split('(')[0]}
           </h3>
           
@@ -563,7 +563,7 @@ const AINewsAnalysis = () => {
         <div className="flex items-center space-x-2">
           <Newspaper className="w-4 h-4 text-primary-600" />
           <div>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">AI News Analysis</h2>
+            <h2 className="text-base font-semibold text-[#19235d] dark:text-slate-100">AI News Analysis</h2>
           </div>
         </div>
         {!apiAvailable && (
@@ -581,8 +581,8 @@ const AINewsAnalysis = () => {
             onClick={() => handleFilterChange(filterOption.id)}
             className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[13px] font-medium transition-colors ${
               newsFilter === filterOption.id
-                ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 shadow-sm'
+                : 'text-gray-600 dark:text-slate-400 hover:text-[#19235d] dark:hover:text-slate-200'
             }`}
           >
             {filterOption.label}
@@ -620,7 +620,7 @@ const AINewsAnalysis = () => {
             <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
               <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
+            <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-2">
               No news available
             </h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm">

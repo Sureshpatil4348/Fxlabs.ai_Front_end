@@ -434,7 +434,7 @@ const ForexMarketTimeZone = () => {
   ];
 
   return (
-  <div className="bg-white dark:bg-gray-800 p-2 sm:p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none border-0">
+  <div className="bg-white dark:bg-[#19235d] p-2 sm:p-3 max-w-4xl mx-auto font-sans relative rounded-xl shadow-none dark:shadow-none border-0">
       {/* Time Format Toggle - Top Right */}
       <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center gap-2 z-50">
         <span className="text-xs text-gray-500 dark:text-gray-400">12h</span>
@@ -457,7 +457,7 @@ const ForexMarketTimeZone = () => {
 
       {/* Header */}
       <div className="flex items-center justify-between mb-2 sm:mb-3 pr-14 sm:pr-16">
-        <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+        <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
           <Globe2 className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
           Forex Market Time Zone Converter
         </CardTitle>
@@ -474,7 +474,7 @@ const ForexMarketTimeZone = () => {
               <div className="relative timezone-dropdown">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs w-full justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  className="flex items-center gap-1.5 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-white rounded-lg px-2 py-1 text-xs w-full justify-between hover:bg-gray-50 dark:hover:bg-[#19235d] transition-colors"
                 >
                   <div className="flex flex-col items-start min-w-0">
                     <span className="text-[10px] font-medium truncate w-full text-left">
@@ -495,15 +495,15 @@ const ForexMarketTimeZone = () => {
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
-                    <div className="p-1 sticky top-0 bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#19235d] border border-gray-300 dark:border-[#19235d] rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
+                    <div className="p-1 sticky top-0 bg-white dark:bg-[#19235d] border-b border-gray-200 dark:border-[#19235d]">
                       <input
                         ref={tzInputRef}
                         type="text"
                         value={tzQuery}
                         onChange={(e) => setTzQuery(e.target.value)}
                         placeholder="Search timezone..."
-                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
+                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-white outline-none"
                       />
                     </div>
                     {filteredTimezones.map((option) => (
@@ -514,10 +514,10 @@ const ForexMarketTimeZone = () => {
                           setIsDropdownOpen(false);
                           setTzQuery('');
                         }}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-[#19235d] transition-colors whitespace-nowrap ${
                           selectedTimezone === option.value 
                             ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
-                            : 'text-gray-900 dark:text-white'
+                            : 'text-[#19235d] dark:text-white'
                         }`}
                       >
                         <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
@@ -542,16 +542,16 @@ const ForexMarketTimeZone = () => {
               {markets.map((m, i) => (
                 <div
                   key={i}
-                  className="px-2 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm h-[60px]"
+                  className="px-2 py-2 bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-xl shadow-sm h-[60px]"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                      <span className="text-gray-700 dark:text-gray-300 text-[10px] font-bold">{m.currency}</span>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d]">
+                      <span className="text-[#19235d] dark:text-gray-300 text-[10px] font-bold">{m.currency}</span>
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-xs text-gray-900 dark:text-white truncate">{m.name}</h3>
-                      <p className="text-[10px] text-gray-800 dark:text-gray-200 leading-tight">{formatTime(currentTime, m.timezone)}</p>
-                      <p className="text-[10px] text-gray-800 dark:text-gray-200 leading-tight truncate">{formatDate(currentTime, m.timezone)}</p>
+                      <h3 className="font-bold text-xs text-[#19235d] dark:text-white truncate">{m.name}</h3>
+                      <p className="text-[10px] text-[#19235d] dark:text-gray-200 leading-tight">{formatTime(currentTime, m.timezone)}</p>
+                      <p className="text-[10px] text-[#19235d] dark:text-gray-200 leading-tight truncate">{formatDate(currentTime, m.timezone)}</p>
                     </div>
                   </div>
                 </div>
@@ -562,7 +562,7 @@ const ForexMarketTimeZone = () => {
           {/* Right column: Scrollable timeline (Mobile) / Full width (Desktop) */}
           <div 
             ref={scrollContainerRef}
-            className="flex-1 overflow-x-auto overflow-y-visible lg:overflow-x-visible scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 pt-6 lg:pt-0"
+            className="flex-1 overflow-x-auto overflow-y-visible lg:overflow-x-visible scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-[#19235d] dark:scrollbar-track-[#19235d] pt-6 lg:pt-0"
           >
             <div ref={timelineRef} className="relative timeline-container min-w-[700px] lg:min-w-0" onMouseMove={handleMouseMove}>
               {/* Top hours - Real-time - Clickable to move time indicator */}
@@ -572,7 +572,7 @@ const ForexMarketTimeZone = () => {
                   <div className="relative timezone-dropdown">
                     <button
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-2 py-1 text-xs w-full justify-between hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                      className="flex items-center gap-1.5 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-white rounded-lg px-2 py-1 text-xs w-full justify-between hover:bg-gray-50 dark:hover:bg-[#19235d] transition-colors"
                     >
                       <div className="flex flex-col items-start min-w-0">
                         <span className="text-[10px] font-medium truncate w-full text-left">
@@ -593,15 +593,15 @@ const ForexMarketTimeZone = () => {
                     </button>
                     
                     {isDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
-                        <div className="p-1 sticky top-0 bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#19235d] border border-gray-300 dark:border-[#19235d] rounded-lg shadow-lg z-40 max-h-60 overflow-y-auto">
+                        <div className="p-1 sticky top-0 bg-white dark:bg-[#19235d] border-b border-gray-200 dark:border-[#19235d]">
                           <input
                             ref={tzInputRef}
                             type="text"
                             value={tzQuery}
                             onChange={(e) => setTzQuery(e.target.value)}
                             placeholder="Search timezone..."
-                            className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none"
+                            className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-white outline-none"
                           />
                         </div>
                         {filteredTimezones.map((option) => (
@@ -612,10 +612,10 @@ const ForexMarketTimeZone = () => {
                               setIsDropdownOpen(false);
                               setTzQuery('');
                             }}
-                            className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors whitespace-nowrap ${
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-[#19235d] transition-colors whitespace-nowrap ${
                               selectedTimezone === option.value 
                                 ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
-                                : 'text-gray-900 dark:text-white'
+                                : 'text-[#19235d] dark:text-white'
                             }`}
                           >
                             <span className="flex-1 text-left text-xs font-medium">{option.label}</span>
@@ -736,14 +736,14 @@ const ForexMarketTimeZone = () => {
                   <div className="hidden lg:flex items-center mx-3 sm:mx-4 lg:mx-0">
                     <div className="w-48 lg:w-56"></div> {/* Spacer for desktop */}
                     <div className="flex-1 ml-2">
-                      <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
+                      <p className="text-xs text-center text-[#19235d] dark:text-gray-400 bg-gray-100 dark:bg-[#19235d] py-1 px-3 rounded">
                         MARKET CLOSED FOR THE WEEKEND
                       </p>
                     </div>
                   </div>
                   {/* Mobile version */}
                   <div className="lg:hidden px-2">
-                    <p className="text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 py-1 px-3 rounded">
+                    <p className="text-xs text-center text-[#19235d] dark:text-gray-400 bg-gray-100 dark:bg-[#19235d] py-1 px-3 rounded">
                       MARKET CLOSED FOR THE WEEKEND
                     </p>
                   </div>
@@ -755,17 +755,17 @@ const ForexMarketTimeZone = () => {
                 {markets.map((m, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2 sm:gap-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                    className="flex items-center gap-2 sm:gap-3 py-2 bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-xl shadow-sm hover:shadow-md transition-shadow"
                   >
                     {/* Currency + Info */}
                     <div className="flex items-center gap-3 w-48 lg:w-56 flex-shrink-0 px-3 sm:px-4">
-                      <div className="flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        <span className="text-gray-700 dark:text-gray-300 text-xs font-bold">{m.currency}</span>
+                      <div className="flex items-center justify-center w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d]">
+                        <span className="text-[#19235d] dark:text-gray-300 text-xs font-bold">{m.currency}</span>
                       </div>
                       <div>
-                        <h3 className="font-bold text-sm text-gray-900 dark:text-white">{m.name}</h3>
-                        <p className="text-xs text-gray-800 dark:text-gray-200">{formatTime(currentTime, m.timezone)}</p>
-                        <p className="text-xs text-gray-800 dark:text-gray-200">{formatDate(currentTime, m.timezone)}</p>
+                        <h3 className="font-bold text-sm text-[#19235d] dark:text-white">{m.name}</h3>
+                        <p className="text-xs text-[#19235d] dark:text-gray-200">{formatTime(currentTime, m.timezone)}</p>
+                        <p className="text-xs text-[#19235d] dark:text-gray-200">{formatDate(currentTime, m.timezone)}</p>
                       </div>
                     </div>
 
@@ -840,7 +840,7 @@ const ForexMarketTimeZone = () => {
                 {markets.map((m, i) => (
                   <div
                     key={i}
-                    className="px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm h-[60px] flex items-center"
+                    className="px-3 bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-xl shadow-sm h-[60px] flex items-center"
                   >
                     {/* Timeline bar with session indicator(s) */}
                     <div className="relative h-10 overflow-hidden w-full">

@@ -77,7 +77,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       {/* Modal Container - Proper sizing without height restriction */}
       <div className={`relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300 ${
         isDarkMode 
-          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700/50' 
+          ? 'bg-gradient-to-br from-[#19235d] via-[#19235d] to-black border border-gray-700/50' 
           : 'bg-gradient-to-br from-white via-gray-50 to-gray-100 border border-gray-200/50'
       }`}>
         
@@ -98,7 +98,7 @@ const LoginModal = ({ isOpen, onClose }) => {
           isDarkMode ? 'border-gray-700/50' : 'border-gray-200/50'
         }`}>
           <h2 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
+            isDarkMode ? 'text-white' : 'text-[#19235d]'
           }`}>
             Welcome Back
           </h2>
@@ -129,8 +129,8 @@ const LoginModal = ({ isOpen, onClose }) => {
                   required
                   className={`w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all ${
                     isDarkMode 
-                      ? 'bg-gray-800/50 border border-gray-600/50 text-white placeholder-gray-400' 
-                      : 'bg-white/80 border border-gray-300/50 text-gray-900 placeholder-gray-500'
+                      ? 'bg-[#19235d]/50 border border-gray-600/50 text-white placeholder-gray-400' 
+                      : 'bg-white/80 border border-gray-300/50 text-[#19235d] placeholder-gray-500'
                   }`}
                   placeholder="Enter your email"
                   value={email}
@@ -156,8 +156,8 @@ const LoginModal = ({ isOpen, onClose }) => {
                   required
                   className={`w-full pl-10 pr-12 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all ${
                     isDarkMode 
-                      ? 'bg-gray-800/50 border border-gray-600/50 text-white placeholder-gray-400' 
-                      : 'bg-white/80 border border-gray-300/50 text-gray-900 placeholder-gray-500'
+                      ? 'bg-[#19235d]/50 border border-gray-600/50 text-white placeholder-gray-400' 
+                      : 'bg-white/80 border border-gray-300/50 text-[#19235d] placeholder-gray-500'
                   }`}
                   placeholder="Enter your password"
                   value={password}
@@ -208,7 +208,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
                   className={`w-4 h-4 rounded border-2 focus:ring-2 focus:ring-green-500/50 transition-colors ${
                     isDarkMode
-                      ? 'bg-gray-800/50 border-gray-600/50 text-green-500 focus:border-green-500'
+                      ? 'bg-[#19235d]/50 border-gray-600/50 text-green-500 focus:border-green-500'
                       : 'bg-white/80 border-gray-300/50 text-green-500 focus:border-green-500'
                   }`}
                 />

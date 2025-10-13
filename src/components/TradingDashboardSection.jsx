@@ -253,7 +253,7 @@ const TradingDashboardSection = () => {
               <Zap className="w-4 h-4 text-[#03c05d]" />
               <span className={`text-sm font-semibold ${isDarkMode ? 'text-teal-300' : 'text-teal-700'}`}>Real-Time Market Intelligence</span>
             </div>
-            <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
               AI News Updates
             </h2>
             <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto`}>
@@ -268,7 +268,7 @@ const TradingDashboardSection = () => {
                 
                 {/* Slide 1 - Fed Rate Decision */}
                 <div className="w-full flex-shrink-0 px-2">
-                  <div className={`relative group ${isDarkMode ? 'bg-gradient-to-br from-gray-800/90 to-slate-800/90' : 'bg-gradient-to-br from-white to-gray-50/50'} backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border ${isDarkMode ? 'border-gray-700/50' : 'border-gray-200/50'} transition-all duration-500`}>
+                  <div className={`relative group ${isDarkMode ? 'bg-gradient-to-br from-[#19235d]/90 to-[#19235d]/90' : 'bg-gradient-to-br from-white to-gray-50/50'} backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border ${isDarkMode ? 'border-[#19235d]/50' : 'border-gray-200/50'} transition-all duration-500`}>
                     {/* Glassmorphism overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-[#03c05d]/5 via-transparent to-emerald-500/5 rounded-3xl"></div>
                     
@@ -296,7 +296,7 @@ const TradingDashboardSection = () => {
                           </span>
                         </div>
 
-                        <h3 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} leading-tight`}>
+                        <h3 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'} leading-tight`}>
                           Federal Reserve Rate Decision
                         </h3>
                         
@@ -310,7 +310,7 @@ const TradingDashboardSection = () => {
                             <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wide`}>Impact Score</div>
                           </div>
                           <div className="space-y-1">
-                            <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>USD/JPY</div>
+                            <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>USD/JPY</div>
                             <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wide`}>Primary Pair</div>
                           </div>
                           <div className="space-y-1">
@@ -325,7 +325,7 @@ const TradingDashboardSection = () => {
 
                 {/* Slide 2 - ECB Report */}
                 <div className="w-full flex-shrink-0 px-2">
-                  <div className={`relative group ${isDarkMode ? 'bg-gradient-to-br from-gray-800/90 to-slate-800/90' : 'bg-gradient-to-br from-white to-gray-50/50'} backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border ${isDarkMode ? 'border-gray-700/50' : 'border-gray-200/50'} transition-all duration-500`}>
+                  <div className={`relative group ${isDarkMode ? 'bg-gradient-to-br from-[#19235d]/90 to-[#19235d]/90' : 'bg-gradient-to-br from-white to-gray-50/50'} backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border ${isDarkMode ? 'border-[#19235d]/50' : 'border-gray-200/50'} transition-all duration-500`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-[#03c05d]/5 via-transparent to-emerald-500/5 rounded-3xl"></div>
                     <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-[#03c05d]/5 to-transparent"></div>
                     
@@ -348,7 +348,7 @@ const TradingDashboardSection = () => {
                           </span>
                         </div>
 
-                        <h3 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} leading-tight`}>
+                        <h3 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'} leading-tight`}>
                           ECB Economic Outlook
                         </h3>
                         
@@ -362,7 +362,7 @@ const TradingDashboardSection = () => {
                             <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wide`}>Impact Score</div>
                           </div>
                           <div className="space-y-1">
-                            <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>EUR/USD</div>
+                            <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>EUR/USD</div>
                             <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wide`}>Primary Pair</div>
                           </div>
                           <div className="space-y-1">
@@ -377,7 +377,7 @@ const TradingDashboardSection = () => {
 
                 {/* Slide 3 - UK PMI */}
                 <div className="w-full flex-shrink-0 px-2">
-                  <div className={`relative group ${isDarkMode ? 'bg-gradient-to-br from-gray-800/90 to-slate-800/90' : 'bg-gradient-to-br from-white to-gray-50/50'} backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border ${isDarkMode ? 'border-gray-700/50' : 'border-gray-200/50'} transition-all duration-500`}>
+                  <div className={`relative group ${isDarkMode ? 'bg-gradient-to-br from-[#19235d]/90 to-[#19235d]/90' : 'bg-gradient-to-br from-white to-gray-50/50'} backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border ${isDarkMode ? 'border-[#19235d]/50' : 'border-gray-200/50'} transition-all duration-500`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-[#03c05d]/5 via-transparent to-emerald-500/5 rounded-3xl"></div>
                     <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-[#03c05d]/5 to-transparent"></div>
                     
@@ -400,7 +400,7 @@ const TradingDashboardSection = () => {
                           </span>
                         </div>
 
-                        <h3 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} leading-tight`}>
+                        <h3 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'} leading-tight`}>
                           UK Manufacturing PMI
                         </h3>
                         
@@ -414,7 +414,7 @@ const TradingDashboardSection = () => {
                             <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wide`}>Impact Score</div>
                           </div>
                           <div className="space-y-1">
-                            <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>GBP/USD</div>
+                            <div className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>GBP/USD</div>
                             <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wide`}>Primary Pair</div>
                           </div>
                           <div className="space-y-1">
@@ -450,7 +450,7 @@ const TradingDashboardSection = () => {
           <div className="relative">
             {/* Section Title */}
             <div className="text-center mb-12 sm:mb-16">
-              <h3 className={`text-2xl sm:text-3xl md:text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-4`}>
+              <h3 className={`text-2xl sm:text-3xl md:text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'} mb-4`}>
                 How Alerts Work
               </h3>
               <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-2xl mx-auto px-4`}>
@@ -478,7 +478,7 @@ const TradingDashboardSection = () => {
                     {/* Main circle */}
                     <div className={`relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-2xl flex items-center justify-center ${
                       isDarkMode 
-                        ? 'bg-gradient-to-br from-gray-800/80 to-slate-800/80 border border-gray-700/50' 
+                        ? 'bg-gradient-to-br from-[#19235d]/80 to-[#19235d]/80 border border-[#19235d]/50' 
                         : 'bg-white border border-gray-200'
                     } shadow-lg group-hover:shadow-xl transition-all duration-500`}>
                       <TrendingUp className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-[#03c05d]" />
@@ -492,7 +492,7 @@ const TradingDashboardSection = () => {
 
                   {/* Content */}
                   <div className="space-y-2 sm:space-y-3">
-                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
                       Market Condition
                     </h4>
                     <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed px-2`}>
@@ -511,7 +511,7 @@ const TradingDashboardSection = () => {
                     {/* Main circle */}
                     <div className={`relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-2xl flex items-center justify-center ${
                       isDarkMode 
-                        ? 'bg-gradient-to-br from-gray-800/80 to-slate-800/80 border border-gray-700/50' 
+                        ? 'bg-gradient-to-br from-[#19235d]/80 to-[#19235d]/80 border border-[#19235d]/50' 
                         : 'bg-white border border-gray-200'
                     } shadow-lg group-hover:shadow-xl transition-all duration-500`}>
                       <Bell className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-[#03c05d]" />
@@ -528,7 +528,7 @@ const TradingDashboardSection = () => {
 
                   {/* Content */}
                   <div className="space-y-2 sm:space-y-3">
-                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
                       Alert Triggered
                     </h4>
                     <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed px-2`}>
@@ -547,7 +547,7 @@ const TradingDashboardSection = () => {
                     {/* Main circle */}
                     <div className={`relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-2xl flex items-center justify-center ${
                       isDarkMode 
-                        ? 'bg-gradient-to-br from-gray-800/80 to-slate-800/80 border border-gray-700/50' 
+                        ? 'bg-gradient-to-br from-[#19235d]/80 to-[#19235d]/80 border border-[#19235d]/50' 
                         : 'bg-white border border-gray-200'
                     } shadow-lg group-hover:shadow-xl transition-all duration-500`}>
                       <Zap className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-[#03c05d]" />
@@ -566,7 +566,7 @@ const TradingDashboardSection = () => {
 
                   {/* Content */}
                   <div className="space-y-2 sm:space-y-3">
-                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <h4 className={`text-lg sm:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
                       Notifications Sent
                     </h4>
                     <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} max-w-xs mx-auto leading-relaxed px-2`}>

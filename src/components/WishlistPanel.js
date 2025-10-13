@@ -137,7 +137,7 @@ const WishlistPanel = () => {
       <div className="widget-header flex-shrink-0 flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <Star className="w-5 h-5 text-green-500" />
-          <h2 className="text-lg font-semibold text-gray-900">Watchlist</h2>
+          <h2 className="text-lg font-semibold text-[#19235d]">Watchlist</h2>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -221,13 +221,13 @@ const WishlistPanel = () => {
 
                   return (
                     <tr key={symbol} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-xs font-medium text-gray-900 text-center">
+                      <td className="px-3 py-2 text-xs font-medium text-[#19235d] text-center">
                         {formatSymbolDisplay(symbol)}
                       </td>
                       <td className={`px-3 py-2 text-xs font-bold text-center ${rsiValue != null ? getRsiColor(rsiValue, settings.rsiOverbought, settings.rsiOversold) : 'text-gray-400'}`}>
                         {rsiText}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-900 font-mono text-center">
+                      <td className="px-3 py-2 text-xs text-[#19235d] font-mono text-center">
                         {priceText}
                       </td>
                       <td className={`px-3 py-2 text-xs font-medium text-center ${change != null ? (change >= 0 ? 'text-success-600' : 'text-danger-600') : 'text-gray-400'}`}>
@@ -256,7 +256,7 @@ const WishlistPanel = () => {
         ) : (
           <div className="flex items-center justify-center">
             <div className="text-center">
-              <h3 className="text-sm font-medium text-gray-900 ">No watchlist items</h3>
+              <h3 className="text-sm font-medium text-[#19235d] ">No watchlist items</h3>
               <p className="text-gray-500 text-xs">
                 Add currency pairs to your watchlist using the + button above.
               </p>
@@ -271,7 +271,7 @@ const WishlistPanel = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Add Currency Pair</h3>
+              <h3 className="text-lg font-semibold text-[#19235d]">Add Currency Pair</h3>
               <button
                 onClick={() => {
                   setShowAddModal(false);
@@ -309,7 +309,7 @@ const WishlistPanel = () => {
                       className="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div>
-                        <div className="font-medium text-gray-900">{formatSymbolDisplay(pair)}</div>
+                        <div className="font-medium text-[#19235d]">{formatSymbolDisplay(pair)}</div>
                         <div className="text-sm text-gray-500">{formatSymbolDisplay(pair)}</div>
                       </div>
                       {addingSymbol === pair ? (

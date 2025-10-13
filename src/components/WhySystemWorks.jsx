@@ -46,14 +46,14 @@ const WhySystemWorks = () => {
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
           <div className="inline-flex items-center justify-center mb-6">
-            <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-full px-6 py-3 shadow-lg">
+            <div className="bg-white/60 dark:bg-[#19235d]/60 backdrop-blur-xl border border-white/30 dark:border-[#19235d]/30 rounded-full px-6 py-3 shadow-lg">
               <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent font-semibold text-sm uppercase tracking-wider">
                 Why Choose Us
               </span>
             </div>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-6 text-gray-900 dark:text-white transition-colors duration-300">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-6 text-[#19235d] dark:text-white transition-colors duration-300">
             Why Our <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">Trading Platform</span> Works
           </h2>
           
@@ -66,7 +66,7 @@ const WhySystemWorks = () => {
           {systemFeatures.map((feature, index) => (
             <div
               key={feature.id}
-              className="group bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl shadow-xl dark:shadow-gray-900/50 p-4 sm:p-6 md:p-7 feature-card hover:shadow-2xl dark:hover:shadow-gray-900/70 transition-all duration-500 ease-in-out border border-white/30 dark:border-gray-700/30 transform hover:scale-105 hover:-translate-y-2 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]"
+              className="group bg-white/60 dark:bg-[#19235d]/60 backdrop-blur-xl rounded-3xl shadow-xl dark:shadow-[#19235d]/50 p-4 sm:p-6 md:p-7 feature-card hover:shadow-2xl dark:hover:shadow-[#19235d]/70 transition-all duration-500 ease-in-out border border-white/30 dark:border-[#19235d]/30 transform hover:scale-105 hover:-translate-y-2 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]"
               style={{
                 animationDelay: `${index * 100}ms`
               }}
@@ -74,7 +74,7 @@ const WhySystemWorks = () => {
               <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 dark:from-emerald-500/30 dark:to-green-500/30 flex items-center justify-center mb-3 sm:mb-4 md:mb-6 mx-auto shadow-lg group-hover:scale-110 transition-transform duration-500">
                 <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <h3 className="text-sm sm:text-lg md:text-xl font-bold text-center mb-2 sm:mb-3 md:mb-4 text-gray-900 dark:text-white transition-all duration-300">
+              <h3 className="text-sm sm:text-lg md:text-xl font-bold text-center mb-2 sm:mb-3 md:mb-4 text-[#19235d] dark:text-white transition-all duration-300">
                 {feature.title}
               </h3>
               <p className="hidden sm:block text-gray-600 dark:text-gray-300 text-center leading-relaxed transition-colors duration-300">

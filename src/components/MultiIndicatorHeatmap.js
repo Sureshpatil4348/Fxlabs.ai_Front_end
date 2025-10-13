@@ -403,7 +403,7 @@ useEffect(() => {
         {/* Mobile: wrap and stack, Desktop: single row */}
         <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
           {/* Title */}
-          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+          <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
             <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
             Quantum Analysis
           </CardTitle>
@@ -434,7 +434,7 @@ useEffect(() => {
               <div className="relative">
                 <button
                   onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-gray-900 dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                   {(() => {
                     const opt = dropdownOptions.find(opt => opt.value === currentSymbol);
@@ -456,15 +456,15 @@ useEffect(() => {
                 
                 {/* Custom Dropdown Menu */}
                 {isSymbolDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border-0 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#19235d] border-0 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                     {dropdownOptions.map(option => (
                       <button
                         key={option.value}
                         onClick={() => {
                           handleSymbolChange(option.value);
                         }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
-                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-slate-200 font-medium' : 'text-gray-800 dark:text-gray-200'
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-[#19235d] transition-colors duration-150 ${
+                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-[#19235d] text-blue-800 dark:text-slate-200 font-medium' : 'text-[#19235d] dark:text-gray-200'
                         }`}
                       >
                         <span className="inline-flex items-center gap-2">
@@ -492,7 +492,7 @@ useEffect(() => {
                 <select
                   value={tradingStyle}
                   onChange={(e) => handleTradingStyleChange(e.target.value)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-gray-900 dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                 <option value="scalper">Scalper</option>
                 <option value="swingTrader">Swing Trader</option>
@@ -508,7 +508,7 @@ useEffect(() => {
           
           {/* Weights Dropdown
           <div className="flex items-center space-x-1">
-            <span className="text-xs font-medium text-gray-700">Weights:</span>
+            <span className="text-xs font-medium text-[#19235d]">Weights:</span>
             <div className="relative">
               <select
                 value={indicatorWeight}
@@ -528,7 +528,7 @@ useEffect(() => {
           
           {/* Show New Toggle */}
           {/* <div className="flex items-center space-x-1">
-            <span className="text-xs font-medium text-gray-700">New:</span>
+            <span className="text-xs font-medium text-[#19235d]">New:</span>
             <div className="relative">
               <select
                 value={showNewSignals ? 'on' : 'off'}
@@ -575,15 +575,15 @@ useEffect(() => {
       {/* Heatmap Table + Meter */}
       <div className="flex flex-col gap-0 h-full">
         {/* Header Row for Desktop Table and Meter */}
-        <div className="hidden lg:flex gap-1.5 border-b border-gray-200 dark:border-slate-600 pb-1">
+        <div className="hidden lg:flex gap-1.5 border-b border-gray-200 dark:border-[#19235d] pb-1">
           {/* Left: Table Headers */}
           <div className="flex-1 min-w-0">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
               <thead>
                 <tr>
-                  <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
+                  <th className="text-left py-0.5 px-0.5 font-bold text-[#19235d] dark:text-gray-200 text-sm w-14"></th>
                   {indicators.map(indicator => (
-                    <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
+                    <th key={indicator} className="text-center py-0.5 px-0.5 text-[#19235d] dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
                       <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
                     </th>
                   ))}
@@ -593,7 +593,7 @@ useEffect(() => {
           </div>
           {/* Right: Trading Meter Header (desktop only) */}
           <div className="w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
-            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Trading Meter</span>
+            <span className="text-sm font-bold text-[#19235d] dark:text-gray-200">Trading Meter</span>
           </div>
         </div>
 
@@ -608,8 +608,8 @@ useEffect(() => {
                 const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
                 return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
-                <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                  <td className="py-0.5 pr-0.5 font-medium text-gray-800 dark:text-gray-200 text-sm w-14">
+                <tr key={timeframe} className="border-b border-slate-100/50 dark:border-[#19235d]/50">
+                  <td className="py-0.5 pr-0.5 font-medium text-[#19235d] dark:text-gray-200 text-sm w-14">
                     <div className="flex items-center space-x-0.5">
                       <span className="text-sm font-medium">{formatTimeframeDisplay(timeframe)}</span>
                     </div>
@@ -620,7 +620,7 @@ useEffect(() => {
                     const hasData = !!indData;
                     const signal = (indData && indData.signal) || 'neutral';
                     const bgGradient = signal === 'buy' ? 'linear-gradient(to bottom right, #10b981, #16a34a)' : signal === 'sell' ? 'linear-gradient(to bottom right, #f15b5b, #e64c4c)' : '#f1f5f9';
-                    const textColor = signal === 'neutral' ? '#475569' : '#ffffff';
+                    const textColor = signal === 'neutral' ? '#19235d' : '#ffffff';
                     const cellBorderWidth = signal === 'neutral' ? '1px' : '0px';
                     const cellBorderColor = signal === 'neutral' ? '#e2e8f0' : 'transparent';
                     
@@ -661,10 +661,10 @@ useEffect(() => {
                               boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)'
                             } : {
                               backgroundColor: '#f3f4f6',
-                              color: '#9ca3af',
+                              color: '#19235d',
                               borderWidth: '2px',
                               borderStyle: 'dashed',
-                              borderColor: '#d1d5db',
+                              borderColor: '#19235d',
                               borderRadius: '4px',
                               boxSizing: 'border-box',
                               cursor: 'not-allowed',
@@ -730,14 +730,14 @@ useEffect(() => {
             }
 
             return (
-              <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-3">
+              <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-[#19235d] border-gray-200 dark:border-[#19235d] p-3">
                 {/* Gauge */}
                 <div className="relative w-full" style={{ height: 130 }}>
                   <svg viewBox="0 0 200 110" className="w-full h-full">
                     <defs>
                       <linearGradient id="gaugeStroke" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#ef4444"/>
-                        <stop offset="50%" stopColor="#9ca3af"/>
+                        <stop offset="50%" stopColor="#19235d"/>
                         <stop offset="100%" stopColor="#10b981"/>
                       </linearGradient>
                       <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
@@ -786,7 +786,7 @@ useEffect(() => {
                             y={ty - 4}
                             textAnchor="middle"
                             dominantBaseline="middle"
-                            className="fill-gray-600"
+                            className="fill-[#19235d]"
                             style={{ fontSize: 11, fontWeight: 600 }}
                           >
                             {values[idx]}
@@ -851,7 +851,7 @@ useEffect(() => {
           {/* Trading Meter Section - Above Table on Mobile */}
           <div className="w-full px-2">
             <div className="text-center py-1 mb-2 border-b border-gray-200 dark:border-slate-600 pb-3">
-              <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Trading Meter</span>
+              <span className="text-sm font-bold text-[#19235d] dark:text-gray-200">Trading Meter</span>
             </div>
             {(() => {
               const mcState = useMarketCacheStore.getState();
@@ -874,13 +874,13 @@ useEffect(() => {
               }
 
               return (
-                <Card className="shadow-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-3">
+                <Card className="shadow-lg bg-white dark:bg-[#19235d] border-gray-200 dark:border-gray-700 p-3">
                   <div className="relative w-full" style={{ height: 130 }}>
                     <svg viewBox="0 0 200 110" className="w-full h-full">
                       <defs>
                         <linearGradient id="gaugeStrokeMobile" x1="0%" y1="0%" x2="100%" y2="0%">
                           <stop offset="0%" stopColor="#ef4444"/>
-                          <stop offset="50%" stopColor="#9ca3af"/>
+                          <stop offset="50%" stopColor="#19235d"/>
                           <stop offset="100%" stopColor="#10b981"/>
                         </linearGradient>
                       </defs>
@@ -896,7 +896,7 @@ useEffect(() => {
                         const labels = ['-100', '-80', '-60', '-40', '-20', '0', '20', '40', '60', '80', '100'];
                         return (
                           <g key={i}>
-                            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#6b7280" strokeWidth="2" strokeLinecap="round" />
+                            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#19235d" strokeWidth="2" strokeLinecap="round" />
                             {i % 2 === 0 && (
                               <text 
                                 x={100 + 70 * Math.cos(ang)} 
@@ -957,9 +957,9 @@ useEffect(() => {
               {/* Mobile Table Header */}
               <thead>
                 <tr className="border-b border-gray-200 dark:border-slate-600">
-                  <th className="text-left py-0.5 px-0.5 font-bold text-gray-800 dark:text-gray-200 text-sm w-14"></th>
+                  <th className="text-left py-0.5 px-0.5 font-bold text-[#19235d] dark:text-gray-200 text-sm w-14"></th>
                   {indicators.map(indicator => (
-                    <th key={indicator} className="text-center py-0.5 px-0.5 text-gray-800 dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
+                    <th key={indicator} className="text-center py-0.5 px-0.5 text-[#19235d] dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
                       <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
                     </th>
                   ))}
@@ -972,8 +972,8 @@ useEffect(() => {
                 const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
                 return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
-                <tr key={timeframe} className="border-b border-slate-100/50 dark:border-slate-700/50">
-                  <td className="py-0.5 pr-0.5 font-medium text-gray-800 dark:text-gray-200 text-sm w-14">
+                <tr key={timeframe} className="border-b border-slate-100/50 dark:border-[#19235d]/50">
+                  <td className="py-0.5 pr-0.5 font-medium text-[#19235d] dark:text-gray-200 text-sm w-14">
                     <div className="flex items-center space-x-0.5">
                       <span className="text-sm font-medium">{formatTimeframeDisplay(timeframe)}</span>
                     </div>
@@ -984,7 +984,7 @@ useEffect(() => {
                     const hasData = !!indData;
                     const signal = (indData && indData.signal) || 'neutral';
                     const bgGradient = signal === 'buy' ? 'linear-gradient(to bottom right, #10b981, #16a34a)' : signal === 'sell' ? 'linear-gradient(to bottom right, #f15b5b, #e64c4c)' : '#f1f5f9';
-                    const textColor = signal === 'neutral' ? '#475569' : '#ffffff';
+                    const textColor = signal === 'neutral' ? '#19235d' : '#ffffff';
                     const cellBorderWidth = signal === 'neutral' ? '1px' : '0px';
                     const cellBorderColor = signal === 'neutral' ? '#e2e8f0' : 'transparent';
                     
@@ -1025,10 +1025,10 @@ useEffect(() => {
                               boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)'
                             } : {
                               backgroundColor: '#f3f4f6',
-                              color: '#9ca3af',
+                              color: '#19235d',
                               borderWidth: '2px',
                               borderStyle: 'dashed',
-                              borderColor: '#d1d5db',
+                              borderColor: '#19235d',
                               borderRadius: '4px',
                               boxSizing: 'border-box',
                               cursor: 'not-allowed',

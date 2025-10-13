@@ -316,7 +316,7 @@ const CurrencyStrengthMeter = () => {
           <div>
             <div className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Currency Strength Meter</h2>
+              <h2 className="text-lg font-semibold text-[#19235d] dark:text-slate-100">Currency Strength Meter</h2>
             </div>
             <div className="flex items-center space-x-2 mt-1">
               {/* Connection status pill removed; status shown as top-right dot */}
@@ -346,7 +346,7 @@ const CurrencyStrengthMeter = () => {
             )}
             <button
               onClick={() => setShowSettings(true)}
-              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
               title="Dashboard Settings"
             >
               <Settings className="w-4 h-4" />
@@ -364,7 +364,7 @@ const CurrencyStrengthMeter = () => {
         ) : (
           <div className="text-center py-12">
             <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center"></div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-[#19235d] mb-2">
               No strength data available
             </h3>
             <p className="text-gray-500 text-sm">
@@ -395,7 +395,7 @@ const CurrencyStrengthMeter = () => {
           }}
         >
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Currency Strength Settings</h3>
+            <h3 className="text-lg font-semibold text-[#19235d] mb-4">Currency Strength Settings</h3>
             
             <div className="space-y-4">
               {/* Timeframe */}

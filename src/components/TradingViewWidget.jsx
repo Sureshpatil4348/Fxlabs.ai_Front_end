@@ -42,7 +42,7 @@ const TradingViewWidget = ({
         details: true,
         hotlist: false,
         calendar: false,
-        toolbar_bg: isDarkMode ? "#0b0e11" : "#ffffff",
+        toolbar_bg: isDarkMode ? "#19235d" : "#ffffff",
         enable_publishing: false,
         hide_top_toolbar: false,
         hide_legend: false,
@@ -115,7 +115,7 @@ const TradingViewWidget = ({
           style={{ height: height }}
           className={`w-full h-full rounded-lg border overflow-hidden ${
             isDarkMode 
-              ? 'bg-gray-900 border-gray-700' 
+              ? 'bg-[#19235d] border-[#19235d]' 
               : 'bg-white border-gray-300'
           }`}
         />
@@ -123,11 +123,11 @@ const TradingViewWidget = ({
         {/* Loading Overlay */}
         {isLoading && (
           <div className={`absolute inset-0 bg-opacity-75 flex items-center justify-center rounded-lg ${
-            isDarkMode ? 'bg-gray-900' : 'bg-white'
+            isDarkMode ? 'bg-[#19235d]' : 'bg-white'
           }`}>
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Loading chart...</p>
+              <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>Loading chart...</p>
             </div>
           </div>
         )}

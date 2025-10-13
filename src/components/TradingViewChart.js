@@ -37,7 +37,7 @@ const TradingViewChart = ({ symbol }) => {
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: '#ffffff' },
-        textColor: '#333',
+        textColor: '#19235d',
         fontSize: 12,
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       },
@@ -63,14 +63,14 @@ const TradingViewChart = ({ symbol }) => {
         },
       },
       rightPriceScale: {
-        borderColor: '#e1e5e9',
+        borderColor: '#19235d',
         scaleMargins: {
           top: 0.1,
           bottom: chartOptions.showVolume ? 0.3 : 0.1,
         },
       },
       timeScale: {
-        borderColor: '#e1e5e9',
+        borderColor: '#19235d',
         timeVisible: true,
         secondsVisible: true,
       },
@@ -388,7 +388,7 @@ const TradingViewChart = ({ symbol }) => {
             
             {/* Line 1: Symbol and Timeframe */}
             <div className={`${isFullscreen ? '' : 'w-full sm:w-auto'}`}>
-              <h3 className={`${isFullscreen ? 'text-2xl' : 'text-xl'} font-bold text-gray-900 flex items-center ${isFullscreen ? '' : 'justify-center sm:justify-start'}`}>
+              <h3 className={`${isFullscreen ? 'text-2xl' : 'text-xl'} font-bold text-[#19235d] flex items-center ${isFullscreen ? '' : 'justify-center sm:justify-start'}`}>
                 {formatSymbolDisplay(symbol.replace(/m$/,''))}
                 <span className="mx-2">{" "}</span>
                 <TrendingUp className={`${isFullscreen ? 'w-6 h-6' : 'w-5 h-5'} text-blue-600`} />
@@ -419,7 +419,7 @@ const TradingViewChart = ({ symbol }) => {
                 </div>
                 <div className="text-center min-w-0 flex-shrink-0">
                   <div className="text-xs text-gray-500 uppercase tracking-wide">Spread</div>
-                  <div className="text-sm font-mono font-semibold text-gray-700">
+                  <div className="text-sm font-mono font-semibold text-[#19235d]">
                     {(parseFloat(latestTick.ask) - parseFloat(latestTick.bid)).toFixed(5)}
                   </div>
                 </div>
@@ -433,7 +433,7 @@ const TradingViewChart = ({ symbol }) => {
                 )}
                 <div className="text-center min-w-0 flex-shrink-0">
                   <div className="text-xs text-gray-500 uppercase tracking-wide">Time</div>
-                  <div className="text-xs font-mono text-gray-600">
+                  <div className="text-xs font-mono text-[#19235d]">
                     {new Date(latestTick.time).toLocaleTimeString()}
                   </div>
                 </div>
@@ -447,21 +447,21 @@ const TradingViewChart = ({ symbol }) => {
             <div className={`flex items-center space-x-1 bg-gray-100 rounded-md ${isFullscreen ? 'p-2' : 'p-1.5'}`} title="Zoom Controls: +/- keys or mouse wheel">
               <button
                 onClick={zoomIn}
-                className={`${isFullscreen ? 'p-2' : 'p-1.5'} rounded text-gray-600 hover:bg-gray-200 transition-colors touch-manipulation`}
+                className={`${isFullscreen ? 'p-2' : 'p-1.5'} rounded text-[#19235d] hover:bg-gray-200 transition-colors touch-manipulation`}
                 title="Zoom In (+)"
               >
                 <ZoomIn className={`${isFullscreen ? 'w-5 h-5' : 'w-4 h-4'}`} />
               </button>
               <button
                 onClick={zoomOut}
-                className={`${isFullscreen ? 'p-2' : 'p-1.5'} rounded text-gray-600 hover:bg-gray-200 transition-colors touch-manipulation`}
+                className={`${isFullscreen ? 'p-2' : 'p-1.5'} rounded text-[#19235d] hover:bg-gray-200 transition-colors touch-manipulation`}
                 title="Zoom Out (-)"
               >
                 <ZoomOut className={`${isFullscreen ? 'w-5 h-5' : 'w-4 h-4'}`} />
               </button>
               <button
                 onClick={resetZoom}
-                className={`${isFullscreen ? 'p-2' : 'p-1.5'} rounded text-gray-600 hover:bg-gray-200 transition-colors touch-manipulation`}
+                className={`${isFullscreen ? 'p-2' : 'p-1.5'} rounded text-[#19235d] hover:bg-gray-200 transition-colors touch-manipulation`}
                 title="Reset Zoom (0)"
               >
                 <RotateCcw className={`${isFullscreen ? 'w-5 h-5' : 'w-4 h-4'}`} />
@@ -473,7 +473,7 @@ const TradingViewChart = ({ symbol }) => {
               className={`${isFullscreen ? 'px-4 py-3' : 'px-3 py-2.5'} rounded-md text-sm font-medium transition-colors touch-manipulation ${
                 chartOptions.showVolume
                   ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-[#19235d] hover:bg-gray-200'
               }`}
               title="Toggle Volume"
             >
@@ -482,7 +482,7 @@ const TradingViewChart = ({ symbol }) => {
             
             <button
               onClick={toggleFullscreen}
-              className={`${isFullscreen ? 'p-3' : 'p-2.5'} rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors touch-manipulation`}
+              className={`${isFullscreen ? 'p-3' : 'p-2.5'} rounded-md bg-gray-100 text-[#19235d] hover:bg-gray-200 transition-colors touch-manipulation`}
               title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             >
               {isFullscreen ? (

@@ -190,7 +190,7 @@ const HeroSection = () => {
           <div className="w-full lg:w-1/2 text-center lg:text-left mb-8 lg:mb-0">
             {/* Premium Badges with Glassy Effect */}
             <div className="mb-6 flex flex-col items-center lg:items-start space-y-3">
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="bg-white/60 dark:bg-[#19235d]/60 backdrop-blur-xl border border-white/30 dark:border-[#19235d]/30 rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="flex items-center text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
                   <i className="fas fa-check-circle mr-2 text-emerald-500"></i> 
                     AI Powered All-in-One Trading Platform
@@ -200,7 +200,7 @@ const HeroSection = () => {
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-gray-900 dark:text-white transition-colors duration-300">
+              <span className="text-[#19235d] dark:text-white transition-colors duration-300">
                 Trade With The Power Of{' '}
               </span>
               <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 dark:from-emerald-400 dark:via-green-400 dark:to-emerald-500 bg-clip-text text-transparent animate-gradient">
@@ -215,7 +215,7 @@ const HeroSection = () => {
 
             {/* Premium Feature Highlights */}
             <div className="hidden md:block mb-10 sm:mb-12 relative p-[1.5px] rounded-3xl bg-gradient-to-br from-white/60 via-white/30 to-white/10 dark:from-white/20 dark:via-white/10 dark:to-white/5 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-              <div className="rounded-3xl bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl border border-white/20 dark:border-white/10 p-6">
+              <div className="rounded-3xl bg-white/30 dark:bg-[#19235d]/30 backdrop-blur-xl border border-white/20 dark:border-white/10 p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="group flex items-center space-x-3 rounded-xl bg-white/10 dark:bg-white/[0.04] border border-white/20 dark:border-white/10 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20">
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-md flex items-center justify-center flex-shrink-0">
@@ -228,7 +228,7 @@ const HeroSection = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">No Software Needed</h3>
+                      <h3 className="font-semibold text-[#19235d] dark:text-white text-sm">No Software Needed</h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Trade from any browser</p>
                     </div>
                   </div>
@@ -240,7 +240,7 @@ const HeroSection = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Live Alerts</h3>
+                      <h3 className="font-semibold text-[#19235d] dark:text-white text-sm">Live Alerts</h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Email notifications</p>
                     </div>
                   </div>
@@ -254,7 +254,7 @@ const HeroSection = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Pro Calculators</h3>
+                      <h3 className="font-semibold text-[#19235d] dark:text-white text-sm">Pro Calculators</h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Risk management tools</p>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ const HeroSection = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">24/7 Access</h3>
+                      <h3 className="font-semibold text-[#19235d] dark:text-white text-sm">24/7 Access</h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Trade anytime, anywhere</p>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ const HeroSection = () => {
 
           <div className=" lg:w-1/2 flex flex-col justify-center items-center relative">
             {/* Master Trader AI Dashboard Container */}
-            <div className="relative w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[700px] mx-auto min-h-[300px] sm:min-h-[420px] md:min-h-[450px] lg:min-h-[480px] xl:min-h-[500px] bg-white dark:bg-slate-900 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 lg:p-6 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
+            <div className="relative w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[650px] xl:max-w-[700px] mx-auto min-h-[300px] sm:min-h-[420px] md:min-h-[450px] lg:min-h-[480px] xl:min-h-[500px] bg-white dark:bg-[#19235d] backdrop-blur-xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-5 lg:p-6 border border-[#03c05d]/20 shadow-2xl cursor-pointer transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-1 group-hover:shadow-3xl overflow-hidden"
                  style={{
                    transformStyle: 'preserve-3d',
                    perspective: '1000px',
@@ -290,7 +290,7 @@ const HeroSection = () => {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#03c05d]/20 rounded-lg flex items-center justify-center">
                     <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-[#03c05d]" />
                   </div>
-                  <span className="text-gray-800 dark:text-white text-sm sm:text-base font-bold font-poppins">FxLabs Prime - decode the Market with AI</span>
+                  <span className="text-[#19235d] dark:text-white text-sm sm:text-base font-bold font-poppins">FxLabs Prime - decode the Market with AI</span>
                 </div>
                 <div className="flex items-center space-x-2 bg-[#03c05d]/20 backdrop-blur-md rounded-lg px-3 py-2 border border-[#03c05d]/30">
                   <div className="w-2 h-2 bg-[#03c05d] rounded-full animate-pulse"></div>
@@ -301,19 +301,19 @@ const HeroSection = () => {
               {/* Live Symbol Analysis Cards */}
               <div className="space-y-2 sm:space-y-2">
                 {/* EURUSD Analysis Card */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
+                <div className="bg-white dark:bg-[#19235d] rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
                     <div className="flex items-center space-x-2.5">
                       <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
-                        <span className="text-gray-800 dark:text-white font-bold text-sm">EUR</span>
+                        <span className="text-[#19235d] dark:text-white font-bold text-sm">EUR</span>
                       </div>
                       <div>
-                        <div className="text-gray-800 dark:text-white font-semibold text-sm sm:text-base">Euro vs US Dollar</div>
+                        <div className="text-[#19235d] dark:text-white font-semibold text-sm sm:text-base">Euro vs US Dollar</div>
                         <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatSymbolDisplay('EURUSDm')}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-800 dark:text-white font-bold text-base sm:text-lg">
+                      <div className="text-[#19235d] dark:text-white font-bold text-base sm:text-lg">
                         <LivePrice symbol="EURUSDm" precision={5} />
                       </div>
                       <ChangeBadge value={eurChangePct} />
@@ -329,7 +329,7 @@ const HeroSection = () => {
                         <>
                           <div>
                             <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div className="w-full bg-gray-200 dark:bg-[#19235d] rounded-full h-1.5">
                               <div className="bg-[#03c05d] h-1.5 rounded-full transition-all duration-500" style={{width: `${successProbability}%`}}></div>
                             </div>
                             <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">{Math.round(successProbability)}%</div>
@@ -353,19 +353,19 @@ const HeroSection = () => {
                 </div>
 
                 {/* XAUUSD Analysis Card */}
-                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
+                <div className="bg-gray-50 dark:bg-[#19235d] rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
                     <div className="flex items-center space-x-2.5">
                       <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
-                        <span className="text-gray-800 dark:text-white font-bold text-sm">XAU</span>
+                        <span className="text-[#19235d] dark:text-white font-bold text-sm">XAU</span>
                       </div>
                       <div>
-                        <div className="text-gray-800 dark:text-white font-semibold text-sm sm:text-base">Gold vs US Dollar</div>
+                        <div className="text-[#19235d] dark:text-white font-semibold text-sm sm:text-base">Gold vs US Dollar</div>
                         <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatSymbolDisplay('XAUUSDm')}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-800 dark:text-white font-bold text-base sm:text-lg">
+                      <div className="text-[#19235d] dark:text-white font-bold text-base sm:text-lg">
                         <LivePrice symbol="XAUUSDm" precision={2} />
                       </div>
                       <ChangeBadge value={xauChangePct} />
@@ -381,7 +381,7 @@ const HeroSection = () => {
                         <>
                           <div>
                             <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div className="w-full bg-gray-200 dark:bg-[#19235d] rounded-full h-1.5">
                               <div className="bg-[#03c05d] h-1.5 rounded-full transition-all duration-500" style={{width: `${successProbability}%`}}></div>
                             </div>
                             <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">{Math.round(successProbability)}%</div>
@@ -419,7 +419,7 @@ const HeroSection = () => {
               </a>
               <a 
                 href="#trading-tools" 
-                className="relative bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border border-white/30 dark:border-white/10 text-gray-900 dark:text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.16)] hover:bg-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
+                className="relative bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border border-white/30 dark:border-white/10 text-[#19235d] dark:text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.16)] hover:bg-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
               >
                 <i className="fas fa-play-circle"></i>
                 <span>Explore Tools</span>
@@ -432,12 +432,12 @@ const HeroSection = () => {
         <div id="demo-video" className="mt-12 md:mt-16 mx-auto px-4 md:px-8 max-w-6xl">
           {/* Premium Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center px-6 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-full shadow-sm mb-4">
+            <div className="inline-flex items-center justify-center px-6 py-3 bg-white/80 dark:bg-[#19235d]/80 backdrop-blur-sm border border-gray-200/50 dark:border-[#19235d]/50 rounded-full shadow-sm mb-4">
               <img src={aiIcon} alt="AI Trading" className="w-6 h-6 mr-3" />
               <span className="text-gray-700 dark:text-gray-300 font-semibold text-sm tracking-wide" style={{fontFamily: 'Pier Sans, sans-serif'}}>Unlock the Power of AI Trading</span>
             </div>
             
-            <h3 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white mb-3" style={{fontFamily: 'Pier Sans, sans-serif'}}>
+            <h3 className="text-2xl md:text-3xl font-semibold text-[#19235d] dark:text-white mb-3" style={{fontFamily: 'Pier Sans, sans-serif'}}>
               <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent"></span>
             </h3>
             
@@ -449,7 +449,7 @@ const HeroSection = () => {
           {/* Frameless Premium Carousel */}
           <div className="relative group">
             {/* Main Carousel Container */}
-            <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-gray-50 to-white dark:from-[#19235d] dark:to-[#19235d] border border-gray-200/50 dark:border-gray-700/50">
               
               {/* Slides */}
               <div className="relative aspect-[1419/727] w-full">
@@ -482,7 +482,7 @@ const HeroSection = () => {
               <button 
                 type="button" 
                 onClick={prevSlide} 
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 opacity-0 z-20 border border-gray-200/50 dark:border-gray-700/50"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-[#19235d]/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 opacity-0 z-20 border border-gray-200/50 dark:border-gray-700/50"
               >
                 <i className="fas fa-chevron-left text-lg"></i>
               </button>
@@ -490,13 +490,13 @@ const HeroSection = () => {
               <button 
                 type="button" 
                 onClick={nextSlide} 
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 opacity-0 z-20 border border-gray-200/50 dark:border-gray-700/50"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-[#19235d]/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 opacity-0 z-20 border border-gray-200/50 dark:border-gray-700/50"
               >
                 <i className="fas fa-chevron-right text-lg"></i>
               </button>
 
               {/* Premium Dots Indicator */}
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 bg-white/90 dark:bg-[#19235d]/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200/50 dark:border-gray-700/50">
                 <button 
                   type="button" 
                   onClick={() => showSlide(1)} 
@@ -519,7 +519,7 @@ const HeroSection = () => {
             </div>
 
             {/* Premium Stats Overlay */}
-            <div className="absolute -bottom-4 sm:-bottom-6 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl px-3 sm:px-6 py-2.5 sm:py-4 shadow-xl w-auto max-w-[92%] sm:max-w-md">
+            <div className="absolute -bottom-4 sm:-bottom-6 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-[#19235d]/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl px-3 sm:px-6 py-2.5 sm:py-4 shadow-xl w-auto max-w-[92%] sm:max-w-md">
               <div className="flex flex-row items-center justify-center gap-3 sm:gap-6 text-center whitespace-nowrap">
                 <div className="flex flex-col items-center">
                   <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>80% +</div>

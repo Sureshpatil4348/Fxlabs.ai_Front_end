@@ -80,7 +80,7 @@ const ExpandablePairRow = ({
         aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for ${formatSymbolDisplay(symbol)}`}
       >
         {/* Symbol */}
-        <div className="w-24 text-xs font-medium text-gray-900 text-center px-2">
+        <div className="w-24 text-xs font-medium text-[#19235d] text-center px-2">
           {formatSymbolDisplay(symbol)}
         </div>
         
@@ -90,7 +90,7 @@ const ExpandablePairRow = ({
         </div>
         
         {/* Price */}
-        <div className="w-24 text-xs text-gray-900 font-mono text-center px-2">
+        <div className="w-24 text-xs text-[#19235d] font-mono text-center px-2">
           {symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5)}
         </div>
         
@@ -129,7 +129,7 @@ const ExpandablePairRow = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* RSI History Chart */}
             <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2">RSI History</h4>
+              <h4 className="text-sm font-medium text-[#19235d] mb-2">RSI History</h4>
               <div className="bg-white p-3 rounded-lg border">
                 <StandardSparkline 
                   data={rsiHistory.map(h => ({ price: h.value, timestamp: h.timestamp }))} 
@@ -144,7 +144,7 @@ const ExpandablePairRow = ({
 
             {/* Recent RSI Events */}
             <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Recent Events</h4>
+              <h4 className="text-sm font-medium text-[#19235d] mb-2">Recent Events</h4>
               <div className="space-y-2">
                 {rsiEvents.length > 0 ? (
                   rsiEvents.slice(0, 3).map((event, index) => (
@@ -168,7 +168,7 @@ const ExpandablePairRow = ({
             {/* RFI Data */}
             {rfiData && (
               <div className="md:col-span-2">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">RFI Analysis</h4>
+                <h4 className="text-sm font-medium text-[#19235d] mb-2">RFI Analysis</h4>
                 <div className="bg-white p-3 rounded-lg border">
                   <div className="grid grid-cols-3 gap-4 text-xs">
                     <div>

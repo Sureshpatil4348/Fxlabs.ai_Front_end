@@ -45,7 +45,7 @@ const Home = () => {
   }, [])
 
   return (
-    <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors duration-300">
+    <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] transition-colors duration-300">
       {/* Matrix-Style Animated Background Elements */}
       <div className="absolute inset-0">
         
@@ -191,7 +191,7 @@ const Home = () => {
       </div>
 
       {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100 dark:from-gray-900 to-transparent transition-colors duration-300"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100 dark:from-[#19235d] to-transparent transition-colors duration-300"></div>
       
       {/* Matrix CSS Animations */}
       <style dangerouslySetInnerHTML={{

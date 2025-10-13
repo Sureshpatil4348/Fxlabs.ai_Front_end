@@ -164,7 +164,7 @@ const TradingCarousel = () => {
     const padding = range * 0.1
 
     return (
-      <div className="relative w-full h-64 bg-gray-800/80 rounded-xl p-4">
+      <div className="relative w-full h-64 bg-[#19235d]/80 rounded-xl p-4">
         <svg className="w-full h-full" viewBox="0 0 400 200">
           <defs>
             <linearGradient id={`gradient-${chart.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -237,7 +237,7 @@ const TradingCarousel = () => {
   }
 
   return (
-    <section className="relative py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
+    <section className="relative py-20 bg-gradient-to-br from-[#19235d] via-[#19235d] to-[#19235d] overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/3 rounded-full blur-3xl animate-pulse"></div>
@@ -283,7 +283,7 @@ const TradingCarousel = () => {
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Main Carousel */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-sm border border-gray-700/30">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#19235d]/30 to-[#19235d]/30 backdrop-blur-sm border border-[#19235d]/30">
             
             {/* Slides Container */}
             <div 
@@ -299,15 +299,15 @@ const TradingCarousel = () => {
                       
                       {/* Chart Stats */}
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+                        <div className="bg-[#19235d]/50 rounded-lg p-3 text-center">
                           <div className="text-green-400 font-mono text-sm">+2.34%</div>
                           <div className="text-gray-400 text-xs">24h Change</div>
                         </div>
-                        <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+                        <div className="bg-[#19235d]/50 rounded-lg p-3 text-center">
                           <div className="text-blue-400 font-mono text-sm">{chart.rsi}</div>
                           <div className="text-gray-400 text-xs">RSI Level</div>
                         </div>
-                        <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+                        <div className="bg-[#19235d]/50 rounded-lg p-3 text-center">
                           <div className="text-purple-400 font-mono text-sm">High</div>
                           <div className="text-gray-400 text-xs">Volatility</div>
                         </div>
@@ -366,13 +366,13 @@ const TradingCarousel = () => {
             {/* Navigation Arrows */}
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gray-800/80 hover:bg-gray-700/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-[#19235d]/80 hover:bg-[#19235d]/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gray-800/80 hover:bg-gray-700/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-[#19235d]/80 hover:bg-[#19235d]/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
             >
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -380,7 +380,7 @@ const TradingCarousel = () => {
             {/* Auto-play Toggle */}
             <button
               onClick={toggleAutoPlay}
-              className="absolute top-4 right-4 w-10 h-10 bg-gray-800/80 hover:bg-gray-700/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all duration-300"
+              className="absolute top-4 right-4 w-10 h-10 bg-[#19235d]/80 hover:bg-[#19235d]/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all duration-300"
             >
               {isAutoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </button>
@@ -395,7 +395,7 @@ const TradingCarousel = () => {
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentIndex 
                     ? 'bg-green-400 scale-125' 
-                    : 'bg-gray-600 hover:bg-gray-500'
+                    : 'bg-[#19235d] hover:bg-[#19235d]'
                 }`}
               />
             ))}
@@ -403,7 +403,7 @@ const TradingCarousel = () => {
 
           {/* Progress Bar */}
           <div className="mt-6">
-            <div className="w-full bg-gray-700/50 rounded-full h-1">
+            <div className="w-full bg-[#19235d]/50 rounded-full h-1">
               <div 
                 className="bg-gradient-to-r from-green-400 to-blue-400 h-1 rounded-full transition-all duration-300"
                 style={{ width: `${((currentIndex + 1) / tradingCharts.length) * 100}%` }}

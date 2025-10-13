@@ -10,7 +10,7 @@ const PrivacyPolicy = () => {
   const { isDarkMode } = useTheme()
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-[#19235d] text-white' : 'bg-gray-50 text-[#19235d]'}`}>
       <Navbar />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -18,7 +18,7 @@ const PrivacyPolicy = () => {
         <Link 
           to="/" 
           className={`inline-flex items-center mb-8 text-sm transition-colors ${
-            isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+            isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-[#19235d]'
           }`}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -27,7 +27,7 @@ const PrivacyPolicy = () => {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className={`text-4xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          <h1 className={`text-4xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
             Privacy Policy
           </h1>
           <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -45,7 +45,7 @@ const PrivacyPolicy = () => {
           
           {/* Table of Contents */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Table of Contents</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>Table of Contents</h2>
             <ol className={`list-decimal pl-6 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li>Scope & Role</li>
               <li>Definitions</li>
@@ -70,7 +70,7 @@ const PrivacyPolicy = () => {
 
           {/* 1. Scope & Role */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>1) Scope & Role</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>1) Scope & Role</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               This Privacy Policy explains how <strong>Pinaxa Labs LLP</strong> processes personal data when you visit <strong>FxLabs Prime</strong> websites, apps, dashboards, APIs, and communications (collectively, the <strong>Services</strong>). For Indian residents, we comply with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and the <strong>IT Act 2000/Intermediary Rules 2021</strong>. For users in the EEA/UK we act as a <strong>data controller</strong> under <strong>GDPR/UK GDPR</strong>; for California residents we provide notices required by <strong>CCPA/CPRA</strong>.
             </p>
@@ -78,7 +78,7 @@ const PrivacyPolicy = () => {
 
           {/* 2. Definitions */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>2) Definitions</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>2) Definitions</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Personal Data / Personal Information:</strong> Information that identifies or relates to an identifiable individual.</li>
               <li><strong>Processing:</strong> Any operation on Personal Data (collection, storage, use, disclosure, deletion).</li>
@@ -89,7 +89,7 @@ const PrivacyPolicy = () => {
 
           {/* 3. Categories of Data We Process */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>3) Categories of Data We Process</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>3) Categories of Data We Process</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Identity & Contact:</strong> Name, email, phone, country, organization, role.</li>
               <li><strong>Account & Billing:</strong> Username, hashed passwords, subscription plan, invoices, GSTIN/VAT (if provided), UPI/UPI-ID or masked card tokens via payment processors.</li>
@@ -103,7 +103,7 @@ const PrivacyPolicy = () => {
 
           {/* 4. Sources of Data */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>4) Sources of Data</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>4) Sources of Data</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li>Directly from you (forms, checkout, support).</li>
               <li>Automatically (cookies, telemetry).</li>
@@ -114,7 +114,7 @@ const PrivacyPolicy = () => {
 
           {/* 5. Legal Bases */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>5) Legal Bases (India / GDPR / CCPA)</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>5) Legal Bases (India / GDPR / CCPA)</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Consent:</strong> For optional cookies/marketing; for non-essential data uses.</li>
               <li><strong>Contractual Necessity:</strong> To create your account, deliver paid features, billing.</li>
@@ -126,7 +126,7 @@ const PrivacyPolicy = () => {
 
           {/* 6. Purposes of Processing */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>6) Purposes of Processing</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>6) Purposes of Processing</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li>Provide and operate the Services; account management; technical support.</li>
               <li>Measure, maintain, and improve performance, safety, reliability.</li>
@@ -139,7 +139,7 @@ const PrivacyPolicy = () => {
 
           {/* 7. Cookies & Tracking */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>7) Cookies & Tracking</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>7) Cookies & Tracking</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Essential Cookies</strong> (auth, security, load balancing) – always on.</li>
               <li><strong>Analytics Cookies</strong> (usage metrics) – consent-based where required.</li>
@@ -152,7 +152,7 @@ const PrivacyPolicy = () => {
 
           {/* 8. Disclosures */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>8) Disclosures (Who We Share With)</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>8) Disclosures (Who We Share With)</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Sub-Processors / Vendors:</strong> Cloud hosting, CDNs, email, analytics, payment gateways.</li>
               <li><strong>Professional Advisors:</strong> Auditors, legal counsel (under confidentiality).</li>
@@ -166,7 +166,7 @@ const PrivacyPolicy = () => {
 
           {/* 9. Cross-Border Transfers */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>9) Cross-Border Transfers</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>9) Cross-Border Transfers</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               Data may be processed in or transferred to countries outside your own. Where laws require, we implement appropriate safeguards (e.g., SCCs or equivalent). By using the Services, you consent to such transfers.
             </p>
@@ -174,7 +174,7 @@ const PrivacyPolicy = () => {
 
           {/* 10. Data Retention */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>10) Data Retention</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>10) Data Retention</h2>
             <p className={`mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               We retain data for as long as needed for the purposes above, typically:
             </p>
@@ -190,7 +190,7 @@ const PrivacyPolicy = () => {
 
           {/* 11. Security */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>11) Security</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>11) Security</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               We use industry-standard controls: encrypted transport (TLS), encrypted storage for secrets, role-based access, least-privilege, logging, and monitoring. No system is 100% secure; residual risk remains.
             </p>
@@ -198,7 +198,7 @@ const PrivacyPolicy = () => {
 
           {/* 12. Your Rights */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>12) Your Rights</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>12) Your Rights</h2>
             <p className={`mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <strong>India (DPDP 2023):</strong> Right to access, correction, erasure, grievance redressal, and to nominate a person to exercise rights on your behalf.
             </p>
@@ -215,7 +215,7 @@ const PrivacyPolicy = () => {
 
           {/* 13. Children */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>13) Children</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>13) Children</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               The Services are <strong>not</strong> for individuals under <strong>18</strong>. We do not knowingly collect children&apos;s data. If you believe a minor has provided data, contact us for deletion.
             </p>
@@ -223,7 +223,7 @@ const PrivacyPolicy = () => {
 
           {/* 14. Automated Decision-Making */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>14) Automated Decision-Making / Profiling</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>14) Automated Decision-Making / Profiling</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               We may compute anonymized model scores (e.g., feature usage propensity) to improve UX. We do <strong>not</strong> make legal or similarly significant decisions solely by automated means.
             </p>
@@ -231,7 +231,7 @@ const PrivacyPolicy = () => {
 
           {/* 15. Third-Party Links */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>15) Third-Party Links & Broker Integrations</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>15) Third-Party Links & Broker Integrations</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               Third-party websites, brokers, and tools are governed by their own policies. We are <strong>not responsible</strong> for their practices. Review their privacy terms before use.
             </p>
@@ -239,7 +239,7 @@ const PrivacyPolicy = () => {
 
           {/* 16. No Investment Advice */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>16) No Investment Advice</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>16) No Investment Advice</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               Analytics and content are <strong>educational</strong>. We do <strong>not</strong> provide investment advice, portfolio management, or brokerage services.
             </p>
@@ -247,7 +247,7 @@ const PrivacyPolicy = () => {
 
           {/* 17. Changes */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>17) Changes to this Policy</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>17) Changes to this Policy</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
               We may update this Policy. Material changes will be notified via email or in-app. Continued use after the Effective Date constitutes acceptance.
             </p>
@@ -255,7 +255,7 @@ const PrivacyPolicy = () => {
 
           {/* 18. Contact */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>18) Contact & Grievance Redressal</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>18) Contact & Grievance Redressal</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Privacy / Data Protection:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></li>
               <li><strong>Registered Office:</strong> #253, Junnur Mudhol, Karnataka - 587204</li>

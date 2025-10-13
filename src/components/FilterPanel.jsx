@@ -91,7 +91,7 @@ const FilterPanel = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <Filter className="w-4 h-4 text-gray-600" />
-          <h3 className="font-medium text-gray-900">Filters & Sorting</h3>
+          <h3 className="font-medium text-[#19235d]">Filters & Sorting</h3>
           {activeFilterCount > 0 && (
             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
               {activeFilterCount} active

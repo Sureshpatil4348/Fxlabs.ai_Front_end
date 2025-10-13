@@ -62,7 +62,7 @@ const RFIScoreCard = ({
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-semibold text-gray-900 text-sm">{formatSymbolDisplay(symbol)}</h3>
+          <h3 className="font-semibold text-[#19235d] text-sm">{formatSymbolDisplay(symbol)}</h3>
           <p className="text-xs text-gray-500">Current Price: {price || 'N/A'}</p>
         </div>
         <div className="text-right">
@@ -79,7 +79,7 @@ const RFIScoreCard = ({
           <span className="ml-1">{getSignalText()}</span>
         </div>
         <div className="mt-2">
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-2xl font-bold text-[#19235d]">
             {formatRFIScore(score)}
           </div>
           <div className="text-xs text-gray-500">RFI Score</div>
@@ -90,19 +90,19 @@ const RFIScoreCard = ({
       <div className="grid grid-cols-3 gap-2 mb-3">
         <div className="bg-gray-50 rounded p-2 text-center">
           <div className="text-xs text-gray-500">RSI Flow</div>
-          <div className="text-sm font-semibold text-gray-900">
+          <div className="text-sm font-semibold text-[#19235d]">
             {formatRFIScore(rsiFlow)}
           </div>
         </div>
         <div className="bg-gray-50 rounded p-2 text-center">
           <div className="text-xs text-gray-500">Volume Flow</div>
-          <div className="text-sm font-semibold text-gray-900">
+          <div className="text-sm font-semibold text-[#19235d]">
             {formatRFIScore(volumeFlow)}
           </div>
         </div>
         <div className="bg-gray-50 rounded p-2 text-center">
           <div className="text-xs text-gray-500">Price Flow</div>
-          <div className="text-sm font-semibold text-gray-900">
+          <div className="text-sm font-semibold text-[#19235d]">
             {formatRFIScore(priceFlow)}
           </div>
         </div>
@@ -172,7 +172,7 @@ export const CompactRFIScoreCard = ({
   return (
     <div className={`bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow ${className}`}>
       <div className="flex justify-between items-center mb-2">
-        <h4 className="font-medium text-gray-900 text-sm">{formatSymbolDisplay(symbol)}</h4>
+        <h4 className="font-medium text-[#19235d] text-sm">{formatSymbolDisplay(symbol)}</h4>
         <span className={`text-xs ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
           {change >= 0 ? '+' : ''}{change ? change.toFixed(2) : '0.00'}%
         </span>
@@ -184,7 +184,7 @@ export const CompactRFIScoreCard = ({
           <span className="ml-1">{signal.charAt(0).toUpperCase() + signal.slice(1)}</span>
         </div>
         <div className="text-right">
-          <div className="text-lg font-bold text-gray-900">
+          <div className="text-lg font-bold text-[#19235d]">
             {formatRFIScore(score)}
           </div>
           <div className="text-xs text-gray-500">RFI</div>

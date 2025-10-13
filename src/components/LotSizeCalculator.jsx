@@ -305,7 +305,7 @@ const LotSizeCalculator = () => {
       {/* Header */}
       <div className="px-2 pt-3 pb-2">
         <div className="flex items-center justify-between gap-2 sm:gap-3">
-          <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-start tools-heading">
+          <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
             <svg className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
@@ -313,15 +313,15 @@ const LotSizeCalculator = () => {
           </CardTitle>
           
           {/* Instrument Type Selection */}
-          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800/60 rounded-full p-0.5 border border-gray-200 dark:border-gray-700 whitespace-nowrap shadow-sm flex-shrink-0">
+          <div className="inline-flex items-center bg-gray-100 dark:bg-[#19235d]/60 rounded-full p-0.5 border border-gray-200 dark:border-[#19235d] whitespace-nowrap shadow-sm flex-shrink-0">
             {Object.entries(instrumentConfigs).map(([key, config], idx) => (
               <button
                 key={key}
                 onClick={() => handleInputChange('instrumentType', key)}
                 className={`${
                   formData.instrumentType === key
-                    ? 'bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 shadow-sm'
-                    : 'bg-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-white dark:bg-[#19235d] text-blue-700 dark:text-blue-300 shadow-sm'
+                    : 'bg-transparent text-[#19235d] dark:text-gray-300 hover:text-[#19235d] dark:hover:text-white'
                 } px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
                 title={`${config.name} (${config.resultUnit})`}
               >
@@ -342,7 +342,7 @@ const LotSizeCalculator = () => {
             {/* Account Balance */}
             <div>
               <div className="flex items-center gap-3">
-                <label htmlFor="accountBalance" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px]">
+                <label htmlFor="accountBalance" className="text-sm font-medium text-[#19235d] dark:text-gray-200 whitespace-nowrap min-w-[120px]">
                   Account Balance
                 </label>
                 <div className="relative group flex-1">
@@ -353,7 +353,7 @@ const LotSizeCalculator = () => {
                     step="0.01"
                     value={formData.accountBalance}
                     onChange={(e) => handleInputChange('accountBalance', e.target.value)}
-                    className={`w-full h-10 pl-8 pr-3 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                    className={`w-full h-10 pl-8 pr-3 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-[#19235d]/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.accountBalance ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="10000"
@@ -368,7 +368,7 @@ const LotSizeCalculator = () => {
             {/* Risk Percentage */}
             <div>
               <div className="flex items-center gap-3">
-                <label htmlFor="riskPercentage" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px]">
+                <label htmlFor="riskPercentage" className="text-sm font-medium text-[#19235d] dark:text-gray-200 whitespace-nowrap min-w-[120px]">
                   Risk %
                 </label>
                 <div className="relative group flex-1">
@@ -378,7 +378,7 @@ const LotSizeCalculator = () => {
                     step="0.1"
                     value={formData.riskPercentage}
                     onChange={(e) => handleInputChange('riskPercentage', e.target.value)}
-                    className={`w-full h-10 pl-3 pr-8 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-gray-700/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
+                    className={`w-full h-10 pl-3 pr-8 text-sm border rounded-lg shadow-sm placeholder-gray-400 bg-white/90 dark:bg-[#19235d]/90 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:text-white transition-all duration-200 group-hover:shadow-md ${
                       errors.riskPercentage ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="2"
@@ -394,7 +394,7 @@ const LotSizeCalculator = () => {
             {/* Currency Pair Selection */}
             <div>
               <div className="flex items-center gap-3">
-                <label htmlFor="currencyPair" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px]">
+                <label htmlFor="currencyPair" className="text-sm font-medium text-[#19235d] dark:text-gray-200 whitespace-nowrap min-w-[120px]">
                   {formData.instrumentType === 'forex' ? 'Pair' : 
                    formData.instrumentType === 'commodities' ? 'Commodity' : 'Crypto'}
                 </label>
@@ -403,7 +403,7 @@ const LotSizeCalculator = () => {
                     id="currencyPair"
                     value={formData.currencyPair}
                     onChange={(e) => handleInputChange('currencyPair', e.target.value)}
-                    className="w-full h-10 pl-3 pr-8 text-sm border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/90 dark:bg-gray-700/90 dark:border-gray-600 dark:text-white appearance-none transition-all duration-200 group-hover:shadow-md"
+                    className="w-full h-10 pl-3 pr-8 text-sm border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/90 dark:bg-[#19235d]/90 dark:border-gray-600 dark:text-white appearance-none transition-all duration-200 group-hover:shadow-md"
                   >
                     {instrumentConfigs[formData.instrumentType].pairs.map((pair) => (
                       <option key={pair.symbol} value={pair.symbol}>
@@ -421,7 +421,7 @@ const LotSizeCalculator = () => {
             {/* Stop Loss */}
             <div>
               <div className="flex items-center gap-3">
-                <label htmlFor="stopLoss" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px]">
+                <label htmlFor="stopLoss" className="text-sm font-medium text-[#19235d] dark:text-gray-200 whitespace-nowrap min-w-[120px]">
                   Stop Loss
                 </label>
                 <div className="relative group flex-1">
@@ -448,7 +448,7 @@ const LotSizeCalculator = () => {
             {/* Take Profit */}
             <div>
               <div className="flex items-center gap-3">
-                <label htmlFor="takeProfit" className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-[120px]">
+                <label htmlFor="takeProfit" className="text-sm font-medium text-[#19235d] dark:text-gray-200 whitespace-nowrap min-w-[120px]">
                   Take Profit
                 </label>
                 <div className="relative group flex-1">
@@ -570,12 +570,12 @@ const LotSizeCalculator = () => {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#19235d] flex items-center justify-center mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  <h4 className="text-sm font-semibold text-[#19235d] dark:text-white mb-2">
                     No Calculation Yet
                   </h4>
                   <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">

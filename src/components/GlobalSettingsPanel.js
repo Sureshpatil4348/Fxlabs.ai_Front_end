@@ -113,7 +113,7 @@ const GlobalSettingsPanel = () => {
               <Settings className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Dashboard Settings</h3>
+              <h3 className="text-lg font-semibold text-[#19235d]">Dashboard Settings</h3>
               <p className="text-sm text-gray-600">
                 <Clock className="w-4 h-4 inline mr-1" />
                 Timeframe: <span className="font-medium">{globalSettings.timeframe}</span>
@@ -144,7 +144,7 @@ const GlobalSettingsPanel = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-[600px] max-w-90vw max-h-90vh overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Global Dashboard Settings</h3>
+              <h3 className="text-xl font-semibold text-[#19235d]">Global Dashboard Settings</h3>
               <button
                 onClick={() => setShowSettings(false)}
                 className="text-gray-400 hover:text-gray-600 text-2xl"

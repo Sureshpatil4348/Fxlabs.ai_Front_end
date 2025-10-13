@@ -423,7 +423,7 @@ const RSICorrelationDashboard = () => {
           <div className="flex items-center space-x-2">
             <BarChart3 className="w-5 h-5 text-blue-600" />
             <div>
-              <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
+              <h2 className="text-lg font-bold bg-gradient-to-r from-[#19235d] to-[#19235d] bg-clip-text text-transparent">RSI Correlation Dashboard</h2>
               <p className="widget-subtitle">
                 {localSettings.calculationMode === 'real_correlation' ? (
                   `Correlation Window: ${localSettings.correlationWindow} | ${localSettings.timeframe}`
@@ -482,7 +482,7 @@ const RSICorrelationDashboard = () => {
           
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2.5 text-slate-600 hover:text-slate-800 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
+            className="p-2.5 text-[#19235d] hover:text-[#19235d] hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105"
             title="Dashboard Settings"
           >
             <Settings className="w-4 h-4" />
@@ -490,7 +490,7 @@ const RSICorrelationDashboard = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-2.5 text-slate-600 hover:text-slate-800 hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2.5 text-[#19235d] hover:text-[#19235d] hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -550,7 +550,7 @@ const RSICorrelationDashboard = () => {
       {showSettings && createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">RSI Correlation Settings</h3>
+            <h3 className="text-lg font-semibold text-[#19235d] mb-4">RSI Correlation Settings</h3>
             
             <div className="space-y-4">
               {/* Calculation Mode */}

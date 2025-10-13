@@ -63,7 +63,7 @@ const UserProfileDropdown = () => {
         {/* Avatar Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
+          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#19235d] hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
         >
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg border-2 border-white/20">
             {getUserInitials(user?.email)}
@@ -72,7 +72,7 @@ const UserProfileDropdown = () => {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl py-1 z-50 transition-all duration-300 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-700/50">
+          <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl py-1 z-50 transition-all duration-300 bg-white/95 dark:bg-[#19235d]/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-700/50">
             <button
               onClick={handleSettings}
               className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 dark:hover:from-emerald-900/20 dark:hover:to-green-900/20 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg mx-1"
@@ -94,10 +94,10 @@ const UserProfileDropdown = () => {
       {/* Settings Modal - Rendered via Portal to avoid layout constraints */}
       {showSettings && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="rounded-2xl p-8 max-w-md w-full transition-all duration-300 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-700/50 shadow-2xl">
+          <div className="rounded-2xl p-8 max-w-md w-full transition-all duration-300 bg-white/95 dark:bg-[#19235d]/95 backdrop-blur-xl border border-emerald-200/50 dark:border-emerald-700/50 shadow-2xl">
             <div className="flex items-center justify-between mb-0">
               <h2 className={`text-2xl font-bold transition-colors duration-300 ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
+                isDarkMode ? 'text-white' : 'text-[#19235d]'
               }`}>Account Settings</h2>
               <button
                 onClick={() => setShowSettings(false)}
@@ -114,7 +114,7 @@ const UserProfileDropdown = () => {
             {/* Account Information */}
             <div className="rounded-xl p-6 mb-6 transition-all duration-300 bg-gradient-to-r from-emerald-50 via-green-50 to-emerald-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50">
               <h3 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
+                isDarkMode ? 'text-white' : 'text-[#19235d]'
               }`}>Account Information</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -122,7 +122,7 @@ const UserProfileDropdown = () => {
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>Email:</span>
                   <span className={`font-medium transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
+                    isDarkMode ? 'text-white' : 'text-[#19235d]'
                   }`}>{user?.email}</span>
                 </div>
                 <div className="flex justify-between">
@@ -130,7 +130,7 @@ const UserProfileDropdown = () => {
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>Last Sign In:</span>
                   <span className={`transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
+                    isDarkMode ? 'text-white' : 'text-[#19235d]'
                   }`}>
                     {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A'}
                   </span>
@@ -153,7 +153,7 @@ const UserProfileDropdown = () => {
                 onClick={() => setShowSettings(false)}
                 className={`flex-1 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
                   isDarkMode 
-                    ? 'bg-gray-600 text-gray-200 hover:bg-gray-500 focus:ring-gray-400 focus:ring-offset-gray-800' 
+                    ? 'bg-[#19235d] text-gray-200 hover:bg-[#19235d] focus:ring-gray-400 focus:ring-offset-[#19235d]' 
                     : 'bg-gray-300 text-gray-700 hover:bg-gray-400 focus:ring-gray-500 focus:ring-offset-white'
                 }`}
               >

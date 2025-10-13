@@ -58,7 +58,7 @@ const GetInTouchSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Contact Form */}
-          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 shadow-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className={`${isDarkMode ? 'bg-[#19235d]' : 'bg-white'} rounded-2xl p-8 shadow-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Full Name */}
@@ -72,7 +72,7 @@ const GetInTouchSection = () => {
                   className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#03c05d] focus:border-transparent transition-all duration-300 ${
                     isDarkMode 
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'
+                      : 'bg-gray-50 border-gray-300 text-[#19235d] placeholder-gray-500'
                   }`}
                   required
                 />
@@ -89,7 +89,7 @@ const GetInTouchSection = () => {
                   className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#03c05d] focus:border-transparent transition-all duration-300 ${
                     isDarkMode 
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'
+                      : 'bg-gray-50 border-gray-300 text-[#19235d] placeholder-gray-500'
                   }`}
                   required
                 />
@@ -106,7 +106,7 @@ const GetInTouchSection = () => {
                   className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#03c05d] focus:border-transparent transition-all duration-300 ${
                     isDarkMode 
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'
+                      : 'bg-gray-50 border-gray-300 text-[#19235d] placeholder-gray-500'
                   }`}
                 />
               </div>
@@ -122,7 +122,7 @@ const GetInTouchSection = () => {
                   className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#03c05d] focus:border-transparent transition-all duration-300 ${
                     isDarkMode 
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'
+                      : 'bg-gray-50 border-gray-300 text-[#19235d] placeholder-gray-500'
                   }`}
                   required
                 />
@@ -139,7 +139,7 @@ const GetInTouchSection = () => {
                   className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#03c05d] focus:border-transparent transition-all duration-300 resize-none ${
                     isDarkMode 
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'
+                      : 'bg-gray-50 border-gray-300 text-[#19235d] placeholder-gray-500'
                   }`}
                   required
                 />
@@ -157,8 +157,8 @@ const GetInTouchSection = () => {
           </div>
 
           {/* Contact Information */}
-          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 shadow-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <h3 className={`text-2xl font-bold mb-8 font-poppins ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          <div className={`${isDarkMode ? 'bg-[#19235d]' : 'bg-white'} rounded-2xl p-8 shadow-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+            <h3 className={`text-2xl font-bold mb-8 font-poppins ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
               Contact Information
             </h3>
             
@@ -171,7 +171,7 @@ const GetInTouchSection = () => {
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Email</h4>
+                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>Email</h4>
                   <div className="space-y-1">
                     <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>info@fxlabsprime.com</p>
                     <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>support@fxlabsprime.com</p>
@@ -185,7 +185,7 @@ const GetInTouchSection = () => {
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Office Location</h4>
+                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>Office Location</h4>
                   <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
                     253, SMT Rukkavva Junnur, Mudhol - 587313 Karnataka, India
                   </p>
@@ -198,7 +198,7 @@ const GetInTouchSection = () => {
                   <Clock className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Business Hours</h4>
+                  <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>Business Hours</h4>
                   <div className="space-y-1">
                     <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Monday - Friday: 9:00 AM - 7:00 PM EST</p>
                     <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Saturday - Sunday: Closed</p>

@@ -238,13 +238,13 @@ const SubscriptionSection = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           {/* Premium Badge */}
-          <div className="inline-flex items-center justify-center px-6 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-700/50 rounded-full shadow-sm mb-6">
+          <div className="inline-flex items-center justify-center px-6 py-3 bg-white/80 dark:bg-[#19235d]/80 backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-700/50 rounded-full shadow-sm mb-6">
             <i className="fas fa-crown text-emerald-500 mr-2"></i>
             <span className="text-emerald-700 dark:text-emerald-300 font-semibold text-sm tracking-wide">Get Your AI Trading Edge</span>
           </div>
 
           {/* Main Heading */}
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-[#19235d] dark:text-white">
             Choose Your <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 dark:from-emerald-400 dark:via-green-400 dark:to-emerald-500 bg-clip-text text-transparent">Trading Plan</span>
           </h2>
 
@@ -276,12 +276,12 @@ const SubscriptionSection = () => {
               <div className={`relative rounded-3xl transition-all duration-300 h-full ${
                 plan.popular 
                   ? 'p-[3px] bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 shadow-[0_20px_60px_-15px_rgba(16,185,129,0.4)] hover:shadow-[0_25px_70px_-15px_rgba(16,185,129,0.5)]' 
-                  : 'p-[2px] bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 shadow-lg hover:shadow-xl hover:-translate-y-1'
+                  : 'p-[2px] bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-[#19235d] dark:via-[#19235d] dark:to-[#19235d] shadow-lg hover:shadow-xl hover:-translate-y-1'
               }`}>
                 <div className={`relative rounded-3xl h-full backdrop-blur-xl transition-all duration-300 flex flex-col ${
                   plan.popular
-                    ? 'bg-white dark:bg-gray-900 p-14'
-                    : 'bg-white/90 dark:bg-gray-800/90 p-12'
+                    ? 'bg-white dark:bg-[#19235d] p-14'
+                    : 'bg-white/90 dark:bg-[#19235d]/90 p-12'
                 }`}>
                   
                   {/* Plan Name & Badge */}
@@ -294,8 +294,8 @@ const SubscriptionSection = () => {
                     
                     <h3 className={`text-3xl font-bold mb-3 ${
                       plan.popular 
-                        ? 'text-gray-900 dark:text-white' 
-                        : 'text-gray-800 dark:text-gray-100'
+                        ? 'text-[#19235d] dark:text-white' 
+                        : 'text-[#19235d] dark:text-gray-100'
                     }`}>
                       {plan.name}
                     </h3>
@@ -304,7 +304,7 @@ const SubscriptionSection = () => {
                   </div>
 
                   {/* Price Display */}
-                  <div className="text-center mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
+                  <div className="text-center mb-8 pb-8 border-b border-gray-200 dark:border-[#19235d]">
                     {/* Original Price (if exists) */}
                     {plan.originalPrice && (
                       <div className="mb-2">
@@ -315,13 +315,13 @@ const SubscriptionSection = () => {
                     <div className="flex items-start justify-center gap-1 mb-1">
                       <span className={`text-2xl font-bold mt-1 ${
                         plan.popular 
-                          ? 'text-gray-900 dark:text-white' 
+                          ? 'text-[#19235d] dark:text-white' 
                           : 'text-gray-700 dark:text-gray-200'
                       }`}>{isIndianUser ? '₹' : '$'}</span>
                       <span className={`text-5xl font-bold ${
                         plan.popular 
                           ? 'bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent' 
-                          : 'text-gray-900 dark:text-white'
+                          : 'text-[#19235d] dark:text-white'
                       }`}>{plan.price}</span>
                     </div>
                     
@@ -354,7 +354,7 @@ const SubscriptionSection = () => {
                         <div className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center mt-0.5 ${
                           plan.popular 
                             ? 'bg-gradient-to-br from-emerald-500 to-green-600' 
-                            : 'bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-500 dark:to-gray-600'
+                            : 'bg-gradient-to-br from-gray-400 to-gray-500 dark:from-[#19235d] dark:to-[#19235d]'
                         }`}>
                           <i className="fas fa-check text-white text-[9px]"></i>
                         </div>
@@ -390,7 +390,7 @@ const SubscriptionSection = () => {
                       className={`w-full py-3 px-6 rounded-xl font-semibold text-base transition-all duration-300 transform hover:-translate-y-1 inline-block text-center ${
                         plan.popular
                           ? 'bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40'
-                          : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-md'
+                          : 'bg-white dark:bg-[#19235d] border-2 border-gray-300 dark:border-[#19235d] text-[#19235d] dark:text-white hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-gray-50 dark:hover:bg-[#19235d] shadow-md'
                       }`}
                     >
                       Get Started Now
@@ -401,7 +401,7 @@ const SubscriptionSection = () => {
                       className={`w-full py-3 px-6 rounded-xl font-semibold text-base transition-all duration-300 transform hover:-translate-y-1 ${
                         plan.popular
                           ? 'bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40'
-                          : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-md'
+                          : 'bg-white dark:bg-[#19235d] border-2 border-gray-300 dark:border-[#19235d] text-[#19235d] dark:text-white hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-gray-50 dark:hover:bg-[#19235d] shadow-md'
                       }`}
                     >
                       {plan.id === 'free' ? 'Start My Trial' : 'Get Started Now'}

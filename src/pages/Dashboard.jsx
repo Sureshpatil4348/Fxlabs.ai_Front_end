@@ -142,7 +142,7 @@
     }, [loadTabState]);
 
     return (
-      <div className="relative h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-black dark:to-gray-900 overflow-hidden flex flex-col transition-colors duration-300">
+      <div className="relative h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] overflow-hidden flex flex-col transition-colors duration-300">
         {/* Loading Overlay - Render at root level to avoid layout constraints */}
         {showLoader && (
           <LoadingOverlay
@@ -234,7 +234,7 @@
                   {/* Mobile: order-1 (first), Desktop: maintains position */}
                   <div className="flex flex-col gap-2 lg:min-h-0 order-1">
                     {/* Lot Size Calculator - Mobile: auto height, Desktop: h-72 */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 h-auto lg:h-[26rem]">
+                    <div className="bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-lg overflow-hidden p-2 h-auto lg:h-[26rem]">
                       <div className="h-full overflow-y-auto">
                         <LotSizeCalculator />
                       </div>
@@ -243,7 +243,7 @@
 
                   {/* Quantum Analysis (MultiIndicatorHeatmap) - full width on desktop */}
                   {/* Mobile: order-2 (second), Desktop: order-3 (last, spans full width) */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-1 h-[380px] lg:h-auto lg:min-h-0 lg:col-span-2 order-2 lg:order-3">
+                  <div className="bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-lg overflow-hidden p-1 h-[380px] lg:h-auto lg:min-h-0 lg:col-span-2 order-2 lg:order-3">
                     <div className="h-full overflow-auto">
                       <MultiIndicatorHeatmap />
                     </div>
@@ -251,7 +251,7 @@
 
                   {/* Right Column: Multi Time Analysis spanning full height */}
                   {/* Mobile: order-3 (third), Desktop: order-2 (second position) */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden p-2 max-h-[600px] lg:h-[26rem] lg:min-h-0 order-3 lg:order-2">
+                  <div className="bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-lg overflow-hidden p-2 max-h-[600px] lg:h-[26rem] lg:min-h-0 order-3 lg:order-2">
                     <div className="max-h-full overflow-y-auto overflow-x-auto lg:h-full lg:overflow-x-hidden">
                       <MultiTimeAnalysis />
                     </div>

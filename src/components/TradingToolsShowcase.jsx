@@ -162,7 +162,7 @@ import {
               </div>
             </div>
             
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-[#19235d]">
               Your Complete{' '}
               <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 Trading Arsenal
@@ -181,7 +181,7 @@ import {
               <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-full px-4 py-2 shadow-lg">
                 <button
                   onClick={toggleAutoPlay}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-[#19235d] transition-colors"
                 >
                   {isAutoPlaying ? (
                     <>
@@ -218,13 +218,13 @@ import {
                       <tool.icon className={`w-7 h-7 sm:w-6 sm:h-6 transition-all duration-300 ${
                         activeTab === tool.id 
                           ? 'text-white' 
-                          : 'text-gray-600 group-hover:text-gray-800'
+                          : 'text-gray-600 group-hover:text-[#19235d]'
                       }`} />
                     </div>
                     <span className={`text-sm sm:text-xs font-semibold text-center leading-snug transition-all duration-300 ${
                       activeTab === tool.id
-                        ? 'text-gray-900'
-                        : 'text-gray-600 group-hover:text-gray-800'
+                        ? 'text-[#19235d]'
+                        : 'text-gray-600 group-hover:text-[#19235d]'
                     }`}>
                       {tool.name}
                     </span>
@@ -250,7 +250,7 @@ import {
                       <activeTool.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-10 md:h-10 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#19235d] mb-2">
                         {activeTool.title}
                       </h3>
                     </div>
@@ -272,7 +272,7 @@ import {
   
                 {/* Right Column - Features List */}
                 <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl p-6 md:p-8 shadow-lg">
-                  <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <h4 className="text-xl font-bold text-[#19235d] mb-6 flex items-center">
                     <TrendingUp className={`w-6 h-6 mr-2 bg-gradient-to-r ${activeTool.gradient} bg-clip-text text-transparent`} />
                     Key Features
                   </h4>

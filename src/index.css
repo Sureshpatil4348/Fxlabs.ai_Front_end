@@ -36,7 +36,7 @@
 
   /* Dark mode styles */
   .dark body {
-    background-color: #0f172a;
+    background-color: #19235d;
     color: #f1f5f9;
   }
 
@@ -64,24 +64,24 @@
     font-weight: 700;
   }
   .card {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6 transition-colors duration-300;
+    @apply bg-white dark:bg-[#19235d] rounded-lg shadow-sm border border-gray-200 dark:border-[#19235d] p-6 transition-colors duration-300;
   }
   
   .card-tight-top {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 px-6 pb-6 pt-1 transition-colors duration-300;
+    @apply bg-white dark:bg-[#19235d] rounded-lg shadow-sm border border-gray-200 dark:border-[#19235d] px-6 pb-6 pt-1 transition-colors duration-300;
   }
   
   .card-tight-bottom {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 px-6 pt-6 pb-1 transition-colors duration-300;
+    @apply bg-white dark:bg-[#19235d] rounded-lg shadow-sm border border-gray-200 dark:border-[#19235d] px-6 pt-6 pb-1 transition-colors duration-300;
   }
   
   .card-compact {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 py-3 px-2 transition-colors duration-300;
+    @apply bg-white dark:bg-[#19235d] rounded-lg shadow-sm border border-gray-200 dark:border-[#19235d] py-3 px-2 transition-colors duration-300;
   }
 
   /* Unified widget card styling across all dashboard widgets */
   .widget-card {
-    @apply bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 transition-colors duration-300;
+    @apply bg-white dark:bg-[#19235d] rounded-xl shadow-md border border-gray-200 dark:border-[#19235d] transition-colors duration-300;
   }
   
   .btn-primary {
@@ -133,7 +133,7 @@
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #19235d;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {

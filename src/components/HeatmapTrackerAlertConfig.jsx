@@ -81,37 +81,37 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
+      <div className="bg-white dark:bg-[#19235d] rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-[#19235d]">
           <div className="flex items-center space-x-2">
             <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
               <Bell className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">Quantum Analysis Alert</h2>
+              <h2 className="text-base font-bold text-[#19235d] dark:text-slate-100">Quantum Analysis Alert</h2>
               <p className="text-xs text-gray-500 dark:text-slate-400">Up to 3 pairs. One alert. Threshold triggers.</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200">
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-[#19235d] dark:text-slate-400 dark:hover:text-slate-200">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           {loading ? (
-            <div className="text-sm text-gray-600 dark:text-slate-400">Loading...</div>
+            <div className="text-sm text-[#19235d] dark:text-slate-400">Loading...</div>
           ) : (
             <>
               {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
               <div>
-                <p className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Pairs (up to 3)</p>
+                <p className="block text-xs font-medium text-[#19235d] dark:text-slate-300 mb-1">Pairs (up to 3)</p>
                 <div className="flex flex-wrap gap-2">
                   {availablePairs.map(pair => (
                     <button
                       key={pair}
                       onClick={() => togglePair(pair)}
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${form.pairs.includes(pair) ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-500'}`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${form.pairs.includes(pair) ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-[#19235d] text-[#19235d] dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-500'}`}
                     >
                       {formatSymbolDisplay(pair)}
                     </button>
@@ -125,7 +125,7 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
                   id="heatmap-tracker-mode"
                   value={form.tradingStyle}
                   onChange={(e) => setForm({ ...form, tradingStyle: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="scalper">Scalper</option>
                   <option value="swingTrader">Swing Trader</option>
@@ -135,11 +135,11 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="heatmap-tracker-buy-threshold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Buy Threshold (%)</label>
-                  <input id="heatmap-tracker-buy-threshold" type="number" min="0" max="100" value={form.buyThreshold} onChange={(e) => setForm({ ...form, buyThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <input id="heatmap-tracker-buy-threshold" type="number" min="0" max="100" value={form.buyThreshold} onChange={(e) => setForm({ ...form, buyThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
                 <div>
                   <label htmlFor="heatmap-tracker-sell-threshold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Sell Threshold (%)</label>
-                  <input id="heatmap-tracker-sell-threshold" type="number" min="0" max="100" value={form.sellThreshold} onChange={(e) => setForm({ ...form, sellThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <input id="heatmap-tracker-sell-threshold" type="number" min="0" max="100" value={form.sellThreshold} onChange={(e) => setForm({ ...form, sellThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                 </div>
               </div>
 

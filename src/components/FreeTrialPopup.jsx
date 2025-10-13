@@ -44,7 +44,7 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className={`relative ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl max-w-lg w-full p-8 border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}
+        className={`relative ${isDarkMode ? 'bg-[#19235d]' : 'bg-white'} rounded-2xl shadow-2xl max-w-lg w-full p-8 border ${isDarkMode ? 'border-[#19235d]' : 'border-gray-200'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -60,7 +60,7 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
           <div className="flex justify-center mb-3">
             <Rocket className="w-10 h-10 text-[#03c05d]" />
           </div>
-          <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
             Get Your Free Trial of FxLabs Prime
           </h2>
           <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-500'} mt-2`}>
@@ -74,7 +74,7 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
             href="https://mycms.cmsprime.com/links/go/1487"
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-2 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-[#03c05d]/10'} ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} px-4 py-3 rounded-xl transition border ${isDarkMode ? 'border-gray-600' : 'border-[#03c05d]/20'}`}
+            className={`flex items-center gap-2 ${isDarkMode ? 'bg-[#19235d] hover:bg-[#19235d] text-gray-200' : 'bg-gray-100 hover:bg-[#03c05d]/10'} ${isDarkMode ? 'text-gray-200' : 'text-[#19235d]'} px-4 py-3 rounded-xl transition border ${isDarkMode ? 'border-[#19235d]' : 'border-[#03c05d]/20'}`}
           >
             <LinkIcon className="w-5 h-5 text-[#03c05d]" /> CMSPrime Registration
           </a>
@@ -82,15 +82,15 @@ const FreeTrialPopup = ({ isOpen, onClose }) => {
             href="https://one.exnessonelink.com/a/ltmmprf9v8"
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-2 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-[#03c05d]/10'} ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} px-4 py-3 rounded-xl transition border ${isDarkMode ? 'border-gray-600' : 'border-[#03c05d]/20'}`}
+            className={`flex items-center gap-2 ${isDarkMode ? 'bg-[#19235d] hover:bg-[#19235d] text-gray-200' : 'bg-gray-100 hover:bg-[#03c05d]/10'} ${isDarkMode ? 'text-gray-200' : 'text-[#19235d]'} px-4 py-3 rounded-xl transition border ${isDarkMode ? 'border-[#19235d]' : 'border-[#03c05d]/20'}`}
           >
             <LinkIcon className="w-5 h-5 text-[#03c05d]" /> Exness Registration
           </a>
         </div>
 
         {/* Benefits */}
-        <div className={`mt-6 ${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700' : 'bg-gradient-to-r from-[#03c05d]/10 to-[#03c05d]/5'} rounded-xl p-5 border ${isDarkMode ? 'border-gray-600' : 'border-[#03c05d]/20'}`}>
-          <h3 className={`flex items-center gap-2 font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'} mb-3`}>
+        <div className={`mt-6 ${isDarkMode ? 'bg-gradient-to-r from-[#19235d] to-[#19235d]' : 'bg-gradient-to-r from-[#03c05d]/10 to-[#03c05d]/5'} rounded-xl p-5 border ${isDarkMode ? 'border-[#19235d]' : 'border-[#03c05d]/20'}`}>
+          <h3 className={`flex items-center gap-2 font-semibold ${isDarkMode ? 'text-white' : 'text-[#19235d]'} mb-3`}>
             <Gift className="w-5 h-5 text-[#03c05d]" /> Trial Benefits
           </h3>
           <ul className={`space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm`}>

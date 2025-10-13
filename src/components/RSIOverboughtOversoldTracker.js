@@ -19,13 +19,13 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
 
   return (
     <tr className={`hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer ${isInWishlist ? 'bg-gray-100 dark:bg-slate-600' : ''}`} onClick={() => onAddToWishlist(symbol)}>
-      <td className="px-2 py-1 text-[13px] font-medium text-gray-900 dark:text-slate-100 text-center">
+      <td className="px-2 py-1 text-[13px] font-medium text-[#19235d] dark:text-slate-100 text-center">
         {formatSymbolDisplay(symbol)}
       </td>
       <td className={`px-2 py-1 text-[13px] font-bold text-center ${getRsiColor(rsi, settings.rsiOverbought, settings.rsiOversold)}`}>
         {formatRsi(rsi)}
       </td>
-      <td className="px-2 py-1 text-[13px] text-gray-900 dark:text-slate-100 font-mono text-center">
+      <td className="px-2 py-1 text-[13px] text-[#19235d] dark:text-slate-100 font-mono text-center">
         {symbol.includes('JPY') ? formatPrice(price, 3) : formatPrice(price, 5)}
       </td>
       <td className={`px-2 py-1 text-[13px] font-medium text-center ${change >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
@@ -52,13 +52,13 @@ const WatchlistRow = ({ symbol, onRemoveFromWishlist, settings, rsiData, getLate
 
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-slate-700">
-      <td className="px-2 py-1 text-[13px] font-medium text-gray-900 dark:text-slate-100 text-center">
+      <td className="px-2 py-1 text-[13px] font-medium text-[#19235d] dark:text-slate-100 text-center">
         {formatSymbolDisplay(symbol)}
       </td>
       <td className={`px-2 py-1 text-[13px] font-bold text-center ${rsiValue != null ? getRsiColor(rsiValue, settings.rsiOverbought, settings.rsiOversold) : 'text-gray-400 dark:text-slate-500'}`}>
         {rsiText}
       </td>
-      <td className="px-2 py-1 text-[13px] text-gray-900 dark:text-slate-100 font-mono text-center">
+      <td className="px-2 py-1 text-[13px] text-[#19235d] dark:text-slate-100 font-mono text-center">
         {priceText}
       </td>
       <td className={`px-2 py-1 text-[13px] font-medium text-center ${change != null ? (change >= 0 ? 'text-success-600' : 'text-danger-600') : 'text-gray-400 dark:text-slate-500'}`}>
@@ -508,7 +508,7 @@ const RSIOverboughtOversoldTracker = () => {
             <div className="flex items-center space-x-2">
               <Activity className="w-4 h-4 text-purple-600" />
               <div>
-                <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">RSI Tracker</h2>
+                <h2 className="text-base font-semibold text-[#19235d] dark:text-slate-100">RSI Tracker</h2>
               </div>
               {/* Connection status pill removed; status shown as top-right dot */}
             </div>
@@ -531,7 +531,7 @@ const RSIOverboughtOversoldTracker = () => {
               className={`px-2 py-1 rounded-md transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-1 ${
                 showWatchlist 
                   ? 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 shadow-blue-200' 
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-gray-200'
+                  : 'text-gray-600 dark:text-slate-400 hover:text-[#19235d] dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#19235d] shadow-gray-200'
               }`}
               title={showWatchlist ? "Switch to RSI Tracker mode" : "Switch to Watchlist mode"}
             >
@@ -572,7 +572,7 @@ const RSIOverboughtOversoldTracker = () => {
             )}
             <button
               onClick={() => setShowSettings(true)}
-              className="p-1 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+              className="p-1 text-gray-600 dark:text-slate-400 hover:text-[#19235d] dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#19235d] rounded-md transition-colors"
               title="Dashboard Settings"
             >
               <Settings className="w-3.5 h-3.5" />
@@ -591,8 +591,8 @@ const RSIOverboughtOversoldTracker = () => {
               onClick={() => handleTabChange(tab.id)}
               className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[13px] font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                  ? 'bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 shadow-sm'
+                  : 'text-gray-600 dark:text-slate-400 hover:text-[#19235d] dark:hover:text-slate-200'
               }`}
             >
               {tab.label}
@@ -633,7 +633,7 @@ const RSIOverboughtOversoldTracker = () => {
                     </th>
                   </tr>
                 </thead>
-                  <tbody className="bg-white dark:bg-slate-800 text-sm text-left">
+                  <tbody className="bg-white dark:bg-[#19235d] text-sm text-left">
                   {watchlistSymbols.map((symbol) => {
                     const isRemoving = removingSymbol === symbol;
                     return (
@@ -658,7 +658,7 @@ const RSIOverboughtOversoldTracker = () => {
                 <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/20">
                   <Star className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
+                <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-2">
                   No watchlist items
                 </h3>
                 <p className="text-gray-500 dark:text-slate-400 text-sm">
@@ -689,7 +689,7 @@ const RSIOverboughtOversoldTracker = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-slate-800 text-sm text-left">
+                  <tbody className="bg-white dark:bg-[#19235d] text-sm text-left">
                     {currentPairs.map((pair) => (
                       <PairRow
                         key={pair.symbol}
@@ -718,7 +718,7 @@ const RSIOverboughtOversoldTracker = () => {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white dark:bg-slate-800">
+                <div className="bg-white dark:bg-[#19235d]">
                   {/* Expandable View Header */}
                   <div className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 px-3 py-3">
                     <div className="flex items-center text-xs font-medium text-gray-500 dark:text-slate-400">
@@ -759,7 +759,7 @@ const RSIOverboughtOversoldTracker = () => {
                   <TrendingUp className="w-6 h-6 text-danger-600 dark:text-danger-400" />
                 )}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
+              <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-2">
                 No {activeTab} pairs found
               </h3>
               <p className="text-gray-500 dark:text-slate-400 text-sm">
@@ -784,8 +784,8 @@ const RSIOverboughtOversoldTracker = () => {
     {/* Settings Modal - Outside widget for proper z-index */}
     {showSettings && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[5000]">
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">RSI Tracker Settings</h3>
+        <div className="bg-white dark:bg-[#19235d] rounded-lg p-6 w-full max-w-md mx-4">
+          <h3 className="text-lg font-semibold text-[#19235d] dark:text-slate-100 mb-4">RSI Tracker Settings</h3>
           
           <div className="space-y-4">
             {/* Timeframe */}
@@ -797,7 +797,7 @@ const RSIOverboughtOversoldTracker = () => {
                 id="rsi-tracker-timeframe"
                 value={localSettings.timeframe}
                 onChange={(e) => setLocalSettings(prev => ({ ...prev, timeframe: e.target.value }))}
-                className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {timeframes.filter(tf => tf !== '1M').map(tf => (
                   <option key={tf} value={tf}>{tf}</option>
@@ -836,7 +836,7 @@ const RSIOverboughtOversoldTracker = () => {
                     return { ...prev, rsiOverbought: newOverbought };
                   });
                 }}
-                className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
@@ -869,7 +869,7 @@ const RSIOverboughtOversoldTracker = () => {
                     return { ...prev, rsiOversold: newOversold };
                   });
                 }}
-                className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -902,9 +902,9 @@ const RSIOverboughtOversoldTracker = () => {
     {/*
     {showAddModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[5000]">
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
+        <div className="bg-white dark:bg-[#19235d] rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Add Currency Pair</h3>
+            <h3 className="text-lg font-semibold text-[#19235d] dark:text-slate-100">Add Currency Pair</h3>
             <button
               onClick={() => { setShowAddModal(false); setSearchTerm(''); }}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300"
@@ -921,7 +921,7 @@ const RSIOverboughtOversoldTracker = () => {
                 placeholder="Search currency pairs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -936,7 +936,7 @@ const RSIOverboughtOversoldTracker = () => {
                     className="w-full flex items-center justify-between p-3 text-left border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-slate-100">{formatSymbolDisplay(pair)}</div>
+                      <div className="font-medium text-[#19235d] dark:text-slate-100">{formatSymbolDisplay(pair)}</div>
                       <div className="text-sm text-gray-500 dark:text-slate-400">{formatSymbolDisplay(pair)}</div>
                     </div>
                     {addingSymbol === pair ? (

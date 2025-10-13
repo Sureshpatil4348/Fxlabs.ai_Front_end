@@ -162,7 +162,7 @@ export const getCurrencyStrengthColor = (strength) => {
     return 'text-red-500 bg-red-50 dark:text-red-500 dark:bg-red-900/10';
   }
   // Zero or neutral
-  return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800';
+  return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-[#19235d]';
 };
 
 export const getImpactColor = (impact) => {

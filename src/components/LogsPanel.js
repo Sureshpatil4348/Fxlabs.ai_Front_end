@@ -53,9 +53,9 @@ const LogsPanel = () => {
     <div className="card">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <ScrollText className="w-5 h-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Activity Logs</h2>
-          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+          <ScrollText className="w-5 h-5 text-[#19235d]" />
+          <h2 className="text-lg font-semibold text-[#19235d]">Activity Logs</h2>
+          <span className="bg-gray-100 text-[#19235d] text-xs px-2 py-1 rounded-full">
             {logs.length}
           </span>
         </div>
@@ -110,19 +110,19 @@ const LogsPanel = () => {
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="grid grid-cols-4 gap-4 text-xs">
             <div className="flex justify-between">
-              <span className="text-gray-600">Success:</span>
+              <span className="text-[#19235d]">Success:</span>
               <span className="text-success-600 font-medium">
                 {logs.filter(log => log.type === 'success').length}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Errors:</span>
+              <span className="text-[#19235d]">Errors:</span>
               <span className="text-danger-600 font-medium">
                 {logs.filter(log => log.type === 'error').length}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Warnings:</span>
+              <span className="text-[#19235d]">Warnings:</span>
               <span className="text-yellow-600 font-medium">
                 {logs.filter(log => log.type === 'warning').length}
               </span>

@@ -77,7 +77,7 @@ const IndicatorDataView = ({ symbol }) => {
       {latestIndicators && (
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-[#19235d]">
               {formatSymbolDisplay(symbol.replace(/m$/,''))} - {timeframe}
             </h3>
             <span className="text-sm text-gray-500">
@@ -124,7 +124,7 @@ const IndicatorDataView = ({ symbol }) => {
           <div className="mt-3 pt-3 border-t border-gray-200">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Last Update:</span>
-              <span className="text-gray-900">
+              <span className="text-[#19235d]">
                 {formatTime(latestIndicators.lastUpdate)}
               </span>
             </div>
@@ -160,7 +160,7 @@ const IndicatorDataView = ({ symbol }) => {
                     // Handle nested indicators
                     return Object.entries(indicatorValue).map(([period, value]) => (
                       <tr key={`${indicatorName}-${period}`} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 text-xs text-gray-900 font-mono">
+                        <td className="px-3 py-2 text-xs text-[#19235d] font-mono">
                           {indicatorName.toUpperCase()} ({period})
                         </td>
                         <td className={`px-3 py-2 text-xs font-mono text-right ${getIndicatorColor(indicatorName, value)}`}>
@@ -172,7 +172,7 @@ const IndicatorDataView = ({ symbol }) => {
                               ? 'bg-danger-100 text-danger-800' 
                               : getIndicatorStatus(indicatorName, value) === 'Oversold'
                               ? 'bg-success-100 text-success-800'
-                              : 'bg-gray-100 text-gray-800'
+                              : 'bg-gray-100 text-[#19235d]'
                           }`}>
                             {getIndicatorStatus(indicatorName, value) === 'Overbought' ? (
                               <TrendingUp className="w-3 h-3 mr-1" />
@@ -188,7 +188,7 @@ const IndicatorDataView = ({ symbol }) => {
                     // Handle simple indicators
                     return (
                       <tr key={indicatorName} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 text-xs text-gray-900 font-mono">
+                        <td className="px-3 py-2 text-xs text-[#19235d] font-mono">
                           {indicatorName.toUpperCase()}
                         </td>
                         <td className={`px-3 py-2 text-xs font-mono text-right ${getIndicatorColor(indicatorName, indicatorValue)}`}>
@@ -200,7 +200,7 @@ const IndicatorDataView = ({ symbol }) => {
                               ? 'bg-danger-100 text-danger-800' 
                               : getIndicatorStatus(indicatorName, indicatorValue) === 'Oversold'
                               ? 'bg-success-100 text-success-800'
-                              : 'bg-gray-100 text-gray-800'
+                              : 'bg-gray-100 text-[#19235d]'
                           }`}>
                             {getIndicatorStatus(indicatorName, indicatorValue) === 'Overbought' ? (
                               <TrendingUp className="w-3 h-3 mr-1" />

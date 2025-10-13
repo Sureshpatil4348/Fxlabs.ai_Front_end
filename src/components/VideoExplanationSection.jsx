@@ -43,14 +43,14 @@ const VideoExplanationSection = () => {
         {/* Section Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center mb-6">
-            <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-full px-6 py-3 shadow-lg">
+            <div className="bg-white/60 dark:bg-[#19235d]/60 backdrop-blur-xl border border-white/30 dark:border-[#19235d]/30 rounded-full px-6 py-3 shadow-lg">
               <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent font-semibold text-sm uppercase tracking-wider">
                 Advanced Technology
               </span>
             </div>
           </div>
           
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-[#19235d] dark:text-white">
             Advanced{' '}
             <span className="bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-600 dark:from-emerald-400 dark:via-green-400 dark:to-emerald-500 bg-clip-text text-transparent">
               Trading Technology
@@ -68,13 +68,13 @@ const VideoExplanationSection = () => {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="flex items-start space-x-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors duration-300"
+                className="flex items-start space-x-3 p-4 bg-white dark:bg-[#19235d] rounded-lg border border-gray-200 dark:border-[#19235d] hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors duration-300"
               >
                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center">
                   <feature.icon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                  <h3 className="text-sm font-semibold text-[#19235d] dark:text-white mb-1">
                     {feature.title}
                   </h3>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -87,12 +87,12 @@ const VideoExplanationSection = () => {
 
           {/* Video Column */}
           <div className="w-full lg:w-1/2">
-            <div className="relative bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-3xl shadow-2xl overflow-hidden p-2">
+            <div className="relative bg-white/50 dark:bg-[#19235d]/50 backdrop-blur-xl border border-white/30 dark:border-[#19235d]/30 rounded-3xl shadow-2xl overflow-hidden p-2">
               {/* Gradient Border Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50"></div>
               
               {/* Video Container */}
-              <div className="relative bg-gray-900 rounded-2xl overflow-hidden aspect-video">
+              <div className="relative bg-[#19235d] rounded-2xl overflow-hidden aspect-video">
                 {/* 
                   ⚠️ TEMPORARY: YouTube video hidden, showing Lottie animation instead
                   TODO: Restore YouTube embed when ready
@@ -110,7 +110,7 @@ const VideoExplanationSection = () => {
                 ></iframe> */}
                 
                 {/* Temporary Lottie Animation */}
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#19235d] to-[#19235d]">
                   <DotLottieReact
                     src="https://lottie.host/75587a54-4960-4ae1-9cc6-e85a70741c59/lvgTVE0ecb.lottie"
                     loop
@@ -123,10 +123,10 @@ const VideoExplanationSection = () => {
                 ⚠️ TEMPORARY: Live Demo badge hidden along with YouTube video
                 TODO: Restore badge when YouTube video is restored
               */}
-              {/* <div className="absolute top-6 left-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-white/30 dark:border-gray-700/30 rounded-full px-4 py-2 shadow-lg">
+              {/* <div className="absolute top-6 left-6 bg-white/90 dark:bg-[#19235d]/90 backdrop-blur-sm border border-white/30 dark:border-[#19235d]/30 rounded-full px-4 py-2 shadow-lg">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">Live Demo</span>
+                  <span className="text-sm font-semibold text-[#19235d] dark:text-white">Live Demo</span>
                 </div>
               </div> */}
             </div>

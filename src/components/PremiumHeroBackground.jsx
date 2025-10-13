@@ -20,8 +20,8 @@ const PremiumHeroBackground = () => {
       const dotAlpha = 0.9
       const lineAlphaNear = isDark ? 0.25 : 0.18
       const lineAlphaFar = isDark ? 0.04 : 0.03
-      const bgGradientStart = isDark ? '#0b1220' : '#f8fafc'
-      const bgGradientEnd = isDark ? '#0a1a13' : '#e8fff4'
+      const bgGradientStart = isDark ? '#19235d' : '#f8fafc'
+      const bgGradientEnd = isDark ? '#19235d' : '#e8fff4'
       return { isDark, primary, secondary, dotAlpha, lineAlphaNear, lineAlphaFar, bgGradientStart, bgGradientEnd }
     }
 

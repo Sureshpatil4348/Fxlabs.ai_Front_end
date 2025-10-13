@@ -50,7 +50,7 @@ const TradingFeaturesSection = () => {
   ]
 
   return (
-    <section className="relative py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
+    <section className="relative py-20 bg-gradient-to-br from-[#19235d] via-[#19235d] to-[#19235d] overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/3 rounded-full blur-3xl animate-pulse"></div>
@@ -93,7 +93,7 @@ const TradingFeaturesSection = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           {keyStats.map((stat, index) => (
             <div key={index} className="text-center group">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-600/50">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#19235d]/80 to-[#19235d]/80 backdrop-blur-sm rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-600/50">
                 <stat.icon className={`w-8 h-8 ${stat.color}`} />
               </div>
               <div className={`text-3xl font-bold ${stat.color} mb-2`}>{stat.value}</div>
@@ -107,7 +107,7 @@ const TradingFeaturesSection = () => {
           {tradingFeatures.map((feature) => (
             <div
               key={feature.id}
-              className="group relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-500 transform hover:scale-105 border border-gray-600/50 hover:border-gray-500/50"
+              className="group relative bg-gradient-to-br from-[#19235d]/80 to-[#19235d]/80 backdrop-blur-sm rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-500 transform hover:scale-105 border border-gray-600/50 hover:border-gray-500/50"
             >
               {/* Feature Icon */}
               <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:rotate-12 transition-transform duration-300`}>
@@ -153,7 +153,7 @@ const TradingFeaturesSection = () => {
         </div>
 
         {/* Bottom CTA Section */}
-        <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-600/50">
+        <div className="bg-gradient-to-br from-[#19235d]/80 to-[#19235d]/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-600/50">
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center shadow-lg">

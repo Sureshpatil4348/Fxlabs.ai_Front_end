@@ -31,15 +31,15 @@ const CommunitySection = () => {
       <div className="container mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="w-full lg:w-1/2 text-center lg:text-left">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-[#19235d] dark:text-white">
               Join 250+ <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 bg-clip-text text-transparent">Successful Traders</span>
             </h2>
             <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
 
             </p>
 
-            <div className="bg-white/50 dark:bg-gray-800/50 rounded-2xl p-6 mb-8 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
-              <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">What You Get:</h3>
+            <div className="bg-white/50 dark:bg-[#19235d]/50 rounded-2xl p-6 mb-8 backdrop-blur-sm border border-gray-200/50 dark:border-[#19235d]/50">
+              <h3 className="text-2xl font-bold mb-6 text-[#19235d] dark:text-white">What You Get:</h3>
               <ul className="space-y-4 text-left">
                 {benefits.map((benefit, index) => {
                   const IconComponent = benefit.icon;
@@ -49,7 +49,7 @@ const CommunitySection = () => {
                         <IconComponent className="text-emerald-600 dark:text-emerald-400" size={16} />
                       </div>
                       <p className="ml-4 text-gray-700 dark:text-gray-300">
-                        <strong className="text-gray-900 dark:text-white">{benefit.title}</strong> – {benefit.description}
+                        <strong className="text-[#19235d] dark:text-white">{benefit.title}</strong> – {benefit.description}
                       </p>
                     </li>
                   );

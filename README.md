@@ -2,7 +2,31 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Lot Size Calculator - Mobile View Space Optimization (Latest)
+## Dark Gray Color Replacement (Latest)
+
+All dark gray colors throughout the project have been systematically replaced with the brand color #19235d for consistent branding and visual identity.
+
+### Changes
+- **Comprehensive color replacement**: Replaced all instances of dark gray colors (gray-600, gray-700, gray-800, gray-900, slate-600, slate-700, slate-800, slate-900) with #19235d
+- **Focus on gray-800 and above**: Specifically targeted gray-800, gray-900, slate-800, and slate-900 for complete replacement
+- **Complete text color replacement**: All text-gray-900 and text-slate-900 instances replaced with text-[#19235d]
+- **Form input styling**: All form inputs and selects updated to use #19235d backgrounds and borders
+- **Files affected**: All CSS, JSX, and JS files across the project
+- **Brand consistency**: Ensures consistent use of the brand color #19235d throughout the application
+- **Dark mode optimization**: Updated dark mode backgrounds and borders to use the new brand color
+- **Component updates**: Updated all components including dashboards, modals, forms, and UI elements
+
+### Implementation Details
+- **CSS files**: Updated `src/index.css` with new dark mode background colors and card styles
+- **Component files**: Updated all React components to use #19235d instead of dark gray
+- **Trading components**: Updated TradingView widgets, charts, and analysis components
+- **UI elements**: Updated buttons, cards, borders, and text colors
+- **Dashboard elements**: Updated all dashboard widgets and panels
+- **Modal components**: Updated all modal backgrounds and settings panels
+- **Alert configurations**: Updated RSI, Currency Strength, and Heatmap alert modals
+- **User interface**: Updated profile dropdowns, settings panels, and form elements
+
+## Lot Size Calculator - Mobile View Space Optimization
 
 The Lot Size Calculator now optimizes mobile space by hiding the result section when no calculations are present, automatically shrinking the widget height to save screen space.
 

@@ -52,7 +52,7 @@ import {
           <div className="flex flex-col gap-8 pb-16 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-4">
               <p className="text-[11px] uppercase tracking-[0.5em] text-gray-500">The FxLabs Prime edge</p>
-              <h2 className={`text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h2 className={`text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
                 Precision infrastructure for trading leaders
               </h2>
             </div>
@@ -65,12 +65,12 @@ import {
             {benefits.map((benefit) => (
               <div
                 key={benefit.title}
-                className="group relative overflow-hidden rounded-3xl border border-gray-200/70 bg-white/75 p-8 backdrop-blur-xl shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-gray-900/70"
+                className="group relative overflow-hidden rounded-3xl border border-gray-200/70 bg-white/75 p-8 backdrop-blur-xl shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-[#19235d]/70"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-emerald-500/8 to-emerald-500/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
   
                 <benefit.icon className="relative z-10 mb-6 h-10 w-10 text-emerald-500" />
-                <h3 className={`relative z-10 text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{benefit.title}</h3>
+                <h3 className={`relative z-10 text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>{benefit.title}</h3>
                 <p className={`relative z-10 mt-3 text-base leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {benefit.description}
                 </p>

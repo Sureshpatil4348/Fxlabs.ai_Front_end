@@ -44,13 +44,13 @@ const FAQSection = () => {
   return (
     <section id="faq" className="py-12 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
       <div className="container mx-auto max-w-7xl">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-16 text-gray-900 dark:text-white transition-colors duration-300">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 md:mb-16 text-[#19235d] dark:text-white transition-colors duration-300">
           Frequently Asked <span className="gold-text">Questions</span>
         </h2>
         <div className="max-w-4xl mx-auto grid grid-cols-1 gap-6">
           {visibleFaqs.map((faq, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-300">
-              <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white transition-colors duration-300">
+            <div key={index} className="bg-white dark:bg-[#19235d] rounded-lg shadow-md p-6 transition-colors duration-300">
+              <h3 className="text-xl font-bold mb-3 text-[#19235d] dark:text-white transition-colors duration-300">
                 {faq.question}
               </h3>
               <p className="text-[#19235d] dark:text-gray-300 transition-colors duration-300 whitespace-pre-line">
@@ -74,7 +74,7 @@ const FAQSection = () => {
         </div>
         
         <div className="mt-8 md:mt-12 text-center">
-          <p className="text-lg md:text-xl mb-4 md:mb-6 text-gray-900 dark:text-white transition-colors duration-300">Still have questions?</p>
+          <p className="text-lg md:text-xl mb-4 md:mb-6 text-[#19235d] dark:text-white transition-colors duration-300">Still have questions?</p>
           <a 
             href="https://t.me/fxlabsprime" 
             target="_blank" 

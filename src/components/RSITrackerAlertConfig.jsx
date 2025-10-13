@@ -78,14 +78,14 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white dark:bg-[#19235d] rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-600">
           <div className="flex items-center space-x-2">
             <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
               <Bell className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">RSI Tracker Alert</h2>
+              <h2 className="text-base font-bold text-[#19235d] dark:text-slate-100">RSI Tracker Alert</h2>
               <p className="text-xs text-gray-500 dark:text-slate-400">Single alert, one timeframe, RSI thresholds</p>
             </div>
           </div>
@@ -107,7 +107,7 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                   id="rsi-tracker-timeframe"
                   value={form.timeframe}
                   onChange={(e) => setForm({ ...form, timeframe: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 >
                   {timeframes.filter(tf => tf !== '1M').map((tf) => (
                     <option key={tf} value={tf}>{tf}</option>
@@ -125,7 +125,7 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                     max="90"
                     value={form.rsiOverbought}
                     onChange={(e) => setForm({ ...form, rsiOverbought: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
                 <div>
@@ -137,7 +137,7 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
                     max="40"
                     value={form.rsiOversold}
                     onChange={(e) => setForm({ ...form, rsiOversold: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
               </div>

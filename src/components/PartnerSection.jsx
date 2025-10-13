@@ -16,11 +16,11 @@ const PartnersSection = () => {
   return (
     <section className="relative py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-[2.5rem] border border-gray-200/70 bg-white/70 p-10 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/60">
+        <div className="overflow-hidden rounded-[2.5rem] border border-gray-200/70 bg-white/70 p-10 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-[#19235d]/60">
           <div className="flex flex-col gap-6 border-b border-gray-200/70 pb-8 dark:border-white/10 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3 max-w-xl">
               <p className="text-[11px] uppercase tracking-[0.5em] text-gray-500">Trusted by elite desks</p>
-              <h3 className={`text-2xl font-semibold sm:text-3xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className={`text-2xl font-semibold sm:text-3xl ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
                 Built on deep institutional partnerships
               </h3>
               <p className={`text-sm sm:text-base leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -36,10 +36,10 @@ const PartnersSection = () => {
             {partners.map((partner) => (
               <div
                 key={partner.name}
-                className="group relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/80 p-6 text-left transition hover:border-emerald-400 hover:shadow-lg dark:border-white/10 dark:bg-gray-900/70"
+                className="group relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/80 p-6 text-left transition hover:border-emerald-400 hover:shadow-lg dark:border-white/10 dark:bg-[#19235d]/70"
               >
                 <span className="text-[10px] uppercase tracking-[0.45em] text-gray-400">{partner.tag}</span>
-                <p className={`mt-4 text-base font-semibold sm:text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <p className={`mt-4 text-base font-semibold sm:text-lg ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
                   {partner.name}
                 </p>
                 <span className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent opacity-0 transition group-hover:opacity-100" />
