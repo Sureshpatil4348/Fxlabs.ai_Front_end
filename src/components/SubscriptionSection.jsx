@@ -77,27 +77,6 @@ const SubscriptionSection = () => {
       // Indian pricing (INR)
       return [
         {
-          id: 'free',
-          name: 'Free Trial',
-          duration: '1 Month',
-          price: '0',
-          period: 'Free for 1 month',
-          popular: false,
-          description: 'Experience the full power of our platform',
-          features: [
-            'TradingView Integration',
-            'RSI Analysis & Tracking',
-            'Currency Strength Meter',
-            'Lot Size Calculator',
-            'All-in-One Indicator Analysis',
-            'Market Session Tracker',
-            'Live Email Notifications',
-            'News & Market Alerts',
-            'Multi-Timeframe Analysis',
-            'Professional Dashboard'
-          ]
-        },
-        {
           id: 'quarterly',
           name: '3 Months Plan',
           duration: '3 Months',

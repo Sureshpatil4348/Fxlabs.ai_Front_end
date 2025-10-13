@@ -142,7 +142,7 @@ The mobile navigation has been enhanced to show all navigation items directly in
 ## IP Info Integration (Landing Page)
 
 Geo-based pricing is now implemented! The landing page detects user location and shows appropriate pricing options:
-- **Indian users** (IN): See INR pricing with Free Trial, 3-month, and 1-year plans
+- **Indian users** (IN): See INR pricing with 3-month and 1-year plans (Free Trial removed)
 - **International users**: See USD pricing with Free Trial, 3-month, and 1-year plans
 
 - Netlify Function proxy added to securely attach client credentials (secrets never shipped to browser): `netlify/functions/ip-info.js`
