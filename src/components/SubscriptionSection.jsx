@@ -201,6 +201,9 @@ const SubscriptionSection = () => {
   
   const pricingPlans = getPricingPlans()
   const isIndianUser = _userLocation?.country_code === 'IN'
+  const isTwoPlans = pricingPlans.length === 2
+  const gridColsClass = isTwoPlans ? 'md:grid-cols-2' : 'md:grid-cols-3'
+  const gridWidthClass = isTwoPlans ? 'max-w-4xl' : 'max-w-7xl'
   
   // Debug logging
   console.log('🔍 Debug Info:', {
@@ -234,7 +237,7 @@ const SubscriptionSection = () => {
 
         {/* Pricing Cards */}
         <div className="flex justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 lg:gap-4 max-w-7xl">
+          <div className={`grid grid-cols-1 ${gridColsClass} items-center gap-6 lg:gap-4 ${gridWidthClass}`}>
           {pricingPlans.map((plan) => (
             <div
               key={plan.id}
