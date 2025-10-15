@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../auth/AuthProvider'
 import AfterPurchaseSection from '../components/AfterPurchaseSection'
 import AutomationAlertsSection from '../components/AutomationAlert'
@@ -16,6 +15,7 @@ import SubscriptionSection from '../components/SubscriptionSection'
 import TradingToolsShowcase from '../components/TradingToolsShowcase'
 import VideoExplanationSection from '../components/VideoExplanationSection'
 import WhySystemWorks from '../components/WhySystemWorks'
+import { supabase } from '../lib/supabaseClient'
 import ipInfoService from '../services/ipInfoService'
 const Home = () => {
   const { user: _user } = useAuth()
