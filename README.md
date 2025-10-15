@@ -1609,6 +1609,8 @@ The system automatically handles symbol format conversion:
 - **Responsive Design**: Optimized for desktop and mobile trading
 - **Real-time Updates**: Live data streaming with automatic reconnection
 - **User Authentication**: Secure login with Supabase authentication
+  - Post-invite redirect: When a user accepts a Supabase invite and the app receives an auth callback (`type=invite` or `type=signup` with tokens), the session is established and the user is redirected to the dashboard (`/dashboard`).
+  - This logic is handled on the Home page by parsing URL parameters and invoking `supabase.auth.setSession`, then cleaning the URL and navigating to the dashboard.
 
 ## Tab State Persistence
 

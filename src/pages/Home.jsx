@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../auth/AuthProvider'
 import AfterPurchaseSection from '../components/AfterPurchaseSection'
 import AutomationAlertsSection from '../components/AutomationAlert'
@@ -17,6 +19,8 @@ import WhySystemWorks from '../components/WhySystemWorks'
 import ipInfoService from '../services/ipInfoService'
 const Home = () => {
   const { user: _user } = useAuth()
+  const navigate = useNavigate()
+  const [/* processingInvite */ _, setProcessingInvite] = useState(false)
 
   // Allow users to access home page even when logged in
 
@@ -43,6 +47,68 @@ const Home = () => {
       cancelled = true
     }
   }, [])
+
+  // Handle Supabase invite/callback deep links and redirect to dashboard post login
+  useEffect(() => {
+    let cancelled = false
+    const handleInviteLogin = async () => {
+      try {
+        // Parse both search parameters and hash fragment
+        const searchParams = new URLSearchParams(window.location.search)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1)) // strip '#'
+
+        // Merge parameters with hash taking precedence
+        const urlParams = new URLSearchParams()
+        for (const [key, value] of searchParams.entries()) urlParams.set(key, value)
+        for (const [key, value] of hashParams.entries()) urlParams.set(key, value)
+
+        const type = urlParams.get('type')
+        const accessToken = urlParams.get('access_token')
+        const refreshToken = urlParams.get('refresh_token')
+
+        // Only process known auth types that should land in dashboard
+        const isInviteFlow = type === 'invite' || type === 'signup'
+        if (!isInviteFlow) return
+
+        if (!accessToken || !refreshToken) return
+
+        setProcessingInvite(true)
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        })
+        if (error) {
+          // If session set fails, keep user on home with no disruption
+          // eslint-disable-next-line no-console
+          console.warn('[FxLabs Prime] Invite session error:', error?.message || error)
+          return
+        }
+
+        if (cancelled) return
+
+        // Clean URL tokens
+        const cleanUrl = new URL(window.location.href)
+        cleanUrl.searchParams.delete('access_token')
+        cleanUrl.searchParams.delete('refresh_token')
+        cleanUrl.searchParams.delete('type')
+        cleanUrl.hash = ''
+        window.history.replaceState({}, '', cleanUrl.toString())
+
+        // Redirect to dashboard post login
+        navigate('/dashboard', { replace: true })
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('[FxLabs Prime] Invite processing failed:', e?.message || e)
+      } finally {
+        if (!cancelled) setProcessingInvite(false)
+      }
+    }
+
+    handleInviteLogin()
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
 
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] transition-colors duration-300">
