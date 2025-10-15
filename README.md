@@ -1612,6 +1612,7 @@ The system automatically handles symbol format conversion:
   - Post-invite redirect: When a user accepts a Supabase invite and the app receives an auth callback (`type=invite` or `type=signup` with tokens), the session is established and the user is redirected to the dashboard (`/dashboard`).
   - This logic is handled on the Home page by parsing URL parameters and invoking `supabase.auth.setSession`, then cleaning the URL and navigating to the dashboard.
   - To avoid a race where the dashboard route loads before `user` is available, the app now waits for the authenticated `user` to be set before navigating.
+  - Additionally, at the provider level, on Supabase `SIGNED_IN` events (including invite acceptance that auto-logs in), if the current path is `/`, the app navigates to `/dashboard`. This ensures redirects still work even if tokens aren’t present in the URL.
 
 ### Troubleshooting: Invite redirects not opening Dashboard
 - Expected landing URL contains `#access_token=...&refresh_token=...&type=invite|signup` (may also arrive in search params). If these tokens are absent on landing, Supabase likely did not append them.
@@ -1619,6 +1620,7 @@ The system automatically handles symbol format conversion:
   - Auth → URL Configuration:
     - Set `Site URL` to your production domain, e.g. `https://fxlabsprime.com`.
     - Add `https://fxlabsprime.com` (and any specific paths you use) to "Additional Redirect URLs".
+    - If you want to skip Home entirely, set the invite `redirect_to` to `https://fxlabsprime.com/dashboard` (ensure your hosting rewrites support SPA routes — Netlify is configured via `netlify.toml`).
   - Re-send the invite after updating settings.
 - If tokens are present but redirect still doesn’t happen, open DevTools Console and look for messages like:
   - `[FxLabs Prime] Invite session error:` or `[FxLabs Prime] Invite processing failed:`
