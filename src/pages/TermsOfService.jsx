@@ -32,7 +32,7 @@ const TermsOfService = () => {
           </h1>
           <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             <p><strong>Effective Date:</strong> 01/10/2025</p>
-            <p><strong>Entity:</strong> Hextech Algo</p>
+            <p><strong>Entity:</strong> HEXTECH ALGO - F.Z.C</p>
             <p><strong>Brand:</strong> FxLabs Prime</p>
           </div>
         </div>
@@ -143,7 +143,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>8) Intellectual Property; Feedback</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              All Services, software, UI, content, and trademarks (including <strong>FxLabs Prime</strong>, a trademark of <strong>Hextech Algo</strong>) are our property or licensed. We grant you a <strong>limited, revocable, non-exclusive, non-transferable</strong> license to use the Services during your subscription.
+              All Services, software, UI, content, and trademarks (including <strong>FxLabs Prime</strong>, a trademark of <strong>HEXTECH ALGO - F.Z.C</strong>) are our property or licensed. We grant you a <strong>limited, revocable, non-exclusive, non-transferable</strong> license to use the Services during your subscription.
             </p>
             <p className={`mt-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <strong>Feedback</strong> you provide may be used by us without restriction, without attribution or compensation.
@@ -186,7 +186,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>13) Indemnity</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              You will indemnify and hold harmless <strong>Hextech Algo</strong>, its officers, employees, and agents from claims, damages, liabilities, costs, and expenses (including legal fees) arising from: (a) your use of the Services; (b) breach of these Terms; (c) violation of law or third-party rights.
+              You will indemnify and hold harmless <strong>HEXTECH ALGO - F.Z.C</strong>, its officers, employees, and agents from claims, damages, liabilities, costs, and expenses (including legal fees) arising from: (a) your use of the Services; (b) breach of these Terms; (c) violation of law or third-party rights.
             </p>
           </section>
 
@@ -226,7 +226,7 @@ const TermsOfService = () => {
           <section className="mb-8">
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>18) Governing Law & Dispute Resolution (Arbitration)</h2>
             <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-              These Terms are governed by the laws of <strong>India</strong>. Disputes will be finally resolved by <strong>arbitration</strong> under the <strong>Arbitration and Conciliation Act, 1996</strong> by a sole arbitrator appointed by mutual consent (or as per the Act), <strong>seat and venue: Bengaluru/Mumbai, India</strong>, language English. Courts at <strong>Bangalore, Karnataka</strong> have exclusive supervisory jurisdiction.
+              These Terms are governed by the laws of the <strong>United Arab Emirates</strong>. Disputes will be finally resolved by <strong>arbitration</strong> under the <strong>UAE Arbitration Law (Federal Law No. 6 of 2018)</strong> by a sole arbitrator appointed by mutual consent (or as per the applicable arbitration rules), <strong>seat and venue: Ajman, UAE</strong>, language English. Courts at <strong>Ajman, UAE</strong> have exclusive supervisory jurisdiction.
             </p>
           </section>
 
@@ -251,7 +251,7 @@ const TermsOfService = () => {
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>21) Notices & Contact</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Legal Notices / Arbitration Notices:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></li>
-              <li><strong>Registered Office:</strong> #253, Junnur Mudhol, Karnataka - 587204</li>
+              <li><strong>Registered Office:</strong> Ajman Free Zone C1 Building, Business District Ajman Free Zone, Premises Number B.C. 1301013, Makani No. 4442612247</li>
             </ul>
           </section>
 

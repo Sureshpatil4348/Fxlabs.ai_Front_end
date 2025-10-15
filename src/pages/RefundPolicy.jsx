@@ -32,7 +32,7 @@ const RefundPolicy = () => {
           </h1>
           <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             <p><strong>Effective Date:</strong> 01/10/2025</p>
-            <p><strong>Entity:</strong> Hextech Algo (brand: FxLabs Prime)</p>
+            <p><strong>Entity:</strong> HEXTECH ALGO - F.Z.C (brand: FxLabs Prime)</p>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ const RefundPolicy = () => {
             <h2 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>8) Contact (Refund/Billing)</h2>
             <ul className={`list-disc pl-6 space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <li><strong>Billing Support:</strong> <a href="mailto:support@fxlabsprime.com" className="text-blue-500 hover:underline">support@fxlabsprime.com</a></li>
-              <li><strong>Registered Office:</strong> #253, Junnur Mudhol, Karnataka - 587204</li>
+              <li><strong>Registered Office:</strong> Ajman Free Zone C1 Building, Business District Ajman Free Zone, Premises Number B.C. 1301013, Makani No. 4442612247</li>
             </ul>
           </section>
 

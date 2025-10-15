@@ -12,7 +12,7 @@ const WhySystemWorks = () => {
       id: 1,
       icon: Bot,
       title: "AI First Approach",
-      description: "Have an AI first approach to trading to maximize your profits"
+      description: "Have an AI first approach to Analysis to maximize your profits"
     },
     {
       id: 2,
@@ -23,8 +23,8 @@ const WhySystemWorks = () => {
     {
       id: 3,
       icon: Shield,
-      title: "All in one trading platform",
-      description: "All in one trading platform to maximize your profits"
+      title: "All in one Analysis platform",
+      description: "All in one Analysis platform to maximize your profits"
     },
     {
       id: 4,
@@ -54,7 +54,7 @@ const WhySystemWorks = () => {
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-6 text-[#19235d] dark:text-white transition-colors duration-300">
-            Why Our <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">Trading Platform</span> Works
+            Why Our <span className="bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">Analysis Platform</span> Works
           </h2>
           
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">

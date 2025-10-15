@@ -26,7 +26,7 @@ const VideoExplanationSection = () => {
     },
     {
       icon: Shield,
-      title: "Trading View Integration",
+      title: "Analysis View Integration",
       description: "Access professional-grade charting tools with no software installation required. Trade directly from your browser with real-time data."
     }
   ];
@@ -53,7 +53,7 @@ const VideoExplanationSection = () => {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-[#19235d] dark:text-white">
             Advanced{' '}
             <span className="bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-600 dark:from-emerald-400 dark:via-green-400 dark:to-emerald-500 bg-clip-text text-transparent">
-              Trading Technology
+              Analysis Technology
             </span>
           </h2>
           
@@ -102,7 +102,7 @@ const VideoExplanationSection = () => {
                   width="100%" 
                   height="100%" 
                   src="https://www.youtube.com/embed/1CcpagwYKNQ" 
-                  title="FxLabs Prime Algo Trading System" 
+                  title="FxLabs Prime Algo Analysis System" 
                   frameBorder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen 
