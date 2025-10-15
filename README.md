@@ -1611,6 +1611,18 @@ The system automatically handles symbol format conversion:
 - **User Authentication**: Secure login with Supabase authentication
   - Post-invite redirect: When a user accepts a Supabase invite and the app receives an auth callback (`type=invite` or `type=signup` with tokens), the session is established and the user is redirected to the dashboard (`/dashboard`).
   - This logic is handled on the Home page by parsing URL parameters and invoking `supabase.auth.setSession`, then cleaning the URL and navigating to the dashboard.
+  - To avoid a race where the dashboard route loads before `user` is available, the app now waits for the authenticated `user` to be set before navigating.
+
+### Troubleshooting: Invite redirects not opening Dashboard
+- Expected landing URL contains `#access_token=...&refresh_token=...&type=invite|signup` (may also arrive in search params). If these tokens are absent on landing, Supabase likely did not append them.
+- Verify Supabase Auth settings:
+  - Auth → URL Configuration:
+    - Set `Site URL` to your production domain, e.g. `https://fxlabsprime.com`.
+    - Add `https://fxlabsprime.com` (and any specific paths you use) to "Additional Redirect URLs".
+  - Re-send the invite after updating settings.
+- If tokens are present but redirect still doesn’t happen, open DevTools Console and look for messages like:
+  - `[FxLabs Prime] Invite session error:` or `[FxLabs Prime] Invite processing failed:`
+  - These indicate session set failure or unexpected callback shape.
 
 ## Tab State Persistence
 

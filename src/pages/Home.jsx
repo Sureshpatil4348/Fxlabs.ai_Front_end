@@ -20,7 +20,8 @@ import ipInfoService from '../services/ipInfoService'
 const Home = () => {
   const { user: _user } = useAuth()
   const navigate = useNavigate()
-  const [/* processingInvite */ _, setProcessingInvite] = useState(false)
+  const [_processingInvite, setProcessingInvite] = useState(false)
+  const [shouldRedirectAfterInvite, setShouldRedirectAfterInvite] = useState(false)
 
   // Allow users to access home page even when logged in
 
@@ -48,7 +49,7 @@ const Home = () => {
     }
   }, [])
 
-  // Handle Supabase invite/callback deep links and redirect to dashboard post login
+  // Handle Supabase invite/callback deep links and prepare redirect to dashboard post login
   useEffect(() => {
     let cancelled = false
     const handleInviteLogin = async () => {
@@ -65,22 +66,35 @@ const Home = () => {
         const type = urlParams.get('type')
         const accessToken = urlParams.get('access_token')
         const refreshToken = urlParams.get('refresh_token')
+        const code = urlParams.get('code')
 
         // Only process known auth types that should land in dashboard
         const isInviteFlow = type === 'invite' || type === 'signup'
         if (!isInviteFlow) return
 
-        if (!accessToken || !refreshToken) return
-
         setProcessingInvite(true)
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        })
-        if (error) {
-          // If session set fails, keep user on home with no disruption
+        let authError = null
+        try {
+          if (accessToken && refreshToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            })
+            authError = error || null
+          } else if (code) {
+            const { error } = await supabase.auth.exchangeCodeForSession(code)
+            authError = error || null
+          } else {
+            // If no tokens but invite/signup type is present, rely on auto detection.
+            // We'll redirect once `user` becomes available below.
+          }
+        } catch (e) {
+          authError = e
+        }
+        if (authError) {
+          // If session exchange/set fails, keep user on home with no disruption
           // eslint-disable-next-line no-console
-          console.warn('[FxLabs Prime] Invite session error:', error?.message || error)
+          console.warn('[FxLabs Prime] Invite session error:', authError?.message || authError)
           return
         }
 
@@ -91,11 +105,11 @@ const Home = () => {
         cleanUrl.searchParams.delete('access_token')
         cleanUrl.searchParams.delete('refresh_token')
         cleanUrl.searchParams.delete('type')
+        cleanUrl.searchParams.delete('code')
         cleanUrl.hash = ''
         window.history.replaceState({}, '', cleanUrl.toString())
-
-        // Redirect to dashboard post login
-        navigate('/dashboard', { replace: true })
+        // Signal that we should navigate once user is definitely available
+        setShouldRedirectAfterInvite(true)
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn('[FxLabs Prime] Invite processing failed:', e?.message || e)
@@ -109,6 +123,13 @@ const Home = () => {
       cancelled = true
     }
   }, [navigate])
+
+  // After we process an invite/signup callback, navigate once user is ready
+  useEffect(() => {
+    if (shouldRedirectAfterInvite && _user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [shouldRedirectAfterInvite, _user, navigate])
 
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] transition-colors duration-300">
