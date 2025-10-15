@@ -69,6 +69,28 @@ The landing page Community Section (above FAQ) now uses the modern `@lottiefiles
 npm install @lottiefiles/dotlottie-react
 ```
 
+## Microsoft Clarity Integration (Latest)
+
+Microsoft Clarity has been integrated into the application to provide user behavior analytics and performance insights.
+
+### Changes
+- **Analytics Integration**: Added Microsoft Clarity tracking script to the HTML head element
+- **User Behavior Tracking**: Enables heatmaps, session recordings, and user interaction analytics
+- **Performance Monitoring**: Provides insights into page load times and user experience metrics
+- **Privacy Compliant**: Microsoft Clarity is GDPR compliant and respects user privacy
+
+### Implementation Details
+- **Script Location**: Added to `public/index.html` in the `<head>` section
+- **Project ID**: `tolpibwgni` (configured for FxLabs Prime)
+- **Async Loading**: Script loads asynchronously to avoid blocking page rendering
+- **Files affected**: `public/index.html`
+
+### Features Enabled
+- **Heatmaps**: Visual representation of user clicks, scrolls, and interactions
+- **Session Recordings**: Anonymous recordings of user sessions for UX analysis
+- **Performance Metrics**: Core Web Vitals and page load performance data
+- **User Insights**: Understanding of user behavior patterns and pain points
+
 ## Live Quantum Analysis in Hero Section
 
 The landing page hero section now displays real-time quantum analysis data for EUR/USD and XAU/USD pairs, driven by live market data from the Quantum Analysis meter.
