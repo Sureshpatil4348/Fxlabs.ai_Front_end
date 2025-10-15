@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     )
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate])
 
   const value = {
     user,
