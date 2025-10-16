@@ -77,7 +77,7 @@ const CommunitySection = () => {
               aspectRatio: '1'
             }}>
               <DotLottieReact
-                src="https://lottie.host/5aac16a1-7616-456a-b1e9-b23092a2e61a/qzjLKUxjiD.lottie"
+                src="https://lottie.host/5a79a930-30e7-402c-a2cb-1ddd8325a9e3/7FWWM1AIto.lottie"
                 loop
                 autoplay
               />

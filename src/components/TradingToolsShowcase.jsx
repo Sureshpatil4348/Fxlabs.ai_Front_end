@@ -23,7 +23,7 @@ import {
         id: 0,
         icon: LineChart,
         name: "TradingView Pro",
-        title: "Professional Charting Without Software",
+        title: "Professional Charting",
         description: "Access advanced TradingView charts directly in your browser. No downloads, no installations - just professional-grade trading tools at your fingertips.",
         features: [
           "Real-time price data across all markets",

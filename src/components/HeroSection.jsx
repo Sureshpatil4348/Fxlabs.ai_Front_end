@@ -193,7 +193,7 @@ const HeroSection = () => {
               <div className="bg-white/60 dark:bg-[#19235d]/60 backdrop-blur-xl border border-white/30 dark:border-[#19235d]/30 rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="flex items-center text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
                   <i className="fas fa-check-circle mr-2 text-emerald-500"></i> 
-                    AI Powered All-in-One Trading Platform
+                    AI Powered All-in-One Analysis Platform
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@ const HeroSection = () => {
 
             {/* Subheadline */}
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-              Experience seamless, all-in-one trading intelligence—every tool and insight you need, unified in a single world-class platform.
+              Experience seamless, all-in-one Analysis intelligence—every tool and insight you need, unified in a single world-class platform.
             </p>
 
             {/* Premium Feature Highlights */}
@@ -229,7 +229,7 @@ const HeroSection = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-[#19235d] dark:text-white text-sm">No Software Needed</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Trade from any browser</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Analyse from any browser</p>
                     </div>
                   </div>
                   <div className="group flex items-center space-x-3 rounded-xl bg-white/10 dark:bg-white/[0.04] border border-white/20 dark:border-white/10 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20">
@@ -267,7 +267,7 @@ const HeroSection = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-[#19235d] dark:text-white text-sm">24/7 Access</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Trade anytime, anywhere</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Analyse anytime, anywhere</p>
                     </div>
                   </div>
                 </div>
@@ -418,7 +418,7 @@ const HeroSection = () => {
                 <i className="fas fa-arrow-right"></i>
               </a>
               <a 
-                href="#trading-tools" 
+                href="#Analysis-tools" 
                 className="relative bg-white/10 dark:bg-white/[0.06] backdrop-blur-xl border border-white/30 dark:border-white/10 text-[#19235d] dark:text-white px-8 py-4 rounded-full text-lg font-semibold shadow-[0_8px_30px_rgba(0,0,0,0.16)] hover:bg-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto text-center flex items-center justify-center gap-2"
               >
                 <i className="fas fa-play-circle"></i>
@@ -433,8 +433,8 @@ const HeroSection = () => {
           {/* Premium Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center px-6 py-3 bg-white/80 dark:bg-[#19235d]/80 backdrop-blur-sm border border-gray-200/50 dark:border-[#19235d]/50 rounded-full shadow-sm mb-4">
-              <img src={aiIcon} alt="AI Trading" className="w-6 h-6 mr-3" />
-              <span className="text-gray-700 dark:text-gray-300 font-semibold text-sm tracking-wide" style={{fontFamily: 'Pier Sans, sans-serif'}}>Unlock the Power of AI Trading</span>
+              <img src={aiIcon} alt="AI Analysis" className="w-6 h-6 mr-3" />
+              <span className="text-gray-700 dark:text-gray-300 font-semibold text-sm tracking-wide" style={{fontFamily: 'Pier Sans, sans-serif'}}>Unlock the Power of AI Analysis</span>
             </div>
             
             <h3 className="text-2xl md:text-3xl font-semibold text-[#19235d] dark:text-white mb-3" style={{fontFamily: 'Pier Sans, sans-serif'}}>
@@ -456,7 +456,7 @@ const HeroSection = () => {
                 <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${currentSlide === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                   <img 
                     src={slideshowImage1} 
-                    alt="Trading Results 1"
+                    alt="Analysis Results 1"
                     className="w-full h-full object-contain object-center"
                   />
                 </div>
@@ -464,7 +464,7 @@ const HeroSection = () => {
                 <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${currentSlide === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                   <img 
                     src={slideshowImage2} 
-                    alt="Trading Results 2"
+                    alt="Analysis Results 2"
                     className="w-full h-full object-contain object-center"
                   />
                 </div>
@@ -472,7 +472,7 @@ const HeroSection = () => {
                 <div className={`absolute inset-0 transition-all duration-500 ease-in-out ${currentSlide === 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                   <img 
                     src={slideshowImage3} 
-                    alt="Trading Results 3"
+                    alt="Analysis Results 3"
                     className="w-full h-full object-contain object-center"
                   />
                 </div>
@@ -527,13 +527,13 @@ const HeroSection = () => {
                 </div>
                 <div className="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
                 <div className="flex flex-col items-center">
-                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>17+</div>
-                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Trading Tools</p>
+                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>14+</div>
+                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Analysis Tools</p>
                 </div>
                 <div className="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
                 <div className="flex flex-col items-center">
-                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>$580k+</div>
-                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Profit Generated</p>
+                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400" style={{fontFamily: 'Pier Sans, sans-serif'}}>99.9%+</div>
+                  <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">Up Time</p>
                 </div>
               </div>
             </div>

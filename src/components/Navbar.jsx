@@ -52,8 +52,13 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                       className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain transition-all duration-300 group-hover:scale-105"
                     />
                   </a>
+                  <span
+                    className="ml-2 sm:ml-3 text-base sm:text-base md:text-xl text-emerald-700"
+                    style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive', transform: 'translateY(6px)' }}
+                  >
+                    by Hextech 
+                  </span>
                 </div>
-            
                 {/* Center Section - Navigation Links / Dashboard Tabs */}
                 <div className="flex flex-1 justify-center items-center">
                   {/* Show landing links when NOT on dashboard - All screen sizes */}
@@ -134,15 +139,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
             
                 {/* Right Section - Account & Login */}
                 <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                  {/* Market is Live Pill - Only show on landing page, desktop only */}
-                  {!isOnDashboard && (
-                    <div className="hidden md:flex items-center space-x-2">
-                      <div className="flex items-center space-x-2 bg-green-100/80 text-green-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-green-200/50 backdrop-blur-sm">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs sm:text-sm font-normal">Market is Live</span>
-                      </div>
-                    </div>
-                  )}
+                  {/* Market is Live component removed */}
 
                   {/* User Section - Now visible on all screen sizes */}
                   <div className="flex items-center">
