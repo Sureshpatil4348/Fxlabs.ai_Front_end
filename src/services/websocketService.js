@@ -20,8 +20,8 @@ class WebSocketService {
     this.isConnecting = false;
     this.connectionError = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 3;
-    this.reconnectDelay = 1000;
+    this.maxReconnectAttempts = 6; // doubled from 3
+    this.reconnectDelay = 1000; // base delay unchanged; exponential backoff applies
   }
 
   /**

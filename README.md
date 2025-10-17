@@ -2,6 +2,18 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## WebSocket Connection Settings Update (Latest)
+
+We doubled the connection timeout duration and the number of connection attempts to improve resilience on slow or unstable networks.
+
+- Connection timeout default: `15000ms` → `30000ms`
+- Global connection retries: `2` → `4`
+- Service reconnect attempts on drop: `3` → `6` (exponential backoff remains unchanged)
+
+Files affected:
+- `src/store/useMarketStore.js` — doubled default timeout and `maxRetries`
+- `src/services/websocketService.js` — doubled `maxReconnectAttempts`
+
 ## Dark Gray Color Replacement (Latest)
 
 All dark gray colors throughout the project have been systematically replaced with the brand color #19235d for consistent branding and visual identity.
