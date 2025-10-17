@@ -316,7 +316,12 @@ const CurrencyStrengthMeter = () => {
           <div>
             <div className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <h2 className="text-lg font-semibold text-[#19235d] dark:text-slate-100">Currency Strength Meter</h2>
+              <h2 className="text-lg font-semibold text-[#19235d] dark:text-slate-100">
+                Currency Strength Meter
+                <span className="ml-2 align-middle text-xs font-normal text-gray-400 dark:text-slate-400">
+                  ({settings.timeframe})
+                </span>
+              </h2>
             </div>
             <div className="flex items-center space-x-2 mt-1">
               {/* Connection status pill removed; status shown as top-right dot */}

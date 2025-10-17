@@ -508,7 +508,12 @@ const RSIOverboughtOversoldTracker = () => {
             <div className="flex items-center space-x-2">
               <Activity className="w-4 h-4 text-purple-600" />
               <div>
-                <h2 className="text-base font-semibold text-[#19235d] dark:text-slate-100">RSI Tracker</h2>
+                <h2 className="text-base font-semibold text-[#19235d] dark:text-slate-100">
+                  RSI Tracker
+                  <span className="ml-2 align-middle text-xs font-normal text-gray-400 dark:text-slate-400">
+                    ({settings.timeframe})
+                  </span>
+                </h2>
               </div>
               {/* Connection status pill removed; status shown as top-right dot */}
             </div>

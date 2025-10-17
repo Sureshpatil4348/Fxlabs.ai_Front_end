@@ -2931,3 +2931,11 @@ Benefits:
 - **File location**: `public/fxlabs_favicon.png`
 - **HTML references**: Updated `public/index.html` to reference the new favicon file
 - **Browser compatibility**: PNG format ensures better cross-browser compatibility and visual quality
+
+### Widget Headers: Show Current Timeframe (Latest)
+- Added current timeframe beside the widget titles for clarity.
+- Style: small, non-bold, light gray text next to the header title.
+- Affected widgets:
+  - Currency Strength Meter (`src/components/CurrencyStrengthMeter.js`)
+  - RSI Tracker (`src/components/RSIOverboughtOversoldTracker.js`)
+- Behavior: Reflects each widget’s selected `settings.timeframe` value (e.g., 5M, 15M, 1H, 4H, 1D, 1W).
