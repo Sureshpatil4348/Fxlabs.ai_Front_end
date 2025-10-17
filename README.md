@@ -2,6 +2,22 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Currency Strength Fullscreen Heatmap (Latest)
+- Added a fullscreen view for Currency Strength Meter.
+- Access via the new `Maximize` icon next to the settings gear in the Currency Strength widget header.
+- Shows a heatmap grid: columns are timeframes (`5M`, `15M`, `1H`, `4H`, `1D`, `1W`); rows are currencies (`USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NZD`).
+- Cells reuse the same styling/colors as the Currency Strength Meter.
+- Data hydrates from existing REST snapshot API and live WebSocket updates.
+
+### Fixes (Latest)
+- Resolved ESLint hook dependency warnings by hoisting heatmap constants to module scope.
+- Sorted heatmap currency rows in ascending alphabetical order.
+- Fullscreen modal now truly fills the viewport (no rounded edges or outer padding) and supports closing via the top‑right Close button or the Esc key.
+  - Close button is an icon-only cross now, with accessible label.
+
+Files affected:
+- `src/components/CurrencyStrengthMeter.js` — added fullscreen icon and modal heatmap
+
 ## WebSocket Connection Settings Update (Latest)
 
 We doubled the connection timeout duration and the number of connection attempts to improve resilience on slow or unstable networks.

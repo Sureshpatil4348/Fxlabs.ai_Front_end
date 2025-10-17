@@ -1,4 +1,4 @@
-import { Settings, BarChart3, Bell } from 'lucide-react';
+import { Settings, BarChart3, Bell, Maximize2, X } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -78,7 +78,8 @@ const CurrencyStrengthMeter = () => {
     connect,
     updateSettings,
     timeframes,
-    setCurrencyStrengthSnapshot
+    setCurrencyStrengthSnapshot,
+    lastServerStrengthByTimeframe
   } = useCurrencyStrengthStore();
   const { user } = useAuth();
   
@@ -90,6 +91,7 @@ const CurrencyStrengthMeter = () => {
   });
   const [showCSAlertConfig, setShowCSAlertConfig] = useState(false);
   const [activeCSAlertsCount, setActiveCSAlertsCount] = useState(0);
+  const [showFullscreen, setShowFullscreen] = useState(false);
 
 
   // Auto-subscribe to major pairs when connection is established
@@ -356,6 +358,14 @@ const CurrencyStrengthMeter = () => {
             >
               <Settings className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => setShowFullscreen(true)}
+              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
+              title="Fullscreen Heatmap"
+              aria-label="Open currency strength heatmap fullscreen"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
             {/* Refresh icon removed per requirements */}
           </div>
         </div>
@@ -448,8 +458,131 @@ const CurrencyStrengthMeter = () => {
         document.body
       )}
 
+      {/* Fullscreen Heatmap Modal */}
+      {showFullscreen && createPortal(
+        <CurrencyStrengthFullscreenHeatmap
+          onClose={() => setShowFullscreen(false)}
+          getColor={getCurrencyStrengthColor}
+          lastSnapshots={lastServerStrengthByTimeframe}
+          setSnapshot={setCurrencyStrengthSnapshot}
+        />, 
+        document.body
+      )}
+
     </div>
   );
 };
 
 export default CurrencyStrengthMeter;
+
+// Fullscreen Heatmap Component
+const CurrencyStrengthFullscreenHeatmap = ({ onClose, getColor, lastSnapshots, setSnapshot }) => {
+
+  // Build memoized lookup for snapshot per timeframe
+  const snapshotByTf = useMemo(() => {
+    const map = new Map();
+    CS_FULL_TIMEFRAMES.forEach(tf => {
+      const snap = lastSnapshots?.get?.(tf);
+      map.set(tf, snap instanceof Map ? snap : null);
+    });
+    return map;
+  }, [lastSnapshots]);
+
+  // Fetch missing snapshots on open
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const missing = CS_FULL_TIMEFRAMES.filter(tf => !(snapshotByTf.get(tf) && snapshotByTf.get(tf).size > 0));
+      if (missing.length === 0) return;
+      try {
+        const { fetchIndicatorSnapshot } = (await import('../services/indicatorService.js')).default;
+        await Promise.all(missing.map(async (tf) => {
+          try {
+            const res = await fetchIndicatorSnapshot({ indicator: 'currency_strength', timeframe: tf });
+            if (cancelled) return;
+            const strength = res?.strength || res?.data?.strength || res?.currencies || res?.data?.currencies;
+            const barTime = res?.bar_time || res?.data?.bar_time || res?.ts || res?.data?.ts;
+            if (strength) {
+              setSnapshot(strength, tf, barTime);
+            }
+          } catch (_e) {
+            // best-effort for each timeframe
+          }
+        }));
+      } catch (_e) {
+        // ignore module load errors
+      }
+      return () => { cancelled = true; };
+    })();
+  }, [snapshotByTf, setSnapshot]);
+
+  const Cell = ({ tf, currency }) => {
+    const snap = snapshotByTf.get(tf);
+    const val = snap?.get?.(currency);
+    const isLoading = !(snap && typeof val === 'number');
+    return (
+      <div className={`px-3 py-2 rounded-md border border-transparent ${isLoading ? 'bg-gray-100 dark:bg-slate-800 text-gray-400' : getColor(val)}`}>
+        <div className="flex items-center justify-between text-xs font-semibold">
+          <span className="opacity-70">{currency}</span>
+          <span className="tabular-nums">{isLoading ? '--' : Number(val).toFixed(0)}</span>
+        </div>
+      </div>
+    );
+  };
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99999]">
+      <div className="absolute inset-0">
+        <div className="h-full w-full bg-white dark:bg-[#0b122f] overflow-hidden flex flex-col">
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="flex items-center">
+              <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+              <h3 className="text-base sm:text-lg font-semibold text-[#19235d] dark:text-slate-100">Currency Strength Heatmap</h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#19235d] dark:text-slate-100 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 rounded-md"
+              aria-label="Close fullscreen heatmap"
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-auto p-3 sm:p-4">
+            <div className="min-w-[720px]">
+              {/* Header Row */}
+              <div className="grid" style={{ gridTemplateColumns: `140px repeat(${CS_FULL_TIMEFRAMES.length}, minmax(110px, 1fr))` }}>
+                <div className="px-2 py-2 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Currency</div>
+                {CS_FULL_TIMEFRAMES.map(tf => (
+                  <div key={`hdr-${tf}`} className="px-2 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide">{tf}</div>
+                ))}
+              </div>
+              {/* Rows */}
+              {CS_CURRENCIES_ASC.map((cur) => (
+                <div key={`row-${cur}`} className="grid items-center gap-2 py-2" style={{ gridTemplateColumns: `140px repeat(${CS_FULL_TIMEFRAMES.length}, minmax(110px, 1fr))` }}>
+                  <div className="px-2 text-sm font-medium text-[#19235d] dark:text-slate-100">{cur}</div>
+                  {CS_FULL_TIMEFRAMES.map(tf => (
+                    <Cell key={`cell-${cur}-${tf}`} tf={tf} currency={cur} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Module-scope constants to keep React hook deps stable and satisfy eslint-plugin-react-hooks
+const CS_FULL_TIMEFRAMES = ['5M', '15M', '1H', '4H', '1D', '1W'];
+// Ascending alphabetical order by currency code
+const CS_CURRENCIES_ASC = ['AUD', 'CAD', 'CHF', 'EUR', 'GBP', 'JPY', 'NZD', 'USD'];
