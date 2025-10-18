@@ -66,6 +66,16 @@ The Lot Size Calculator now optimizes mobile space by hiding the result section 
 
 - **Files affected**: `src/components/LotSizeCalculator.jsx`
 
+## Lot Size Calculator - Notes Desktop-Only Visibility (Latest)
+
+The calculation method note is now always visible on desktop and never visible on mobile, independent of whether a result has been computed.
+
+### Changes
+- Moved the calculation method note out of the conditional result area and into the input panel
+- Ensured desktop-only rendering via `hidden lg:block` (never shown on mobile)
+- Note content dynamically reflects the selected instrument type (Forex, Commodities, Crypto)
+- Files affected: `src/components/LotSizeCalculator.jsx`
+
 ## Hero Stats Overlay Mobile Layout Fix (Latest)
 
 The stats card below the hero slideshow ("80%+ Accuracy", "17+ Trading Tools", "$580k+ Profit Generated") now remains compact and horizontal on mobile, preventing it from covering the slideshow images.
