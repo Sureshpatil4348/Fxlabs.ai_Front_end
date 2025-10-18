@@ -71,7 +71,7 @@ The Lot Size Calculator now optimizes mobile space by hiding the result section 
 The calculation method note is now always visible on desktop and never visible on mobile, independent of whether a result has been computed.
 
 ### Changes
-- Moved the calculation method note out of the conditional result area and into the input panel
+- Preserved original position in the right-side results panel (below Risk Reward area)
 - Ensured desktop-only rendering via `hidden lg:block` (never shown on mobile)
 - Note content dynamically reflects the selected instrument type (Forex, Commodities, Crypto)
 - Files affected: `src/components/LotSizeCalculator.jsx`

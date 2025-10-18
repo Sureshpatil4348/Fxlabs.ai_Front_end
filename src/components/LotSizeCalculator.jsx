@@ -417,16 +417,7 @@ const LotSizeCalculator = () => {
                 </div>
               </div>
 
-              {/* Calculation Methods Note — desktop only */}
-              <div className="hidden lg:block mt-3 pt-2 border-t border-gray-200 dark:border-gray-600">
-                <p className="text-xs sm:text-sm text-red-500 dark:text-red-400 leading-relaxed">
-                  <strong>Note:</strong> {formData.instrumentType === 'forex'
-                    ? 'Uses pip-based calculations with standard lot sizes'
-                    : formData.instrumentType === 'commodities'
-                    ? 'Uses price difference with contract-based sizing'
-                    : 'Uses direct price difference calculations'}
-                </p>
-              </div>
+              
             </div>
 
             {/* Stop Loss */}
@@ -553,7 +544,16 @@ const LotSizeCalculator = () => {
                           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
                             Expected reward per unit of risk
                           </p>
-                          {/* Calculation Methods Note moved to always-visible section */}
+                          {/* Calculation Methods Note - Desktop Only (position preserved) */}
+                          <div className="hidden lg:block mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <p className="text-xs text-red-500 dark:text-red-400 leading-relaxed">
+                              <strong>Note:</strong> {formData.instrumentType === 'forex' 
+                                ? 'Uses pip-based calculations with standard lot sizes' 
+                                : formData.instrumentType === 'commodities' 
+                                ? 'Uses price difference with contract-based sizing' 
+                                : 'Uses direct price difference calculations'}
+                            </p>
+                          </div>
                         </div>
                       ) : (
                         <div className="px-1.5 pt-0 pb-0 sm:px-3 sm:pt-0 sm:pb-3">
@@ -566,6 +566,16 @@ const LotSizeCalculator = () => {
                           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
                             Set take profit to see ratio
                           </p>
+                          {/* Calculation Methods Note - Desktop Only (position preserved) */}
+                          <div className="hidden lg:block mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <p className="text-xs text-red-500 dark:text-red-400 leading-relaxed">
+                              <strong>Note:</strong> {formData.instrumentType === 'forex' 
+                                ? 'Uses pip-based calculations with standard lot sizes' 
+                                : formData.instrumentType === 'commodities' 
+                                ? 'Uses price difference with contract-based sizing' 
+                                : 'Uses direct price difference calculations'}
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -583,6 +593,16 @@ const LotSizeCalculator = () => {
                   <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
                     Enter your trading parameters on the left and click &quot;Calculate&quot; to see your optimal position size and risk amount.
                   </p>
+                  {/* Calculation Methods Note - Desktop Only (right panel, when no result) */}
+                  <div className="hidden lg:block mt-3 pt-2 border-t border-gray-200 dark:border-gray-600">
+                    <p className="text-xs text-red-500 dark:text-red-400 leading-relaxed">
+                      <strong>Note:</strong> {formData.instrumentType === 'forex' 
+                        ? 'Uses pip-based calculations with standard lot sizes' 
+                        : formData.instrumentType === 'commodities' 
+                        ? 'Uses price difference with contract-based sizing' 
+                        : 'Uses direct price difference calculations'}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
