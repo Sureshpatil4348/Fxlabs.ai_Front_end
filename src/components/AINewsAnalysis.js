@@ -621,12 +621,10 @@ const AINewsAnalysis = () => {
               <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
             </div>
             <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-2">
-              No news available
+              No high-impact news
             </h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm">
-              {newsFilter === 'all' 
-                ? 'No news data available at the moment.'
-                : `No ${newsFilter} news found.`}
+              No high-impact news is available today
             </p>
           </div>
         )}

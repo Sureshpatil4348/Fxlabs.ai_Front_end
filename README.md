@@ -18,6 +18,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 Files affected:
 - `src/components/CurrencyStrengthMeter.js` — added fullscreen icon and modal heatmap
 
+## AI News Analysis Empty State (Latest)
+
+When there are no items to display in AI News Analysis (today’s high‑impact filter yields zero results), the widget now shows a clear empty state message:
+- Title: "No high-impact news"
+- Subtitle: "No high-impact news is available today"
+
+Files affected:
+- `src/components/AINewsAnalysis.js`
+
 ## WebSocket Connection Settings Update (Latest)
 
 We doubled the connection timeout duration and the number of connection attempts to improve resilience on slow or unstable networks.
