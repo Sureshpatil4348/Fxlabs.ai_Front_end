@@ -2974,3 +2974,9 @@ Benefits:
   - Currency Strength Meter (`src/components/CurrencyStrengthMeter.js`)
   - RSI Tracker (`src/components/RSIOverboughtOversoldTracker.js`)
 - Behavior: Reflects each widget’s selected `settings.timeframe` value (e.g., 5M, 15M, 1H, 4H, 1D, 1W).
+### Feature Flag: Advanced TradingView Widget (Planned)
+- Purpose: Introduce an advanced TradingView widget that preserves the current visuals while adding only two capabilities: state persistence and custom indicators.
+- Flag: `REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET`
+  - OFF (default): renders the current/basic widget
+  - ON: renders the advanced widget with state retention and programmatic custom indicators
+- Implementation plan and data contracts: see `ADVANCED_TRADINGVIEW.md:1`
