@@ -2,6 +2,35 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Tools Page Layout Restructure (Latest)
+- Restructured Tools page layout with 55/45 height distribution for optimal space utilization.
+- **Upper row (55% height):** Lot Size Calculator and Multi Time Analysis side by side.
+- **Lower row (45% height):** Quantum Analysis (MultiIndicatorHeatmap) spanning full width.
+- Quantum Analysis now properly shrinks and adapts to available space.
+- Improved responsive design with progressive height reduction for small screens:
+  - Standard screens: Upper cards `min-h-[200px]`, Lower card `min-h-[150px]`
+  - Screens ≤700px height: Upper cards `min-h-[150px]`, Lower card `min-h-[120px]`
+  - Screens ≤600px height: Upper cards `min-h-[120px]`, Lower card `min-h-[100px]`
+- Updated CSS classes: `.tools-card-upper` and `.tools-card-lower` for maintainable layout.
+
+Files affected:
+- `src/pages/Dashboard.jsx` — Restructured Tools page with 55/45 height distribution
+- `src/index.css` — Updated responsive height utilities for new layout
+
+## Tools Page Responsive Design Improvements (Previous)
+- Fixed height shrinking issues for Tools page cards on desktop devices with lower screen heights.
+- Implemented viewport height-based responsive design with `max-h-[50vh]` and `max-h-[60vh]` constraints.
+- Added minimum height fallbacks to ensure usability on very short screens:
+  - Standard screens: `min-h-[300px]` for regular cards, `min-h-[400px]` for large cards
+  - Screens ≤700px height: `min-h-[200px]` for regular cards, `min-h-[250px]` for large cards  
+  - Screens ≤600px height: `min-h-[150px]` for regular cards, `min-h-[200px]` for large cards
+- Replaced fixed pixel heights with flexible viewport-based heights for better adaptation.
+- Added CSS utility classes for maintainable responsive design: `.tools-card-responsive`, `.tools-card-large`, `.tools-scroll-container`.
+
+Files affected:
+- `src/pages/Dashboard.jsx` — Updated Tools page layout with responsive height constraints
+- `src/index.css` — Added responsive height utilities and media queries for small screens
+
 ## Currency Strength Fullscreen Heatmap (Latest)
 - Added a fullscreen view for Currency Strength Meter.
 - Access via the new `Maximize` icon next to the settings gear in the Currency Strength widget header.

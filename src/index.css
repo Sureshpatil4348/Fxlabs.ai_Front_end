@@ -121,6 +121,48 @@
   .widget-header {
     @apply mt-2;
   }
+
+  /* Responsive height utilities for Tools page with 55/45 distribution */
+  .tools-container {
+    @apply h-full flex flex-col;
+  }
+
+  /* Upper row cards (55% of available height) */
+  .tools-card-upper {
+    @apply h-auto lg:h-full lg:min-h-[200px];
+  }
+
+  /* Lower row card (45% of available height) */
+  .tools-card-lower {
+    @apply h-auto lg:h-[45%] lg:min-h-[150px];
+  }
+
+  /* Extra small height screens - reduce minimum heights */
+  @media (max-height: 700px) {
+    .tools-card-upper {
+      @apply lg:min-h-[150px];
+    }
+    
+    .tools-card-lower {
+      @apply lg:min-h-[120px];
+    }
+  }
+
+  /* Very small height screens - further reduce minimum heights */
+  @media (max-height: 600px) {
+    .tools-card-upper {
+      @apply lg:min-h-[120px];
+    }
+    
+    .tools-card-lower {
+      @apply lg:min-h-[100px];
+    }
+  }
+
+  /* Ensure proper scrolling on smaller screens */
+  .tools-scroll-container {
+    @apply h-full overflow-y-auto overflow-x-hidden;
+  }
 }
 
 /* Custom scrollbar */

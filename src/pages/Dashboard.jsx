@@ -225,36 +225,31 @@
           ) : (
             <>
               {/* Tools Tab Content */}
-              {/* Mobile: natural stacking, Desktop: h-full flex layout */}
-              <div className="lg:h-full flex flex-col gap-2">
-                {/* Two-column layout: Left stacks Lot Size + Heatmap; Right spans full height with Multi Time Analysis */}
-                {/* Mobile: custom order (Lot Size → Quantum → Multi Time), Desktop: grid with flex-1 */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:flex-1 lg:min-h-0">
-                  {/* Left Column: Lot Size (top) */}
-                  {/* Mobile: order-1 (first), Desktop: maintains position */}
-                  <div className="flex flex-col gap-2 lg:min-h-0 order-1">
-                    {/* Lot Size Calculator - Mobile: auto height, Desktop: h-72 */}
-                    <div className="bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-lg overflow-hidden p-2 h-auto lg:h-[26rem]">
-                      <div className="h-full overflow-y-auto">
-                        <LotSizeCalculator />
-                      </div>
+              {/* Mobile: natural stacking, Desktop: 55/45 height distribution */}
+              <div className="tools-container gap-2">
+                {/* Upper Row: Lot Size + Multi Time Analysis (55% height) */}
+                {/* Mobile: order-1 (Lot Size), order-3 (Multi Time), Desktop: side by side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:h-[55%] lg:min-h-0">
+                  {/* Left: Lot Size Calculator */}
+                  <div className="widget-card p-2 tools-card-upper order-1">
+                    <div className="tools-scroll-container">
+                      <LotSizeCalculator />
                     </div>
                   </div>
 
-                  {/* Quantum Analysis (MultiIndicatorHeatmap) - full width on desktop */}
-                  {/* Mobile: order-2 (second), Desktop: order-3 (last, spans full width) */}
-                  <div className="bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-lg overflow-hidden p-1 h-[380px] lg:h-auto lg:min-h-0 lg:col-span-2 order-2 lg:order-3">
-                    <div className="h-full overflow-auto">
-                      <MultiIndicatorHeatmap />
-                    </div>
-                  </div>
-
-                  {/* Right Column: Multi Time Analysis spanning full height */}
-                  {/* Mobile: order-3 (third), Desktop: order-2 (second position) */}
-                  <div className="bg-white dark:bg-[#19235d] border border-gray-200 dark:border-[#19235d] rounded-lg overflow-hidden p-2 max-h-[600px] lg:h-[26rem] lg:min-h-0 order-3 lg:order-2">
-                    <div className="max-h-full overflow-y-auto overflow-x-auto lg:h-full lg:overflow-x-hidden">
+                  {/* Right: Multi Time Analysis */}
+                  <div className="widget-card p-2 tools-card-upper order-3 lg:order-2">
+                    <div className="tools-scroll-container">
                       <MultiTimeAnalysis />
                     </div>
+                  </div>
+                </div>
+
+                {/* Lower Row: Quantum Analysis (45% height) */}
+                {/* Mobile: order-2 (second), Desktop: spans full width */}
+                <div className="widget-card p-1 tools-card-lower order-2 lg:order-3">
+                  <div className="tools-scroll-container">
+                    <MultiIndicatorHeatmap />
                   </div>
                 </div>
               </div>
