@@ -373,7 +373,7 @@ const CurrencyStrengthMeter = () => {
       </div>
 
       {/* Content Area */}
-      <div className="px-1 pb-2">
+      <div className="px-1 pb-2 flex-1 min-h-0 overflow-y-auto">
         {strengthData.length > 0 ? (
           <CurrencyHeatmap strengthData={strengthData} isLoading={isDataLoading} />
         ) : (
