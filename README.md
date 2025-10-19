@@ -40,6 +40,9 @@ Fixes
   - Evening segment (5:30PM–12:00AM) now shows `5:30PM` instead of `12:00AM`.
   - Morning segment (12:00AM–2:30AM) now shows `2:30AM` instead of `12:00AM`.
 
+ Enhancement
+- For split sessions where one segment is shorter than 2.5 hours, the smaller segment shows no label and the larger segment shows the full range as `start-end` (e.g., if pre‑midnight tail is 1h, the post‑midnight main segment displays `5:30PM-2:30AM`).
+
 Files affected:
 - `src/components/CurrencyStrengthMeter.js` — added fullscreen icon and modal heatmap
 

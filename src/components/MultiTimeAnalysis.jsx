@@ -422,6 +422,18 @@ const ForexMarketTimeZone = () => {
     return hour === 0 && minute === 0;
   };
 
+  const getTimeFloatFromISO = (isoString) => {
+    const { hour, minute } = getHourMinuteFromISO(isoString);
+    return hour + minute / 60;
+  };
+
+  const getDurationHoursFromISO = (startISO, endISO) => {
+    const start = getTimeFloatFromISO(startISO);
+    let end = getTimeFloatFromISO(endISO);
+    if (end < start) end += 24; // safety in case of cross-midnight
+    return end - start;
+  };
+
   // Determine label for a segment under split logic:
   // - Single segment: start-end
   // - Split segments:
@@ -433,6 +445,24 @@ const ForexMarketTimeZone = () => {
     const seg = segments[idx];
     if (segments.length === 1) {
       return formatRangeFromISO(seg.startLocalISO, seg.endLocalISO);
+    }
+    // If exactly two segments and one is very small (< 2.5h),
+    // show full start-end on the larger segment; nothing on the smaller one.
+    if (segments.length === 2) {
+      const durations = segments.map(s => getDurationHoursFromISO(s.startLocalISO, s.endLocalISO));
+      const minDur = Math.min(durations[0], durations[1]);
+      const maxIdx = durations[0] >= durations[1] ? 0 : 1;
+      if (minDur < 2.5) {
+        // Determine evening (opening) and morning (closing) parts
+        let eveningIdx = segments.findIndex(s => isMidnightLocal(s.endLocalISO));
+        if (eveningIdx === -1) {
+          // fallback: later start time is evening part
+          eveningIdx = getTimeFloatFromISO(segments[0].startLocalISO) > getTimeFloatFromISO(segments[1].startLocalISO) ? 0 : 1;
+        }
+        const morningIdx = eveningIdx === 0 ? 1 : 0;
+        const fullLabel = formatRangeFromISO(segments[eveningIdx].startLocalISO, segments[morningIdx].endLocalISO);
+        return idx === maxIdx ? fullLabel : null;
+      }
     }
     const startIsMidnight = isMidnightLocal(seg.startLocalISO);
     const endIsMidnight = isMidnightLocal(seg.endLocalISO);
