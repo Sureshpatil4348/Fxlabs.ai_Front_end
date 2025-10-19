@@ -15,6 +15,17 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Fullscreen modal now truly fills the viewport (no rounded edges or outer padding) and supports closing via the top‑right Close button or the Esc key.
   - Close button is an icon-only cross now, with accessible label.
 
+### Forex Market Time Zone Converter — DST‑correct BabyPips Windows (Latest)
+- Adopted BabyPips liquidity window convention for session timings with full DST handling via IANA timezones.
+- Sessions now map as local wall‑times to ensure precise UTC windows:
+  - Sydney: 07:00–16:00 local → 20:00–05:00 UTC (AEDT), 21:00–06:00 UTC (AEST)
+  - London: 08:00–17:00 local → 07:00–16:00 UTC (BST), 08:00–17:00 UTC (GMT)
+  - New York: 08:00–17:00 local → 12:00–21:00 UTC (EDT), 13:00–22:00 UTC (EST)
+- The converter projects these sessions onto the viewer’s 24‑hour day with cross‑midnight segments handled correctly.
+
+Files affected:
+- `src/utils/marketHoursEngine.js` — session definitions updated to BabyPips windows (Sydney 07:00–16:00; London/NY 08:00–17:00)
+
 Files affected:
 - `src/components/CurrencyStrengthMeter.js` — added fullscreen icon and modal heatmap
 

@@ -1,6 +1,12 @@
 // DST-aware Forex market-hours engine.
-// Implements spec: compute retail gate, per-session open/close (08:00–17:00 local),
-// project sessions onto a 24h window in the viewer's timezone, and provide offsets/labels.
+// Implements spec: compute retail gate and project sessions onto a 24h window
+// in the viewer's timezone with offsets/labels.
+//
+// IMPORTANT: Session definitions follow the BabyPips liquidity-window convention:
+// - London:   08:00–17:00 local (yields 07:00–16:00 UTC in BST, 08:00–17:00 UTC in GMT)
+// - New York: 08:00–17:00 local (yields 12:00–21:00 UTC in EDT, 13:00–22:00 UTC in EST)
+// - Sydney:   07:00–16:00 local (yields 20:00–05:00 UTC in AEDT, 21:00–06:00 UTC in AEST)
+// Using local times ensures DST transitions are handled by the timezone database.
 
 // Helper: zero-pad to 2 digits
 const pad2 = (n) => String(n).padStart(2, '0');
@@ -111,7 +117,8 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
   const viewerWindow = getViewerWindowUTC(viewInstantUTC, detectedViewerTz);
 
   const sessionsDef = [
-    { key: 'Sydney', tz: 'Australia/Sydney', open: 9, close: 18 },
+    // BabyPips liquidity windows expressed as local wall-times
+    { key: 'Sydney', tz: 'Australia/Sydney', open: 7, close: 16 },
     { key: 'London', tz: 'Europe/London', open: 8, close: 17 },
     { key: 'NewYork', tz: 'America/New_York', open: 8, close: 17 }
   ];
@@ -296,5 +303,4 @@ export function listTimezonesWithOffsets(viewInstantUTC = new Date()) {
   items.sort((a, b) => a.offsetMinutes - b.offsetMinutes || a.label.localeCompare(b.label));
   return items;
 }
-
 
