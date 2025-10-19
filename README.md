@@ -22,9 +22,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - London: 08:00–17:00 local → 07:00–16:00 UTC (BST), 08:00–17:00 UTC (GMT)
   - New York: 08:00–17:00 local → 12:00–21:00 UTC (EDT), 13:00–22:00 UTC (EST)
 - The converter projects these sessions onto the viewer’s 24‑hour day with cross‑midnight segments handled correctly.
+- Two‑part segments fix: When a session overlaps a viewer day on both sides of midnight (e.g., Sydney in UTC during AEDT), the timeline now renders two separate bars (e.g., 00:00–05:00 and 20:00–24:00) for all markets consistently.
 
 Files affected:
 - `src/utils/marketHoursEngine.js` — session definitions updated to BabyPips windows (Sydney 07:00–16:00; London/NY 08:00–17:00)
+  and cross‑midnight projection updated to consider both local days that intersect the viewer’s 24‑hour window (ensures two‑part bars when needed)
 
 Files affected:
 - `src/components/CurrencyStrengthMeter.js` — added fullscreen icon and modal heatmap

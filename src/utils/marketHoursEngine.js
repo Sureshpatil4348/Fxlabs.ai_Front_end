@@ -124,52 +124,43 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
   ];
 
   const sessions = sessionsDef.map((def) => {
-    const lp = getZonedParts(viewInstantUTC, def.tz);
-    
-    // Get today's session times
-    const todayOpenUTC = utcFromLocal(def.tz, lp.year, lp.month, lp.day, def.open, 0, 0);
-    const todayCloseUTC = utcFromLocal(def.tz, lp.year, lp.month, lp.day, def.close, 0, 0);
-    
-    // Get yesterday's session times (if it extends into today's window)
-    const yesterday = addDaysUTC(viewInstantUTC, -1);
-    const yesterdayParts = getZonedParts(yesterday, def.tz);
-    const yesterdayOpenUTC = utcFromLocal(def.tz, yesterdayParts.year, yesterdayParts.month, yesterdayParts.day, def.open, 0, 0);
-    const yesterdayCloseUTC = utcFromLocal(def.tz, yesterdayParts.year, yesterdayParts.month, yesterdayParts.day, def.close, 0, 0);
-    
-    // Check if yesterday's session extends into today's viewer window
-    const yesterdayExtendsIntoToday = yesterdayCloseUTC.getTime() > viewerWindow.startUTC.getTime();
-    
-    // Check if today's session overlaps with the viewer window
-    const todayOverlapsWindow = todayOpenUTC.getTime() < viewerWindow.endUTC.getTime() && todayCloseUTC.getTime() > viewerWindow.startUTC.getTime();
-    
-    // Build projected segments for yesterday and today independently
-    const projectedSegmentsInViewer = [];
+    // Build candidate local days based on the viewer's 24h window boundaries
+    const startLocal = getZonedParts(viewerWindow.startUTC, def.tz);
+    const endLocal = getZonedParts(viewerWindow.endUTC, def.tz);
 
+    const candidateDays = [
+      { year: startLocal.year, month: startLocal.month, day: startLocal.day },
+      { year: endLocal.year, month: endLocal.month, day: endLocal.day }
+    ];
+
+    // Compute open/close UTC for each candidate local day
+    const dayWindows = candidateDays.map((cd) => ({
+      openUTC: utcFromLocal(def.tz, cd.year, cd.month, cd.day, def.open, 0, 0),
+      closeUTC: utcFromLocal(def.tz, cd.year, cd.month, cd.day, def.close, 0, 0)
+    }));
+
+    // Project overlaps against the viewer's 24h window, dedup by timestamps
+    const projectedSegmentsInViewer = [];
+    const seen = new Set();
     const projectOverlap = (openUTC, closeUTC) => {
       const startOverlap = new Date(Math.max(openUTC.getTime(), viewerWindow.startUTC.getTime()));
       const endOverlap = new Date(Math.min(closeUTC.getTime(), viewerWindow.endUTC.getTime()));
       if (startOverlap.getTime() < endOverlap.getTime()) {
-        projectedSegmentsInViewer.push({
-          startLocalISO: toLocalISOInZone(startOverlap, detectedViewerTz),
-          endLocalISO: toLocalISOInZone(endOverlap, detectedViewerTz)
-        });
+        const key = `${startOverlap.getTime()}|${endOverlap.getTime()}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          projectedSegmentsInViewer.push({
+            startLocalISO: toLocalISOInZone(startOverlap, detectedViewerTz),
+            endLocalISO: toLocalISOInZone(endOverlap, detectedViewerTz)
+          });
+        }
       }
     };
+    dayWindows.forEach((w) => projectOverlap(w.openUTC, w.closeUTC));
 
-    // If yesterday extends into today, project yesterday's tail
-    if (yesterdayExtendsIntoToday) {
-      projectOverlap(yesterdayOpenUTC, yesterdayCloseUTC);
-    }
-    // Always evaluate today's session within the window
-    if (todayOverlapsWindow) {
-      projectOverlap(todayOpenUTC, todayCloseUTC);
-    }
-
-    // Determine open-now state across either yesterday's or today's full sessions
+    // Determine open-now state if any candidate day session contains now
     const now = viewInstantUTC.getTime();
-    const isOpenYesterday = now >= yesterdayOpenUTC.getTime() && now < yesterdayCloseUTC.getTime();
-    const isOpenToday = now >= todayOpenUTC.getTime() && now < todayCloseUTC.getTime();
-    const isOpenNow = gateOpen && (isOpenYesterday || isOpenToday);
+    const isOpenNow = gateOpen && dayWindows.some((w) => now >= w.openUTC.getTime() && now < w.closeUTC.getTime());
 
     // Backward-compat single segment (first), if any
     const projectedSegmentInViewer = projectedSegmentsInViewer[0] || null;
@@ -210,8 +201,9 @@ export function computeMarketHours({ viewInstantUTC = new Date(), viewerTz } = {
       cityTzLabel: def.tz,
       cityUtcOffsetNow: offsetToString(getOffsetMinutesAt(viewInstantUTC, def.tz)),
       cityClockNowLocal: toLocalISOInZone(viewInstantUTC, def.tz),
-      sessionOpenUTC: todayOpenUTC.toISOString(),
-      sessionCloseUTC: todayCloseUTC.toISOString(),
+      // Expose the first candidate day window as representative open/close (UI uses segments)
+      sessionOpenUTC: (dayWindows[0]?.openUTC || viewerWindow.startUTC).toISOString(),
+      sessionCloseUTC: (dayWindows[0]?.closeUTC || viewerWindow.endUTC).toISOString(),
       isOpenNow,
       projectedSegmentInViewer: projected,
       projectedSegmentsInViewer
@@ -303,4 +295,3 @@ export function listTimezonesWithOffsets(viewInstantUTC = new Date()) {
   items.sort((a, b) => a.offsetMinutes - b.offsetMinutes || a.label.localeCompare(b.label));
   return items;
 }
-
