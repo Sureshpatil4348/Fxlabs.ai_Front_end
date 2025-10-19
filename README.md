@@ -2,7 +2,18 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Quantum Analysis Layout Update (Latest)
+## Quantum Analysis Pair Display Enhancement (Latest)
+
+- **Enhanced meter display**: Added selected pair display in the Quantum Analysis meter below the needle
+- **Improved layout**: Changed from 2-column to 3-column grid layout to accommodate the pair display
+- **Visual alignment**: The selected pair is now vertically aligned with buy/sell percentage texts
+- **Responsive design**: Updated both desktop and mobile versions of the trading meter
+- **User experience**: Users can now easily see which pair the meter is analyzing at a glance
+
+Files affected:
+- `src/components/MultiIndicatorHeatmap.js` — Updated meter layout to include pair display in both desktop and mobile versions
+
+## Quantum Analysis Layout Update (Previous)
 
 - **Improved header layout**: Moved currency and trader dropdowns to be positioned right next to the "Quantum Analysis" title for better visual hierarchy and user experience.
 - **Responsive design implementation**:

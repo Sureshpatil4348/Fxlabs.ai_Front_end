@@ -833,10 +833,18 @@ useEffect(() => {
                 </div>
                 <div className="mt-2 text-center">
                   <div className={`text-sm font-bold ${buyPct > sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
-                  <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
+                  <div className="mt-1 grid grid-cols-3 gap-2 text-xs">
                     <div>
                       <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
                       <div className="text-gray-500 dark:text-gray-400">Sell</div>
+                    </div>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="font-semibold text-[#19235d] dark:text-gray-200">
+                        {(() => {
+                          const clean = currentSymbol.replace(/m$/, '').toUpperCase();
+                          return clean.length === 6 ? `${clean.slice(0, 3)}/${clean.slice(3)}` : clean;
+                        })()}
+                      </div>
                     </div>
                     <div>
                       <div className="font-semibold text-emerald-600">{buyPct.toFixed(0)}%</div>
@@ -939,10 +947,18 @@ useEffect(() => {
                   </div>
                   <div className="mt-2 text-center">
                     <div className={`text-sm font-bold ${buyPct > sellPct ? 'text-emerald-600' : 'text-rose-600'}`}>{dominant}</div>
-                    <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
+                    <div className="mt-1 grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <div className="font-semibold text-rose-600">{sellPct.toFixed(0)}%</div>
                         <div className="text-gray-500 dark:text-gray-400">Sell</div>
+                      </div>
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="font-semibold text-[#19235d] dark:text-gray-200">
+                          {(() => {
+                            const clean = currentSymbol.replace(/m$/, '').toUpperCase();
+                            return clean.length === 6 ? `${clean.slice(0, 3)}/${clean.slice(3)}` : clean;
+                          })()}
+                        </div>
                       </div>
                       <div>
                         <div className="font-semibold text-emerald-600">{buyPct.toFixed(0)}%</div>
