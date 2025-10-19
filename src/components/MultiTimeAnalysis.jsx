@@ -401,12 +401,49 @@ const ForexMarketTimeZone = () => {
     }
     const period = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${hour12}:${minute} ${period}`;
+    // Removed space before AM/PM as requested
+    return `${hour12}:${minute}${period}`;
   };
 
   // Format a range from ISO start/end
   const formatRangeFromISO = (startISO, endISO) => {
     return `${formatTimeFromISO(startISO)}-${formatTimeFromISO(endISO)}`;
+  };
+
+  // Helpers to detect midnight boundaries for split segments
+  const getHourMinuteFromISO = (isoString) => {
+    const timePart = isoString.split('T')[1];
+    const [h, m] = timePart.split(':');
+    return { hour: parseInt(h, 10), minute: parseInt(m, 10) };
+  };
+
+  const isMidnightLocal = (isoString) => {
+    const { hour, minute } = getHourMinuteFromISO(isoString);
+    return hour === 0 && minute === 0;
+  };
+
+  // Determine label for a segment under split logic:
+  // - Single segment: start-end
+  // - Split segments:
+  //   - Segment starting at midnight (00:00): show end time (closing part)
+  //   - Segment ending at midnight (00:00): show start time (opening part)
+  //   - Fallback: first => end time, last => start time
+  const labelForSegment = (segments, idx) => {
+    if (!Array.isArray(segments) || segments.length === 0) return null;
+    const seg = segments[idx];
+    if (segments.length === 1) {
+      return formatRangeFromISO(seg.startLocalISO, seg.endLocalISO);
+    }
+    const startIsMidnight = isMidnightLocal(seg.startLocalISO);
+    const endIsMidnight = isMidnightLocal(seg.endLocalISO);
+    if (startIsMidnight && !endIsMidnight) return formatTimeFromISO(seg.endLocalISO);
+    if (!startIsMidnight && endIsMidnight) return formatTimeFromISO(seg.startLocalISO);
+    // Fallback if neither boundary is exactly midnight
+    const isFirst = idx === 0;
+    const isLast = idx === segments.length - 1;
+    if (isFirst) return formatTimeFromISO(seg.endLocalISO);
+    if (isLast) return formatTimeFromISO(seg.startLocalISO);
+    return null;
   };
 
   const markets = [
@@ -773,62 +810,53 @@ const ForexMarketTimeZone = () => {
                     <div className="flex-1 ml-2 relative h-10 overflow-hidden pr-3 sm:pr-4">
                 {(() => {
                   const segments = getSessionSegments(m.timezone);
-                  // Find the largest segment by width
-                  let largestSegmentIdx = 0;
-                  let maxWidth = 0;
-                  segments.forEach((seg, idx) => {
-                    const style = getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO);
-                    const width = parseFloat(style.width);
-                    if (width > maxWidth) {
-                      maxWidth = width;
-                      largestSegmentIdx = idx;
-                    }
+                  return segments.map((seg, idx) => {
+                    const label = labelForSegment(segments, idx);
+                    return (
+                      <div 
+                        key={idx}
+                        className={`h-10 rounded-lg absolute overflow-hidden flex items-center justify-center ${
+                          getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-60'
+                        }`}
+                        style={getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO)}
+                      >
+                        {/* Base gradient background */}
+                        <div className={`absolute inset-0 ${m.color}`}></div>
+                        {/* Striped pattern overlay */}
+                        <div 
+                          className="absolute inset-0 opacity-40"
+                          style={{
+                            backgroundImage: `repeating-linear-gradient(
+                              45deg,
+                              transparent,
+                              transparent 3px,
+                              rgba(255,255,255,0.15) 3px,
+                              rgba(255,255,255,0.15) 6px
+                            )`
+                          }}
+                        ></div>
+                        {/* Additional subtle stripe for depth */}
+                        <div 
+                          className="absolute inset-0 opacity-20"
+                          style={{
+                            backgroundImage: `repeating-linear-gradient(
+                              -45deg,
+                              transparent,
+                              transparent 6px,
+                              rgba(0,0,0,0.1) 6px,
+                              rgba(0,0,0,0.1) 12px
+                            )`
+                          }}
+                        ></div>
+                        {/* Timing text logic: single shows start-end; split shows start on opening part, end on closing part */}
+                        {label && (
+                          <span className="relative z-10 text-xs font-medium text-white drop-shadow-md">
+                            {label}
+                          </span>
+                        )}
+                      </div>
+                    );
                   });
-                  
-                  return segments.map((seg, idx) => (
-                    <div 
-                      key={idx}
-                      className={`h-10 rounded-lg absolute overflow-hidden flex items-center justify-center ${
-                        getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-60'
-                      }`}
-                      style={getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO)}
-                    >
-                      {/* Base gradient background */}
-                      <div className={`absolute inset-0 ${m.color}`}></div>
-                      {/* Striped pattern overlay */}
-                      <div 
-                        className="absolute inset-0 opacity-40"
-                        style={{
-                          backgroundImage: `repeating-linear-gradient(
-                            45deg,
-                            transparent,
-                            transparent 3px,
-                            rgba(255,255,255,0.15) 3px,
-                            rgba(255,255,255,0.15) 6px
-                          )`
-                        }}
-                      ></div>
-                      {/* Additional subtle stripe for depth */}
-                      <div 
-                        className="absolute inset-0 opacity-20"
-                        style={{
-                          backgroundImage: `repeating-linear-gradient(
-                            -45deg,
-                            transparent,
-                            transparent 6px,
-                            rgba(0,0,0,0.1) 6px,
-                            rgba(0,0,0,0.1) 12px
-                          )`
-                        }}
-                      ></div>
-                      {/* Timing text inside bar - only show in largest segment */}
-                      {idx === largestSegmentIdx && (
-                        <span className="relative z-10 text-xs font-medium text-white drop-shadow-md">
-                          {formatRangeFromISO(seg.startLocalISO, seg.endLocalISO)}
-                        </span>
-                      )}
-                    </div>
-                  ));
                 })()}
                     </div>
                   </div>
@@ -846,62 +874,53 @@ const ForexMarketTimeZone = () => {
                     <div className="relative h-10 overflow-hidden w-full">
                       {(() => {
                         const segments = getSessionSegments(m.timezone);
-                        // Find the largest segment by width
-                        let largestSegmentIdx = 0;
-                        let maxWidth = 0;
-                        segments.forEach((seg, idx) => {
-                          const style = getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO);
-                          const width = parseFloat(style.width);
-                          if (width > maxWidth) {
-                            maxWidth = width;
-                            largestSegmentIdx = idx;
-                          }
+                        return segments.map((seg, idx) => {
+                          const label = labelForSegment(segments, idx);
+                          return (
+                            <div 
+                              key={idx}
+                              className={`h-10 rounded-lg absolute overflow-hidden flex items-center justify-center ${
+                                getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-60'
+                              }`}
+                              style={getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO)}
+                            >
+                              {/* Base gradient background */}
+                              <div className={`absolute inset-0 ${m.color}`}></div>
+                              {/* Striped pattern overlay */}
+                              <div 
+                                className="absolute inset-0 opacity-40"
+                                style={{
+                                  backgroundImage: `repeating-linear-gradient(
+                                    45deg,
+                                    transparent,
+                                    transparent 3px,
+                                    rgba(255,255,255,0.15) 3px,
+                                    rgba(255,255,255,0.15) 6px
+                                  )`
+                                }}
+                              ></div>
+                              {/* Additional subtle stripe for depth */}
+                              <div 
+                                className="absolute inset-0 opacity-20"
+                                style={{
+                                  backgroundImage: `repeating-linear-gradient(
+                                    -45deg,
+                                    transparent,
+                                    transparent 6px,
+                                    rgba(0,0,0,0.1) 6px,
+                                    rgba(0,0,0,0.1) 12px
+                                  )`
+                                }}
+                              ></div>
+                              {/* Timing text logic: single shows start-end; split shows start on opening part, end on closing part */}
+                              {label && (
+                                <span className="relative z-10 text-xs font-medium text-white drop-shadow-md">
+                                  {label}
+                                </span>
+                              )}
+                            </div>
+                          );
                         });
-                        
-                        return segments.map((seg, idx) => (
-                          <div 
-                            key={idx}
-                            className={`h-10 rounded-lg absolute overflow-hidden flex items-center justify-center ${
-                              getMarketStatus(m.timezone).includes('SESSION') ? 'opacity-100' : 'opacity-60'
-                            }`}
-                            style={getBarStyleFromISO(seg.startLocalISO, seg.endLocalISO)}
-                          >
-                            {/* Base gradient background */}
-                            <div className={`absolute inset-0 ${m.color}`}></div>
-                            {/* Striped pattern overlay */}
-                            <div 
-                              className="absolute inset-0 opacity-40"
-                              style={{
-                                backgroundImage: `repeating-linear-gradient(
-                                  45deg,
-                                  transparent,
-                                  transparent 3px,
-                                  rgba(255,255,255,0.15) 3px,
-                                  rgba(255,255,255,0.15) 6px
-                                )`
-                              }}
-                            ></div>
-                            {/* Additional subtle stripe for depth */}
-                            <div 
-                              className="absolute inset-0 opacity-20"
-                              style={{
-                                backgroundImage: `repeating-linear-gradient(
-                                  -45deg,
-                                  transparent,
-                                  transparent 6px,
-                                  rgba(0,0,0,0.1) 6px,
-                                  rgba(0,0,0,0.1) 12px
-                                )`
-                              }}
-                            ></div>
-                            {/* Timing text inside bar - only show in largest segment */}
-                            {idx === largestSegmentIdx && (
-                              <span className="relative z-10 text-xs font-medium text-white drop-shadow-md">
-                                {formatRangeFromISO(seg.startLocalISO, seg.endLocalISO)}
-                              </span>
-                            )}
-                          </div>
-                        ));
                       })()}
                     </div>
                   </div>

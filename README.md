@@ -28,6 +28,18 @@ Files affected:
 - `src/utils/marketHoursEngine.js` — session definitions updated to BabyPips windows (Sydney 07:00–16:00; London/NY 08:00–17:00)
   and cross‑midnight projection updated to consider both local days that intersect the viewer’s 24‑hour window (ensures two‑part bars when needed)
 
+### Forex Market Time Zone Converter — Bar Label Formatting (Latest)
+- Removed space before AM/PM in bar labels inside market bars (e.g., `1:30AM-10:30AM`).
+- Split‑bar labeling logic updated:
+  - Single, full bar: show `start-end`.
+  - Split bars: show the start time on the evening/opening segment and the end time on the morning/closing segment (handles midnight correctly).
+- Files affected: `src/components/MultiTimeAnalysis.jsx`
+
+Fixes
+- Corrected midnight labeling for split sessions (e.g., New York 5:30PM–2:30AM IST):
+  - Evening segment (5:30PM–12:00AM) now shows `5:30PM` instead of `12:00AM`.
+  - Morning segment (12:00AM–2:30AM) now shows `2:30AM` instead of `12:00AM`.
+
 Files affected:
 - `src/components/CurrencyStrengthMeter.js` — added fullscreen icon and modal heatmap
 
