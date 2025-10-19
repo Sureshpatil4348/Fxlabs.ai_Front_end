@@ -135,13 +135,13 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   // Available symbols from store (e.g., 32 pairs). Keep 'm' suffix for RSI tracker
   const availableSymbols = useMemo(() => settings?.autoSubscribeSymbols || [], [settings?.autoSubscribeSymbols]);
 
-  // Build dropdown options with flags
+  // Build dropdown options with flags - sorted alphabetically
   const dropdownOptions = useMemo(() => {
     return availableSymbols.map((sym) => {
       const clean = sym.replace(/m$/, '').toUpperCase();
       const pretty = clean.length === 6 ? `${clean.slice(0, 3)}/${clean.slice(3)}` : clean;
       return { value: sym, label: pretty };
-    });
+    }).sort((a, b) => a.label.localeCompare(b.label));
   }, [availableSymbols]);
 
   // Ensure current symbol is part of available list; fallback gracefully

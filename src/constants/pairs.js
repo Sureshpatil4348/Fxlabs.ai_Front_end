@@ -1,39 +1,28 @@
 // Centralized list of supported trading pairs (UI symbols without broker suffix)
 // Grouped for readability; exported as SUPPORTED_PAIRS
 
-// Core currency pairs - Major pairs only (7 pairs)
+// Core currency pairs - Major pairs only (7 pairs) - sorted alphabetically
 export const CORE_PAIRS = [
-  'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'
+  'AUDUSD', 'EURUSD', 'GBPUSD', 'NZDUSD', 'USDCAD', 'USDCHF', 'USDJPY'
 ];
 
-// Extended currency pairs - Cross pairs (21 pairs)
+// Extended currency pairs - Cross pairs (21 pairs) - sorted alphabetically
 export const EXTENDED_PAIRS = [
-  // EUR crosses (6)
-  'EURGBP', 'EURJPY', 'EURCHF', 'EURAUD', 'EURCAD', 'EURNZD',
-
-  // GBP crosses (5)
-  'GBPJPY', 'GBPCHF', 'GBPAUD', 'GBPCAD', 'GBPNZD',
-
-  // AUD crosses (4)
-  'AUDJPY', 'AUDCHF', 'AUDCAD', 'AUDNZD',
-
-  // NZD crosses (3)
-  'NZDJPY', 'NZDCHF', 'NZDCAD',
-
-  // CAD crosses (2)
-  'CADJPY', 'CADCHF',
-
-  // CHF crosses (1)
-  'CHFJPY'
+  'AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD',
+  'CADCHF', 'CADJPY',
+  'CHFJPY',
+  'EURAUD', 'EURCAD', 'EURCHF', 'EURGBP', 'EURJPY', 'EURNZD',
+  'GBPAUD', 'GBPCAD', 'GBPCHF', 'GBPJPY', 'GBPNZD',
+  'NZDCAD', 'NZDCHF', 'NZDJPY'
 ];
 
-// Precious Metals pairs
+// Precious Metals pairs - sorted alphabetically
 export const PRECIOUS_METALS_PAIRS = [
-  'XAUUSD', // Gold
-  'XAGUSD'  // Silver
+  'XAGUSD',  // Silver
+  'XAUUSD'   // Gold
 ];
 
-// Cryptocurrency pairs
+// Cryptocurrency pairs - sorted alphabetically
 export const CRYPTO_PAIRS = [
   'BTCUSD', // Bitcoin
   'ETHUSD'  // Ethereum

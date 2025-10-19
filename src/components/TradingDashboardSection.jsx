@@ -24,12 +24,12 @@ const TradingDashboardSection = () => {
   const [_currencyPairs, setCurrencyPairs] = useState([
     { symbol: 'BTC/USD', name: 'Bitcoin', price: '112874.66', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'B' },
     { symbol: 'ETH/USD', name: 'Ethereum', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'E' },
-    { symbol: 'XRP/USD', name: 'Ripple', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'X' },
-    { symbol: 'SOL/USD', name: 'Solana', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'S' },
     { symbol: 'EUR/USD', name: 'Euro', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'E' },
     { symbol: 'GBP/USD', name: 'British Pound', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'G' },
+    { symbol: 'SOL/USD', name: 'Solana', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'S' },
+    { symbol: 'USD/JPY', name: 'US Dollar/Japanese Yen', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'U' },
     { symbol: 'XAU/USD', name: 'Gold', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'X' },
-    { symbol: 'USD/JPY', name: 'US Dollar/Japanese Yen', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'U' }
+    { symbol: 'XRP/USD', name: 'Ripple', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'X' }
   ])
   const [dataInitialized, setDataInitialized] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState(0)

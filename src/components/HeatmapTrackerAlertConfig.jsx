@@ -7,7 +7,7 @@ import { formatSymbolDisplay } from '../utils/formatters';
 
 const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
   const { settings } = useRSITrackerStore();
-  const availablePairs = useMemo(() => (settings?.autoSubscribeSymbols || []).map(s => s.replace(/m$/,'').toUpperCase()), [settings?.autoSubscribeSymbols]);
+  const availablePairs = useMemo(() => (settings?.autoSubscribeSymbols || []).map(s => s.replace(/m$/,'').toUpperCase()).sort(), [settings?.autoSubscribeSymbols]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);

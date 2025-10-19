@@ -5,39 +5,28 @@ import websocketService from '../services/websocketService';
 
 // Note: formatSymbol function removed as it's no longer used
 
-// Core currency pairs - Major pairs only (7 pairs)
+// Core currency pairs - Major pairs only (7 pairs) - sorted alphabetically
 const CORE_PAIRS = [
-  'EURUSDm', 'GBPUSDm', 'USDJPYm', 'USDCHFm', 'AUDUSDm', 'USDCADm', 'NZDUSDm'
+  'AUDUSDm', 'EURUSDm', 'GBPUSDm', 'NZDUSDm', 'USDCADm', 'USDCHFm', 'USDJPYm'
 ];
 
-// Extended currency pairs - Cross pairs (21 pairs)
+// Extended currency pairs - Cross pairs (21 pairs) - sorted alphabetically
 const EXTENDED_PAIRS = [
-  // EUR crosses (6)
-  'EURGBPm', 'EURJPYm', 'EURCHFm', 'EURAUDm', 'EURCADm', 'EURNZDm',
-  
-  // GBP crosses (5)
-  'GBPJPYm', 'GBPCHFm', 'GBPAUDm', 'GBPCADm', 'GBPNZDm',
-  
-  // AUD crosses (4)
-  'AUDJPYm', 'AUDCHFm', 'AUDCADm', 'AUDNZDm',
-  
-  // NZD crosses (3)
-  'NZDJPYm', 'NZDCHFm', 'NZDCADm',
-  
-  // CAD crosses (2)
-  'CADJPYm', 'CADCHFm',
-  
-  // CHF crosses (1)
-  'CHFJPYm'
+  'AUDCADm', 'AUDCHFm', 'AUDJPYm', 'AUDNZDm',
+  'CADCHFm', 'CADJPYm',
+  'CHFJPYm',
+  'EURAUDm', 'EURCADm', 'EURCHFm', 'EURGBPm', 'EURJPYm', 'EURNZDm',
+  'GBPAUDm', 'GBPCADm', 'GBPCHFm', 'GBPJPYm', 'GBPNZDm',
+  'NZDCADm', 'NZDCHFm', 'NZDJPYm'
 ];
 
-// Precious Metals pairs
+// Precious Metals pairs - sorted alphabetically
 const PRECIOUS_METALS_PAIRS = [
-  'XAUUSDm', // Gold
-  'XAGUSDm'  // Silver
+  'XAGUSDm',  // Silver
+  'XAUUSDm'   // Gold
 ];
 
-// Cryptocurrency pairs
+// Cryptocurrency pairs - sorted alphabetically
 const CRYPTO_PAIRS = [
   'BTCUSDm', // Bitcoin
   'ETHUSDm'  // Ethereum

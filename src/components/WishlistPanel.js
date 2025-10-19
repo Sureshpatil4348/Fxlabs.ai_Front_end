@@ -48,12 +48,13 @@ const WishlistPanel = () => {
   const [addingSymbol, setAddingSymbol] = useState(null);
   const wishlistSymbols = getWishlistArray();
 
-  // Derive available pairs from RSI Tracker store's autoSubscribeSymbols (convert 'EURUSDm' -> 'EURUSD')
+  // Derive available pairs from RSI Tracker store's autoSubscribeSymbols (convert 'EURUSDm' -> 'EURUSD') - sorted alphabetically
   const availablePairs = useMemo(() => {
     const symbols = settings?.autoSubscribeSymbols || [];
     return symbols
       .map((s) => (s?.toUpperCase().endsWith('M') ? s.toUpperCase().slice(0, -1) : s.toUpperCase()))
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort();
   }, [settings?.autoSubscribeSymbols]);
 
   // Filter available pairs based on search term and existing wishlist

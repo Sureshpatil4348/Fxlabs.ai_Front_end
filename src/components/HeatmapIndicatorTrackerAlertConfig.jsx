@@ -16,7 +16,7 @@ const HeatmapIndicatorTrackerAlertConfig = ({ isOpen, onClose }) => {
       return u !== '1M' && u !== 'M1';
     });
   }, [timeframes]);
-  const availablePairs = useMemo(() => (settings?.autoSubscribeSymbols || []).map(s => s.replace(/m$/,'').toUpperCase()), [settings?.autoSubscribeSymbols]);
+  const availablePairs = useMemo(() => (settings?.autoSubscribeSymbols || []).map(s => s.replace(/m$/,'').toUpperCase()).sort(), [settings?.autoSubscribeSymbols]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
