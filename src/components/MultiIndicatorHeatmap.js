@@ -598,7 +598,7 @@ useEffect(() => {
         </div>
 
         {/* Content Row - Desktop Layout */}
-        <div className="hidden lg:flex gap-1.5 h-full pt-1.5 pl-4">
+        <div className="hidden lg:flex gap-1.5 flex-1 min-h-0 pt-1.5 pl-4">
           {/* Left: Compact Table */}
           <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
@@ -706,7 +706,7 @@ useEffect(() => {
         </div>
 
         {/* Right: Buy/Sell Now Meter (desktop only) */}
-        <div className="w-96 xl:w-[28rem] shrink-0">
+        <div className="w-96 xl:w-[28rem] shrink-0 min-h-0 flex flex-col">
           {(() => {
             const mcState = useMarketCacheStore.getState();
             const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
@@ -730,7 +730,7 @@ useEffect(() => {
             }
 
             return (
-              <Card className="h-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-[#19235d] border-gray-200 dark:border-[#19235d] p-3">
+              <Card className="flex-1 min-h-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-[#19235d] border-gray-200 dark:border-[#19235d] p-3 overflow-y-auto custom-scrollbar">
                 {/* Gauge */}
                 <div className="relative w-full" style={{ height: 130 }}>
                   <svg viewBox="0 0 200 110" className="w-full h-full">

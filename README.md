@@ -2,7 +2,20 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Tools Page Layout Restructure (Latest)
+## Trading Meter Desktop Scrolling Fix (Latest)
+
+- Fixed Trading Meter getting cut off on desktop devices with lower screen height.
+- **Problem**: Trading Meter was using `h-full` without proper overflow handling, causing content to be cut off instead of scrollable when the container height was constrained.
+- **Solution**: 
+  - Updated Trading Meter container to use `flex flex-col` layout with `min-h-0` for proper height constraints
+  - Changed Trading Meter Card to use `flex-1 min-h-0` with `overflow-y-auto custom-scrollbar` for vertical scrolling
+  - Updated content row container to use `flex-1 min-h-0` instead of `h-full` for better flex behavior
+- **Result**: Trading Meter now properly scrolls vertically on desktop devices with lower screen heights while maintaining responsive design.
+
+Files affected:
+- `src/components/MultiIndicatorHeatmap.js` — Updated Trading Meter layout and scrolling behavior
+
+## Tools Page Layout Restructure (Previous)
 - Restructured Tools page layout with 55/45 height distribution for optimal space utilization.
 - **Upper row (55% height):** Lot Size Calculator and Multi Time Analysis side by side.
 - **Lower row (45% height):** Quantum Analysis (MultiIndicatorHeatmap) spanning full width.
