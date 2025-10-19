@@ -476,7 +476,7 @@ useEffect(() => {
                     onChange={(e) => handleTradingStyleChange(e.target.value)}
                     className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                   >
-                  <option value="scalper">Scalper</option>
+                  <option value="scalper">Intraday</option>
                   <option value="swingTrader">Swing Trader</option>
                   </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">

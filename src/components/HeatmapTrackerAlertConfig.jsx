@@ -142,7 +142,7 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
                   onChange={(e) => setForm({ ...form, tradingStyle: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="scalper">Scalper</option>
+                  <option value="scalper">Intraday</option>
                   <option value="swingTrader">Swing Trader</option>
                 </select>
               </div>
