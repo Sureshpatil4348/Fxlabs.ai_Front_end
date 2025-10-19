@@ -399,110 +399,93 @@ useEffect(() => {
     <div className="h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
       <div className="mb-0.5 px-2">
-        {/* Top Row - Title, Trading Signals, and Controls */}
+        {/* Top Row - Title with Dropdowns, and Controls */}
         {/* Mobile: wrap and stack, Desktop: single row */}
-        <div className="widget-header flex flex-wrap items-center justify-between gap-1 mb-0.5">
-          {/* Title */}
-          <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
-            <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
-            Quantum Analysis
-          </CardTitle>
-          
-          {/* Controls Row */}
-          <div className="flex items-center space-x-0.5 flex-wrap gap-0.5">
-          {/* Alert Bell Icon */}
-          {user && (
-            <div className="flex items-center">
-              <button 
-                type="button"
-                aria-label="Configure heatmap alerts"
-                onClick={handleBellClick}
-                className={`relative p-0.5 transition-colors duration-300 group ${
-                  activeAlertsCount > 0
-                    ? 'text-blue-600'
-                    : 'text-gray-400 hover:text-blue-500'
-                }`}
-              >
-                <Bell className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
-              </button>
-            </div>
-          )}
-          
-          {/* Symbol Dropdown */}
-          <div className="flex items-center space-x-0.5">
-            <div className="relative" ref={symbolDropdownRef}>
-              <div className="relative">
-                <button
-                  onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
-                >
-                  {(() => {
-                    const opt = dropdownOptions.find(opt => opt.value === currentSymbol);
-                    if (!opt) return currentSymbol;
-                    return (
-                      <span className="inline-flex items-center gap-1.5">
-                        {/* flags removed */}
-                        <span className="text-sm font-medium">{opt.label}</span>
-                        {/* flags removed */}
-                      </span>
-                    );
-                  })()}
-                </button>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                  <svg className={`w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                
-                {/* Custom Dropdown Menu */}
-                {isSymbolDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#19235d] border-0 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                    {dropdownOptions.map(option => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          handleSymbolChange(option.value);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-[#19235d] transition-colors duration-150 ${
-                          option.value === currentSymbol ? 'bg-blue-100 dark:bg-[#19235d] text-blue-800 dark:text-slate-200 font-medium' : 'text-[#19235d] dark:text-gray-200'
-                        }`}
-                      >
-                        <span className="inline-flex items-center gap-2">
+        <div className="widget-header flex flex-wrap items-start justify-between gap-1 mb-0.5">
+          {/* Title with Dropdowns (mobile: stacked, desktop: inline) */}
+          <div className="flex flex-col md:flex-row md:items-center md:flex-wrap gap-1 md:space-x-2 flex-1 min-w-0">
+            <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
+              <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
+              Quantum Analysis
+            </CardTitle>
+            
+            {/* Dropdowns row */}
+            <div className="flex items-center space-x-2 gap-1 md:space-x-0.5">
+            {/* Symbol Dropdown */}
+            <div className="flex items-center space-x-0.5">
+              <div className="relative" ref={symbolDropdownRef}>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsSymbolDropdownOpen(!isSymbolDropdownOpen)}
+                    className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[120px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  >
+                    {(() => {
+                      const opt = dropdownOptions.find(opt => opt.value === currentSymbol);
+                      if (!opt) return currentSymbol;
+                      return (
+                        <span className="inline-flex items-center gap-1.5">
                           {/* flags removed */}
-                          <span className="text-sm font-medium">{option.label}</span>
+                          <span className="text-sm font-medium">{opt.label}</span>
                           {/* flags removed */}
                         </span>
-                      </button>
-                    ))}
+                      );
+                    })()}
+                  </button>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                    <svg className={`w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200 ${isSymbolDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                )}
+                  
+                  {/* Custom Dropdown Menu */}
+                  {isSymbolDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#19235d] border-0 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                      {dropdownOptions.map(option => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            handleSymbolChange(option.value);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-[#19235d] transition-colors duration-150 ${
+                            option.value === currentSymbol ? 'bg-blue-100 dark:bg-[#19235d] text-blue-800 dark:text-slate-200 font-medium' : 'text-[#19235d] dark:text-gray-200'
+                          }`}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            {/* flags removed */}
+                            <span className="text-sm font-medium">{option.label}</span>
+                            {/* flags removed */}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Style Dropdown */}
-          <div className="flex items-center space-x-0.5">
-            <div className="relative">
-              <div 
-                onMouseEnter={(e) => {
-                  const select = e.currentTarget.querySelector('select');
-                  if (select) select.click();
-                }}
-              >
-                <select
-                  value={tradingStyle}
-                  onChange={(e) => handleTradingStyleChange(e.target.value)}
-                  className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+            {/* Style Dropdown */}
+            <div className="flex items-center space-x-0.5">
+              <div className="relative">
+                <div 
+                  onMouseEnter={(e) => {
+                    const select = e.currentTarget.querySelector('select');
+                    if (select) select.click();
+                  }}
                 >
-                <option value="scalper">Scalper</option>
-                <option value="swingTrader">Swing Trader</option>
-                </select>
+                  <select
+                    value={tradingStyle}
+                    onChange={(e) => handleTradingStyleChange(e.target.value)}
+                    className="appearance-none pl-2 pr-4 py-1.5 bg-transparent text-[#19235d] dark:text-white text-sm font-medium border-0 rounded transition-all duration-300 min-w-[80px] cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                  >
+                  <option value="scalper">Scalper</option>
+                  <option value="swingTrader">Swing Trader</option>
+                  </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
                   <svg className="w-2 h-2 text-gray-500 dark:text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
               </div>
+            </div>
             </div>
           </div>
           
@@ -545,6 +528,27 @@ useEffect(() => {
               </div>
             </div>
           </div> */}
+          </div>
+          
+          {/* Controls Row - Right Side (vertically centered on mobile) */}
+          <div className="flex items-center space-x-0.5 flex-wrap gap-0.5 self-center shrink-0 ml-2">
+            {/* Alert Bell Icon */}
+            {user && (
+              <div className="flex items-center">
+                <button 
+                  type="button"
+                  aria-label="Configure heatmap alerts"
+                  onClick={handleBellClick}
+                  className={`relative p-0.5 transition-colors duration-300 group ${
+                    activeAlertsCount > 0
+                      ? 'text-blue-600'
+                      : 'text-gray-400 hover:text-blue-500'
+                  }`}
+                >
+                  <Bell className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

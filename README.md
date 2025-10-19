@@ -2,7 +2,18 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Trading Meter Desktop Scrolling Fix (Latest)
+## Quantum Analysis Layout Update (Latest)
+
+- **Improved header layout**: Moved currency and trader dropdowns to be positioned right next to the "Quantum Analysis" title for better visual hierarchy and user experience.
+- **Responsive design implementation**:
+  - **Desktop (md and above)**: Title with currency and trader dropdowns inline on the left; alert bell on the right
+  - **Mobile (below md)**: Title on top, dropdowns directly below the title; alert bell on the far right, vertically centered relative to the stacked title and dropdowns
+- **User experience**: Dropdowns are now more logically grouped with the title, making the interface more intuitive across device sizes
+
+Files affected:
+- `src/components/MultiIndicatorHeatmap.js` — Updated header layout structure with responsive behavior
+
+## Trading Meter Desktop Scrolling Fix (Previous)
 
 - Fixed Trading Meter getting cut off on desktop devices with lower screen height.
 - **Problem**: Trading Meter was using `h-full` without proper overflow handling, causing content to be cut off instead of scrollable when the container height was constrained.
