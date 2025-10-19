@@ -12,7 +12,13 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [alert, setAlert] = useState(null);
-  const [form, setForm] = useState(() => heatmapTrackerAlertService.getDefaultAlertConfig());
+  const [form, setForm] = useState(() => {
+    const defaultConfig = heatmapTrackerAlertService.getDefaultAlertConfig();
+    return {
+      ...defaultConfig,
+      threshold: defaultConfig.buyThreshold // Use buyThreshold as the unified threshold value
+    };
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -26,13 +32,16 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
           setForm({
             pairs: (existing.pairs || []).map(p => p.toUpperCase()),
             tradingStyle: ['scalper','swingTrader'].includes(existing.tradingStyle) ? existing.tradingStyle : 'swingTrader',
-            buyThreshold: existing.buyThreshold,
-            sellThreshold: existing.sellThreshold,
+            threshold: existing.buyThreshold, // Use buyThreshold as the unified threshold value
             isActive: existing.isActive
           });
         } else {
           setAlert(null);
-          setForm(heatmapTrackerAlertService.getDefaultAlertConfig());
+          const defaultConfig = heatmapTrackerAlertService.getDefaultAlertConfig();
+          setForm({
+            ...defaultConfig,
+            threshold: defaultConfig.buyThreshold // Use buyThreshold as the unified threshold value
+          });
         }
       } catch (e) {
         setError(e.message);
@@ -57,7 +66,13 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
     setSaving(true);
     setError(null);
     try {
-      await heatmapTrackerAlertService.saveAlert(form);
+      // Map the unified threshold to both buyThreshold and sellThreshold
+      const formData = {
+        ...form,
+        buyThreshold: form.threshold,
+        sellThreshold: form.threshold
+      };
+      await heatmapTrackerAlertService.saveAlert(formData);
       onClose?.();
     } catch (e) {
       setError(e.message);
@@ -132,15 +147,17 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="heatmap-tracker-buy-threshold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Buy Threshold (%)</label>
-                  <input id="heatmap-tracker-buy-threshold" type="number" min="0" max="100" value={form.buyThreshold} onChange={(e) => setForm({ ...form, buyThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                </div>
-                <div>
-                  <label htmlFor="heatmap-tracker-sell-threshold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Sell Threshold (%)</label>
-                  <input id="heatmap-tracker-sell-threshold" type="number" min="0" max="100" value={form.sellThreshold} onChange={(e) => setForm({ ...form, sellThreshold: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                </div>
+              <div>
+                <label htmlFor="heatmap-tracker-threshold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Threshold (%)</label>
+                <input 
+                  id="heatmap-tracker-threshold" 
+                  type="number" 
+                  min="0" 
+                  max="100" 
+                  value={form.threshold} 
+                  onChange={(e) => setForm({ ...form, threshold: parseInt(e.target.value) })} 
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                />
               </div>
 
               <div className="flex items-center justify-between">
