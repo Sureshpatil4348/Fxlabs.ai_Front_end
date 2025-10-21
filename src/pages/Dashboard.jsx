@@ -12,11 +12,15 @@
   import RSIOverboughtOversoldTracker from '../components/RSIOverboughtOversoldTracker'
   import TradingViewWidget from '../components/TradingViewWidget'
   import TrendingPairs from '../components/TrendingParis'
+  import TradingChart from '../components/widget/TradingChart'
   import defaultAlertsService from '../services/defaultAlertsService'
   import widgetTabRetentionService from '../services/widgetTabRetentionService'
   import useBaseMarketStore from '../store/useBaseMarketStore'
   import useMarketCacheStore from '../store/useMarketCacheStore'
   import useMarketStore from '../store/useMarketStore'
+
+  // Feature flag for advanced TradingView widget
+  const useAdvancedTradingViewWidget = process.env.REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET === 'true'
 
   const Dashboard = () => {
     const { user } = useAuth()
@@ -191,14 +195,18 @@
 
               {/* Desktop Layout - 12x12 grid */}
               <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-2">
-                {/* Section 1 - TradingView Widget (75% width - top left) */}
+                {/* Section 1 - TradingChart Widget (75% width - top left) */}
                 <div className="col-span-9 row-span-8 min-h-0 flex flex-col">
-                  <TradingViewWidget
-                    initialSymbol="OANDA:EURUSD"
-                    initialInterval="60"
-                    height="100%"
-                    className="w-full flex-1"
-                  />
+                  {useAdvancedTradingViewWidget ? (
+                    <TradingChart />
+                  ) : (
+                    <TradingViewWidget 
+                      initialSymbol="OANDA:XAUUSD" 
+                      initialInterval="60"
+                      height="100%"
+                      className="h-full"
+                    />
+                  )}
                 </div>
 
                 {/* Right Top: Trending Pairs over RSI (combined height == TradingView) */}

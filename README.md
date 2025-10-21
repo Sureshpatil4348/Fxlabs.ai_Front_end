@@ -3069,6 +3069,32 @@ Benefits:
 ### Feature Flag: Advanced TradingView Widget (Planned)
 - Purpose: Introduce an advanced TradingView widget that preserves the current visuals while adding only two capabilities: state persistence and custom indicators.
 - Flag: `REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET`
+
+## Advanced TradingView Widget Feature Flag
+
+The dashboard supports two different TradingView implementations controlled by the `REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET` environment variable:
+
+### Configuration
+- **Default**: `false` (uses legacy TradingViewWidget)
+- **Advanced**: `true` (uses new TradingChart component)
+
+### Environment Variable
+```bash
+# Use advanced TradingView widget (new implementation)
+REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET=true
+
+# Use legacy TradingView widget (default)
+REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET=false
+```
+
+### Implementation Details
+- **Legacy Widget** (`TradingViewWidget`): Uses TradingView's standard widget with basic charting capabilities
+- **Advanced Widget** (`TradingChart`): Custom implementation with enhanced features, drawing tools, and advanced charting capabilities
+
+### Files Affected
+- `src/pages/Dashboard.jsx` - Conditional rendering logic
+- `src/components/widget/TradingChart.jsx` - Advanced widget implementation
+- `src/components/TradingViewWidget.jsx` - Legacy widget implementation
   - OFF (default): renders the current/basic widget
   - ON: renders the advanced widget with state retention and programmatic custom indicators
 - Implementation plan and data contracts: see `ADVANCED_TRADINGVIEW.md:1`
