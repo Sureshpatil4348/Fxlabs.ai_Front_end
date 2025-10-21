@@ -1,7 +1,7 @@
 import { createChart } from 'lightweight-charts';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { binanceService } from '../services/binance';
+import { realMarketService } from '../services/realMarketService';
 
 export const ChartPanel = ({ panelSettings }) => {
   const chartContainerRef = useRef(null);
@@ -250,7 +250,7 @@ export const ChartPanel = ({ panelSettings }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await binanceService.getHistoricalData(
+        const data = await realMarketService.getHistoricalData(
           panelSettings.symbol,
           panelSettings.timeframe,
           200

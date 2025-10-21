@@ -116,17 +116,9 @@ export class RealMarketService {
           name: error.name
         });
         
-        // Fallback: Try to use Binance service as backup
-        console.log('🔄 Attempting fallback to Binance service...');
-        try {
-          const { binanceService } = await import('./binance');
-          const fallbackData = await binanceService.getHistoricalData(symbol, interval, limit);
-          console.log('✅ Fallback to Binance successful:', fallbackData.length, 'candles');
-          return fallbackData;
-        } catch (fallbackError) {
-          console.error('❌ Fallback to Binance also failed:', fallbackError);
-          throw error; // Throw original error
-        }
+        // No fallback needed - using real market data service
+        console.log('❌ Real market data service failed, no fallback available');
+        throw error;
       }
   }
   
