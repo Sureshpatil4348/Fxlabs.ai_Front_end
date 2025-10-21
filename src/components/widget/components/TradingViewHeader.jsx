@@ -76,10 +76,12 @@ export const TradingViewHeader = () => {
             </svg>
             <input
               type="text"
-              value="EURUSD"
+              id="symbol-input"
+              value={settings.symbol || ''}
               onChange={(e) => setSymbol(e.target.value)}
               className="w-20 text-xs font-medium text-gray-900 bg-transparent border-none outline-none"
               placeholder="EURUSD"
+              aria-label="Symbol"
             />
             <button className="w-5 h-5 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-xs">
               +

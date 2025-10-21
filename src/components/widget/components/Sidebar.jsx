@@ -175,12 +175,12 @@ export const Sidebar = () => {
                 {/* Rectangle Tool */}
                 <button
                   onClick={() => { 
-                    setActiveTool('TrendLine'); // Using TrendLine for rectangle for now
+                    setActiveTool('Rectangle');
                     setActiveSection(null);
                     console.log('🎨 Drawing Tool: Rectangle selected');
                   }}
                   className={`w-full p-3 rounded-lg border-2 transition-all ${
-                    activeTool === 'TrendLine' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                    activeTool === 'Rectangle' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-center space-x-3">

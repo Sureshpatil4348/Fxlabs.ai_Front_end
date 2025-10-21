@@ -42,26 +42,74 @@ export const DrawingTools = ({
   const svgToChart = (svgX, svgY) => {
     const { minPrice, maxPrice, minTime, maxTime } = chartDimensions;
     
-    // Convert X coordinate (time)
-    const chartX = minTime + (svgX / chartWidth) * (maxTime - minTime);
+    // Defensive guards for division by zero
+    const timeRange = maxTime - minTime;
+    const priceRange = maxPrice - minPrice;
     
-    // Convert Y coordinate (price) - SVG Y is inverted
-    const chartY = minPrice + ((chartHeight - svgY) / chartHeight) * (maxPrice - minPrice);
+    // Handle chartWidth zero case
+    let chartX;
+    if (chartWidth <= 0) {
+      chartX = minTime; // Fallback to minTime
+    } else if (timeRange <= 0) {
+      chartX = minTime; // Fallback to minTime when all times are the same
+    } else {
+      chartX = minTime + (svgX / chartWidth) * timeRange;
+    }
     
-    return { x: chartX, y: chartY };
+    // Handle chartHeight zero case
+    let chartY;
+    if (chartHeight <= 0) {
+      chartY = minPrice; // Fallback to minPrice
+    } else if (priceRange <= 0) {
+      chartY = minPrice; // Fallback to minPrice when all prices are the same
+    } else {
+      chartY = minPrice + ((chartHeight - svgY) / chartHeight) * priceRange;
+    }
+    
+    // Ensure finite numbers
+    const result = {
+      x: Number.isFinite(chartX) ? chartX : minTime,
+      y: Number.isFinite(chartY) ? chartY : minPrice
+    };
+    
+    return result;
   };
 
   // Convert chart coordinates to SVG coordinates
   const chartToSvg = (chartX, chartY) => {
     const { minPrice, maxPrice, minTime, maxTime } = chartDimensions;
     
-    // Convert time to X coordinate
-    const svgX = ((chartX - minTime) / (maxTime - minTime)) * chartWidth;
+    // Defensive guards for division by zero
+    const timeRange = maxTime - minTime;
+    const priceRange = maxPrice - minPrice;
     
-    // Convert price to Y coordinate - SVG Y is inverted
-    const svgY = chartHeight - ((chartY - minPrice) / (maxPrice - minPrice)) * chartHeight;
+    // Handle time range zero case
+    let svgX;
+    if (timeRange <= 0) {
+      svgX = chartWidth / 2; // Center horizontally when all times are the same
+    } else if (chartWidth <= 0) {
+      svgX = 0; // Fallback to 0 when chartWidth is zero
+    } else {
+      svgX = ((chartX - minTime) / timeRange) * chartWidth;
+    }
     
-    return { x: svgX, y: svgY };
+    // Handle price range zero case
+    let svgY;
+    if (priceRange <= 0) {
+      svgY = chartHeight / 2; // Center vertically when all prices are the same
+    } else if (chartHeight <= 0) {
+      svgY = 0; // Fallback to 0 when chartHeight is zero
+    } else {
+      svgY = chartHeight - ((chartY - minPrice) / priceRange) * chartHeight;
+    }
+    
+    // Ensure finite numbers
+    const result = {
+      x: Number.isFinite(svgX) ? svgX : 0,
+      y: Number.isFinite(svgY) ? svgY : 0
+    };
+    
+    return result;
   };
 
   // Handle mouse down for starting drawing
@@ -98,7 +146,7 @@ export const DrawingTools = ({
       setCurrentPoints([newPoint]);
       setIsDrawing(false);
       createDrawing([newPoint]);
-    } else if (activeDrawingTool === 'rectangle') {
+    } else if (activeDrawingTool === 'Rectangle') {
       // Rectangle needs 2 points
       if (currentPoints.length === 0) {
         setCurrentPoints([newPoint]);
@@ -117,7 +165,7 @@ export const DrawingTools = ({
     const colors = {
       trendline: '#8b5cf6',
       horizontal: '#f97316',
-      rectangle: '#14b8a6',
+      Rectangle: '#14b8a6',
       fibonacci: '#6366f1'
     };
 
@@ -175,7 +223,7 @@ export const DrawingTools = ({
         }
         break;
 
-      case 'rectangle':
+      case 'Rectangle':
         if (points.length >= 2) {
           const svg1 = chartToSvg(points[0].time, points[0].price);
           const svg2 = chartToSvg(points[1].time, points[1].price);
@@ -256,7 +304,7 @@ export const DrawingTools = ({
     const colorMap = {
       trendline: '#8b5cf6',
       horizontal: '#f97316',
-      rectangle: '#14b8a6',
+      Rectangle: '#14b8a6',
       fibonacci: '#6366f1'
     };
     const color = colorMap[activeDrawingTool || ''] || '#000000';
@@ -278,7 +326,7 @@ export const DrawingTools = ({
           />
         );
       }
-    } else if (type === 'rectangle') {
+    } else if (type === 'Rectangle') {
       if (currentPoints.length === 1) {
         const svg = chartToSvg(currentPoints[0].time, currentPoints[0].price);
         return (

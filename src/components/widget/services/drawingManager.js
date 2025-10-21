@@ -126,6 +126,8 @@ export class DrawingManager {
         return 2;
       case 'HorizontalLine':
         return 1; // Only need one point for horizontal line
+      case 'Rectangle':
+        return 2;
       default:
         return 2;
     }

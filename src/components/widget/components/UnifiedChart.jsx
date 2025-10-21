@@ -53,21 +53,24 @@ export const UnifiedChart = () => {
       return map;
     };
 
+    // Safe helper function to handle undefined indicators
+    const safe = (value) => value || [];
+
     return {
-      ema20: createMap(indicators.ema20, 'time', 'value'),
-      ema200: createMap(indicators.ema200, 'time', 'value'),
-      rsi: createMap(indicators.rsi, 'time', 'value'),
-      macd: createMap(indicators.macd, 'time'),
-      atr: createMap(indicators.atr, 'time', 'atr'),
-      sma50: createMap(indicators.sma50, 'time', 'value'),
-      sma100: createMap(indicators.sma100, 'time', 'value'),
-      bollinger: createMap(indicators.bollinger, 'time'),
-      stoch: createMap(indicators.stoch, 'time'),
-      williams: createMap(indicators.williams, 'time', 'value'),
-      cci: createMap(indicators.cci, 'time', 'value'),
-      obv: createMap(indicators.obv, 'time', 'value'),
-      vwap: createMap(indicators.vwap, 'time', 'value'),
-      change24h: createMap(indicators.change24h, 'time')
+      ema20: createMap(safe(indicators.ema20), 'time', 'value'),
+      ema200: createMap(safe(indicators.ema200), 'time', 'value'),
+      rsi: createMap(safe(indicators.rsi), 'time', 'value'),
+      macd: createMap(safe(indicators.macd), 'time'),
+      atr: createMap(safe(indicators.atr), 'time', 'atr'),
+      sma50: createMap(safe(indicators.sma50), 'time', 'value'),
+      sma100: createMap(safe(indicators.sma100), 'time', 'value'),
+      bollinger: createMap(safe(indicators.bollinger), 'time'),
+      stoch: createMap(safe(indicators.stoch), 'time'),
+      williams: createMap(safe(indicators.williams), 'time', 'value'),
+      cci: createMap(safe(indicators.cci), 'time', 'value'),
+      obv: createMap(safe(indicators.obv), 'time', 'value'),
+      vwap: createMap(safe(indicators.vwap), 'time', 'value'),
+      change24h: createMap(safe(indicators.change24h), 'time')
     };
   }, [indicators]);
 

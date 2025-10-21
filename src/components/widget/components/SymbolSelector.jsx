@@ -56,6 +56,12 @@ export const SymbolSelector = () => {
           onChange={handleSymbolChange}
           className="px-2 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs font-medium"
         >
+          {/* Fallback option when settings.symbol exists but isn't in POPULAR_SYMBOLS */}
+          {settings.symbol && !POPULAR_SYMBOLS.find(sym => sym.symbol === settings.symbol) && (
+            <option value={settings.symbol}>
+              {settings.symbol}
+            </option>
+          )}
           {POPULAR_SYMBOLS.map((sym) => (
             <option key={sym.symbol} value={sym.symbol}>
               {sym.icon} {sym.name}

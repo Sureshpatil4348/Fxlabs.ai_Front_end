@@ -270,16 +270,39 @@ export const CandlestickChart = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {candles.slice(-10).map((candle, index) => (
-                          <tr key={index} className="border-b">
-                            <td className="px-3 py-2">{new Date(candle.time * 1000).toLocaleString()}</td>
-                            <td className="px-3 py-2">${candle.open.toFixed(2)}</td>
-                            <td className="px-3 py-2">${candle.high.toFixed(2)}</td>
-                            <td className="px-3 py-2">${candle.low.toFixed(2)}</td>
-                            <td className="px-3 py-2">${candle.close.toFixed(2)}</td>
-                            <td className="px-3 py-2">{candle.volume.toFixed(0)}</td>
-                          </tr>
-                        ))}
+                        {candles.slice(-10).map((candle, index) => {
+                          // Defensive validation helper functions
+                          const isValidNumber = (value) => Number.isFinite(value) && !isNaN(value);
+                          const formatPrice = (value) => {
+                            if (!isValidNumber(value)) return 'N/A';
+                            return `$${Number(value).toFixed(2)}`;
+                          };
+                          const formatVolume = (value) => {
+                            if (!isValidNumber(value)) return 'N/A';
+                            return Number(value).toFixed(0);
+                          };
+                          const formatTime = (timeValue) => {
+                            if (!isValidNumber(timeValue)) return 'N/A';
+                            // Detect if time is in seconds (typical for Unix timestamps) or milliseconds
+                            const timeInMs = timeValue > 1e10 ? timeValue : timeValue * 1000;
+                            try {
+                              return new Date(timeInMs).toLocaleString();
+                            } catch (error) {
+                              return 'Invalid Date';
+                            }
+                          };
+
+                          return (
+                            <tr key={index} className="border-b">
+                              <td className="px-3 py-2">{formatTime(candle.time)}</td>
+                              <td className="px-3 py-2">{formatPrice(candle.open)}</td>
+                              <td className="px-3 py-2">{formatPrice(candle.high)}</td>
+                              <td className="px-3 py-2">{formatPrice(candle.low)}</td>
+                              <td className="px-3 py-2">{formatPrice(candle.close)}</td>
+                              <td className="px-3 py-2">{formatVolume(candle.volume)}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

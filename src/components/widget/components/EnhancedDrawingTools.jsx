@@ -84,10 +84,33 @@ export const EnhancedDrawingTools = ({
   const chartToSvg = (time, price) => {
     const { minPrice, maxPrice, minTime, maxTime } = chartDimensions;
     
-    const x = ((time - minTime) / (maxTime - minTime)) * chartWidth;
-    const y = chartHeight - ((price - minPrice) / (maxPrice - minPrice)) * chartHeight;
+    // Defensive guards for division by zero
+    const timeRange = maxTime - minTime;
+    const priceRange = maxPrice - minPrice;
     
-    return { x, y };
+    // Handle time range zero case
+    let x;
+    if (timeRange <= 0) {
+      x = chartWidth / 2; // Center horizontally when all times are the same
+    } else {
+      x = ((time - minTime) / timeRange) * chartWidth;
+    }
+    
+    // Handle price range zero case
+    let y;
+    if (priceRange <= 0) {
+      y = chartHeight / 2; // Center vertically when all prices are the same
+    } else {
+      y = chartHeight - ((price - minPrice) / priceRange) * chartHeight;
+    }
+    
+    // Ensure finite numbers and clamp to valid ranges
+    const result = {
+      x: Math.max(0, Math.min(chartWidth, Number.isFinite(x) ? x : chartWidth / 2)),
+      y: Math.max(0, Math.min(chartHeight, Number.isFinite(y) ? y : chartHeight / 2))
+    };
+    
+    return result;
   };
 
   // Render drawing based on type

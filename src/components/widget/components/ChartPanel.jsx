@@ -94,6 +94,23 @@ export const ChartPanel = ({ panelSettings }) => {
       window.removeEventListener('resize', handleResize);
       if (chart) {
         try {
+          // Remove all series before disposing chart
+          if (candlestickSeriesRef.current) {
+            chart.removeSeries(candlestickSeriesRef.current);
+            candlestickSeriesRef.current = null;
+          }
+          if (lineSeriesRef.current) {
+            chart.removeSeries(lineSeriesRef.current);
+            lineSeriesRef.current = null;
+          }
+          if (areaSeriesRef.current) {
+            chart.removeSeries(areaSeriesRef.current);
+            areaSeriesRef.current = null;
+          }
+          if (barSeriesRef.current) {
+            chart.removeSeries(barSeriesRef.current);
+            barSeriesRef.current = null;
+          }
           chart.remove();
         } catch (error) {
           console.warn('Chart cleanup warning:', error);
@@ -101,6 +118,133 @@ export const ChartPanel = ({ panelSettings }) => {
       }
     };
   }, [isInitialized, panelSettings.chartType]);
+
+  // Handle chart type changes - recreate series when chartType changes
+  useEffect(() => {
+    if (!isInitialized || !chartRef.current) return;
+
+    // Helper function to remove all existing series
+    const removeAllSeries = () => {
+      if (candlestickSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(candlestickSeriesRef.current);
+        } catch (error) {
+          console.warn('Error removing candlestick series:', error);
+        }
+        candlestickSeriesRef.current = null;
+      }
+      if (lineSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(lineSeriesRef.current);
+        } catch (error) {
+          console.warn('Error removing line series:', error);
+        }
+        lineSeriesRef.current = null;
+      }
+      if (areaSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(areaSeriesRef.current);
+        } catch (error) {
+          console.warn('Error removing area series:', error);
+        }
+        areaSeriesRef.current = null;
+      }
+      if (barSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(barSeriesRef.current);
+        } catch (error) {
+          console.warn('Error removing bar series:', error);
+        }
+        barSeriesRef.current = null;
+      }
+    };
+
+    // Remove all existing series
+    removeAllSeries();
+
+    // Create new series based on current chart type
+    if (panelSettings.chartType === 'candlestick') {
+      candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
+        upColor: '#10b981',
+        downColor: '#ef4444',
+        borderDownColor: '#ef4444',
+        borderUpColor: '#10b981',
+        wickDownColor: '#ef4444',
+        wickUpColor: '#10b981',
+      });
+    } else if (panelSettings.chartType === 'line') {
+      lineSeriesRef.current = chartRef.current.addLineSeries({
+        color: '#2962FF',
+        lineWidth: 2,
+      });
+    } else if (panelSettings.chartType === 'area') {
+      areaSeriesRef.current = chartRef.current.addAreaSeries({
+        topColor: 'rgba(41, 98, 255, 0.4)',
+        bottomColor: 'rgba(41, 98, 255, 0.0)',
+        lineColor: 'rgba(41, 98, 255, 1)',
+        lineWidth: 2,
+      });
+    } else if (panelSettings.chartType === 'bars') {
+      barSeriesRef.current = chartRef.current.addBarSeries({
+        upColor: '#10b981',
+        downColor: '#ef4444',
+      });
+    }
+
+    // Propagate existing data to the new series
+    if (candles.length > 0) {
+      const validCandles = candles.filter(candle =>
+        !isNaN(candle.time) &&
+        !isNaN(candle.open) &&
+        !isNaN(candle.high) &&
+        !isNaN(candle.low) &&
+        !isNaN(candle.close) &&
+        candle.time > 0
+      );
+
+      const sortedCandles = validCandles.sort((a, b) => a.time - b.time);
+
+      try {
+        if (panelSettings.chartType === 'candlestick' && candlestickSeriesRef.current) {
+          const candlestickData = sortedCandles.map(candle => ({
+            time: candle.time,
+            open: candle.open,
+            high: candle.high,
+            low: candle.low,
+            close: candle.close,
+          }));
+          candlestickSeriesRef.current.setData(candlestickData);
+        } else if (panelSettings.chartType === 'line' && lineSeriesRef.current) {
+          const lineData = sortedCandles.map(candle => ({
+            time: candle.time,
+            value: candle.close,
+          }));
+          lineSeriesRef.current.setData(lineData);
+        } else if (panelSettings.chartType === 'area' && areaSeriesRef.current) {
+          const areaData = sortedCandles.map(candle => ({
+            time: candle.time,
+            value: candle.close,
+          }));
+          areaSeriesRef.current.setData(areaData);
+        } else if (panelSettings.chartType === 'bars' && barSeriesRef.current) {
+          const barData = sortedCandles.map(candle => ({
+            time: candle.time,
+            open: candle.open,
+            high: candle.high,
+            low: candle.low,
+            close: candle.close,
+          }));
+          barSeriesRef.current.setData(barData);
+        }
+
+        if (chartRef.current) {
+          chartRef.current.timeScale().fitContent();
+        }
+      } catch (error) {
+        console.error('Error updating chart data after series recreation:', error);
+      }
+    }
+  }, [panelSettings.chartType, isInitialized, candles]);
 
   // Load data
   useEffect(() => {
