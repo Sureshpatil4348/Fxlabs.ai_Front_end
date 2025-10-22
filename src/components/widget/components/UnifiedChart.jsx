@@ -25,6 +25,7 @@ import {
 
 export const UnifiedChart = () => {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [lineChartKey, setLineChartKey] = useState(0); // Key to force re-render
   
   const {
     candles,
@@ -33,13 +34,21 @@ export const UnifiedChart = () => {
     isLoading,
     isConnected,
     error,
+    currentPage,
+    hasMoreHistory,
+    isLoadingHistory,
     setCandles,
     addCandle,
     updateLastCandle,
     setIndicators,
     setLoading,
     setConnected,
-    setError
+    setError,
+    setCurrentPage,
+    setHasMoreHistory,
+    setLoadingHistory,
+    prependCandles,
+    resetPagination
   } = useChartStore();
   
   const { pricingBySymbol } = useMarketCacheStore();
@@ -77,9 +86,24 @@ export const UnifiedChart = () => {
     };
   }, [indicators]);
 
+  // Get candles for display based on chart type
+  const displayCandles = useMemo(() => {
+    if (settings.chartType === 'candlestick') {
+      // Candlestick: use all candles (with pagination)
+      return candles;
+    } else {
+      // Line chart: only use the most recent 500 candles
+      const maxLineChartCandles = 500;
+      if (candles.length > maxLineChartCandles) {
+        return candles.slice(-maxLineChartCandles);
+      }
+      return candles;
+    }
+  }, [candles, settings.chartType]);
+
   // Format data for Recharts with proper indicator alignment (optimized)
   const chartData = useMemo(() => {
-    return candles.map((candle, index) => {
+    return displayCandles.map((candle, index) => {
       // Use fast Map lookups instead of expensive .find() operations
       const ema20Value = indicatorMaps.ema20.get(candle.time);
       const ema200Value = indicatorMaps.ema200.get(candle.time);
@@ -114,7 +138,7 @@ export const UnifiedChart = () => {
         macd: macdValue?.macd || null,
         signal: macdValue?.signal || null,
         histogram: macdValue?.histogram || null,
-        atr: atrValue ? atrValue * 100 : null, // Scale ATR by 100x for better visibility
+        atr: atrValue !== undefined && atrValue !== null ? atrValue * 100 : null, // Scale ATR by 100x, use null for missing data
         // New indicators
         sma50: sma50Value || null,
         sma100: sma100Value || null,
@@ -131,7 +155,7 @@ export const UnifiedChart = () => {
         change24hPercent: change24hValue?.changePercent || null,
       };
     });
-  }, [candles, indicatorMaps]);
+  }, [displayCandles, indicatorMaps]);
 
   // Performance optimized - removed debug logging for better performance
 
@@ -165,6 +189,60 @@ export const UnifiedChart = () => {
     setIsInitialized(true);
   }, []);
 
+  // Refresh line chart when switching to line chart type
+  useEffect(() => {
+    if (settings.chartType !== 'candlestick') {
+      console.log('📊 Refreshing line chart area...');
+      // Force re-render of line chart components
+      setLineChartKey(prev => prev + 1);
+    }
+  }, [settings.chartType]);
+
+
+  // Load more historical data (pagination)
+  const loadMoreHistory = async () => {
+    if (isLoadingHistory || !hasMoreHistory) {
+      console.log('📊 loadMoreHistory: Skip', { isLoadingHistory, hasMoreHistory });
+      return;
+    }
+    
+    try {
+      console.log('📊 loadMoreHistory: Loading page', currentPage + 1);
+      setLoadingHistory(true);
+      
+      const result = await realMarketService.getHistoricalDataWithPage(
+        settings.symbol,
+        settings.timeframe,
+        currentPage + 1,
+        500
+      );
+      
+      console.log('📊 loadMoreHistory: Received', result.candles.length, 'candles');
+      
+      if (result.candles.length > 0) {
+        // Prepend the new candles
+        prependCandles(result.candles);
+        
+        // Recalculate indicators with all candles
+        const allCandles = [...result.candles, ...candles].sort((a, b) => a.time - b.time);
+        const calculatedIndicators = calculateAllIndicators(allCandles);
+        setIndicators(calculatedIndicators);
+        
+        // Update pagination state
+        setCurrentPage(currentPage + 1);
+        setHasMoreHistory(result.hasMore);
+        
+        console.log('✅ loadMoreHistory: Success, now on page', currentPage + 1);
+      } else {
+        setHasMoreHistory(false);
+        console.log('📊 loadMoreHistory: No more history');
+      }
+    } catch (err) {
+      console.error('❌ Error loading more history:', err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   // Load historical data
   useEffect(() => {
@@ -174,6 +252,7 @@ export const UnifiedChart = () => {
       
       setLoading(true);
       setError(null);
+      resetPagination(); // Reset pagination when loading new data
       
       try {
         console.log('📡 Calling realMarketService.getHistoricalData...');
@@ -250,7 +329,7 @@ export const UnifiedChart = () => {
     if (isInitialized) {
       loadHistoricalData();
     }
-  }, [isInitialized, settings.symbol, settings.timeframe, setCandles, setIndicators, setLoading, setError]);
+  }, [isInitialized, settings.symbol, settings.timeframe, setCandles, setIndicators, setLoading, setError, resetPagination]);
 
 
   // WebSocket connection for real-time data
@@ -341,10 +420,10 @@ export const UnifiedChart = () => {
 
   if (isLoading) {
   return (
-      <div className="flex-1 bg-white flex items-center justify-center h-screen ">
+      <div className="flex-1 bg-white flex items-start justify-center pt-16 h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading unified chart data...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 text-sm">Loading Chart...</p>
                 </div>
               </div>
     );
@@ -363,22 +442,22 @@ export const UnifiedChart = () => {
   }
 
   return (
-    <div className="flex-1 bg-white flex flex-col h-screen pb-[600px] m-3 mb-3">
+    <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
       {/* Price Info Bar */}
-      <div className="bg-white  px-4 py-1 flex-shrink-0 ">
+      <div className="bg-white px-4 py-1 flex-shrink-0 sticky top-0 z-10 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="text-sm font-medium text-gray-900">{settings.symbol}</span>
-            <span className="text-xl font-bold text-gray-900">
+          <div className="flex items-center space-x-3 overflow-x-auto">
+            <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{settings.symbol}</span>
+            <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
                   ${latestPrice?.toFixed(5) || '0.00000'}
             </span>
-            <span className={`text-sm font-medium ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <span className={`text-sm font-medium whitespace-nowrap ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(5)} ({priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%)
             </span>
                 </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
+          <div className="flex items-center space-x-4 text-sm text-gray-600 whitespace-nowrap">
             <span>Connected: {isConnected ? '🟢' : '🔴'}</span>
-            <span>Candles: {candles.length}</span>
+            <span>Candles: {displayCandles.length}</span>
           </div>
         </div>
       </div>
@@ -387,7 +466,7 @@ export const UnifiedChart = () => {
       <div 
         className={settings.chartType === 'candlestick' ? 'flex-1 relative overflow-hidden' : 'flex-1 overflow-y-auto'}
         style={settings.chartType === 'candlestick' 
-          ? { minHeight: '400px' }
+          ? { minHeight: '500px' }
           : { 
               minHeight: '400px',
               maxHeight: 'calc(100vh - 200px)',
@@ -407,19 +486,22 @@ export const UnifiedChart = () => {
         })()}
         {settings.chartType === 'candlestick' ? (
           // Show Enhanced Candlestick Chart with drawing tools, sized to container
-          <div className="absolute inset-0">
+          <div className="absolute" style={{ top: 0, left: 0, right: 0, bottom: 0 }}>
             <EnhancedCandlestickChart 
               key={`enhanced-candlestick-${settings.symbol}-${settings.timeframe}`}
-              candles={candles}
+              candles={displayCandles}
               indicators={indicators}
               settings={settings}
+              onLoadMoreHistory={loadMoreHistory}
+              isLoadingHistory={isLoadingHistory}
+              hasMoreHistory={hasMoreHistory}
             />
           </div>
         ) : (
           // Show separate Recharts for each indicator
           <>
             {chartData.length > 0 ? (
-              <div className="space-y-2 pb-2">
+              <div key={lineChartKey} className="space-y-2 pb-2">
                 {/* Price Chart with EMAs */}
                 <div className="bg-white rounded-lg border border-gray-200 p-2 relative">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Price Chart - {settings.symbol}</h4>
@@ -476,6 +558,7 @@ export const UnifiedChart = () => {
                         stroke="#2563eb"
                         fillOpacity={0.3}
                         name="Price"
+                        isAnimationActive={false}
                       />
                       
                       {/* EMAs */}
@@ -487,6 +570,7 @@ export const UnifiedChart = () => {
                           dot={false}
                           strokeWidth={2}
                           name="EMA 20"
+                          isAnimationActive={false}
                         />
                       )}
                       {settings.indicators.ema200 && (
@@ -497,6 +581,7 @@ export const UnifiedChart = () => {
                           dot={false}
                           strokeWidth={2}
                           name="EMA 200"
+                          isAnimationActive={false}
                         />
                       )}
                       
@@ -509,6 +594,7 @@ export const UnifiedChart = () => {
                           dot={false}
                           strokeWidth={2}
                           name="SMA 50"
+                          isAnimationActive={false}
                         />
                       )}
                       {settings.indicators.sma100 && (
@@ -519,6 +605,7 @@ export const UnifiedChart = () => {
                           dot={false}
                           strokeWidth={2}
                           name="SMA 100"
+                          isAnimationActive={false}
                         />
                       )}
                       
@@ -532,6 +619,7 @@ export const UnifiedChart = () => {
                             strokeWidth={1}
                             dot={false}
                             name="BB Upper"
+                            isAnimationActive={false}
                           />
                           <Line
                             type="monotone"
@@ -540,6 +628,7 @@ export const UnifiedChart = () => {
                             strokeWidth={2}
                             dot={false}
                             name="BB Middle"
+                            isAnimationActive={false}
                           />
                           <Line
                             type="monotone"
@@ -548,6 +637,7 @@ export const UnifiedChart = () => {
                             strokeWidth={1}
                             dot={false}
                             name="BB Lower"
+                            isAnimationActive={false}
                           />
                         </>
                       )}
@@ -561,6 +651,7 @@ export const UnifiedChart = () => {
                           dot={false}
                           strokeWidth={2}
                           name="VWAP"
+                          isAnimationActive={false}
                         />
                       )}
                       
@@ -574,7 +665,8 @@ export const UnifiedChart = () => {
                           dot={false}
                           strokeWidth={3}
                           name="ATR"
-                          connectNulls={false}
+                          connectNulls={true}
+                          isAnimationActive={false}
                         />
                       )}
                     </ComposedChart>
@@ -625,6 +717,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="RSI"
+                          isAnimationActive={false}
                         />
                         {/* RSI Overbought/Oversold lines */}
                         <Line
@@ -634,6 +727,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Overbought (70)"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -642,6 +736,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Oversold (30)"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -685,6 +780,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="MACD"
+                          isAnimationActive={false}
                         />
                         
                         {/* Signal Line */}
@@ -695,6 +791,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="Signal"
+                          isAnimationActive={false}
                         />
                         
                         {/* Histogram */}
@@ -703,6 +800,7 @@ export const UnifiedChart = () => {
                           fill="#4caf50"
                           name="Histogram"
                           opacity={0.7}
+                          isAnimationActive={false}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -744,6 +842,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="SMA 50"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -784,6 +883,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="SMA 100"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -825,6 +925,7 @@ export const UnifiedChart = () => {
                           strokeWidth={1}
                           dot={false}
                           name="Upper Band"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -833,6 +934,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="Middle Band"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -841,6 +943,7 @@ export const UnifiedChart = () => {
                           strokeWidth={1}
                           dot={false}
                           name="Lower Band"
+                          isAnimationActive={false}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -882,6 +985,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="%K"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -890,6 +994,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="%D"
+                          isAnimationActive={false}
                         />
                         {/* Overbought/Oversold lines */}
                         <Line
@@ -899,6 +1004,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Overbought (80)"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -907,6 +1013,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Oversold (20)"
+                          isAnimationActive={false}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -947,6 +1054,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="Williams %R"
+                          isAnimationActive={false}
                         />
                         {/* Overbought/Oversold lines */}
                         <Line
@@ -956,6 +1064,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Overbought (-20)"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -964,6 +1073,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Oversold (-80)"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -1004,6 +1114,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="CCI"
+                          isAnimationActive={false}
                         />
                         {/* CCI reference lines */}
                         <Line
@@ -1013,6 +1124,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Overbought (100)"
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -1021,6 +1133,7 @@ export const UnifiedChart = () => {
                           strokeDasharray="5 5"
                           dot={false}
                           name="Oversold (-100)"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -1061,6 +1174,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="OBV"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -1101,6 +1215,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="VWAP"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -1141,6 +1256,7 @@ export const UnifiedChart = () => {
                           fill="#f97316"
                           name="Change"
                           opacity={0.7}
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -1149,6 +1265,7 @@ export const UnifiedChart = () => {
                           strokeWidth={2}
                           dot={false}
                           name="Change %"
+                          isAnimationActive={false}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -1190,6 +1307,7 @@ export const UnifiedChart = () => {
                         fill="#8b5cf6"
                         name="Volume"
                         opacity={0.7}
+                        isAnimationActive={false}
                       />
                     </BarChart>
                   </ResponsiveContainer>

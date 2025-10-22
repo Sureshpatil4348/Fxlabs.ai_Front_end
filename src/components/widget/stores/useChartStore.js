@@ -151,6 +151,10 @@ export const useChartStore = create(
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
+      // Pagination state
+      currentPage: 1,
+      hasMoreHistory: true,
+      isLoadingHistory: false,
 
       // Actions
       setCandles: (candles) => set({ candles }),
@@ -324,6 +328,37 @@ export const useChartStore = create(
           }
         });
       },
+      
+      // Pagination actions
+      setCurrentPage: (page) => set({ currentPage: page }),
+      
+      setHasMoreHistory: (hasMore) => set({ hasMoreHistory: hasMore }),
+      
+      setLoadingHistory: (isLoading) => set({ isLoadingHistory: isLoading }),
+      
+      prependCandles: (newCandles) => set((state) => {
+        // Filter out duplicates and merge with existing candles
+        const existingTimes = new Set(state.candles.map(c => c.time));
+        const uniqueNewCandles = newCandles.filter(c => !existingTimes.has(c.time));
+        
+        // Sort all candles by time
+        const allCandles = [...uniqueNewCandles, ...state.candles].sort((a, b) => a.time - b.time);
+        
+        console.log('📊 Prepending candles:', {
+          newCandlesCount: newCandles.length,
+          uniqueNewCount: uniqueNewCandles.length,
+          existingCount: state.candles.length,
+          totalCount: allCandles.length
+        });
+        
+        return { candles: allCandles };
+      }),
+      
+      resetPagination: () => set({ 
+        currentPage: 1, 
+        hasMoreHistory: true, 
+        isLoadingHistory: false 
+      }),
     }),
     {
       name: 'tradingview-chart-storage',
