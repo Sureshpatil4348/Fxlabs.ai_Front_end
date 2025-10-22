@@ -136,10 +136,12 @@ export const UnifiedChart = () => {
   // Performance optimized - removed debug logging for better performance
 
 
-  // Calculate price information - use backend daily change data (same as header)
-  const latestPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
+  // Calculate price information - use same data source as Trending Pairs for consistency
   const currentSymbol = settings.symbol ? `${settings.symbol}m` : null;
   const pricing = currentSymbol ? pricingBySymbol.get(currentSymbol) || {} : {};
+  
+  // Use bid price from market cache (same as Trending Pairs) instead of candle close price
+  const latestPrice = typeof pricing.bid === 'number' ? pricing.bid : (candles.length > 0 ? candles[candles.length - 1].close : 0);
   const dailyChangePct = typeof pricing.daily_change_pct === 'number' ? pricing.daily_change_pct : 0;
   const dailyChange = typeof pricing.daily_change === 'number' ? pricing.daily_change : 0;
   
@@ -368,10 +370,10 @@ export const UnifiedChart = () => {
           <div className="flex items-center space-x-3">
             <span className="text-sm font-medium text-gray-900">{settings.symbol}</span>
             <span className="text-xl font-bold text-gray-900">
-                  ${latestPrice?.toFixed(2) || '0.00'}
+                  ${latestPrice?.toFixed(5) || '0.00000'}
             </span>
             <span className={`text-sm font-medium ${priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)} ({priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%)
+              {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(5)} ({priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%)
             </span>
                 </div>
           <div className="flex items-center space-x-4 text-sm text-gray-600">
