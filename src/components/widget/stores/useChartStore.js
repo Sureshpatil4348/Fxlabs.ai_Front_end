@@ -135,13 +135,19 @@ export const useChartStore = create(
         vwap: [],
         change24h: [],
       },
+      dailyChangeData: {
+        symbol: null,
+        daily_change_pct: 0,
+        daily_change: 0,
+        timestamp: null,
+        isPositive: false
+      },
       settings: defaultSettings,
       layoutType: 'single',
       chartPanels: defaultChartPanels,
       isLoading: false,
       isConnected: false,
       error: null,
-      
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
@@ -149,6 +155,8 @@ export const useChartStore = create(
       // Actions
       setCandles: (candles) => set({ candles }),
       
+
+
       addCandle: (candle) => set((state) => ({
         candles: [...state.candles, candle]
       })),
@@ -244,6 +252,13 @@ export const useChartStore = create(
           vwap: [],
           change24h: [],
         },
+        dailyChangeData: {
+          symbol: null,
+          daily_change_pct: 0,
+          daily_change: 0,
+          timestamp: null,
+          isPositive: false
+        },
         isLoading: false,
         isConnected: false,
         error: null,
@@ -282,6 +297,33 @@ export const useChartStore = create(
         console.log('🎨 ChartStore: Clearing all drawings');
         set({ drawings: [], activeDrawingTool: null });
       },
+      
+      // Daily change data actions
+      setDailyChangeData: (data) => {
+        console.log('💾 ChartStore: Setting daily change data:', data);
+        set(() => ({
+          dailyChangeData: {
+            symbol: data.symbol,
+            daily_change_pct: parseFloat(data.daily_change_pct) || 0,
+            daily_change: parseFloat(data.daily_change) || 0,
+            timestamp: Date.now(),
+            isPositive: parseFloat(data.daily_change_pct) >= 0
+          }
+        }));
+      },
+      
+      clearDailyChangeData: () => {
+        console.log('💾 ChartStore: Clearing daily change data');
+        set({
+          dailyChangeData: {
+            symbol: null,
+            daily_change_pct: 0,
+            daily_change: 0,
+            timestamp: null,
+            isPositive: false
+          }
+        });
+      },
     }),
     {
       name: 'tradingview-chart-storage',
@@ -313,3 +355,4 @@ export const selectSettings = (state) => state.settings;
 export const selectIsLoading = (state) => state.isLoading;
 export const selectIsConnected = (state) => state.isConnected;
 export const selectError = (state) => state.error;
+export const selectDailyChangeData = (state) => state.dailyChangeData;

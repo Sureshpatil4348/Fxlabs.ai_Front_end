@@ -1,4 +1,5 @@
 // src/components/widget/services/realMarketService.js
+
 export class RealMarketService {
     static BASE_URL = 'https://api.fxlabsprime.com';
     static WS_URL = 'wss://api.fxlabsprime.com/market-v2';
@@ -241,6 +242,9 @@ export class RealMarketService {
                   console.log('📊 Created candle from tick:', candleData);
                   if (onMessage) onMessage(candleData);
                 }
+                
+                // Daily change data is now handled by the centralized market cache
+                // No need to extract and store separately in chart store
               });
             }
           } else if (message.type === 'ohlc_update' && message.symbol === symbol) {
