@@ -11,8 +11,7 @@ export class RealMarketService {
   
     /**
      * Fetch historical OHLC data from your real market data API
-     * NOTE: OHLC streaming has been removed from the server. 
-     * This method now uses the pricing service for initial data.
+     * Uses the new OHLC endpoint with pagination support
      */
     async getHistoricalData(
       symbol = 'EURUSD',
@@ -20,16 +19,22 @@ export class RealMarketService {
       limit = 500
     ) {
       try {
-        console.log('🔍 RealMarketService: Starting getHistoricalData');
+        console.log('🔍 RealMarketService: Starting getHistoricalData with new OHLC API');
         console.log('📊 Parameters:', { symbol, interval, limit });
-        console.log('⚠️ NOTE: OHLC streaming has been removed from server. Using pricing service for initial data.');
         
         // Convert symbol format for your API (add 'm' suffix if not present)
         const apiSymbol = symbol.endsWith('m') ? symbol : symbol + 'm';
         console.log('🔄 Converted symbol:', apiSymbol);
         
-        // Use the pricing service endpoint instead of OHLC
-        const url = `${RealMarketService.BASE_URL}/api/pricing?pairs=${apiSymbol}`;
+        // Convert interval to API format (1m -> 1M, 5m -> 5M, etc.)
+        const apiTimeframe = this.convertIntervalToTimeframe(interval);
+        console.log('🔄 Converted timeframe:', apiTimeframe);
+        
+        // Calculate per_page (max 1000 per API spec)
+        const perPage = Math.min(limit, 1000);
+        
+        // Build the new OHLC API URL
+        const url = `${RealMarketService.BASE_URL}/api/ohlc?symbol=${apiSymbol}&timeframe=${apiTimeframe}&page=1&per_page=${perPage}`;
         console.log('🌐 API URL:', url);
         
         console.log('📡 Making API request...');
@@ -45,82 +50,218 @@ export class RealMarketService {
         console.log('📥 Parsing JSON response...');
         const data = await response.json();
         
-        console.log('📊 Raw Real Market API response:', data);
-        console.log('📊 Response type:', typeof data);
-        console.log('📊 Is array:', Array.isArray(data));
+        console.log('📊 Raw OHLC API response:', data);
+        console.log('📊 Response structure:', {
+          symbol: data.symbol,
+          timeframe: data.timeframe,
+          page: data.page,
+          per_page: data.per_page,
+          count: data.count,
+          barsCount: data.bars?.length
+        });
         
-        // The pricing service returns different data structure
-        // We need to create synthetic OHLC data from the pricing data
-        if (!data || !data.pairs || !Array.isArray(data.pairs)) {
-          console.error('❌ Invalid response format - no pairs array:', data);
-          throw new Error('Invalid response format from Real Market API');
+        // Validate response format
+        if (!data || !data.bars || !Array.isArray(data.bars)) {
+          console.error('❌ Invalid response format - no bars array:', data);
+          throw new Error('Invalid response format from OHLC API');
         }
         
-        const pairData = data.pairs.find(p => p.symbol === apiSymbol);
-        if (!pairData) {
-          console.error('❌ Symbol not found in response:', apiSymbol);
-          throw new Error(`Symbol ${apiSymbol} not found in API response`);
+        if (data.bars.length === 0) {
+          console.warn('⚠️ No bars returned from API');
+          return [];
         }
         
-        console.log('📊 Found pair data:', pairData);
+        console.log('📊 Processing', data.bars.length, 'bars');
+        console.log('📊 First bar:', data.bars[0]);
+        console.log('📊 Last bar:', data.bars[data.bars.length - 1]);
         
-        // Create synthetic OHLC data from pricing data
-        // Since we don't have historical OHLC, we'll create multiple candles with realistic price variations
-        const currentTime = Math.floor(Date.now() / 1000);
-        const currentPrice = parseFloat(pairData.ask || pairData.bid || 0);
+        // Transform bars to candle format
+        // The API returns bars in ascending time order within the page
+        const candles = data.bars.map(bar => ({
+          time: Math.floor(bar.time / 1000), // Convert milliseconds to seconds
+          open: parseFloat(bar.open),
+          high: parseFloat(bar.high),
+          low: parseFloat(bar.low),
+          close: parseFloat(bar.close),
+          volume: parseFloat(bar.volume || 0),
+          tick_volume: parseFloat(bar.tick_volume || 0),
+          spread: parseFloat(bar.spread || 0),
+          is_closed: bar.is_closed || false,
+          // Store additional bid/ask data if needed
+          openBid: parseFloat(bar.openBid || bar.open),
+          highBid: parseFloat(bar.highBid || bar.high),
+          lowBid: parseFloat(bar.lowBid || bar.low),
+          closeBid: parseFloat(bar.closeBid || bar.close),
+          openAsk: parseFloat(bar.openAsk || bar.open),
+          highAsk: parseFloat(bar.highAsk || bar.high),
+          lowAsk: parseFloat(bar.lowAsk || bar.low),
+          closeAsk: parseFloat(bar.closeAsk || bar.close)
+        }));
         
-        if (isNaN(currentPrice) || currentPrice === 0) {
-          console.error('❌ Invalid price data:', pairData);
-          throw new Error('Invalid price data from API');
+        console.log('✅ Transformed candles:', candles.length);
+        console.log('📊 First candle:', candles[0]);
+        console.log('📊 Last candle:', candles[candles.length - 1]);
+        
+        // Validate candle data
+        const validCandles = candles.filter(candle => 
+          !isNaN(candle.time) && 
+          !isNaN(candle.open) && 
+          !isNaN(candle.high) && 
+          !isNaN(candle.low) && 
+          !isNaN(candle.close) &&
+          candle.time > 0 &&
+          candle.high >= candle.low &&
+          candle.high >= candle.open &&
+          candle.high >= candle.close &&
+          candle.low <= candle.open &&
+          candle.low <= candle.close
+        );
+        
+        if (validCandles.length < candles.length) {
+          console.warn(`⚠️ Filtered out ${candles.length - validCandles.length} invalid candles`);
         }
         
-        // Create multiple synthetic candles to simulate historical data
-        const syntheticCandles = [];
-        const candleCount = Math.min(limit, 50); // Limit to 50 candles max
-        const timeInterval = this.getTimeIntervalInSeconds(interval);
-        
-        for (let i = candleCount - 1; i >= 0; i--) {
-          const candleTime = currentTime - (i * timeInterval);
-          
-          // Create realistic price variations (±0.1% to ±0.5%)
-          const variation = (Math.random() - 0.5) * 0.01; // ±0.5% variation
-          const basePrice = currentPrice * (1 + variation);
-          
-          // Create OHLC with realistic spread
-          const spread = basePrice * 0.0001; // 0.01% spread
-          const open = basePrice - (Math.random() * spread);
-          const close = basePrice + (Math.random() * spread);
-          const high = Math.max(open, close) + (Math.random() * spread);
-          const low = Math.min(open, close) - (Math.random() * spread);
-          
-          syntheticCandles.push({
-            time: candleTime,
-            open: parseFloat(open.toFixed(5)),
-            high: parseFloat(high.toFixed(5)),
-            low: parseFloat(low.toFixed(5)),
-            close: parseFloat(close.toFixed(5)),
-            volume: Math.floor(Math.random() * 1000), // Random volume
-          });
-        }
-        
-        console.log('✅ Created synthetic candle data:', syntheticCandles.length, 'candles');
-        console.log('✅ First candle:', syntheticCandles[0]);
-        console.log('✅ Last candle:', syntheticCandles[syntheticCandles.length - 1]);
-        
-        return syntheticCandles;
+        console.log('✅ Returning', validCandles.length, 'valid candles');
+        return validCandles;
         
       } catch (error) {
-        console.error('❌ Error fetching real market data:', error);
+        console.error('❌ Error fetching OHLC data:', error);
         console.error('❌ Error details:', {
           message: error.message,
           stack: error.stack,
           name: error.name
         });
-        
-        // No fallback needed - using real market data service
-        console.log('❌ Real market data service failed, no fallback available');
         throw error;
       }
+  }
+  
+  /**
+   * Fetch historical OHLC data with pagination support
+   * @param {string} symbol - Trading symbol (e.g., 'EURUSD')
+   * @param {string} interval - Timeframe (e.g., '1m', '5m', '1h')
+   * @param {number} page - Page number (1-based)
+   * @param {number} perPage - Items per page (max 1000)
+   * @returns {Promise<{candles: Array, hasMore: boolean}>}
+   */
+  async getHistoricalDataWithPage(
+    symbol = 'EURUSD',
+    interval = '1m',
+    page = 1,
+    perPage = 500
+  ) {
+    try {
+      console.log('🔍 RealMarketService: getHistoricalDataWithPage', { symbol, interval, page, perPage });
+      
+      // Convert symbol format for your API (add 'm' suffix if not present)
+      const apiSymbol = symbol.endsWith('m') ? symbol : symbol + 'm';
+      
+      // Convert interval to API format (1m -> 1M, 5m -> 5M, etc.)
+      const apiTimeframe = this.convertIntervalToTimeframe(interval);
+      
+      // Calculate per_page (max 1000 per API spec)
+      const actualPerPage = Math.min(perPage, 1000);
+      
+      // Build the OHLC API URL with pagination
+      const url = `${RealMarketService.BASE_URL}/api/ohlc?symbol=${apiSymbol}&timeframe=${apiTimeframe}&page=${page}&per_page=${actualPerPage}`;
+      console.log('🌐 API URL:', url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      
+      console.log('📊 OHLC API response (page ' + page + '):', {
+        symbol: data.symbol,
+        timeframe: data.timeframe,
+        page: data.page,
+        per_page: data.per_page,
+        count: data.count,
+        barsCount: data.bars?.length
+      });
+      
+      // Validate response format
+      if (!data || !data.bars || !Array.isArray(data.bars)) {
+        console.error('❌ Invalid response format - no bars array:', data);
+        throw new Error('Invalid response format from OHLC API');
+      }
+      
+      // Transform bars to candle format
+      const candles = data.bars.map(bar => ({
+        time: Math.floor(bar.time / 1000), // Convert milliseconds to seconds
+        open: parseFloat(bar.open),
+        high: parseFloat(bar.high),
+        low: parseFloat(bar.low),
+        close: parseFloat(bar.close),
+        volume: parseFloat(bar.volume || 0),
+        tick_volume: parseFloat(bar.tick_volume || 0),
+        spread: parseFloat(bar.spread || 0),
+        is_closed: bar.is_closed || false,
+        openBid: parseFloat(bar.openBid || bar.open),
+        highBid: parseFloat(bar.highBid || bar.high),
+        lowBid: parseFloat(bar.lowBid || bar.low),
+        closeBid: parseFloat(bar.closeBid || bar.close),
+        openAsk: parseFloat(bar.openAsk || bar.open),
+        highAsk: parseFloat(bar.highAsk || bar.high),
+        lowAsk: parseFloat(bar.lowAsk || bar.low),
+        closeAsk: parseFloat(bar.closeAsk || bar.close)
+      }));
+      
+      // Validate candle data
+      const validCandles = candles.filter(candle => 
+        !isNaN(candle.time) && 
+        !isNaN(candle.open) && 
+        !isNaN(candle.high) && 
+        !isNaN(candle.low) && 
+        !isNaN(candle.close) &&
+        candle.time > 0 &&
+        candle.high >= candle.low &&
+        candle.high >= candle.open &&
+        candle.high >= candle.close &&
+        candle.low <= candle.open &&
+        candle.low <= candle.close
+      );
+      
+      if (validCandles.length < candles.length) {
+        console.warn(`⚠️ Filtered out ${candles.length - validCandles.length} invalid candles`);
+      }
+      
+      // Determine if there are more pages
+      const hasMore = validCandles.length === actualPerPage;
+      
+      console.log('✅ Returning page', page, ':', validCandles.length, 'candles, hasMore:', hasMore);
+      
+      return {
+        candles: validCandles,
+        hasMore: hasMore
+      };
+      
+    } catch (error) {
+      console.error('❌ Error fetching OHLC data with pagination:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Convert interval format to API timeframe format
+   * 1m -> 1M, 5m -> 5M, 1h -> 1H, 1d -> 1D, 1w -> 1W
+   */
+  convertIntervalToTimeframe(interval) {
+    const mapping = {
+      '1m': '1M',
+      '5m': '5M',
+      '15m': '15M',
+      '30m': '30M',
+      '1h': '1H',
+      '4h': '4H',
+      '1d': '1D',
+      '1w': '1W'
+    };
+    return mapping[interval.toLowerCase()] || '5M'; // Default to 5M if not found
   }
   
   /**

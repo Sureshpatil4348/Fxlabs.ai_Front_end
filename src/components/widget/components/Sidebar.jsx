@@ -109,21 +109,21 @@ export const Sidebar = () => {
 
         {/* Drawing Tools Dropdown */}
         {activeSection === 'drawing' && (
-          <div className="absolute left-16 top-0 ml-2 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
-            <div className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-gray-900">Drawing Tools</h3>
+          <div className="absolute left-16 top-0 ml-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] overflow-y-auto">
+            <div className="p-2">
+              <div className="flex items-center justify-between mb-2 sticky top-0 bg-white z-10 pb-1.5 border-b border-gray-100">
+                <h3 className="text-xs font-bold text-gray-900">Drawing Tools</h3>
                 <button
                   onClick={() => setActiveSection(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {/* Trend Line Tool */}
                 <button
                   onClick={() => { 
@@ -131,19 +131,18 @@ export const Sidebar = () => {
                     setActiveSection(null);
                     console.log('🎨 Drawing Tool: Trend Line selected');
                   }}
-                  className={`w-full p-3 rounded-lg border-2 transition-all ${
-                    activeTool === 'TrendLine' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
+                    activeTool === 'TrendLine' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-md flex items-center justify-center shadow-sm">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">Trend Line</p>
-                      <p className="text-xs text-gray-500">Draw trend lines</p>
+                    <div className="text-left flex-1">
+                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Trend Line</p>
                     </div>
                   </div>
                 </button>
@@ -155,19 +154,18 @@ export const Sidebar = () => {
                     setActiveSection(null);
                     console.log('🎨 Drawing Tool: Horizontal Line selected');
                   }}
-                  className={`w-full p-3 rounded-lg border-2 transition-all ${
-                    activeTool === 'HorizontalLine' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
+                    activeTool === 'HorizontalLine' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-700 rounded-md flex items-center justify-center shadow-sm">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h16" />
                       </svg>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">Horizontal Line</p>
-                      <p className="text-xs text-gray-500">Draw horizontal levels</p>
+                    <div className="text-left flex-1">
+                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Horizontal Line</p>
                     </div>
                   </div>
                 </button>
@@ -179,19 +177,18 @@ export const Sidebar = () => {
                     setActiveSection(null);
                     console.log('🎨 Drawing Tool: Rectangle selected');
                   }}
-                  className={`w-full p-3 rounded-lg border-2 transition-all ${
-                    activeTool === 'Rectangle' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
+                    activeTool === 'Rectangle' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-teal-700 rounded-md flex items-center justify-center shadow-sm">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4h16v16H4z" />
                       </svg>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">Rectangle</p>
-                      <p className="text-xs text-gray-500">Draw rectangles</p>
+                    <div className="text-left flex-1">
+                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Rectangle</p>
                     </div>
                   </div>
                 </button>
@@ -203,38 +200,37 @@ export const Sidebar = () => {
                     setActiveSection(null);
                     console.log('🎨 Drawing Tool: Fibonacci selected');
                   }}
-                  className={`w-full p-3 rounded-lg border-2 transition-all ${
-                    activeTool === 'Fibonacci' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
+                    activeTool === 'Fibonacci' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-md flex items-center justify-center shadow-sm">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 12l3-3 3 3 4-4M3 4h18" />
                       </svg>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">Fibonacci</p>
-                      <p className="text-xs text-gray-500">Draw Fibonacci retracements</p>
+                    <div className="text-left flex-1">
+                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Fibonacci</p>
                     </div>
                   </div>
                 </button>
 
                 {/* Clear All Drawings */}
-                <div className="border-t border-gray-200 pt-2 mt-3">
+                <div className="border-t border-gray-200 pt-1.5 mt-1.5">
                   <button
                     onClick={() => { 
                       clearAllDrawings(); 
                       setActiveSection(null);
                       console.log('🎨 Drawing Tool: Clear all drawings');
                     }}
-                    className="w-full p-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all"
+                    className="w-full p-1.5 rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-600 hover:from-red-100 hover:to-red-200 transition-all hover:shadow-md"
                   >
-                    <div className="flex items-center justify-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center justify-center space-x-1.5">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
-                      <span className="text-sm font-medium">Clear All</span>
+                      <span className="text-[11px] font-semibold">Clear All</span>
                     </div>
                   </button>
                 </div>

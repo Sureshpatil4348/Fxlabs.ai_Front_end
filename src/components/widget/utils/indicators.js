@@ -114,10 +114,27 @@ export function calculateATR(data, period = 14) {
     return [];
   }
   
-  return data.slice(period).map((candle, index) => ({
-    time: candle.time,
-    atr: atr[index] || 0
-  }));
+  // Create result array with all candles, filling initial values with first ATR value
+  const result = [];
+  const firstATR = atr[0] || 0;
+  
+  // Fill initial period with first ATR value for continuity
+  for (let i = 0; i < period; i++) {
+    result.push({
+      time: data[i].time,
+      atr: firstATR
+    });
+  }
+  
+  // Add calculated ATR values
+  for (let i = 0; i < atr.length; i++) {
+    result.push({
+      time: data[i + period].time,
+      atr: atr[i] || 0
+    });
+  }
+  
+  return result;
 }
 
 /**
