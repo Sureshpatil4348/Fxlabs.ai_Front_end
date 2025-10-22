@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+import useMarketCacheStore from '../../../store/useMarketCacheStore';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
   const { settings, setSymbol, setTimeframe, setChartType, toggleIndicator } = useChartStore();
+  const { pricingBySymbol } = useMarketCacheStore();
   const [activeTimeframe, setActiveTimeframe] = useState('1h');
   const [showSettings, setShowSettings] = useState(false);
   const [showChartTypes, setShowChartTypes] = useState(false);
@@ -15,6 +17,21 @@ export const TradingViewHeader = () => {
   const dropdownRef = useRef(null);
 
   const timeframes = ['1m', '30m', '1h'];
+  
+  // Get daily change data from market cache (same approach as trending pairs)
+  const currentSymbol = settings.symbol ? `${settings.symbol}m` : null;
+  const pricing = currentSymbol ? pricingBySymbol.get(currentSymbol) || {} : {};
+  const dailyChangePct = typeof pricing.daily_change_pct === 'number' ? pricing.daily_change_pct : 0;
+  const dailyChange = typeof pricing.daily_change === 'number' ? pricing.daily_change : 0;
+  
+  // Debug logging to check data
+  console.log('🔍 TradingViewHeader Debug:', {
+    currentSymbol,
+    pricing,
+    dailyChangePct,
+    dailyChange,
+    pricingKeys: Object.keys(pricing)
+  });
   
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -68,7 +85,7 @@ export const TradingViewHeader = () => {
     <div className="bg-white border-b border-gray-200 px-3 py-1.5 h-10">
       <div className="flex items-center justify-between h-full">
         {/* Left Section */}
-        <div className="flex items-center space-x-0.5">
+        <div className="flex items-center space-x-2">
           {/* Search Icon and Symbol Input */}
           <div className="flex items-center space-x-0.5">
             <svg className="w-2.5 h-2.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,6 +104,8 @@ export const TradingViewHeader = () => {
               +
             </button>
           </div>
+
+          
 
           {/* Timeframe Buttons */}
           <div className="flex items-center space-x-0.5">

@@ -327,6 +327,7 @@ const useMarketCacheStore = create(
               time: typeof p.time === 'number' ? p.time : Date.now(),
               time_iso: p.time_iso || new Date().toISOString(),
               daily_change_pct: typeof p.daily_change_pct === 'number' ? p.daily_change_pct : 0,
+              daily_change: typeof p.daily_change === 'number' ? p.daily_change : 0,
               lastUpdate: new Date()
             });
             const existing = ticksBySymbol.get(p.symbol) || { ticks: [], lastUpdate: null };
@@ -386,6 +387,7 @@ const useMarketCacheStore = create(
 
     // --- WebSocket message handling ---
     handleMessage: (message) => {
+      console.log('🔍 MarketCache: Received message:', message);
       switch (message?.type) {
         case 'connected': {
           const tfs = Array.isArray(message.supported_timeframes) ? message.supported_timeframes : null;
@@ -459,20 +461,34 @@ const useMarketCacheStore = create(
           const pricingBySymbol = new Map(get().pricingBySymbol || new Map());
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
+            
+            // Debug logging for tick data
+            console.log('🔍 MarketCache: Processing tick data:', {
+              symbol: tick.symbol,
+              daily_change_pct: tick.daily_change_pct,
+              daily_change: tick.daily_change,
+              bid: tick.bid,
+              ask: tick.ask
+            });
+            
             const existing = ticksBySymbol.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)];
             existing.lastUpdate = new Date();
             ticksBySymbol.set(tick.symbol, existing);
 
             // Update pricing view
-            pricingBySymbol.set(tick.symbol, {
+            const pricingData = {
               bid: tick.bid,
               ask: tick.ask,
               time: tick.time || Date.now(),
               time_iso: tick.time_iso || new Date().toISOString(),
               daily_change_pct: typeof tick.daily_change_pct === 'number' ? tick.daily_change_pct : (pricingBySymbol.get(tick.symbol)?.daily_change_pct || 0),
+              daily_change: typeof tick.daily_change === 'number' ? tick.daily_change : (pricingBySymbol.get(tick.symbol)?.daily_change || 0),
               lastUpdate: new Date()
-            });
+            };
+            
+            console.log('🔍 MarketCache: Setting pricing data:', pricingData);
+            pricingBySymbol.set(tick.symbol, pricingData);
           });
           set({ ticksBySymbol, pricingBySymbol });
           get().persistToSession();

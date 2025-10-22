@@ -1,6 +1,7 @@
 import { createChart } from 'lightweight-charts';
 import React, { useEffect, useRef, useState } from 'react';
 
+import useMarketCacheStore from '../../../store/useMarketCacheStore';
 import { realMarketService } from '../services/realMarketService';
 
 export const ChartPanel = ({ panelSettings }) => {
@@ -8,6 +9,9 @@ export const ChartPanel = ({ panelSettings }) => {
   const chartRef = useRef(null);
   const [candles, setCandles] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Get market cache store for consistent pricing
+  const { pricingBySymbol } = useMarketCacheStore();
 
   // Price series refs
   const candlestickSeriesRef = useRef(null);
@@ -325,7 +329,10 @@ export const ChartPanel = ({ panelSettings }) => {
     }
   }, [candles, panelSettings.chartType, isInitialized]);
 
-  const latestPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
+  // Use same data source as Trending Pairs for consistency
+  const currentSymbol = panelSettings.symbol ? `${panelSettings.symbol}m` : null;
+  const pricing = currentSymbol ? pricingBySymbol.get(currentSymbol) || {} : {};
+  const latestPrice = typeof pricing.bid === 'number' ? pricing.bid : (candles.length > 0 ? candles[candles.length - 1].close : 0);
 
   return (
     <div className="relative w-full h-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col">
@@ -337,7 +344,7 @@ export const ChartPanel = ({ panelSettings }) => {
             <span className="text-xs text-gray-500">{panelSettings.timeframe}</span>
           </div>
           <div className="text-right">
-            <span className="text-sm font-bold text-gray-900">${latestPrice.toFixed(2)}</span>
+            <span className="text-sm font-bold text-gray-900">${latestPrice.toFixed(5)}</span>
           </div>
         </div>
       </div>

@@ -7,9 +7,6 @@ export const EnhancedCandlestickChart = ({
   candles,
   settings
 }) => {
-  // Defensive guard for candles prop
-  const safeCandles = useMemo(() => Array.isArray(candles) ? candles : [], [candles]);
-  
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const [error, setError] = useState(null);
@@ -30,10 +27,10 @@ export const EnhancedCandlestickChart = ({
 
   // Calculate chart dimensions from candles data
   const calculatedDimensions = useMemo(() => {
-    if (safeCandles.length === 0) return chartDimensions;
+    if (candles.length === 0) return chartDimensions;
 
-    const prices = safeCandles.map(c => [c.high, c.low]).flat();
-    const times = safeCandles.map(c => c.time);
+    const prices = candles.map(c => [c.high, c.low]).flat();
+    const times = candles.map(c => c.time);
 
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
@@ -50,16 +47,12 @@ export const EnhancedCandlestickChart = ({
       priceRange: maxPrice - minPrice,
       timeRange: maxTime - minTime
     };
-  }, [safeCandles, chartDimensions]);
+  }, [candles, chartDimensions]);
 
   // Update chart dimensions when calculated dimensions change
   useEffect(() => {
-    // Only update if dimensions actually changed
-    if (calculatedDimensions.width !== chartDimensions.width || 
-        calculatedDimensions.height !== chartDimensions.height) {
-      setChartDimensions(calculatedDimensions);
-    }
-  }, [calculatedDimensions, chartDimensions.width, chartDimensions.height]);
+    setChartDimensions(calculatedDimensions);
+  }, [calculatedDimensions]);
 
   // Initialize chart
   useEffect(() => {
@@ -83,13 +76,13 @@ export const EnhancedCandlestickChart = ({
 
     try {
       setError(null);
-      const containerWidth = Math.max(chartContainerRef.current.clientWidth || 800, 800);
-      const containerHeight = Math.max(chartContainerRef.current.clientHeight || 600, 600);
+      const containerWidth = chartContainerRef.current.clientWidth || 800;
+      const containerHeight = 600;
       
       console.log('🕯️ Creating enhanced candlestick chart with dimensions:', { containerWidth, containerHeight });
 
       const chart = createChart(chartContainerRef.current, {
-        width: containerWidth,
+        width: Math.max(containerWidth, 800),
         height: containerHeight,
         layout: {
           background: { color: '#ffffff' },
@@ -104,24 +97,11 @@ export const EnhancedCandlestickChart = ({
         },
         rightPriceScale: {
           borderColor: '#e5e7eb',
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.1,
-          },
-          autoScale: true,
-          autoScaleAnimation: {
-            duration: 300,
-          },
         },
         timeScale: {
           borderColor: '#e5e7eb',
           timeVisible: true,
           secondsVisible: false,
-          rightOffset: 10,
-          barSpacing: 2,
-          minBarSpacing: 0.5,
-          fixLeftEdge: false,
-          fixRightEdge: false,
         },
         handleScroll: {
           mouseWheel: true,
@@ -154,8 +134,8 @@ export const EnhancedCandlestickChart = ({
       // Handle resize
       const handleResize = () => {
         if (chartContainerRef.current && chart) {
-          const width = Math.max(chartContainerRef.current.clientWidth, 800);
-          const height = Math.max(chartContainerRef.current.clientHeight, 600);
+          const width = chartContainerRef.current.clientWidth;
+          const height = chartContainerRef.current.clientHeight;
           try {
             chart.applyOptions({
               width: width,
@@ -192,17 +172,18 @@ export const EnhancedCandlestickChart = ({
       console.error('🕯️ Error initializing enhanced candlestick chart:', error);
       setError(error instanceof Error ? error.message : 'Failed to initialize chart');
     }
-  }, [isInitialized]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update chart with data
   useEffect(() => {
     console.log('🕯️ EnhancedCandlestickChart: Data update effect triggered', {
       isInitialized,
-      candlesCount: safeCandles.length,
+      candlesCount: candles.length,
       hasCandlestickSeries: !!candlestickSeriesRef.current
     });
 
-    if (safeCandles.length === 0) {
+    if (candles.length === 0) {
       console.log('🕯️ EnhancedCandlestickChart: Skipping data update - no candles');
       return;
     }
@@ -216,7 +197,7 @@ export const EnhancedCandlestickChart = ({
       setError(null);
       
       // Filter out invalid candles and sort by time
-      const validCandles = safeCandles.filter(candle => 
+      const validCandles = candles.filter(candle => 
         !isNaN(candle.time) && 
         !isNaN(candle.open) && 
         !isNaN(candle.high) && 
@@ -228,7 +209,7 @@ export const EnhancedCandlestickChart = ({
       const sortedCandles = validCandles.sort((a, b) => a.time - b.time);
       
       console.log('🕯️ EnhancedCandlestickChart: Processing candles', {
-        originalCount: safeCandles.length,
+        originalCount: candles.length,
         validCount: validCandles.length,
         sortedCount: sortedCandles.length,
         firstValid: sortedCandles[0],
@@ -255,13 +236,9 @@ export const EnhancedCandlestickChart = ({
           candlestickSeriesRef.current.setData(candlestickData);
           console.log('🕯️ EnhancedCandlestickChart: Candlestick data set successfully');
           
-          // Fit content with proper margins
+          // Fit content
           if (chartRef.current) {
             chartRef.current.timeScale().fitContent();
-            // Ensure proper scaling to prevent cutoff
-            chartRef.current.timeScale().applyOptions({
-              rightOffset: 10,
-            });
           }
         } catch (error) {
           console.error('🕯️ Error setting candlestick data:', error);
@@ -274,11 +251,11 @@ export const EnhancedCandlestickChart = ({
       console.error('🕯️ Error updating chart data:', error);
       setError(error instanceof Error ? error.message : 'Failed to update chart data');
     }
-  }, [safeCandles, isInitialized]);
+  }, [candles, isInitialized]);
 
   // Prepare chart data for drawing tools
   const chartDataForDrawing = useMemo(() => {
-    return safeCandles.map((candle, index) => ({
+    return candles.map((candle, index) => ({
       time: index,
       timestamp: candle.time,
       price: candle.close,
@@ -288,35 +265,25 @@ export const EnhancedCandlestickChart = ({
       close: candle.close,
       volume: candle.volume
     }));
-  }, [safeCandles]);
+  }, [candles]);
 
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col">
+    <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Header */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 flex-shrink-0">
-        <h3 className="text-sm font-semibold text-gray-900">
+      <div className="flex items-center justify-between p-3 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">
           Enhanced Candlestick Chart - {settings.symbol}
         </h3>
       </div>
 
-      {/* Chart Container with Proper Scroll */}
-      <div 
-        className="flex-1 overflow-auto" 
-        style={{ 
-          minHeight: '400px',
-          maxHeight: 'calc(100vh - 200px)',
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db #f3f4f6',
-          scrollBehavior: 'smooth'
-        }}
-      >
+      {/* Chart Container */}
+      <div className="flex-1 p-3" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
         <div 
           ref={chartContainerRef} 
-          className="w-full relative p-2"
+          className="w-full h-full relative"
           style={{ 
             backgroundColor: '#ffffff',
-            minHeight: '600px',
-            minWidth: '800px'
+            minHeight: '500px'
           }}
         >
           {/* Universal Drawing Tools Overlay */}
@@ -324,7 +291,7 @@ export const EnhancedCandlestickChart = ({
             chartData={chartDataForDrawing}
             chartWidth={chartContainerRef.current?.clientWidth || 800}
             chartHeight={chartContainerRef.current?.clientHeight || 600}
-            currentPrice={safeCandles.length > 0 ? safeCandles[safeCandles.length - 1].close : 0}
+            currentPrice={candles.length > 0 ? candles[candles.length - 1].close : 0}
             chartType="candlestick"
             containerRef={chartContainerRef}
           />
@@ -356,7 +323,7 @@ export const EnhancedCandlestickChart = ({
                 </div>
                 <p className="text-gray-700 mt-4 text-lg font-medium">Loading Enhanced Candlestick Chart</p>
                 <p className="text-gray-500 text-sm mt-1">Initializing with drawing tools...</p>
-                <p className="text-gray-400 text-xs mt-2">Candles: {safeCandles.length}</p>
+                <p className="text-gray-400 text-xs mt-2">Candles: {candles.length}</p>
               </div>
             </div>
           ) : (
