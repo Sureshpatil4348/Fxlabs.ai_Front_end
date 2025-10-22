@@ -231,9 +231,24 @@ export class RealMarketService {
       }
       
       // Determine if there are more pages
-      const hasMore = validCandles.length === actualPerPage;
+      // First check if API provides explicit hasMore/hasNext flag
+      let hasMore;
+      if (typeof data.hasMore === 'boolean') {
+        hasMore = data.hasMore;
+      } else if (typeof data.hasNext === 'boolean') {
+        hasMore = data.hasNext;
+      } else if (typeof data.count === 'number' && data.count > 0) {
+        // Use total count to determine if there are more pages
+        const totalCount = data.count;
+        const totalPages = Math.ceil(totalCount / actualPerPage);
+        hasMore = page < totalPages;
+      } else {
+        // Fallback to length-based check (less reliable)
+        hasMore = validCandles.length === actualPerPage;
+      }
       
-      console.log('✅ Returning page', page, ':', validCandles.length, 'candles, hasMore:', hasMore);
+      console.log('✅ Returning page', page, ':', validCandles.length, 'candles, hasMore:', hasMore, 
+        data.count ? `(totalCount: ${data.count})` : '');
       
       return {
         candles: validCandles,

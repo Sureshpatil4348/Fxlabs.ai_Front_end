@@ -219,7 +219,11 @@ export const Sidebar = () => {
                 {/* Clear All Drawings */}
                 <div className="border-t border-gray-200 pt-1.5 mt-1.5">
                   <button
-                    onClick={() => { 
+                    type="button"
+                    onClick={() => {
+                      if (!window.confirm('Clear all drawings? This cannot be undone.')) {
+                        return;
+                      }
                       clearAllDrawings(); 
                       setActiveSection(null);
                       console.log('🎨 Drawing Tool: Clear all drawings');

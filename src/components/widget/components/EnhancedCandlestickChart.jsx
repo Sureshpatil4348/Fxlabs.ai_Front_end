@@ -27,6 +27,8 @@ export const EnhancedCandlestickChart = ({
 
   // Price series refs
   const candlestickSeriesRef = useRef(null);
+  const crosshairHandlerRef = useRef(null);
+  const rangeChangeHandlerRef = useRef(null);
   
   // Pagination refs
   const isLoadingRef = useRef(false);
@@ -34,6 +36,9 @@ export const EnhancedCandlestickChart = ({
   
   // Current OHLC data for display
   const [currentOHLC, setCurrentOHLC] = useState(null);
+  // Keep latest candles for event handlers
+  const candlesRef = useRef(candles);
+  useEffect(() => { candlesRef.current = candles; }, [candles]);
 
   // Calculate chart dimensions from candles data
   const calculatedDimensions = useMemo(() => {
@@ -183,7 +188,7 @@ export const EnhancedCandlestickChart = ({
       candlestickSeriesRef.current = candlestickSeries;
 
       // Subscribe to crosshair move to update OHLC on hover
-      chart.subscribeCrosshairMove((param) => {
+      const handleCrosshairMove = (param) => {
         if (param.time) {
           const data = param.seriesData.get(candlestickSeries);
           if (data) {
@@ -199,8 +204,9 @@ export const EnhancedCandlestickChart = ({
           }
         } else {
           // Reset to latest candle when not hovering
-          if (candles.length > 0) {
-            const latestCandle = candles[candles.length - 1];
+          const arr = candlesRef.current;
+          if (arr.length > 0) {
+            const latestCandle = arr[arr.length - 1];
             setCurrentOHLC({
               open: latestCandle.open,
               high: latestCandle.high,
@@ -212,7 +218,9 @@ export const EnhancedCandlestickChart = ({
             });
           }
         }
-      });
+      };
+      chart.subscribeCrosshairMove(handleCrosshairMove);
+      crosshairHandlerRef.current = handleCrosshairMove;
 
       // Store references
       chartRef.current = chart;
@@ -222,15 +230,14 @@ export const EnhancedCandlestickChart = ({
 
       // Subscribe to visible range changes for pagination
       const timeScale = chart.timeScale();
-      timeScale.subscribeVisibleLogicalRangeChange(() => {
+      const onVisibleRangeChange = () => {
         const logicalRange = timeScale.getVisibleLogicalRange();
         
         if (logicalRange !== null) {
           const barsInfo = candlestickSeries.barsInLogicalRange(logicalRange);
           
-          // Check if we're at the left edge (viewing oldest data)
-          // Load more if we're within 20 bars of the start
-          if (barsInfo !== null && logicalRange.from <= 20) {
+          // Left edge: within N bars of the start
+          if (barsInfo && barsInfo.barsBefore != null && barsInfo.barsBefore < 20) {
             const now = Date.now();
             const timeSinceLastLoad = now - lastLoadTimeRef.current;
             
@@ -242,20 +249,22 @@ export const EnhancedCandlestickChart = ({
               onLoadMoreHistory
             ) {
               console.log('📊 Reached left edge, loading more history...', {
-                logicalFrom: logicalRange.from,
+                barsBefore: barsInfo.barsBefore,
                 barsInfo
               });
               
               isLoadingRef.current = true;
               lastLoadTimeRef.current = now;
               
-              onLoadMoreHistory().finally(() => {
+              Promise.resolve(onLoadMoreHistory()).finally(() => {
                 isLoadingRef.current = false;
               });
             }
           }
         }
-      });
+      };
+      timeScale.subscribeVisibleLogicalRangeChange(onVisibleRangeChange);
+      rangeChangeHandlerRef.current = onVisibleRangeChange;
 
       // Handle resize with debouncing
       let resizeTimeout;
@@ -302,6 +311,21 @@ export const EnhancedCandlestickChart = ({
       return () => {
         window.removeEventListener('resize', handleResize);
         if (chart) {
+          const timeScale = chart.timeScale();
+          try {
+            if (rangeChangeHandlerRef.current) {
+              timeScale.unsubscribeVisibleLogicalRangeChange(rangeChangeHandlerRef.current);
+            }
+          } catch (error) {
+            console.warn('🕯️ Range change unsubscribe warning:', error);
+          }
+          try {
+            if (crosshairHandlerRef.current) {
+              chart.unsubscribeCrosshairMove(crosshairHandlerRef.current);
+            }
+          } catch (error) {
+            console.warn('🕯️ Crosshair unsubscribe warning:', error);
+          }
           try {
             chart.remove();
           } catch (error) {
@@ -310,6 +334,8 @@ export const EnhancedCandlestickChart = ({
         }
         chartRef.current = null;
         candlestickSeriesRef.current = null;
+        crosshairHandlerRef.current = null;
+        rangeChangeHandlerRef.current = null;
         setIsInitialized(false);
       };
     } catch (error) {
