@@ -237,18 +237,17 @@ export class RealMarketService {
         hasMore = data.hasMore;
       } else if (typeof data.hasNext === 'boolean') {
         hasMore = data.hasNext;
-      } else if (typeof data.count === 'number' && data.count > 0) {
-        // Use total count to determine if there are more pages
-        const totalCount = data.count;
-        const totalPages = Math.ceil(totalCount / actualPerPage);
-        hasMore = page < totalPages;
+      } else if (typeof data.count === 'number') {
+        // 'count' is the number of records in this page, not total
+        // If count < per_page, we've reached the last page
+        hasMore = data.count >= actualPerPage;
       } else {
-        // Fallback to length-based check (less reliable)
-        hasMore = validCandles.length === actualPerPage;
+        // Fallback: check if we received a full page of data
+        hasMore = validCandles.length >= actualPerPage;
       }
       
       console.log('✅ Returning page', page, ':', validCandles.length, 'candles, hasMore:', hasMore, 
-        data.count ? `(totalCount: ${data.count})` : '');
+        data.count !== undefined ? `(pageCount: ${data.count})` : '');
       
       return {
         candles: validCandles,
