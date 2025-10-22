@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import useMarketCacheStore from '../../../store/useMarketCacheStore';
-import { formatPercentage } from '../../../utils/formatters';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
@@ -106,21 +105,7 @@ export const TradingViewHeader = () => {
             </button>
           </div>
 
-          {/* Daily Change Display - Show both absolute and percentage change */}
-          {currentSymbol && (dailyChangePct !== 0 || dailyChange !== 0) && (
-            <div className="flex items-center space-x-2">
-              <span className={`text-xs font-medium ${
-                dailyChange >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {dailyChange >= 0 ? '+' : ''}{dailyChange.toFixed(5)}
-              </span>
-              <span className={`text-xs ${
-                dailyChangePct >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                ({formatPercentage(dailyChangePct)})
-              </span>
-            </div>
-          )}
+          
 
           {/* Timeframe Buttons */}
           <div className="flex items-center space-x-0.5">
