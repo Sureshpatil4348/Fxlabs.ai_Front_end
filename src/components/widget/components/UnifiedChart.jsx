@@ -383,16 +383,19 @@ export const UnifiedChart = () => {
         </div>
       </div>
 
-      {/* Chart Container with Internal Scroll */}
+      {/* Chart Container: candlestick uses container-sized chart, others can scroll */}
       <div 
-        className="flex-1 overflow-y-auto" 
-        style={{ 
-          minHeight: '400px',
-          maxHeight: 'calc(100vh - 200px)',
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db #f3f4f6',
-          scrollBehavior: 'smooth'
-        }}
+        className={settings.chartType === 'candlestick' ? 'flex-1 relative overflow-hidden' : 'flex-1 overflow-y-auto'}
+        style={settings.chartType === 'candlestick' 
+          ? { minHeight: '400px' }
+          : { 
+              minHeight: '400px',
+              maxHeight: 'calc(100vh - 200px)',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#d1d5db #f3f4f6',
+              scrollBehavior: 'smooth'
+            }
+        }
       >
         {(() => {
           console.log('📊 UnifiedChart: Rendering decision', {
@@ -403,13 +406,15 @@ export const UnifiedChart = () => {
           return null;
         })()}
         {settings.chartType === 'candlestick' ? (
-          // Show Enhanced Candlestick Chart with drawing tools
-          <EnhancedCandlestickChart 
-            key={`enhanced-candlestick-${settings.symbol}-${settings.timeframe}`}
-            candles={candles}
-            indicators={indicators}
-            settings={settings}
-          />
+          // Show Enhanced Candlestick Chart with drawing tools, sized to container
+          <div className="absolute inset-0">
+            <EnhancedCandlestickChart 
+              key={`enhanced-candlestick-${settings.symbol}-${settings.timeframe}`}
+              candles={candles}
+              indicators={indicators}
+              settings={settings}
+            />
+          </div>
         ) : (
           // Show separate Recharts for each indicator
           <>

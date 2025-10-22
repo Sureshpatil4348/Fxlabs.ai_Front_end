@@ -3100,3 +3100,15 @@ REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET=false
   - OFF (default): renders the current/basic widget
   - ON: renders the advanced widget with state retention and programmatic custom indicators
 - Implementation plan and data contracts: see `ADVANCED_TRADINGVIEW.md:1`
+## Enhanced Candlestick Chart Layout Fix (Latest)
+- Fixed chart area getting cut off or vertically scrolling in Advanced TradingView view.
+- The card/section now keeps a fixed height; the chart resizes to available space using a ResizeObserver.
+- Removed viewport-based height from the chart wrapper and switched to flex-based `h-full` with `overflow-hidden`.
+- For non-candlestick chart types, the container keeps internal scrolling; candlestick uses container-sized rendering.
+
+Files affected:
+- `src/components/widget/components/EnhancedCandlestickChart.jsx`
+- `src/components/widget/components/UnifiedChart.jsx`
+
+Notes:
+- If you adjust the parent card height, the chart will automatically resize to fit without introducing a nested vertical scrollbar.

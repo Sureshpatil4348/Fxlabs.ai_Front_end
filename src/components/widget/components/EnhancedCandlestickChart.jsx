@@ -76,13 +76,14 @@ export const EnhancedCandlestickChart = ({
 
     try {
       setError(null);
+      // Use actual container dimensions; avoid hardcoded heights
       const containerWidth = chartContainerRef.current.clientWidth || 800;
-      const containerHeight = 600;
+      const containerHeight = chartContainerRef.current.clientHeight || 500;
       
       console.log('🕯️ Creating enhanced candlestick chart with dimensions:', { containerWidth, containerHeight });
 
       const chart = createChart(chartContainerRef.current, {
-        width: Math.max(containerWidth, 800),
+        width: containerWidth,
         height: containerHeight,
         layout: {
           background: { color: '#ffffff' },
@@ -131,32 +132,33 @@ export const EnhancedCandlestickChart = ({
       console.log('🕯️ Enhanced candlestick chart initialized successfully');
       setIsInitialized(true);
 
-      // Handle resize
+      // Handle resize using ResizeObserver for container-based sizing
+      let resizeObserver;
       const handleResize = () => {
-        if (chartContainerRef.current && chart) {
-          const width = chartContainerRef.current.clientWidth;
-          const height = chartContainerRef.current.clientHeight;
-          try {
-            chart.applyOptions({
-              width: width,
-              height: height,
-            });
-            // Update dimensions for drawing tools
-            setChartDimensions(prev => ({
-              ...prev,
-              width,
-              height
-            }));
-          } catch (error) {
-            console.warn('🕯️ Error resizing chart:', error);
-          }
+        if (!chartContainerRef.current || !chart) return;
+        const width = chartContainerRef.current.clientWidth;
+        const height = chartContainerRef.current.clientHeight;
+        try {
+          chart.applyOptions({ width, height });
+          setChartDimensions(prev => ({ ...prev, width, height }));
+        } catch (error) {
+          console.warn('🕯️ Error resizing chart:', error);
         }
       };
-
-      window.addEventListener('resize', handleResize);
+      if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+        resizeObserver = new ResizeObserver(() => handleResize());
+        resizeObserver.observe(chartContainerRef.current);
+      } else {
+        // Fallback: window resize
+        window.addEventListener('resize', handleResize);
+      }
 
       return () => {
-        window.removeEventListener('resize', handleResize);
+        if (resizeObserver) {
+          try { resizeObserver.disconnect(); } catch (_) {}
+        } else {
+          window.removeEventListener('resize', handleResize);
+        }
         if (chart) {
           try {
             chart.remove();
@@ -268,23 +270,20 @@ export const EnhancedCandlestickChart = ({
   }, [candles]);
 
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
+      <div className="flex items-center justify-between p-3 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">
           Enhanced Candlestick Chart - {settings.symbol}
         </h3>
       </div>
 
       {/* Chart Container */}
-      <div className="flex-1 p-3" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+      <div className="flex-1 p-3 overflow-hidden min-h-[300px]">
         <div 
           ref={chartContainerRef} 
           className="w-full h-full relative"
-          style={{ 
-            backgroundColor: '#ffffff',
-            minHeight: '500px'
-          }}
+          style={{ backgroundColor: '#ffffff' }}
         >
           {/* Universal Drawing Tools Overlay */}
           <UniversalDrawingTools
