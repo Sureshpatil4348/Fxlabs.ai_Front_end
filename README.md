@@ -1837,6 +1837,8 @@ The application now includes comprehensive dashboard settings persistence:
    ```bash
    npm start
    ```
+   - Note: The dev server does not auto-open a browser. This is intentional and controlled via `BROWSER=none` in the project `.env`. Open `http://localhost:3000` manually.
+   - To restore auto-open behavior temporarily, remove or comment `BROWSER=none` in `.env` (then restart the dev server).
 
 ## Database Setup
 
