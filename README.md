@@ -2,7 +2,68 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Quantum Analysis Pair Display Enhancement (Latest)
+## Candlestick Chart Zoom Optimization (Latest)
+
+- **Improved initial zoom**: Modified candlestick chart to show focused view of the most recent 200 candles
+- **Better user experience**: 
+  - Chart now opens with a more focused, zoomed-in view
+  - Shows recent price action instead of all historical data
+  - Users can still scroll/zoom to see older data
+  - Maintains focused view after chart resize
+- **Professional trading view**: More practical for day trading and technical analysis
+- **Smart zoom logic**: Automatically adjusts based on available data
+- **Consistent behavior**: Maintains zoom level during chart updates and resizing
+
+Files affected:
+- `src/components/widget/components/EnhancedCandlestickChart.jsx` — Added focused view logic with 200-candle initial zoom
+
+## Line Chart UI Optimization (Previous)
+
+- **Streamlined line chart display**: Modified line chart UI to show only price chart and volume initially
+- **Toggleable indicators**: All other indicators (RSI, MACD, SMA, Bollinger Bands, etc.) are now toggleable based on settings
+- **Improved user experience**: 
+  - Clean, focused initial view with just price and volume
+  - Reduced visual clutter on first load
+  - Indicators can be enabled/disabled as needed
+  - Better performance with fewer initial charts
+- **Professional layout**: Price chart and volume are always visible, other indicators appear when toggled on
+- **Chart compatibility**: Works seamlessly with drawing tools and maintains all functionality
+
+Files affected:
+- `src/components/widget/components/UnifiedChart.jsx` — Restructured line chart layout to show price and volume first, indicators as toggleable
+
+## Rectangle Drawing Tool Implementation (Previous)
+
+- **New Rectangle drawing tool**: Added professional rectangle drawing tool for chart analysis
+- **Full implementation**: Complete rectangle tool with creation, rendering, and validation
+- **Professional features**: 
+  - Two-point rectangle creation (click and drag)
+  - Real-time preview during drawing
+  - Professional styling with stroke and fill
+  - Area calculation and rectangle type detection (bullish/bearish/neutral)
+  - Minimum area validation to prevent tiny rectangles
+- **Chart compatibility**: Works seamlessly with both candlestick and line charts
+- **User experience**: Professional rectangle tool for marking support/resistance zones and price ranges
+
+Files affected:
+- `src/components/widget/types/drawing.js` — Added Rectangle tool configuration
+- `src/components/widget/services/drawingService.js` — Implemented Rectangle creation, validation, and statistics
+- `src/components/widget/components/UniversalDrawingTools.jsx` — Added Rectangle rendering and preview
+- `src/components/widget/components/Sidebar.jsx` — Rectangle tool already available in sidebar
+
+## Cursor Selector Feature (Previous)
+
+- **New cursor selector**: Added cursor type selector in the TradingView header sidebar
+- **Basic cursor options**: Crosshair, Pointer, Grab, and Text cursor types available
+- **UI integration**: Seamlessly integrated into the existing header toolbar with dropdown menu
+- **State management**: Cursor type setting is persisted in the chart store and localStorage
+- **User experience**: Users can now customize their chart interaction cursor for better trading experience
+
+Files affected:
+- `src/components/widget/stores/useChartStore.js` — Added cursorType setting and setCursorType action
+- `src/components/widget/components/TradingViewHeader.jsx` — Added cursor selector button and dropdown menu
+
+## Quantum Analysis Pair Display Enhancement (Previous)
 
 - **Enhanced meter display**: Added selected pair display in the Quantum Analysis meter below the needle
 - **Improved layout**: Changed from 2-column to 3-column grid layout to accommodate the pair display

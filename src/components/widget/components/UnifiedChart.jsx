@@ -53,6 +53,14 @@ export const UnifiedChart = () => {
   
   const { pricingBySymbol } = useMarketCacheStore();
   
+  // Apply cursor style based on settings
+  useEffect(() => {
+    const chartContainer = document.querySelector('.unified-chart-container');
+    if (chartContainer) {
+      chartContainer.style.cursor = settings.cursorType || 'crosshair';
+    }
+  }, [settings.cursorType]);
+  
   // Create lookup maps for better performance
   const indicatorMaps = useMemo(() => {
     const createMap = (data, key = 'time', valueKey) => {
@@ -464,7 +472,7 @@ export const UnifiedChart = () => {
 
       {/* Chart Container: candlestick uses container-sized chart, others can scroll */}
       <div 
-        className={settings.chartType === 'candlestick' ? 'flex-1 relative overflow-hidden' : 'flex-1 overflow-y-auto'}
+        className={`unified-chart-container ${settings.chartType === 'candlestick' ? 'flex-1 relative overflow-hidden' : 'flex-1 overflow-y-auto'}`}
         style={settings.chartType === 'candlestick' 
           ? { minHeight: '500px' }
           : { 
@@ -501,39 +509,39 @@ export const UnifiedChart = () => {
           // Show separate Recharts for each indicator
           <>
             {chartData.length > 0 ? (
-              <div key={lineChartKey} className="space-y-2 pb-2">
-                {/* Price Chart with EMAs */}
-                <div className="bg-white rounded-lg border border-gray-200 p-2 relative">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Price Chart - {settings.symbol}</h4>
-                  <div className="text-xs text-gray-600 mb-2">
+              <div key={lineChartKey} className="space-y-0.5 pb-1 px-1">
+                {/* Price Chart - Always visible */}
+                <div className="bg-white rounded-lg border border-gray-200 p-1 relative">
+                  <h4 className="text-xs font-medium text-gray-700 mb-0.5">Price Chart - {settings.symbol}</h4>
+                  <div className="text-[10px] text-gray-600 mb-0.5">
                     Data: {chartData.length} points | Price: ${chartData[0]?.price?.toFixed(2)} - ${chartData[chartData.length-1]?.price?.toFixed(2)}
                   </div>
                   <div className="relative">
-                    <ResponsiveContainer width="100%" height={180}>
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                    <ResponsiveContainer width="100%" height={140}>
+                    <ComposedChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis 
                         dataKey="time" 
-                        tick={{ fontSize: 9 }}
+                        tick={{ fontSize: 7 }}
                         tickFormatter={(value) => {
                           const dataPoint = chartData[value];
                           return dataPoint ? dataPoint.timeLabel : '';
                         }}
                         style={{ 
                           textAnchor: 'middle',
-                          fontSize: '9px'
+                          fontSize: '7px'
                         }}
                       />
                       <YAxis 
                         yAxisId="left"
                         domain={['auto', 'auto']}
-                        tick={{ fontSize: 9 }}
+                        tick={{ fontSize: 7 }}
                       />
                       <YAxis 
                         yAxisId="right"
                         orientation="right"
                         domain={['auto', 'auto']}
-                        tick={{ fontSize: 9 }}
+                        tick={{ fontSize: 7 }}
                         tickFormatter={(value) => (value / 100).toFixed(2)}
                       />
                       <Tooltip 
@@ -550,7 +558,7 @@ export const UnifiedChart = () => {
                       />
                       <Legend />
                       
-                      {/* Price Area */}
+                      {/* Price Area - Always visible */}
                       <Area
                         type="monotone"
                         dataKey="price"
@@ -561,7 +569,7 @@ export const UnifiedChart = () => {
                         isAnimationActive={false}
                       />
                       
-                      {/* EMAs */}
+                      {/* EMAs - Toggleable */}
                       {settings.indicators.ema20 && (
                         <Line
                           type="monotone"
@@ -585,7 +593,7 @@ export const UnifiedChart = () => {
                         />
                       )}
                       
-                      {/* SMAs */}
+                      {/* SMAs - Toggleable */}
                       {settings.indicators.sma50 && (
                         <Line
                           type="monotone"
@@ -609,7 +617,7 @@ export const UnifiedChart = () => {
                         />
                       )}
                       
-                      {/* Bollinger Bands */}
+                      {/* Bollinger Bands - Toggleable */}
                       {settings.indicators.bollinger && (
                         <>
                           <Line
@@ -642,7 +650,7 @@ export const UnifiedChart = () => {
                         </>
                       )}
                       
-                      {/* VWAP */}
+                      {/* VWAP - Toggleable */}
                       {settings.indicators.vwap && (
                         <Line
                           type="monotone"
@@ -655,7 +663,7 @@ export const UnifiedChart = () => {
                         />
                       )}
                       
-                      {/* ATR - Integrated into main price chart with enhanced visibility */}
+                      {/* ATR - Toggleable */}
                       {settings.indicators.atr && (
                         <Line
                           yAxisId="right"
@@ -683,16 +691,57 @@ export const UnifiedChart = () => {
                   </div>
                 </div>
 
+                {/* Volume Chart - Always visible */}
+                <div className="bg-white rounded-lg border border-gray-200 p-1 mb-1">
+                  <h4 className="text-xs font-medium text-gray-700 mb-0.5">Volume</h4>
+                  <ResponsiveContainer width="100%" height={80}>
+                    <BarChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="time" 
+                        tick={{ fontSize: 7 }}
+                        tickFormatter={(value) => {
+                          const dataPoint = chartData[value];
+                          return dataPoint ? dataPoint.timeLabel : '';
+                        }}
+                        style={{ 
+                          textAnchor: 'middle',
+                          fontSize: '7px'
+                        }}
+                      />
+                      <YAxis 
+                        domain={['auto', 'auto']}
+                        tick={{ fontSize: 7 }}
+                      />
+                      <Tooltip 
+                        formatter={(value, name) => {
+                          if (typeof value === 'number') {
+                            return [value.toFixed(0), name];
+                          }
+                          return [value, name];
+                        }}
+                      />
+                      <Bar
+                        dataKey="volume"
+                        fill="#8b5cf6"
+                        name="Volume"
+                        opacity={0.7}
+                        isAnimationActive={false}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
                 {/* RSI Chart */}
                 {settings.indicators.rsi && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">RSI (Relative Strength Index)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">RSI (Relative Strength Index)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -700,7 +749,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={[0, 100]}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -745,14 +794,14 @@ export const UnifiedChart = () => {
 
                 {/* MACD Chart */}
                 {settings.indicators.macd && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">MACD (Moving Average Convergence Divergence)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">MACD (Moving Average Convergence Divergence)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -760,7 +809,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -810,14 +859,14 @@ export const UnifiedChart = () => {
 
                 {/* SMA 50 Chart */}
                 {settings.indicators.sma50 && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">SMA 50 (Simple Moving Average)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">SMA 50 (Simple Moving Average)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -825,7 +874,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -851,14 +900,14 @@ export const UnifiedChart = () => {
 
                 {/* SMA 100 Chart */}
                 {settings.indicators.sma100 && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">SMA 100 (Simple Moving Average)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">SMA 100 (Simple Moving Average)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -866,7 +915,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -892,14 +941,14 @@ export const UnifiedChart = () => {
 
                 {/* Bollinger Bands Chart */}
                 {settings.indicators.bollinger && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Bollinger Bands</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">Bollinger Bands</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -907,7 +956,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -952,14 +1001,14 @@ export const UnifiedChart = () => {
 
                 {/* Stochastic Chart */}
                 {settings.indicators.stoch && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Stochastic Oscillator</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">Stochastic Oscillator</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -967,7 +1016,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={[0, 100]}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -1022,14 +1071,14 @@ export const UnifiedChart = () => {
 
                 {/* Williams %R Chart */}
                 {settings.indicators.williams && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Williams %R</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">Williams %R</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -1037,7 +1086,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={[-100, 0]}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -1082,14 +1131,14 @@ export const UnifiedChart = () => {
 
                 {/* CCI Chart */}
                 {settings.indicators.cci && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">CCI (Commodity Channel Index)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">CCI (Commodity Channel Index)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -1097,7 +1146,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -1142,14 +1191,14 @@ export const UnifiedChart = () => {
           
                 {/* OBV Chart */}
                 {settings.indicators.obv && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">OBV (On-Balance Volume)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">OBV (On-Balance Volume)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -1157,7 +1206,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -1183,14 +1232,14 @@ export const UnifiedChart = () => {
 
                 {/* VWAP Chart */}
                 {settings.indicators.vwap && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">VWAP (Volume Weighted Average Price)</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">VWAP (Volume Weighted Average Price)</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <LineChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -1198,7 +1247,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -1224,14 +1273,14 @@ export const UnifiedChart = () => {
 
                 {/* 24h Change Chart */}
                 {settings.indicators.change24h && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">24h Change</h4>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
+                    <h4 className="text-xs font-medium text-gray-700 mb-0.5">24h Change</h4>
+                    <ResponsiveContainer width="100%" height={120}>
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 8, left: 2, bottom: 8 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
                           dataKey="time" 
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                           tickFormatter={(value) => {
                             const dataPoint = chartData[value];
                             return dataPoint ? dataPoint.timeLabel : '';
@@ -1239,7 +1288,7 @@ export const UnifiedChart = () => {
                         />
                         <YAxis 
                           domain={['auto', 'auto']}
-                          tick={{ fontSize: 9 }}
+                          tick={{ fontSize: 7 }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
@@ -1272,46 +1321,6 @@ export const UnifiedChart = () => {
             </div>
           )}
           
-                {/* Volume Chart */}
-                <div className="bg-white rounded-lg border border-gray-200 p-2 mb-3">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Volume</h4>
-                  <ResponsiveContainer width="100%" height={120}>
-                    <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="time" 
-                        tick={{ fontSize: 9 }}
-                        tickFormatter={(value) => {
-                          const dataPoint = chartData[value];
-                          return dataPoint ? dataPoint.timeLabel : '';
-                        }}
-                        style={{ 
-                          textAnchor: 'middle',
-                          fontSize: '9px'
-                        }}
-                      />
-                      <YAxis 
-                        domain={['auto', 'auto']}
-                        tick={{ fontSize: 9 }}
-                      />
-                      <Tooltip 
-                        formatter={(value, name) => {
-                          if (typeof value === 'number') {
-                            return [value.toFixed(0), name];
-                          }
-                          return [value, name];
-                        }}
-                      />
-                      <Bar
-                        dataKey="volume"
-                        fill="#8b5cf6"
-                        name="Volume"
-                        opacity={0.7}
-                        isAnimationActive={false}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
                 
                 {/* Scroll Indicator */}
                 <div className="text-center py-2 text-xs text-gray-400">

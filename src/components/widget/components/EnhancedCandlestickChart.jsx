@@ -1,7 +1,8 @@
 import { createChart } from 'lightweight-charts';
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 
 import { UniversalDrawingTools } from './UniversalDrawingTools';
+import { useChartStore } from '../stores/useChartStore';
 
 export const EnhancedCandlestickChart = ({
   candles,
@@ -14,6 +15,9 @@ export const EnhancedCandlestickChart = ({
   const chartRef = useRef(null);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Get cursor settings from chart store
+  const { settings: globalSettings } = useChartStore();
   const [chartDimensions, setChartDimensions] = useState({
     width: 800,
     height: 600,
@@ -39,6 +43,35 @@ export const EnhancedCandlestickChart = ({
   // Keep latest candles for event handlers
   const candlesRef = useRef(candles);
   useEffect(() => { candlesRef.current = candles; }, [candles]);
+  
+  // Function to set focused view (shows last 200 candles)
+  const setFocusedView = useCallback((chart, candlesData) => {
+    if (!chart || !candlesData || candlesData.length === 0) return;
+    
+    const timeScale = chart.timeScale();
+    const visibleBars = Math.min(200, candlesData.length);
+    const totalBars = candlesData.length;
+    
+    const logicalRange = {
+      from: Math.max(0, totalBars - visibleBars),
+      to: totalBars - 1
+    };
+    
+    timeScale.setVisibleLogicalRange(logicalRange);
+    
+    console.log('🕯️ Set focused view:', {
+      visibleBars,
+      totalBars,
+      logicalRange
+    });
+  }, []);
+  
+  // Apply cursor style based on settings
+  useEffect(() => {
+    if (chartContainerRef.current) {
+      chartContainerRef.current.style.cursor = globalSettings.cursorType || 'crosshair';
+    }
+  }, [globalSettings.cursorType]);
 
   // Calculate chart dimensions from candles data
   const calculatedDimensions = useMemo(() => {
@@ -284,8 +317,8 @@ export const EnhancedCandlestickChart = ({
                   height: height,
                 });
                 
-                // Fit content after resize
-                chart.timeScale().fitContent();
+                // Maintain focused view after resize
+                setFocusedView(chart, candlesRef.current);
                 
                 // Update dimensions for drawing tools
                 setChartDimensions(prev => ({
@@ -406,10 +439,8 @@ export const EnhancedCandlestickChart = ({
           candlestickSeriesRef.current.setData(candlestickData);
           console.log('🕯️ EnhancedCandlestickChart: Candlestick data set successfully');
           
-          // Fit content
-          if (chartRef.current) {
-            chartRef.current.timeScale().fitContent();
-          }
+          // Set focused view instead of fitting all content
+          setFocusedView(chartRef.current, candlestickData);
         } catch (error) {
           console.error('🕯️ Error setting candlestick data:', error);
           setError('Failed to set chart data');
@@ -421,7 +452,7 @@ export const EnhancedCandlestickChart = ({
       console.error('🕯️ Error updating chart data:', error);
       setError(error instanceof Error ? error.message : 'Failed to update chart data');
     }
-  }, [candles, isInitialized]);
+  }, [candles, isInitialized, setFocusedView]);
 
   // Prepare chart data for drawing tools
   const chartDataForDrawing = useMemo(() => {

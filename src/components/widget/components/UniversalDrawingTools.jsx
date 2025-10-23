@@ -199,6 +199,35 @@ export const UniversalDrawingTools = ({
         );
       }
 
+      case 'Rectangle': {
+        const svg1 = chartToSvg(start.time, start.price);
+        const svg2 = chartToSvg(end.time, end.price);
+        
+        // Calculate rectangle dimensions
+        const x = Math.min(svg1.x, svg2.x);
+        const y = Math.min(svg1.y, svg2.y);
+        const width = Math.abs(svg2.x - svg1.x);
+        const height = Math.abs(svg2.y - svg1.y);
+        
+        return (
+          <rect
+            key={meta.id}
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            opacity={opacity}
+            fill={color}
+            fillOpacity={meta.fillOpacity || 0.1}
+            strokeDasharray="none"
+            className="drawing-rectangle"
+            data-drawing-id={meta.id}
+          />
+        );
+      }
+
       default:
         return null;
     }
@@ -211,7 +240,8 @@ export const UniversalDrawingTools = ({
     const colorMap = {
       TrendLine: '#8b5cf6',
       HorizontalLine: '#f97316',
-      Fibonacci: '#6366f1'
+      Fibonacci: '#6366f1',
+      Rectangle: '#10b981'
     };
     const color = colorMap[activeTool] || '#000000';
 
@@ -247,6 +277,46 @@ export const UniversalDrawingTools = ({
           />
         );
       }
+    } else if (activeTool === 'Rectangle') {
+      if (currentPoints.length === 1) {
+        // Show a small preview rectangle at the first point
+        return (
+          <rect
+            x={currentPoints[0].x - 2}
+            y={currentPoints[0].y - 2}
+            width={4}
+            height={4}
+            stroke={color}
+            strokeWidth={2}
+            opacity={0.5}
+            fill={color}
+            fillOpacity={0.1}
+            className="drawing-preview"
+          />
+        );
+      } else if (currentPoints.length === 2) {
+        // Show preview rectangle between two points
+        const x = Math.min(currentPoints[0].x, currentPoints[1].x);
+        const y = Math.min(currentPoints[0].y, currentPoints[1].y);
+        const width = Math.abs(currentPoints[1].x - currentPoints[0].x);
+        const height = Math.abs(currentPoints[1].y - currentPoints[0].y);
+        
+        return (
+          <rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            stroke={color}
+            strokeWidth={2}
+            opacity={0.5}
+            fill={color}
+            fillOpacity={0.1}
+            strokeDasharray="none"
+            className="drawing-preview"
+          />
+        );
+      }
     }
 
     return null;
@@ -276,6 +346,7 @@ export const UniversalDrawingTools = ({
             {activeTool === 'TrendLine' && 'Click two points to draw trend line'}
             {activeTool === 'HorizontalLine' && 'Click to draw horizontal line'}
             {activeTool === 'Fibonacci' && 'Click two points to draw Fibonacci retracement'}
+            {activeTool === 'Rectangle' && 'Click two points to draw rectangle'}
             {isDrawing && ' (Press ESC to cancel)'}
           </div>
         )}
@@ -319,6 +390,7 @@ export const UniversalDrawingTools = ({
           {activeTool === 'TrendLine' && 'Click two points to draw trend line'}
           {activeTool === 'HorizontalLine' && 'Click to draw horizontal line'}
           {activeTool === 'Fibonacci' && 'Click two points to draw Fibonacci retracement'}
+          {activeTool === 'Rectangle' && 'Click two points to draw rectangle'}
           {isDrawing && ' (Press ESC to cancel)'}
         </text>
       )}

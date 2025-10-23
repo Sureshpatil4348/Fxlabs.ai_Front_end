@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import useMarketCacheStore from '../../../store/useMarketCacheStore';
+import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
-  const { settings, setSymbol, setTimeframe, setChartType, toggleIndicator } = useChartStore();
+  const { settings, setSymbol, setTimeframe, setChartType, setCursorType, toggleIndicator } = useChartStore();
   const { pricingBySymbol } = useMarketCacheStore();
   const [activeTimeframe, setActiveTimeframe] = useState('1h');
   const [showSettings, setShowSettings] = useState(false);
   const [showChartTypes, setShowChartTypes] = useState(false);
   const [showIndicators, setShowIndicators] = useState(false);
+  const [showCursorSelector, setShowCursorSelector] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
   
   const settingsRef = useRef(null);
   const chartTypesRef = useRef(null);
   const dropdownRef = useRef(null);
+  const cursorSelectorRef = useRef(null);
 
   const timeframes = ['1m', '30m', '1h'];
   
@@ -32,6 +36,13 @@ export const TradingViewHeader = () => {
     dailyChange,
     pricingKeys: Object.keys(pricing)
   });
+
+  // Check if current symbol is in watchlist
+  useEffect(() => {
+    if (settings.symbol) {
+      setIsInWatchlist(watchlistService.isInWatchlist(settings.symbol));
+    }
+  }, [settings.symbol]);
   
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -45,16 +56,19 @@ export const TradingViewHeader = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowIndicators(false);
       }
+      if (cursorSelectorRef.current && !cursorSelectorRef.current.contains(event.target)) {
+        setShowCursorSelector(false);
+      }
     };
 
-    if (showSettings || showChartTypes || showIndicators) {
+    if (showSettings || showChartTypes || showIndicators || showCursorSelector) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showSettings, showChartTypes, showIndicators]);
+  }, [showSettings, showChartTypes, showIndicators, showCursorSelector]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -81,6 +95,18 @@ export const TradingViewHeader = () => {
     }
   };
 
+  const handleWatchlistToggle = () => {
+    if (settings.symbol) {
+      const wasAdded = watchlistService.toggleWatchlist(settings.symbol);
+      setIsInWatchlist(wasAdded);
+      
+      // Track view if added to watchlist
+      if (wasAdded) {
+        watchlistService.trackView(settings.symbol);
+      }
+    }
+  };
+
   return (
     <div className="bg-white border-b border-gray-200 px-3 py-1.5 h-10">
       <div className="flex items-center justify-between h-full">
@@ -103,6 +129,23 @@ export const TradingViewHeader = () => {
             <button className="w-5 h-5 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-xs">
               +
             </button>
+            
+            {/* Watchlist Star Button */}
+            {settings.symbol && (
+              <button
+                onClick={handleWatchlistToggle}
+                className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  isInWatchlist
+                    ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+                title={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+              >
+                <svg className="w-3 h-3" fill={isInWatchlist ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              </button>
+            )}
           </div>
 
           
@@ -249,6 +292,120 @@ export const TradingViewHeader = () => {
                     </svg>
                     <span className="text-xs font-medium">Bars</span>
                     {settings.chartType === 'bars' && (
+                      <svg className="w-2.5 h-2.5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cursor Selector Button */}
+          <div className="relative" ref={cursorSelectorRef}>
+            <button 
+              onClick={() => setShowCursorSelector(!showCursorSelector)}
+              className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${
+                showCursorSelector
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title="Cursor Type"
+            >
+              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+            </button>
+
+            {/* Cursor Selector Dropdown Menu */}
+            {showCursorSelector && (
+              <div className="absolute left-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                <div className="p-2">
+                  <div className="text-xs font-semibold text-gray-500 px-2 py-1.5">Cursor Type</div>
+                  
+                  <button
+                    onClick={() => {
+                      setCursorType('crosshair');
+                      setShowCursorSelector(false);
+                    }}
+                    className={`w-full flex items-center space-x-0.5 px-2 py-1.5 rounded-lg transition-colors ${
+                      settings.cursorType === 'crosshair'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                    <span className="text-xs font-medium">Crosshair</span>
+                    {settings.cursorType === 'crosshair' && (
+                      <svg className="w-2.5 h-2.5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCursorType('pointer');
+                      setShowCursorSelector(false);
+                    }}
+                    className={`w-full flex items-center space-x-0.5 px-2 py-1.5 rounded-lg transition-colors ${
+                      settings.cursorType === 'pointer'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                    <span className="text-xs font-medium">Pointer</span>
+                    {settings.cursorType === 'pointer' && (
+                      <svg className="w-2.5 h-2.5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCursorType('grab');
+                      setShowCursorSelector(false);
+                    }}
+                    className={`w-full flex items-center space-x-0.5 px-2 py-1.5 rounded-lg transition-colors ${
+                      settings.cursorType === 'grab'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                    </svg>
+                    <span className="text-xs font-medium">Grab</span>
+                    {settings.cursorType === 'grab' && (
+                      <svg className="w-2.5 h-2.5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCursorType('text');
+                      setShowCursorSelector(false);
+                    }}
+                    className={`w-full flex items-center space-x-0.5 px-2 py-1.5 rounded-lg transition-colors ${
+                      settings.cursorType === 'text'
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span className="text-xs font-medium">Text</span>
+                    {settings.cursorType === 'text' && (
                       <svg className="w-2.5 h-2.5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>

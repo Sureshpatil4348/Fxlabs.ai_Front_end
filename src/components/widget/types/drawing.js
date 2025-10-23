@@ -22,6 +22,13 @@ export const DRAWING_TOOL_CONFIGS = {
     strokeWidth: 2,
     opacity: 1,
     dashArray: 'none'
+  },
+  Rectangle: {
+    color: '#10b981',
+    strokeWidth: 2,
+    opacity: 0.8,
+    dashArray: 'none',
+    fillOpacity: 0.1
   }
 };
 

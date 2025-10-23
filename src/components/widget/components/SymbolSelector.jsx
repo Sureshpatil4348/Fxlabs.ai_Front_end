@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
+import { WatchlistPanel } from './WatchlistPanel';
+import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
 // Professional Forex Symbols with EUR/USD formatting
@@ -48,6 +50,15 @@ const TIMEFRAMES = [
 
 export const SymbolSelector = () => {
   const { settings, setSymbol, setTimeframe } = useChartStore();
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [showWatchlistPanel, setShowWatchlistPanel] = useState(false);
+  const [watchlistCount, setWatchlistCount] = useState(0);
+
+  // Check if current symbol is in watchlist
+  useEffect(() => {
+    setIsInWatchlist(watchlistService.isInWatchlist(settings.symbol));
+    setWatchlistCount(watchlistService.getWatchlistCount());
+  }, [settings.symbol]);
 
   const handleSymbolChange = (e) => {
     setSymbol(e.target.value);
@@ -57,19 +68,35 @@ export const SymbolSelector = () => {
     setTimeframe(e.target.value);
   };
 
+  const handleToggleWatchlist = () => {
+    const newState = watchlistService.toggleWatchlist(settings.symbol);
+    setIsInWatchlist(newState);
+    setWatchlistCount(watchlistService.getWatchlistCount());
+  };
+
+  const handleToggleWatchlistPanel = () => {
+    setShowWatchlistPanel(!showWatchlistPanel);
+  };
+
+  const handleCloseWatchlistPanel = () => {
+    setShowWatchlistPanel(false);
+    setWatchlistCount(watchlistService.getWatchlistCount());
+  };
+
   const currentSymbol = POPULAR_SYMBOLS.find(s => s.symbol === settings.symbol);
 
   return (
-    <div className="flex items-center space-x-2 bg-white border-b border-gray-200 px-3 py-2">
+    <div className="relative flex items-center space-x-2 bg-white border-b border-gray-200 px-3 py-2">
       {/* Symbol Selector */}
       <div className="flex items-center space-x-2">
         <label htmlFor="symbol-select" className="text-sm font-semibold text-gray-700">Symbol:</label>
-        <select
-          id="symbol-select"
-          value={settings.symbol}
-          onChange={handleSymbolChange}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium bg-white hover:border-gray-400 transition-colors min-w-[140px]"
-        >
+        <div className="flex items-center space-x-1">
+          <select
+            id="symbol-select"
+            value={settings.symbol}
+            onChange={handleSymbolChange}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium bg-white hover:border-gray-400 transition-colors min-w-[140px]"
+          >
           {/* Fallback option when settings.symbol exists but isn't in POPULAR_SYMBOLS */}
           {settings.symbol && !POPULAR_SYMBOLS.find(sym => sym.symbol === settings.symbol) && (
             <option value={settings.symbol}>
@@ -95,6 +122,49 @@ export const SymbolSelector = () => {
             ))}
           </optgroup>
         </select>
+        
+        {/* Compact Unique Watchlist Button */}
+        <button
+          onClick={handleToggleWatchlist}
+          className={`group relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
+            isInWatchlist 
+              ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-200 hover:shadow-xl hover:shadow-amber-300' 
+              : 'bg-gradient-to-br from-slate-100 to-slate-200 text-slate-500 hover:from-slate-200 hover:to-slate-300 hover:text-slate-700 shadow-sm hover:shadow-md'
+          }`}
+          title={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+        >
+          {/* Unique Star Icon - Smaller and more distinctive */}
+          <svg 
+            className={`w-4 h-4 transition-all duration-300 ${
+              isInWatchlist 
+                ? 'animate-pulse drop-shadow-sm' 
+                : 'group-hover:rotate-180'
+            }`} 
+            fill={isInWatchlist ? 'currentColor' : 'none'} 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={isInWatchlist ? 2 : 2.5} 
+              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" 
+            />
+          </svg>
+          
+          {/* Sparkle effect for active state */}
+          {isInWatchlist && (
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping opacity-75"></div>
+          )}
+          
+          {/* Subtle border effect */}
+          <div className={`absolute inset-0 rounded-lg border transition-all duration-300 ${
+            isInWatchlist 
+              ? 'border-amber-300' 
+              : 'border-transparent group-hover:border-slate-300'
+          }`}></div>
+        </button>
+        </div>
       </div>
 
       {/* Timeframe Selector */}
@@ -126,7 +196,41 @@ export const SymbolSelector = () => {
             {TIMEFRAMES.find(tf => tf.value === settings.timeframe)?.label || settings.timeframe}
           </span>
         </div>
+        
+        {/* View Watchlist Button */}
+        <button
+          onClick={handleToggleWatchlistPanel}
+          className="relative px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md flex items-center space-x-2 text-sm font-medium"
+          title="View Watchlist"
+        >
+          <svg 
+            className="w-4 h-4" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M4 6h16M4 10h16M4 14h16M4 18h16" 
+            />
+          </svg>
+          <span>Watchlist</span>
+          {watchlistCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {watchlistCount}
+            </span>
+          )}
+        </button>
       </div>
+      
+      {/* Watchlist Panel */}
+      {showWatchlistPanel && (
+        <div className="absolute top-14 right-3 z-50">
+          <WatchlistPanel onClose={handleCloseWatchlistPanel} />
+        </div>
+      )}
     </div>
   );
 };
