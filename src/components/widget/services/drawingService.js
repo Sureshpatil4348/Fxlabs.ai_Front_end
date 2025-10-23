@@ -109,6 +109,22 @@ export class DrawingService {
         }
         break;
       
+      case 'Rectangle':
+        // Rectangle needs two distinct points with minimum area
+        const rectStartChart = this.pixelToChart(start, dimensions);
+        const rectEndChart = this.pixelToChart(end, dimensions);
+        const rectWidth = Math.abs(rectEndChart.time - rectStartChart.time);
+        const rectHeight = Math.abs(rectEndChart.price - rectStartChart.price);
+        const rectArea = rectWidth * rectHeight;
+        
+        if (rectArea < 100) { // Minimum area of 100 square units
+          return {
+            isValid: false,
+            error: 'Rectangle must have minimum area of 100 square units'
+          };
+        }
+        break;
+      
       default:
         // No specific validation for other tools
         break;
@@ -245,6 +261,61 @@ export class DrawingService {
   }
 
   /**
+   * Create Rectangle drawing
+   */
+  createRectangle(start, end, dimensions) {
+    const startChart = this.pixelToChart(start, dimensions);
+    const endChart = this.pixelToChart(end, dimensions);
+
+    // Calculate rectangle properties
+    const topLeft = {
+      time: Math.min(startChart.time, endChart.time),
+      price: Math.max(startChart.price, endChart.price)
+    };
+    const bottomRight = {
+      time: Math.max(startChart.time, endChart.time),
+      price: Math.min(startChart.price, endChart.price)
+    };
+
+    // Calculate dimensions
+    const width = Math.abs(endChart.time - startChart.time);
+    const height = Math.abs(endChart.price - startChart.price);
+    const area = width * height;
+
+    // Determine rectangle type based on price movement
+    let rectangleType = 'neutral';
+    if (startChart.price > endChart.price) {
+      rectangleType = 'bearish'; // Price going down
+    } else if (startChart.price < endChart.price) {
+      rectangleType = 'bullish'; // Price going up
+    }
+
+    const metadata = {
+      id: this.generateId(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      color: DRAWING_TOOL_CONFIGS.Rectangle.color,
+      strokeWidth: DRAWING_TOOL_CONFIGS.Rectangle.strokeWidth,
+      opacity: DRAWING_TOOL_CONFIGS.Rectangle.opacity,
+      fillOpacity: DRAWING_TOOL_CONFIGS.Rectangle.fillOpacity,
+      toolType: 'Rectangle',
+      topLeft,
+      bottomRight,
+      width,
+      height,
+      area,
+      rectangleType
+    };
+
+    return {
+      toolType: 'Rectangle',
+      start: topLeft,
+      end: bottomRight,
+      meta: metadata
+    };
+  }
+
+  /**
    * Create drawing based on tool type
    */
   createDrawing(toolType, start, end, dimensions, currentPrice) {
@@ -269,6 +340,9 @@ export class DrawingService {
       
       case 'Fibonacci':
         return this.createFibonacci(start, end, dimensions);
+      
+      case 'Rectangle':
+        return this.createRectangle(start, end, dimensions);
       
       default:
         console.warn('Unknown tool type:', toolType);
@@ -402,7 +476,8 @@ export class DrawingService {
     const byType = {
       TrendLine: 0,
       HorizontalLine: 0,
-      Fibonacci: 0
+      Fibonacci: 0,
+      Rectangle: 0
     };
 
     let oldest = Date.now();

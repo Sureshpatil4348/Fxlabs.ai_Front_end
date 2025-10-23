@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import useMarketCacheStore from '../../../store/useMarketCacheStore';
 import { realMarketService } from '../services/realMarketService';
+import { useChartStore } from '../stores/useChartStore';
 
 export const ChartPanel = ({ panelSettings }) => {
   const chartContainerRef = useRef(null);
@@ -12,12 +13,22 @@ export const ChartPanel = ({ panelSettings }) => {
   
   // Get market cache store for consistent pricing
   const { pricingBySymbol } = useMarketCacheStore();
+  
+  // Get cursor settings from chart store
+  const { settings } = useChartStore();
 
   // Price series refs
   const candlestickSeriesRef = useRef(null);
   const lineSeriesRef = useRef(null);
   const areaSeriesRef = useRef(null);
   const barSeriesRef = useRef(null);
+  
+  // Apply cursor style based on settings
+  useEffect(() => {
+    if (chartContainerRef.current) {
+      chartContainerRef.current.style.cursor = settings.cursorType || 'crosshair';
+    }
+  }, [settings.cursorType]);
 
   // Initialize chart
   useEffect(() => {

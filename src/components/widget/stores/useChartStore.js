@@ -5,6 +5,7 @@ const defaultSettings = {
   symbol: 'BTCUSDT',
   timeframe: '1h',
   chartType: 'candlestick',
+  cursorType: 'crosshair',
   indicators: {
     ema20: true,
     ema200: true,
@@ -220,6 +221,16 @@ export const useChartStore = create(
           settings: {
             ...state.settings,
             chartType
+          }
+        }));
+      },
+      
+      setCursorType: (cursorType) => {
+        console.log('💾 ChartStore: Setting cursorType to', cursorType);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            cursorType
           }
         }));
       },
