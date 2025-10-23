@@ -514,7 +514,7 @@ export const UnifiedChart = () => {
                 <div className="bg-white rounded-lg border border-gray-200 p-1 relative">
                   <h4 className="text-xs font-medium text-gray-700 mb-0.5">Price Chart - {settings.symbol}</h4>
                   <div className="text-[10px] text-gray-600 mb-0.5">
-                    Data: {chartData.length} points | Price: ${chartData[0]?.price?.toFixed(2)} - ${chartData[chartData.length-1]?.price?.toFixed(2)}
+                    Data: {chartData.length} points | Price: ${chartData[0]?.price} - ${chartData[chartData.length-1]?.price}
                   </div>
                   <div className="relative">
                     <ResponsiveContainer width="100%" height={140}>
@@ -542,16 +542,16 @@ export const UnifiedChart = () => {
                         orientation="right"
                         domain={['auto', 'auto']}
                         tick={{ fontSize: 7 }}
-                        tickFormatter={(value) => (value / 100).toFixed(2)}
+                        tickFormatter={(value) => (value / 100)}
                       />
                       <Tooltip 
                         formatter={(value, name) => {
                           if (typeof value === 'number') {
                             // Show unscaled ATR values in tooltip
                             if (name === 'ATR') {
-                              return [(value / 100).toFixed(4), name];
+                              return [(value / 100), name];
                             }
-                            return [value.toFixed(2), name];
+                            return [value, name];
                           }
                           return [value, name];
                         }}
@@ -754,7 +754,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -879,7 +879,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -920,7 +920,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -961,7 +961,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -1021,7 +1021,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -1091,7 +1091,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -1151,7 +1151,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -1252,7 +1252,7 @@ export const UnifiedChart = () => {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
@@ -1294,7 +1294,7 @@ export const UnifiedChart = () => {
                           formatter={(value, name) => {
                             if (typeof value === 'number') {
                               if (name === 'Change %') return [value.toFixed(2) + '%', name];
-                              return [value.toFixed(2), name];
+                              return [value, name];
                             }
                             return [value, name];
                           }}
