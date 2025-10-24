@@ -1,14 +1,16 @@
-import { 
-  Newspaper, 
-  Clock, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertCircle, 
+import {
+  Newspaper,
+  Clock,
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
   RefreshCw,
   Brain,
-  X
+  X,
+  Maximize2
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming, formatSymbolDisplay } from '../utils/formatters';
@@ -419,6 +421,7 @@ const AINewsAnalysis = () => {
   const userSetFilterRef = useRef(false);
   const [selectedNews, setSelectedNews] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [apiAvailable] = useState(true);
   const [, setNowTick] = useState(0);
 
@@ -560,17 +563,28 @@ const AINewsAnalysis = () => {
       <div className="flex-shrink-0">
         {/* Header */}
         <div className="widget-header flex items-center justify-between mb-3 text-[14px]">
-        <div className="flex items-center space-x-2">
-          <Newspaper className="w-4 h-4 text-primary-600" />
-          <div>
-            <h2 className="text-base font-semibold text-[#19235d] dark:text-slate-100">AI News Analysis</h2>
+          <div className="flex items-center space-x-2">
+            <Newspaper className="w-4 h-4 text-primary-600" />
+            <div>
+              <h2 className="text-base font-semibold text-[#19235d] dark:text-slate-100">AI News Analysis</h2>
+            </div>
           </div>
-        </div>
-        {!apiAvailable && (
-          <div className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">
-            API unavailable. Showing cached or no data.
+          <div className="flex items-center space-x-2">
+            {!apiAvailable && (
+              <div className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">
+                API unavailable. Showing cached or no data.
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsDialogOpen(true)}
+              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
+              title="Open News"
+              aria-label="Open AI news modal"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
           </div>
-        )}
         </div>
 
         {/* Filter Tabs (match RSI Tracker styles) */}
@@ -640,8 +654,128 @@ const AINewsAnalysis = () => {
           />
         )}
       </div>
+
+      {/* Dialog Modal replicating tabbed view */}
+      {isDialogOpen && createPortal(
+        <AINewsDialog
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          filters={filters}
+          newsFilter={newsFilter}
+          onFilterChange={handleFilterChange}
+          sortedNews={sortedNews}
+          newsLoading={newsLoading}
+          aiAnalysis={aiAnalysis}
+          onShowDetails={handleShowDetails}
+        />,
+        document.body
+      )}
     </div>
   );
 };
 
 export default AINewsAnalysis;
+
+// Dialog modal for AI News with same tabbed view
+const AINewsDialog = ({
+  isOpen,
+  onClose,
+  filters,
+  newsFilter,
+  onFilterChange,
+  sortedNews,
+  newsLoading,
+  aiAnalysis,
+  onShowDetails
+}) => {
+  if (!isOpen) return null;
+
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const hasNews = sortedNews.length > 0;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9000] flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-news-dialog-title"
+    >
+      <div className="bg-white dark:bg-[#0b122f] rounded-xl shadow-2xl w-full max-w-6xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="flex items-center">
+            <Newspaper className="w-5 h-5 text-primary-600 mr-2" />
+            <h3 id="ai-news-dialog-title" className="text-base sm:text-lg font-semibold text-[#19235d] dark:text-slate-100">AI News Analysis</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#19235d] dark:text-slate-100 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 rounded-md"
+            aria-label="Close news dialog"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex-shrink-0 px-4 pt-3">
+          {/* Filter Tabs */}
+          <div className="flex space-x-0.5 mb-1 p-0.5 bg-gray-100 dark:bg-slate-700 rounded-lg text-[14px]">
+            {filters.map((filterOption) => (
+              <button
+                key={filterOption.id}
+                type="button"
+                onClick={() => onFilterChange(filterOption.id)}
+                className={`flex-1 flex items-center justify-center py-1 px-0.5 rounded-md text-[13px] font-medium transition-colors ${
+                  newsFilter === filterOption.id
+                    ? 'bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 shadow-sm'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-[#19235d] dark:hover:text-slate-200'
+                }`}
+              >
+                {filterOption.label}
+                <span className={`ml-0.5 px-1 py-0.5 rounded-full text-[10px] ${
+                  newsFilter === filterOption.id ? 'bg-gray-100 dark:bg-slate-500 text-gray-700 dark:text-slate-200' : 'bg-gray-200 dark:bg-slate-600 text-gray-600 dark:text-slate-400'
+                }`}>
+                  {filterOption.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4 pt-2">
+          <div className="space-y-2">
+            {hasNews ? (
+              sortedNews.map((news) => (
+                <NewsCard
+                  key={news.id}
+                  news={news}
+                  analysis={aiAnalysis.get(news.id)}
+                  onShowDetails={onShowDetails}
+                />
+              ))
+            ) : newsLoading ? (
+              <div className="text-center py-8">
+                <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-slate-400">Loading news data...</p>
+              </div>
+            ) : (
+              <div className="text-center pt-2 pb-3">
+                <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                  <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
+                </div>
+                <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-1">No high-impact news</h3>
+                <p className="text-gray-500 dark:text-slate-400 text-sm">No high-impact news is available today</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -3174,3 +3174,8 @@ Files affected:
 
 Notes:
 - If you adjust the parent card height, the chart will automatically resize to fit without introducing a nested vertical scrollbar.
+## AI News Dialog (Latest)
+- Added a dialog modal for AI News Analysis with the same tabbed view (Upcoming, Released, All) and list layout.
+- Open via the new `Maximize` button in the AI News header.
+- Maintains existing news detail modal behavior; detail view appears above if opened from within the dialog.
+- File updated: `src/components/AINewsAnalysis.js` — added dialog modal and header trigger.
