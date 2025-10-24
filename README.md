@@ -2,6 +2,15 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## AI News Modal Fixes (Latest)
+
+- Fixed React Hook ordering: moved `useEffect` so it is not called conditionally when the dialog is closed; added `isOpen` guard inside the effect and included it in the dependency list. Resolves "React Hook useEffect is called conditionally" at `src/components/AINewsAnalysis.js:694`.
+- Show all suggested currency pairs in cards with proper wrapping across lines (removed slice + ellipsis and overflow clipping).
+- Increased vertical spacing between news cards by 300% (`space-y-2` → `space-y-6`) in both the main feed and dialog.
+
+Files affected:
+- `src/components/AINewsAnalysis.js`
+
 ## Candlestick Chart Zoom Optimization (Latest)
 
 - **Improved initial zoom**: Modified candlestick chart to show focused view of the most recent 200 candles

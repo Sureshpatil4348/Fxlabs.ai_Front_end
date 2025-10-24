@@ -353,11 +353,11 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
         </div>
       </div>
 
-       {/* Suggested Pairs - responsive design with proper overflow handling */}
+       {/* Suggested Pairs - show all pairs with wrapping */}
        {analysis && analysis.suggestedPairs && analysis.suggestedPairs.length > 0 && (
          <div className="mb-2">
-           <div className="flex flex-wrap items-center gap-0.5 max-w-full overflow-hidden">
-             {analysis.suggestedPairs.slice(0, 5).map(pair => (
+           <div className="flex flex-wrap items-center gap-0.5">
+             {analysis.suggestedPairs.map(pair => (
                <span 
                  key={pair}
                  className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200 rounded font-medium text-[8px] sm:text-[9px] whitespace-nowrap flex-shrink-0"
@@ -365,9 +365,6 @@ const NewsCard = ({ news, analysis, onShowDetails }) => {
                  {formatSymbolDisplay(pair)}
                </span>
              ))}
-             {analysis.suggestedPairs.length > 5 && (
-               <span className="text-blue-600 dark:text-blue-400 font-bold text-xs sm:text-base ml-0.5 flex-shrink-0">...</span>
-             )}
            </div>
          </div>
        )}
@@ -613,7 +610,7 @@ const AINewsAnalysis = () => {
       {/* Scrollable Content Area */}
       <div className="flex-1 min-h-0 p-1.5 overflow-y-auto">
         {/* News Feed */}
-        <div className="space-y-2">
+        <div className="space-y-6">
         
         {hasNews ? (
           sortedNews.map((news) => (
@@ -688,18 +685,17 @@ const AINewsDialog = ({
   aiAnalysis,
   onShowDetails
 }) => {
-  if (!isOpen) return null;
-
   // Close on Escape
   useEffect(() => {
+    if (!isOpen) return;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [isOpen, onClose]);
 
   const hasNews = sortedNews.length > 0;
 
-  return (
+  return isOpen ? (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9000] flex items-center justify-center"
       role="dialog"
@@ -749,7 +745,7 @@ const AINewsDialog = ({
         </div>
 
         <div className="flex-1 overflow-auto p-4 pt-2">
-          <div className="space-y-2">
+          <div className="space-y-6">
             {hasNews ? (
               sortedNews.map((news) => (
                 <NewsCard
@@ -777,5 +773,5 @@ const AINewsDialog = ({
         </div>
       </div>
     </div>
-  );
+  ) : null;
 };
