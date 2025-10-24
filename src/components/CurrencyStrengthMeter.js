@@ -10,6 +10,20 @@ import useCurrencyStrengthStore from '../store/useCurrencyStrengthStore';
 import { getCurrencyStrengthColor } from '../utils/formatters';
 
 
+// Darker shade variant for heatmap cells in dialog
+const getCurrencyStrengthColorModal = (strength) => {
+  if (strength > 0) {
+    if (strength >= 50) return 'text-green-800 bg-green-300 dark:text-green-200 dark:bg-green-900/50';
+    if (strength >= 20) return 'text-green-700 bg-green-200 dark:text-green-300 dark:bg-green-900/40';
+    return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30';
+  } else if (strength < 0) {
+    if (strength <= -50) return 'text-red-800 bg-red-300 dark:text-red-200 dark:bg-red-900/50';
+    if (strength <= -20) return 'text-red-700 bg-red-200 dark:text-red-300 dark:bg-red-900/40';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
+  }
+  return 'text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-slate-800';
+};
+
 const CurrencyHeatmap = ({ strengthData, isLoading }) => {
   // Split currencies into strongest top 4 and weakest bottom 4 (no duplicates)
   const strongestCurrencies = [...strengthData]
@@ -91,7 +105,7 @@ const CurrencyStrengthMeter = () => {
   });
   const [showCSAlertConfig, setShowCSAlertConfig] = useState(false);
   const [activeCSAlertsCount, setActiveCSAlertsCount] = useState(0);
-  const [showFullscreen, setShowFullscreen] = useState(false);
+  const [showHeatmapModal, setShowHeatmapModal] = useState(false);
 
 
   // Auto-subscribe to major pairs when connection is established
@@ -352,6 +366,7 @@ const CurrencyStrengthMeter = () => {
               </button>
             )}
             <button
+              type="button"
               onClick={() => setShowSettings(true)}
               className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
               title="Dashboard Settings"
@@ -359,10 +374,11 @@ const CurrencyStrengthMeter = () => {
               <Settings className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setShowFullscreen(true)}
+              type="button"
+              onClick={() => setShowHeatmapModal(true)}
               className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
-              title="Fullscreen Heatmap"
-              aria-label="Open currency strength heatmap fullscreen"
+              title="Open Heatmap"
+              aria-label="Open currency strength heatmap"
             >
               <Maximize2 className="w-4 h-4" />
             </button>
@@ -458,11 +474,11 @@ const CurrencyStrengthMeter = () => {
         document.body
       )}
 
-      {/* Fullscreen Heatmap Modal */}
-      {showFullscreen && createPortal(
+      {/* Heatmap Dialog Modal */}
+      {showHeatmapModal && createPortal(
         <CurrencyStrengthFullscreenHeatmap
-          onClose={() => setShowFullscreen(false)}
-          getColor={getCurrencyStrengthColor}
+          onClose={() => setShowHeatmapModal(false)}
+          getColor={getCurrencyStrengthColorModal}
           lastSnapshots={lastServerStrengthByTimeframe}
           setSnapshot={setCurrencyStrengthSnapshot}
         />, 
@@ -475,7 +491,7 @@ const CurrencyStrengthMeter = () => {
 
 export default CurrencyStrengthMeter;
 
-// Fullscreen Heatmap Component
+// Heatmap Dialog Component
 const CurrencyStrengthFullscreenHeatmap = ({ onClose, getColor, lastSnapshots, setSnapshot }) => {
 
   // Build memoized lookup for snapshot per timeframe
@@ -521,7 +537,7 @@ const CurrencyStrengthFullscreenHeatmap = ({ onClose, getColor, lastSnapshots, s
     const val = snap?.get?.(currency);
     const isLoading = !(snap && typeof val === 'number');
     return (
-      <div className={`px-3 py-2 rounded-md border border-transparent ${isLoading ? 'bg-gray-100 dark:bg-slate-800 text-gray-400' : getColor(val)}`}>
+      <div className={`px-3 py-2 rounded-md border border-transparent ${isLoading ? 'bg-gray-300 dark:bg-slate-900/40 text-gray-600 dark:text-slate-300' : getColor(val)}`}>
         <div className="flex items-center justify-between text-xs font-semibold">
           <span className="opacity-70">{currency}</span>
           <span className="tabular-nums">{isLoading ? '--' : Number(val).toFixed(0)}</span>
@@ -538,43 +554,47 @@ const CurrencyStrengthFullscreenHeatmap = ({ onClose, getColor, lastSnapshots, s
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99999]">
-      <div className="absolute inset-0">
-        <div className="h-full w-full bg-white dark:bg-[#0b122f] overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
-            <div className="flex items-center">
-              <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
-              <h3 className="text-base sm:text-lg font-semibold text-[#19235d] dark:text-slate-100">Currency Strength Heatmap</h3>
-            </div>
-            <button
-              onClick={onClose}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#19235d] dark:text-slate-100 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 rounded-md"
-              aria-label="Close fullscreen heatmap"
-              title="Close"
-            >
-              <X className="w-4 h-4" />
-            </button>
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cs-heatmap-title"
+    >
+      <div className="bg-white dark:bg-[#0b122f] rounded-xl shadow-2xl w-full max-w-6xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="flex items-center">
+            <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+            <h3 id="cs-heatmap-title" className="text-base sm:text-lg font-semibold text-[#19235d] dark:text-slate-100">Currency Strength Heatmap</h3>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#19235d] dark:text-slate-100 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 rounded-md"
+            aria-label="Close heatmap"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          <div className="flex-1 overflow-auto p-3 sm:p-4">
-            <div className="min-w-[720px]">
-              {/* Header Row */}
-              <div className="grid" style={{ gridTemplateColumns: `140px repeat(${CS_FULL_TIMEFRAMES.length}, minmax(110px, 1fr))` }}>
-                <div className="px-2 py-2 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Currency</div>
-                {CS_FULL_TIMEFRAMES.map(tf => (
-                  <div key={`hdr-${tf}`} className="px-2 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide">{tf}</div>
-                ))}
-              </div>
-              {/* Rows */}
-              {CS_CURRENCIES_ASC.map((cur) => (
-                <div key={`row-${cur}`} className="grid items-center gap-2 py-2" style={{ gridTemplateColumns: `140px repeat(${CS_FULL_TIMEFRAMES.length}, minmax(110px, 1fr))` }}>
-                  <div className="px-2 text-sm font-medium text-[#19235d] dark:text-slate-100">{cur}</div>
-                  {CS_FULL_TIMEFRAMES.map(tf => (
-                    <Cell key={`cell-${cur}-${tf}`} tf={tf} currency={cur} />
-                  ))}
-                </div>
+        <div className="flex-1 overflow-auto p-3 sm:p-4">
+          <div className="min-w-[720px]">
+            {/* Header Row */}
+            <div className="grid" style={{ gridTemplateColumns: `140px repeat(${CS_FULL_TIMEFRAMES.length}, minmax(110px, 1fr))` }}>
+              <div className="px-2 py-2 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Currency</div>
+              {CS_FULL_TIMEFRAMES.map(tf => (
+                <div key={`hdr-${tf}`} className="px-2 py-2 text-xs font-semibold text-gray-700 dark:text-slate-200 uppercase tracking-wide">{tf}</div>
               ))}
             </div>
+            {/* Rows */}
+            {CS_CURRENCIES_ASC.map((cur) => (
+              <div key={`row-${cur}`} className="grid items-center gap-2 py-2" style={{ gridTemplateColumns: `140px repeat(${CS_FULL_TIMEFRAMES.length}, minmax(110px, 1fr))` }}>
+                <div className="px-2 text-sm font-medium text-[#19235d] dark:text-slate-100">{cur}</div>
+                {CS_FULL_TIMEFRAMES.map(tf => (
+                  <Cell key={`cell-${cur}-${tf}`} tf={tf} currency={cur} />
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
