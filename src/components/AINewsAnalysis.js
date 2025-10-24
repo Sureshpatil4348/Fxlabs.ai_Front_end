@@ -552,6 +552,28 @@ const AINewsAnalysis = () => {
     }
   };
 
+  // Helper function to get tab-specific empty state messages
+  const getEmptyStateMessages = (filter) => {
+    switch (filter) {
+      case 'upcoming':
+        return {
+          title: 'No upcoming high-impact news',
+          description: 'No upcoming high-impact news is available today.'
+        };
+      case 'released':
+        return {
+          title: 'No released high-impact news',
+          description: 'No released high-impact news is available today.'
+        };
+      case 'all':
+      default:
+        return {
+          title: 'No high-impact news',
+          description: 'No high-impact news is available today.'
+        };
+    }
+  };
+
   const hasNews = sortedNews.length > 0; // enable scrolling only when there is content
 
   return (
@@ -632,10 +654,10 @@ const AINewsAnalysis = () => {
               <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
             </div>
             <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-1">
-              No high-impact news
+              {getEmptyStateMessages(newsFilter).title}
             </h3>
             <p className="text-gray-500 dark:text-slate-400 text-sm">
-              No high-impact news is available today
+              {getEmptyStateMessages(newsFilter).description}
             </p>
           </div>
         )}
@@ -664,6 +686,7 @@ const AINewsAnalysis = () => {
           newsLoading={newsLoading}
           aiAnalysis={aiAnalysis}
           onShowDetails={handleShowDetails}
+          getEmptyStateMessages={getEmptyStateMessages}
         />,
         document.body
       )}
@@ -683,7 +706,8 @@ const AINewsDialog = ({
   sortedNews,
   newsLoading,
   aiAnalysis,
-  onShowDetails
+  onShowDetails,
+  getEmptyStateMessages
 }) => {
   // Close on Escape
   useEffect(() => {
@@ -765,8 +789,12 @@ const AINewsDialog = ({
                 <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
                   <Newspaper className="w-6 h-6 text-gray-400 dark:text-slate-500" />
                 </div>
-                <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-1">No high-impact news</h3>
-                <p className="text-gray-500 dark:text-slate-400 text-sm">No high-impact news is available today</p>
+                <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-1">
+                  {getEmptyStateMessages(newsFilter).title}
+                </h3>
+                <p className="text-gray-500 dark:text-slate-400 text-sm">
+                  {getEmptyStateMessages(newsFilter).description}
+                </p>
               </div>
             )}
           </div>

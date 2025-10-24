@@ -183,9 +183,10 @@ Files affected:
 
 ## AI News Analysis Empty State (Latest)
 
-When there are no items to display in AI News Analysis (today’s high‑impact filter yields zero results), the widget now shows a clear empty state message:
-- Title: "No high-impact news"
-- Subtitle: "No high-impact news is available today"
+When there are no items to display in AI News Analysis (today's high‑impact filter yields zero results), the widget now shows tab-specific empty state messages:
+- **Upcoming tab**: "No upcoming high-impact news" / "No upcoming high-impact news is available today."
+- **Released tab**: "No released high-impact news" / "No released high-impact news is available today."
+- **All tab**: "No high-impact news" / "No high-impact news is available today."
 
 Files affected:
 - `src/components/AINewsAnalysis.js`
