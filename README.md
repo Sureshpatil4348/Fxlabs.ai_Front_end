@@ -2,7 +2,38 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## AI News Modal Fixes (Latest)
+## K-line Chart Migration (Latest)
+
+**Successfully migrated from Lightweight Charts to K-line Charts for superior drawing tools support**
+
+### Key Improvements:
+- **Native Drawing Tools**: Built-in support for trend lines, horizontal lines, Fibonacci retracements, rectangles, text annotations, and arrows
+- **Professional Trading Interface**: Industry-standard K-line chart implementation
+- **Better Performance**: Native integration eliminates custom SVG overlays
+- **Advanced Features**: Persistent drawings, interactive editing, export/import functionality
+
+### Components Updated:
+- `KLineChartComponent.jsx` - Main K-line chart component with full drawing tools support
+- `KLineDrawingToolbar.jsx` - Drawing tools toolbar with professional interface
+- `ChartPanel.jsx` - Updated to use K-line charts
+- `EnhancedCandlestickChart.jsx` - Simplified wrapper for K-line charts
+
+### Drawing Tools Available:
+1. **Trend Line** - Draw trend lines between two points
+2. **Horizontal Line** - Draw horizontal support/resistance lines  
+3. **Fibonacci** - Draw Fibonacci retracement levels
+4. **Rectangle** - Draw rectangular zones
+5. **Text** - Add text annotations
+6. **Arrow** - Draw arrows for annotations
+
+### Benefits:
+- ✅ **Native drawing tools support** (vs custom SVG implementation)
+- ✅ **Better performance** (native integration vs overlays)
+- ✅ **More professional features** (industry standard)
+- ✅ **Easier maintenance** (no custom drawing tool code)
+- ✅ **Better UX** (professional trading interface)
+
+## AI News Modal Fixes (Previous)
 
 - Fixed React Hook ordering: moved `useEffect` so it is not called conditionally when the dialog is closed; added `isOpen` guard inside the effect and included it in the dependency list. Resolves "React Hook useEffect is called conditionally" at `src/components/AINewsAnalysis.js:694`.
 - Show all suggested currency pairs in cards with proper wrapping across lines (removed slice + ellipsis and overflow clipping).
