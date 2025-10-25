@@ -387,14 +387,22 @@ export const KLineChartComponent = ({
         try {
           if (!toolType) return; // deactivated
           if (typeof chart.createOverlay === 'function') {
+            // Prefer built-in, battle-tested overlays where available
+            const overlayMap = {
+              trendLine: 'segment', // 2-point segment
+              fibonacci: 'fibonacciLine',
+              // Keep our custom horizontalLine because it is tuned for full-width
+              // Optionally: horizontalLine: 'horizontalStraightLine',
+            };
+            const name = overlayMap[toolType] || toolType;
             try {
               // Preferred signature (v10+)
-              chart.createOverlay({ name: toolType });
+              chart.createOverlay({ name });
             } catch (_e) {
               // Fallback
-              chart.createOverlay(toolType);
+              chart.createOverlay(name);
             }
-            console.log('📈 Overlay creation started for tool:', toolType);
+            console.log('📈 Overlay creation started for tool:', name);
           }
         } catch (err) {
           console.warn('📈 Error activating drawing tool:', err);
