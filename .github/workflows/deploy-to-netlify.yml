@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-      - asoasis/development
+      - development
   pull_request:
     branches:
-      - asoasis/development
+      - development
 
 jobs:
   deploy:
