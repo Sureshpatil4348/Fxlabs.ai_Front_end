@@ -42,6 +42,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 Files affected:
 - `src/components/AINewsAnalysis.js`
 
+## TradingView Widget Fullscreen Modal (Latest)
+
+- Added a fullscreen icon to the non-advanced TradingView widget.
+- Clicking the icon opens a true fullscreen modal with the TradingView chart and a close (X) button.
+- The modal uses portal rendering and preserves dark/light theme styling.
+
+Files affected:
+- `src/components/TradingViewWidget.jsx` — added fullscreen trigger and modal with separate container
+
 ## Candlestick Chart Zoom Optimization (Latest)
 
 - **Improved initial zoom**: Modified candlestick chart to show focused view of the most recent 200 candles

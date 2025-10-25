@@ -1,4 +1,6 @@
+import { Maximize2, X } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -9,20 +11,23 @@ const TradingViewWidget = ({
   className = ""
 }) => {
   const containerRef = useRef(null);
+  const fullscreenContainerRef = useRef(null);
+  const uniqueIdRef = useRef(Math.random().toString(36).substr(2, 9));
   const widgetRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { isDarkMode } = useTheme();
 
   // Controls removed: currency/timeframe dropdown and load button
 
   // Create TradingView widget
-  const createWidget = useCallback((symbol, interval) => {
-    if (!window.TradingView || !containerRef.current) return;
+  const createWidget = useCallback((symbol, interval, targetRef = containerRef) => {
+    if (!window.TradingView || !targetRef.current) return;
 
     setIsLoading(true);
 
     // Clear the container
-    const container = containerRef.current;
+    const container = targetRef.current;
     container.innerHTML = '';
 
     try {
@@ -83,7 +88,7 @@ const TradingViewWidget = ({
 
     loadTradingViewScript()
       .then(() => {
-        createWidget(initialSymbol, initialInterval);
+        createWidget(initialSymbol, initialInterval, containerRef);
       })
       .catch((error) => {
         console.error('Error loading TradingView script:', error);
@@ -103,15 +108,44 @@ const TradingViewWidget = ({
     };
   }, []);
 
+  // Recreate widget when toggling fullscreen, targeting the correct container
+  useEffect(() => {
+    if (!window.TradingView) return;
+    const targetRef = isFullscreen ? fullscreenContainerRef : containerRef;
+    const otherRef = isFullscreen ? containerRef : fullscreenContainerRef;
+    // Clear the other container to avoid duplicate widgets
+    if (otherRef.current) {
+      otherRef.current.innerHTML = '';
+    }
+    createWidget(initialSymbol, initialInterval, targetRef);
+  }, [isFullscreen, isDarkMode, initialSymbol, initialInterval, createWidget]);
+
+  // Close fullscreen on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape' && isFullscreen) setIsFullscreen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isFullscreen]);
+
   return (
     <div className={`tradingview-widget flex flex-col h-full ${className}`}>
       {/* Controls removed; widget is fully driven by props/state */}
 
       {/* Chart Container */}
       <div className="relative flex-1 min-h-0">
+        {/* Fullscreen trigger */}
+        <button
+          type="button"
+          onClick={() => setIsFullscreen(true)}
+          className="absolute top-2 right-2 z-20 p-2 rounded-md bg-gray-100 text-[#19235d] hover:bg-gray-200 shadow"
+          aria-label="Open chart fullscreen"
+          title="Open fullscreen"
+        >
+          <Maximize2 className="w-4 h-4" />
+        </button>
         <div
           ref={containerRef}
-          id={`tradingview_${Math.random().toString(36).substr(2, 9)}`}
+          id={`tradingview_${uniqueIdRef.current}`}
           style={{ height: height }}
           className={`w-full h-full rounded-lg border overflow-hidden ${
             isDarkMode 
@@ -133,6 +167,36 @@ const TradingViewWidget = ({
         )}
       </div>
 
+      {/* Fullscreen Modal */}
+      {isFullscreen && createPortal(
+        <div
+          className="fixed inset-0 z-[10000] bg-black/70"
+          role="dialog"
+          aria-modal="true"
+          aria-label="TradingView chart fullscreen"
+        >
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-4 right-4 p-2 rounded-md bg-white/90 text-[#19235d] hover:bg-white shadow z-[20000]"
+            aria-label="Close fullscreen"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Fullscreen Chart Container */}
+          <div className="absolute inset-0 flex z-0">
+            <div
+              ref={fullscreenContainerRef}
+              id={`tradingview_full_${uniqueIdRef.current}`}
+              className={`w-full h-full ${isDarkMode ? 'bg-[#19235d]' : 'bg-white'}`}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
