@@ -1008,6 +1008,13 @@ All technical indicator calculations are now performed server-side:
 - Desktop: TradingView occupies the top-left large area (col-span 8, row-span 7).
 - Component: `src/components/TradingViewWidget.jsx`.
 
+#### TradingView Widget Persistence (Latest)
+
+- The TradingView widget no longer reloads or loses state when switching between the Dashboard's Analysis and Tools tabs.
+- Implementation detail: both tab sections remain mounted and are toggled via CSS visibility (`hidden`/`block`) instead of conditional unmounting.
+- Affected file: `src/pages/Dashboard.jsx`.
+- Layout note: to preserve the original grid sizing and widget height, the Analysis/Tools `<section>` wrappers include `h-full min-h-0` so children using `h-full` resolve correctly.
+
 #### Layout Width Adjustment (Latest)
 
 - Increased desktop widths for analysis sections:

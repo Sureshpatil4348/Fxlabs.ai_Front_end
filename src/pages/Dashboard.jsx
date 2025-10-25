@@ -168,99 +168,103 @@
             <div className="flex items-center justify-center h-full">
               <div className="text-gray-500 dark:text-gray-400">Loading...</div>
             </div>
-          ) : activeTab === 'analysis' ? (
-            <>
-              {/* Mobile Layout - Stack vertically */}
-              <div className="block lg:hidden space-y-4">
-                {/* Section 1 - Trending Pairs */}
-                <div className="h-64">
-                  <TrendingPairs />
-                </div>
-
-                {/* Section 2 - RSI Tracker */}
-                <div className="h-64">
-                  <RSIOverboughtOversoldTracker />
-                </div>
-
-                {/* Section 3 - Currency Strength Meter */}
-                <div className="h-80">
-                  <CurrencyStrengthMeter />
-                </div>
-
-                {/* Section 4 - AI News Analysis */}
-                <div className="h-80">
-                  <AINewsAnalysis />
-                </div>
-              </div>
-
-              {/* Desktop Layout - 12x12 grid */}
-              <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-2">
-                {/* Section 1 - TradingChart Widget (75% width - top left) */}
-                <div className="col-span-9 row-span-8 min-h-0 flex flex-col">
-                  {useAdvancedTradingViewWidget ? (
-                    <TradingChart />
-                  ) : (
-                    <TradingViewWidget 
-                      initialSymbol="OANDA:XAUUSD" 
-                      initialInterval="60"
-                      height="100%"
-                      className="h-full"
-                    />
-                  )}
-                </div>
-
-                {/* Right Top: Trending Pairs over RSI (combined height == TradingView) */}
-                <div className="col-span-3 row-span-8 min-h-0 flex flex-col gap-2">
-                  <div className="flex-1 min-h-0">
-                    <TrendingPairs />
-                  </div>
-                  <div className="flex-1 min-h-0">
-                    <RSIOverboughtOversoldTracker />
-                  </div>
-                </div>
-
-                {/* Section 2nd - Currency Strength Meter (75% width - bottom left) */}
-                <div className="col-span-9 row-span-4 row-start-9">
-                  <CurrencyStrengthMeter />
-                </div>
-
-                {/* Right Bottom: AI News Analysis (height == Currency Strength Meter) */}
-                <div className="col-span-3 row-span-4 row-start-9">
-                  <AINewsAnalysis />
-                </div>
-              </div>
-            </>
           ) : (
             <>
-              {/* Tools Tab Content */}
-              {/* Mobile: natural stacking, Desktop: 55/45 height distribution */}
-              <div className="tools-container gap-2">
-                {/* Upper Row: Lot Size + Multi Time Analysis (55% height) */}
-                {/* Mobile: order-1 (Lot Size), order-3 (Multi Time), Desktop: side by side */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:h-[55%] lg:min-h-0">
-                  {/* Left: Lot Size Calculator */}
-                  <div className="widget-card p-2 tools-card-upper order-1">
-                    <div className="tools-scroll-container">
-                      <LotSizeCalculator />
-                    </div>
+              {/* Analysis Section (kept mounted, toggled via CSS) */}
+              <section className={`${activeTab === 'analysis' ? '' : 'hidden'} h-full min-h-0`}>
+                {/* Mobile Layout - Stack vertically */}
+                <div className="block lg:hidden space-y-4">
+                  {/* Section 1 - Trending Pairs */}
+                  <div className="h-64">
+                    <TrendingPairs />
                   </div>
 
-                  {/* Right: Multi Time Analysis */}
-                  <div className="widget-card p-2 tools-card-upper order-3 lg:order-2">
-                    <div className="tools-scroll-container">
-                      <MultiTimeAnalysis />
-                    </div>
+                  {/* Section 2 - RSI Tracker */}
+                  <div className="h-64">
+                    <RSIOverboughtOversoldTracker />
+                  </div>
+
+                  {/* Section 3 - Currency Strength Meter */}
+                  <div className="h-80">
+                    <CurrencyStrengthMeter />
+                  </div>
+
+                  {/* Section 4 - AI News Analysis */}
+                  <div className="h-80">
+                    <AINewsAnalysis />
                   </div>
                 </div>
 
-                {/* Lower Row: Quantum Analysis (45% height) */}
-                {/* Mobile: order-2 (second), Desktop: spans full width */}
-                <div className="widget-card p-1 tools-card-lower order-2 lg:order-3">
-                  <div className="tools-scroll-container">
-                    <MultiIndicatorHeatmap />
+                {/* Desktop Layout - 12x12 grid */}
+                <div className="hidden lg:grid h-full grid-cols-12 grid-rows-12 gap-2">
+                  {/* Section 1 - TradingChart Widget (75% width - top left) */}
+                  <div className="col-span-9 row-span-8 min-h-0 flex flex-col">
+                    {useAdvancedTradingViewWidget ? (
+                      <TradingChart />
+                    ) : (
+                      <TradingViewWidget 
+                        initialSymbol="OANDA:XAUUSD" 
+                        initialInterval="60"
+                        height="100%"
+                        className="h-full"
+                      />
+                    )}
+                  </div>
+
+                  {/* Right Top: Trending Pairs over RSI (combined height == TradingView) */}
+                  <div className="col-span-3 row-span-8 min-h-0 flex flex-col gap-2">
+                    <div className="flex-1 min-h-0">
+                      <TrendingPairs />
+                    </div>
+                    <div className="flex-1 min-h-0">
+                      <RSIOverboughtOversoldTracker />
+                    </div>
+                  </div>
+
+                  {/* Section 2nd - Currency Strength Meter (75% width - bottom left) */}
+                  <div className="col-span-9 row-span-4 row-start-9">
+                    <CurrencyStrengthMeter />
+                  </div>
+
+                  {/* Right Bottom: AI News Analysis (height == Currency Strength Meter) */}
+                  <div className="col-span-3 row-span-4 row-start-9">
+                    <AINewsAnalysis />
                   </div>
                 </div>
-              </div>
+              </section>
+
+              {/* Tools Section (kept mounted, toggled via CSS) */}
+              <section className={`${activeTab === 'tools' ? '' : 'hidden'} h-full min-h-0`}>
+                {/* Tools Tab Content */}
+                {/* Mobile: natural stacking, Desktop: 55/45 height distribution */}
+                <div className="tools-container gap-2">
+                  {/* Upper Row: Lot Size + Multi Time Analysis (55% height) */}
+                  {/* Mobile: order-1 (Lot Size), order-3 (Multi Time), Desktop: side by side */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:h-[55%] lg:min-h-0">
+                    {/* Left: Lot Size Calculator */}
+                    <div className="widget-card p-2 tools-card-upper order-1">
+                      <div className="tools-scroll-container">
+                        <LotSizeCalculator />
+                      </div>
+                    </div>
+
+                    {/* Right: Multi Time Analysis */}
+                    <div className="widget-card p-2 tools-card-upper order-3 lg:order-2">
+                      <div className="tools-scroll-container">
+                        <MultiTimeAnalysis />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lower Row: Quantum Analysis (45% height) */}
+                  {/* Mobile: order-2 (second), Desktop: spans full width */}
+                  <div className="widget-card p-1 tools-card-lower order-2 lg:order-3">
+                    <div className="tools-scroll-container">
+                      <MultiIndicatorHeatmap />
+                    </div>
+                  </div>
+                </div>
+              </section>
             </>
           )}
 
