@@ -3236,3 +3236,15 @@ Notes:
 - Open via the new `Maximize` button in the AI News header.
 - Maintains existing news detail modal behavior; detail view appears above if opened from within the dialog.
 - File updated: `src/components/AINewsAnalysis.js` — added dialog modal and header trigger.
+
+## K-Line Chart Drawing Tools (Fix)
+- Enabled interactive drawing in the custom K-Line (klinecharts) widget.
+- Integrated a compact toolbar (`src/components/widget/components/KLineDrawingToolbar.jsx`).
+- Tools: Trend Line, Horizontal Line, Fibonacci, Rectangle, Text, Arrow.
+- Drawing uses klinecharts interactive overlays; click to place required points.
+- Horizontal Line fixed to work with a single click (stretches full width).
+
+How to use
+- Open any candlestick panel in the Advanced TradingView view.
+- Use the toolbar above the chart to pick a tool, then click on the chart.
+- Use Clear to remove all drawings; Export to download drawings as JSON.

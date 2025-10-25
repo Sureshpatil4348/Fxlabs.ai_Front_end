@@ -1,6 +1,8 @@
 import { init, registerOverlay } from 'klinecharts';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
+import { KLineDrawingToolbar } from './KLineDrawingToolbar';
+
 export const KLineChartComponent = ({
   candles = [],
   settings = {},
@@ -51,18 +53,21 @@ export const KLineChartComponent = ({
     registerOverlay({
       name: 'trendLine',
       totalStep: 2,
-      createPointFigures: ({ coordinates }) => [
-        {
-          type: 'line',
-          attrs: {
-            coordinates: [coordinates[0], coordinates[1]],
-            styles: {
-              color: '#2962FF',
-              size: 2,
+      createPointFigures: ({ coordinates }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+        return [
+          {
+            type: 'line',
+            attrs: {
+              coordinates: [coordinates[0], coordinates[1]],
+              styles: {
+                color: '#2962FF',
+                size: 2,
+              },
             },
           },
-        },
-      ],
+        ];
+      },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Trend line drawn:', overlay);
       },
@@ -71,20 +76,22 @@ export const KLineChartComponent = ({
     // Register horizontal line overlay
     registerOverlay({
       name: 'horizontalLine',
+      // Single click places a full-width horizontal line
       totalStep: 1,
-      createPointFigures: ({ coordinates }) => [
-        {
-          type: 'line',
-          attrs: {
-            coordinates: [coordinates[0], coordinates[1]],
-            styles: {
-              color: '#FF6B6B',
-              size: 2,
-              style: 'dash',
+      createPointFigures: ({ coordinates, bounding }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 1 || !coordinates[0]) return [];
+        const y = coordinates[0].y;
+        const x1 = 0;
+        const x2 = (bounding && typeof bounding.width === 'number') ? bounding.width : 9999;
+        return [
+          {
+            type: 'line',
+            attrs: {
+              coordinates: [{ x: x1, y }, { x: x2, y }],
             },
           },
-        },
-      ],
+        ];
+      },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Horizontal line drawn:', overlay);
       },
@@ -94,19 +101,22 @@ export const KLineChartComponent = ({
     registerOverlay({
       name: 'rectangle',
       totalStep: 2,
-      createPointFigures: ({ coordinates }) => [
-        {
-          type: 'rect',
-          attrs: {
-            coordinates: [coordinates[0], coordinates[1]],
-            styles: {
-              color: '#4ECDC4',
-              size: 1,
-              style: 'solid',
+      createPointFigures: ({ coordinates }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+        return [
+          {
+            type: 'rect',
+            attrs: {
+              coordinates: [coordinates[0], coordinates[1]],
+              styles: {
+                color: '#4ECDC4',
+                size: 1,
+                style: 'solid',
+              },
             },
           },
-        },
-      ],
+        ];
+      },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Rectangle drawn:', overlay);
       },
@@ -116,19 +126,22 @@ export const KLineChartComponent = ({
     registerOverlay({
       name: 'text',
       totalStep: 1,
-      createPointFigures: ({ coordinates }) => [
-        {
-          type: 'text',
-          attrs: {
-            coordinates: [coordinates[0]],
-            styles: {
-              color: '#333333',
-              size: 12,
+      createPointFigures: ({ coordinates }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 1) return [];
+        return [
+          {
+            type: 'text',
+            attrs: {
+              coordinates: [coordinates[0]],
+              styles: {
+                color: '#333333',
+                size: 12,
+              },
+              text: 'Text Annotation',
             },
-            text: 'Text Annotation',
           },
-        },
-      ],
+        ];
+      },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Text annotation drawn:', overlay);
       },
@@ -138,18 +151,21 @@ export const KLineChartComponent = ({
     registerOverlay({
       name: 'arrow',
       totalStep: 2,
-      createPointFigures: ({ coordinates }) => [
-        {
-          type: 'line',
-          attrs: {
-            coordinates: [coordinates[0], coordinates[1]],
-            styles: {
-              color: '#FFA726',
-              size: 3,
+      createPointFigures: ({ coordinates }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+        return [
+          {
+            type: 'line',
+            attrs: {
+              coordinates: [coordinates[0], coordinates[1]],
+              styles: {
+                color: '#FFA726',
+                size: 3,
+              },
             },
           },
-        },
-      ],
+        ];
+      },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Arrow drawn:', overlay);
       },
@@ -159,19 +175,22 @@ export const KLineChartComponent = ({
     registerOverlay({
       name: 'fibonacci',
       totalStep: 2,
-      createPointFigures: ({ coordinates }) => [
-        {
-          type: 'line',
-          attrs: {
-            coordinates: [coordinates[0], coordinates[1]],
-            styles: {
-              color: '#9C27B0',
-              size: 2,
-              style: 'dash',
+      createPointFigures: ({ coordinates }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+        return [
+          {
+            type: 'line',
+            attrs: {
+              coordinates: [coordinates[0], coordinates[1]],
+              styles: {
+                color: '#9C27B0',
+                size: 2,
+                style: 'dash',
+              },
             },
           },
-        },
-      ],
+        ];
+      },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Fibonacci drawn:', overlay);
       },
@@ -363,105 +382,22 @@ export const KLineChartComponent = ({
         }
       });
 
-      // Handle drawing tools with click tracking and Figure API
-      let drawingPoints = [];
-      
+      // Drawing tool handler: start interactive overlay creation
       const handleDrawingToolChange = (toolType) => {
-        console.log('📈 handleDrawingToolChange called with:', toolType);
-        chart._activeDrawingTool = toolType;
-        drawingPoints = [];
-        console.log('📈 Drawing tool changed to:', toolType);
-        console.log('📈 Chart active drawing tool set to:', chart._activeDrawingTool);
-      };
-
-      // Subscribe to click events for drawing
-      chart.subscribeAction('click', (data) => {
-        console.log('📈 Click event received:', data);
-        console.log('📈 Active drawing tool:', chart._activeDrawingTool);
-        
-        if (chart._activeDrawingTool && data) {
-          // Try different data properties
-          const point = {
-            x: data.dataIndex || data.index || 0,
-            y: data.value || data.price || 0,
-            timestamp: data.timestamp || data.time || Date.now()
-          };
-          
-          drawingPoints.push(point);
-          console.log('📈 Click point collected:', point, 'Total points:', drawingPoints.length);
-          
-          // Create drawing based on tool type and points collected
-          if (chart._activeDrawingTool === 'horizontalLine' && drawingPoints.length === 1) {
-            createDrawing(chart._activeDrawingTool, drawingPoints);
-            drawingPoints = [];
-          } else if (drawingPoints.length === 2) {
-            createDrawing(chart._activeDrawingTool, drawingPoints);
-            drawingPoints = [];
-          }
-        } else {
-          console.log('📈 No active drawing tool or invalid data');
-        }
-      });
-
-      // Function to create drawing using KLineChart overlay API
-      const createDrawing = (toolType, points) => {
         try {
-          console.log('📈 Creating drawing:', toolType, 'with points:', points);
-          
-          // Convert points to KLineChart format
-          const overlayPoints = points.map(point => ({
-            timestamp: point.timestamp || Date.now(),
-            value: point.y
-          }));
-          
-          switch (toolType) {
-            case 'trendLine':
-              if (points.length === 2) {
-                chart.createOverlay('trendLine', overlayPoints);
-                console.log('📈 Trend line created');
-              }
-              break;
-              
-            case 'horizontalLine':
-              if (points.length === 1) {
-                chart.createOverlay('horizontalLine', overlayPoints);
-                console.log('📈 Horizontal line created');
-              }
-              break;
-              
-            case 'rectangle':
-              if (points.length === 2) {
-                chart.createOverlay('rectangle', overlayPoints);
-                console.log('📈 Rectangle created');
-              }
-              break;
-              
-            case 'text':
-              if (points.length === 1) {
-                chart.createOverlay('text', overlayPoints);
-                console.log('📈 Text annotation created');
-              }
-              break;
-              
-            case 'arrow':
-              if (points.length === 2) {
-                chart.createOverlay('arrow', overlayPoints);
-                console.log('📈 Arrow created');
-              }
-              break;
-              
-            case 'fibonacci':
-              if (points.length === 2) {
-                chart.createOverlay('fibonacci', overlayPoints);
-                console.log('📈 Fibonacci line created');
-              }
-              break;
-            default:
-              console.warn('📈 Unknown drawing tool:', toolType);
-              break;
+          if (!toolType) return; // deactivated
+          if (typeof chart.createOverlay === 'function') {
+            try {
+              // Preferred signature (v10+)
+              chart.createOverlay({ name: toolType });
+            } catch (_e) {
+              // Fallback
+              chart.createOverlay(toolType);
+            }
+            console.log('📈 Overlay creation started for tool:', toolType);
           }
-        } catch (error) {
-          console.warn('📈 Error creating drawing:', error);
+        } catch (err) {
+          console.warn('📈 Error activating drawing tool:', err);
         }
       };
 
@@ -881,6 +817,11 @@ export const KLineChartComponent = ({
             {candles.length}
           </div>
         </div>
+      </div>
+
+      {/* Drawing Tools Toolbar */}
+      <div className="flex-shrink-0 border-b border-gray-200 bg-gray-50">
+        <KLineDrawingToolbar chartRef={chartRef} />
       </div>
 
 
