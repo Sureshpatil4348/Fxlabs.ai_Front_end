@@ -65,15 +65,15 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
       - name: Deploy to Netlify (QA site)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/asoasis/development'
-        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (asoasis/development)"
+        if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (development)"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_QA }}
 
       - name: Deploy to Netlify (DEV site for PRs)
-        if: github.event_name == 'pull_request' && github.base_ref == 'asoasis/development'
-        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (PR to asoasis/development)"
+        if: github.event_name == 'pull_request' && github.base_ref == 'development'
+        run: netlify deploy --prod --dir=build --message="Deploy from GitHub Actions - ${{ github.sha }} (PR to development)"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_DEV }}
