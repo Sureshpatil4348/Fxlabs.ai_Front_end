@@ -24,6 +24,49 @@ const getCurrencyStrengthColorModal = (strength) => {
   return 'text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-slate-800';
 };
 
+// Shimmer Skeleton Loader Component
+const CurrencyStrengthSkeleton = () => (
+  <div className="space-y-2">
+    {/* Strongest Currencies Skeleton */}
+    <div>
+      <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-1.5 px-1 shimmer-text"></div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div 
+            key={i} 
+            className="py-4 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 shimmer-bg"></div>
+            <div className="flex items-center justify-between relative z-10">
+              <div className="h-4 w-12 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+              <div className="h-4 w-8 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Weakest Currencies Skeleton */}
+    <div>
+      <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-1.5 px-1 shimmer-text"></div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div 
+            key={i} 
+            className="py-4 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 shimmer-bg"></div>
+            <div className="flex items-center justify-between relative z-10">
+              <div className="h-4 w-12 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+              <div className="h-4 w-8 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 const CurrencyHeatmap = ({ strengthData, isLoading }) => {
   // Split currencies into strongest top 4 and weakest bottom 4 (no duplicates)
   const strongestCurrencies = [...strengthData]
@@ -96,6 +139,9 @@ const CurrencyStrengthMeter = () => {
     lastServerStrengthByTimeframe
   } = useCurrencyStrengthStore();
   const { user } = useAuth();
+  
+  // Track initial loading state
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   
   // removed manual refresh state
   const [showSettings, setShowSettings] = useState(false);
@@ -234,6 +280,11 @@ const CurrencyStrengthMeter = () => {
         }
       } catch (_e) {
         // silent; websocket will fill or local calc can be used on demand
+      } finally {
+        if (!cancelled) {
+          // End initial loading after first data fetch attempt
+          setTimeout(() => setIsInitialLoading(false), 1000);
+        }
       }
     };
     fetchInitial();
@@ -390,15 +441,17 @@ const CurrencyStrengthMeter = () => {
 
       {/* Content Area */}
       <div className="px-1 pb-2 flex-1 min-h-0 overflow-y-auto">
-        {strengthData.length > 0 ? (
+        {isInitialLoading ? (
+          <CurrencyStrengthSkeleton />
+        ) : strengthData.length > 0 ? (
           <CurrencyHeatmap strengthData={strengthData} isLoading={isDataLoading} />
         ) : (
           <div className="text-center py-12">
-            <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center"></div>
-            <h3 className="text-lg font-medium text-[#19235d] mb-2">
+            <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center"></div>
+            <h3 className="text-lg font-medium text-[#19235d] dark:text-slate-100 mb-2">
               No strength data available
             </h3>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 dark:text-slate-400 text-sm">
               Currency strength will be calculated based on subscribed pairs.
             </p>
           </div>

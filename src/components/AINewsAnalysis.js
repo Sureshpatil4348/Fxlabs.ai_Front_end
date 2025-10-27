@@ -15,6 +15,73 @@ import { createPortal } from 'react-dom';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import { formatNewsLocalDateTime, getImpactColor, formatCurrency, getEventTiming, formatSymbolDisplay } from '../utils/formatters';
 
+// Shimmer Skeleton Loader for News Cards
+const NewsCardSkeleton = () => (
+  <div className="border border-gray-200 dark:border-slate-600 rounded-lg p-3 bg-white dark:bg-[#19235d]">
+    {/* Header Skeleton */}
+    <div className="flex items-start justify-between mb-2">
+      <div className="flex-1">
+        <div className="flex items-center space-x-2 mb-2">
+          <div className="h-7 w-14 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+          <div className="h-7 w-20 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+          <div className="h-7 w-24 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+        </div>
+        
+        <div className="h-6 w-4/5 bg-gray-200 dark:bg-gray-700 rounded mb-2 shimmer-text"></div>
+        
+        <div className="flex items-center space-x-3">
+          <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Economic Data Skeleton */}
+    <div className="grid grid-cols-3 gap-2 mb-3 mt-3">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="text-center p-2 bg-gray-50 dark:bg-slate-700 rounded-lg">
+          <div className="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded mx-auto mb-2 shimmer-text"></div>
+          <div className="h-6 w-12 bg-gray-300 dark:bg-gray-600 rounded mx-auto shimmer-text"></div>
+        </div>
+      ))}
+    </div>
+
+    {/* AI Analysis Skeleton */}
+    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-800 rounded-lg p-3">
+      <div className="flex items-center space-x-2 mb-3">
+        <div className="h-4 w-4 bg-gray-300 dark:bg-gray-600 rounded-full shimmer-text"></div>
+        <div className="h-4 w-28 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+      </div>
+      <div className="flex items-center justify-between mb-3 p-3 bg-white/50 dark:bg-slate-600/50 rounded-lg">
+        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        <div className="flex items-center space-x-2">
+          <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+          <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mb-3 p-2 bg-white/50 dark:bg-slate-600/50 rounded-lg">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-7 w-20 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        ))}
+      </div>
+      <div className="space-y-2 p-3 bg-white/50 dark:bg-slate-600/50 rounded-lg">
+        <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        <div className="h-3 w-11/12 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        <div className="h-3 w-5/6 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+        <div className="h-3 w-3/4 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+      </div>
+    </div>
+  </div>
+);
+
+// AI News Analysis Skeleton - Shows multiple news card skeletons
+const AINewsAnalysisSkeleton = () => (
+  <div className="space-y-6">
+    {[1, 2, 3].map((i) => (
+      <NewsCardSkeleton key={i} />
+    ))}
+  </div>
+);
+
 // Secure HTML sanitization function to prevent XSS attacks
 const sanitizeHtml = (text) => {
   if (!text || typeof text !== 'string') {
@@ -421,6 +488,19 @@ const AINewsAnalysis = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [apiAvailable] = useState(true);
   const [, setNowTick] = useState(0);
+  
+  // Track initial loading state (show skeleton only on first load)
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
+  // End initial loading after data is fetched or after timeout
+  useEffect(() => {
+    if (!newsLoading && newsData.length > 0) {
+      setTimeout(() => setIsInitialLoading(false), 500);
+    } else if (!newsLoading && newsData.length === 0) {
+      // If no data after loading completes, still hide skeleton
+      setTimeout(() => setIsInitialLoading(false), 1500);
+    }
+  }, [newsLoading, newsData.length]);
 
   // Removed redundant loadTabState here to avoid overwriting user selection after initial load
 
@@ -634,7 +714,9 @@ const AINewsAnalysis = () => {
         {/* News Feed */}
         <div className="space-y-6">
         
-        {hasNews ? (
+        {isInitialLoading ? (
+          <AINewsAnalysisSkeleton />
+        ) : hasNews ? (
           sortedNews.map((news) => (
             <NewsCard
               key={news.id}
