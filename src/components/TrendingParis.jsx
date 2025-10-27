@@ -1,5 +1,5 @@
 import { TrendingUp } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 import useMarketCacheStore from "../store/useMarketCacheStore";
 import useRSITrackerStore from "../store/useRSITrackerStore";
@@ -9,8 +9,51 @@ import {
     formatPercentage,
 } from "../utils/formatters";
 
+// Shimmer Skeleton for Trending Pairs
+const TrendingPairsSkeleton = () => (
+    <table className="w-full">
+        <thead className="bg-gray-50 dark:bg-slate-700">
+            <tr>
+                <th className="px-3 py-2 text-center text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide rounded-tl-lg">
+                    Pair
+                </th>
+                <th className="px-3 py-2 text-center text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide">
+                    Price
+                </th>
+                <th className="px-3 py-2 text-center text-[13px] font-medium text-gray-500 dark:text-slate-400 tracking-wide rounded-tr-lg">
+                    Daily %
+                </th>
+            </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-[#19235d]">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <tr key={i} className="border-b border-gray-100 dark:border-slate-700">
+                    <td className="px-2 py-2 text-center">
+                        <div className="h-4 w-16 bg-gray-100 dark:bg-gray-800 rounded mx-auto relative overflow-hidden">
+                            <div className="absolute inset-0 shimmer-bg"></div>
+                        </div>
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                        <div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded mx-auto relative overflow-hidden">
+                            <div className="absolute inset-0 shimmer-bg"></div>
+                        </div>
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                        <div className="h-4 w-12 bg-gray-100 dark:bg-gray-800 rounded mx-auto relative overflow-hidden">
+                            <div className="absolute inset-0 shimmer-bg"></div>
+                        </div>
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+);
+
 const TrendingPairs = () => {
     // removed manual loading state for refresh
+    
+    // Track initial loading state
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
 
     // From centralized cache
     const { trendingSymbols, pricingBySymbol } =
@@ -42,6 +85,16 @@ const TrendingPairs = () => {
             }
         );
     }, [trendingSymbols, pricingBySymbol]);
+    
+    // End initial loading after data is available or timeout
+    useEffect(() => {
+        if (rows.length > 0) {
+            setTimeout(() => setIsInitialLoading(false), 500);
+        } else {
+            // End loading after 2 seconds even if no data
+            setTimeout(() => setIsInitialLoading(false), 2000);
+        }
+    }, [rows.length]);
 
     // Manual refresh removed; trending updates driven by backend hydration elsewhere
 
@@ -67,19 +120,14 @@ const TrendingPairs = () => {
                     </div>
                 </div>
 
-                {/* Connection Status */}
-                {!isConnected && (
-                    <div className="mb-2 p-1.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                        <p className="text-[12px] text-yellow-800 dark:text-yellow-200">
-                            Connecting to market data...
-                        </p>
-                    </div>
-                )}
+                {/* Connection Status - Removed */}
             </div>
 
             {/* Scrollable Content Area */}
             <div className="flex-1 overflow-y-auto min-h-0 p-1">
-                {rows.length > 0 ? (
+                {isInitialLoading ? (
+                    <TrendingPairsSkeleton />
+                ) : rows.length > 0 ? (
                     <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-slate-700">
                             <tr>

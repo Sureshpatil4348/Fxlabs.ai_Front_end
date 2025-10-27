@@ -97,6 +97,92 @@ const formatIndicatorDisplay = (indicator) => {
 // Default trading style
 const DEFAULT_TRADING_STYLE = 'swingTrader';
 
+// Shimmer Skeleton Loader for Multi Indicator Heatmap
+const MultiIndicatorHeatmapSkeleton = () => {
+  const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'ICHIMOKU'];
+  const timeframes = ['1 Min', '5 Min', '15 Mins', '30 Mins', '1 Hour', '4 Hours', '1 Day'];
+  
+  return (
+    <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
+      <tbody>
+        {timeframes.map((timeframe, tfIndex) => (
+          <tr key={tfIndex} className="border-b border-slate-100/50 dark:border-[#19235d]/50">
+            <td className="py-0.5 pr-0.5 font-medium text-[#19235d] dark:text-gray-200 text-sm w-14">
+              <div className="flex items-center space-x-0.5">
+                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded relative overflow-hidden">
+                  <div className="absolute inset-0 shimmer-bg"></div>
+                </div>
+              </div>
+            </td>
+            {indicators.map((indicator, indIndex) => (
+              <td key={indIndex} className="text-center py-0.5 px-0.5" style={{width: `${504 / indicators.length}px`}}>
+                <div className="relative h-full flex items-center justify-center">
+                  <div 
+                    className="bg-gray-200 dark:bg-gray-700 rounded relative overflow-hidden"
+                    style={{
+                      minHeight: window.innerWidth < 768 ? '20px' : '28px',
+                      minWidth: window.innerWidth < 768 ? '44px' : '62px',
+                      width: window.innerWidth < 768 ? '44px' : '62px',
+                      height: window.innerWidth < 768 ? '20px' : '28px',
+                    }}
+                  >
+                    <div className="absolute inset-0 shimmer-bg"></div>
+                  </div>
+                </div>
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+// Shimmer Skeleton for Trading Meter
+const TradingMeterSkeleton = () => {
+  return (
+    <Card className="shadow-lg bg-white dark:bg-[#19235d] border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+      <div className="relative w-full" style={{ height: 130 }}>
+        {/* Gauge skeleton */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-48 h-24 bg-gray-200 dark:bg-gray-700 rounded-t-full relative overflow-hidden">
+            <div className="absolute inset-0 shimmer-bg"></div>
+          </div>
+        </div>
+        {/* Center text skeleton */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center mt-8">
+            <div className="h-6 w-24 bg-gray-300 dark:bg-gray-600 rounded mb-1 mx-auto shimmer-text"></div>
+            <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded mx-auto shimmer-text"></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Percentages skeleton */}
+      <div className="flex justify-between items-center mt-3 px-2">
+        <div className="text-center">
+          <div className="h-5 w-12 bg-gray-300 dark:bg-gray-600 rounded mb-1 mx-auto shimmer-text"></div>
+          <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded mx-auto shimmer-text"></div>
+        </div>
+        <div className="text-center">
+          <div className="h-6 w-24 bg-gray-300 dark:bg-gray-600 rounded mx-auto shimmer-text"></div>
+        </div>
+        <div className="text-center">
+          <div className="h-5 w-12 bg-gray-300 dark:bg-gray-600 rounded mb-1 mx-auto shimmer-text"></div>
+          <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded mx-auto shimmer-text"></div>
+        </div>
+      </div>
+      
+      {/* Progress bar skeleton */}
+      <div className="mt-3">
+        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full relative overflow-hidden">
+          <div className="absolute inset-0 shimmer-bg"></div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 // Dropdown options will be derived from RSI store settings
 
 // No local calculations; rely solely on server quantum data
@@ -108,6 +194,9 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const [_indicatorWeight, _setIndicatorWeight] = useState('equal');
   const [currentSymbol, setCurrentSymbol] = useState(selectedSymbol);
   const [isSymbolDropdownOpen, setIsSymbolDropdownOpen] = useState(false);
+  
+  // Track initial loading state
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   
   // Alert functionality
   const { user } = useAuth();
@@ -162,6 +251,28 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
     } catch (_e) {
       // silent
     }
+  }, [currentSymbol]);
+  
+  // End initial loading after data is available or timeout
+  useEffect(() => {
+    const checkDataAndEndLoading = () => {
+      try {
+        const mc = useMarketCacheStore.getState();
+        const quantum = mc.quantumBySymbol.get(currentSymbol);
+        const hasData = quantum && quantum.per_timeframe && Object.keys(quantum.per_timeframe).length > 0;
+        
+        if (hasData) {
+          setTimeout(() => setIsInitialLoading(false), 500);
+        } else {
+          // End loading after 2 seconds even if no data
+          setTimeout(() => setIsInitialLoading(false), 2000);
+        }
+      } catch (_e) {
+        setTimeout(() => setIsInitialLoading(false), 2000);
+      }
+    };
+    
+    checkDataAndEndLoading();
   }, [currentSymbol]);
   
   // Add this state
@@ -588,7 +699,7 @@ useEffect(() => {
                   <th className="text-left py-0.5 px-0.5 font-bold text-[#19235d] dark:text-gray-200 text-sm w-14"></th>
                   {indicators.map(indicator => (
                     <th key={indicator} className="text-center py-0.5 px-0.5 text-[#19235d] dark:text-gray-200" style={{width: `${504 / indicators.length}px`}}>
-                      <span className="text-sm font-bold">{formatIndicatorDisplay(indicator)}</span>
+                      <span className={`text-sm font-bold ${isInitialLoading ? 'shimmer-text' : ''}`}>{formatIndicatorDisplay(indicator)}</span>
                     </th>
                   ))}
                 </tr>
@@ -597,13 +708,18 @@ useEffect(() => {
           </div>
           {/* Right: Trading Meter Header (desktop only) */}
           <div className="w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
-            <span className="text-sm font-bold text-[#19235d] dark:text-gray-200">Trading Meter</span>
+            <span className={`text-sm font-bold text-[#19235d] dark:text-gray-200 ${isInitialLoading ? 'shimmer-text' : ''}`}>Trading Meter</span>
           </div>
         </div>
 
         {/* Content Row - Desktop Layout */}
         <div className="hidden lg:flex gap-1.5 flex-1 min-h-0 pt-1.5 pl-4">
           {/* Left: Compact Table */}
+          {isInitialLoading ? (
+            <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
+              <MultiIndicatorHeatmapSkeleton />
+            </div>
+          ) : (
           <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden lg:overflow-y-auto">
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
               <tbody>
@@ -708,10 +824,14 @@ useEffect(() => {
             </tbody>
           </table>
         </div>
+          )}
 
         {/* Right: Buy/Sell Now Meter (desktop only) */}
         <div className="w-96 xl:w-[28rem] shrink-0 min-h-0 flex flex-col">
-          {(() => {
+          {isInitialLoading ? (
+            <TradingMeterSkeleton />
+          ) : (
+          (() => {
             const mcState = useMarketCacheStore.getState();
             const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
             const qe = mcState.quantumBySymbol.get(currentSymbol);
@@ -854,7 +974,8 @@ useEffect(() => {
                 </div>
               </Card>
             );
-          })()}
+          })()
+          )}
         </div>
         </div>
 
@@ -863,9 +984,12 @@ useEffect(() => {
           {/* Trading Meter Section - Above Table on Mobile */}
           <div className="w-full px-2">
             <div className="text-center py-1 mb-2 border-b border-gray-200 dark:border-slate-600 pb-3">
-              <span className="text-sm font-bold text-[#19235d] dark:text-gray-200">Trading Meter</span>
+              <span className={`text-sm font-bold text-[#19235d] dark:text-gray-200 ${isInitialLoading ? 'shimmer-text' : ''}`}>Trading Meter</span>
             </div>
-            {(() => {
+            {isInitialLoading ? (
+              <TradingMeterSkeleton />
+            ) : (
+            (() => {
               const mcState = useMarketCacheStore.getState();
               const styleKey = tradingStyle === 'swingTrader' ? 'swingtrader' : 'scalper';
               const qe = mcState.quantumBySymbol.get(currentSymbol);
@@ -968,11 +1092,15 @@ useEffect(() => {
                   </div>
                 </Card>
               );
-            })()}
+            })()
+            )}
           </div>
 
           {/* Table Section with Header - Single Scrollable Container */}
           <div className="w-full overflow-x-auto overflow-y-hidden">
+            {isInitialLoading ? (
+              <MultiIndicatorHeatmapSkeleton />
+            ) : (
             <table className="w-full border-collapse min-w-[560px] table-fixed" style={{tableLayout: 'fixed'}}>
               {/* Mobile Table Header */}
               <thead>
@@ -1087,6 +1215,7 @@ useEffect(() => {
               })()}
             </tbody>
           </table>
+            )}
         </div>
 
         </div>
