@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS } from '../../../constants/pairs';
+import { formatSymbolDisplay } from '../../../utils/formatters';
 
 const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) => {
   const [searchQuery, setSearchQuery] = useState(currentSymbol || '');
@@ -138,10 +139,21 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
   }, [isOpen, onClose]);
 
   // Filter symbols based on search query and category
-  const filteredSymbols = symbolsData[selectedCategory]?.filter(symbol => 
-    symbol.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    symbol.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  // Supports queries like "eurusd" and "eur/usd"
+  const normalize = (s = '') => String(s).toLowerCase().replace(/\//g, '');
+  const filteredSymbols = symbolsData[selectedCategory]?.filter((symbol) => {
+    const queryLc = String(searchQuery || '').toLowerCase();
+    const queryNorm = normalize(searchQuery || '');
+    const symLc = symbol.symbol.toLowerCase();
+    const symNorm = normalize(symbol.symbol);
+    const displayLc = formatSymbolDisplay(symbol.symbol).toLowerCase();
+    return (
+      symLc.includes(queryLc) ||
+      symNorm.includes(queryNorm) ||
+      displayLc.includes(queryLc) ||
+      symbol.description.toLowerCase().includes(queryLc)
+    );
+  }) || [];
 
   const handleSymbolClick = (symbol) => {
     onSymbolSelect(symbol.symbol);
@@ -271,7 +283,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
                   className="flex items-center justify-between py-3 px-2 hover:bg-gray-50 rounded cursor-pointer transition-colors"
                 >
                   <div className="flex items-center space-x-8">
-                    <span className="text-blue-600 font-medium text-sm">{symbol.symbol}</span>
+                    <span className="text-blue-600 font-medium text-sm">{formatSymbolDisplay(symbol.symbol)}</span>
                     <span className="text-gray-700 text-sm">{symbol.description}</span>
                   </div>
                   <div className="flex items-center space-x-2">
