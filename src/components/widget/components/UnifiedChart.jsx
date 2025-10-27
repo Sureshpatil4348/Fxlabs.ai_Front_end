@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import {
   ComposedChart,
   LineChart,
@@ -26,6 +26,15 @@ import {
 export const UnifiedChart = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [lineChartKey, setLineChartKey] = useState(0); // Key to force re-render
+  
+  // Throttle state for real-time tick updates (avoid per-tick re-renders)
+  const tickThrottleLastEmitRef = useRef(0);
+  const tickThrottleTimerRef = useRef(null);
+  const tickThrottlePendingRef = useRef(null);
+  const TICK_UPDATE_THROTTLE_MS = useMemo(() => {
+    const val = parseInt(process.env.REACT_APP_TRADING_CHART_TICK_THROTTLE_MS || '1000', 10);
+    return Number.isFinite(val) && val > 0 ? val : 1000;
+  }, []);
   
   const {
     candles,
@@ -329,7 +338,7 @@ export const UnifiedChart = () => {
   }, [isInitialized, settings.symbol, settings.timeframe, setCandles, setIndicators, setLoading, setError, resetPagination]);
 
 
-  // WebSocket connection for real-time data
+  // WebSocket connection for real-time data (throttled)
   useEffect(() => {
     console.log('🔄 WebSocket effect triggered. isInitialized:', isInitialized);
     if (!isInitialized) {
@@ -339,42 +348,67 @@ export const UnifiedChart = () => {
     
     console.log('🚀 WebSocket effect: Chart is initialized, proceeding with connection');
 
-    const handleNewCandle = (newCandle) => {
+    // Internal apply function that always uses the latest store state
+    const applyCandle = (newCandle) => {
       // Validate the new candle data
-      if (isNaN(newCandle.time) || isNaN(newCandle.open) || isNaN(newCandle.high) || 
-          isNaN(newCandle.low) || isNaN(newCandle.close) || newCandle.time <= 0) {
+      if (
+        isNaN(newCandle.time) ||
+        isNaN(newCandle.open) ||
+        isNaN(newCandle.high) ||
+        isNaN(newCandle.low) ||
+        isNaN(newCandle.close) ||
+        newCandle.time <= 0
+      ) {
         console.warn('Invalid candle data received:', newCandle);
         return;
       }
 
-      const lastCandle = candles[candles.length - 1];
-      
+      const store = useChartStore.getState();
+      const currentCandles = store.candles;
+      const lastCandle = currentCandles[currentCandles.length - 1];
+
       if (lastCandle && newCandle.time === lastCandle.time) {
-        // Update existing candle
-        updateLastCandle(newCandle);
+        store.updateLastCandle(newCandle);
       } else if (!lastCandle || newCandle.time > lastCandle.time) {
-        // Add new candle (only if time is greater than last candle)
-        addCandle(newCandle);
+        store.addCandle(newCandle);
       } else {
-        // If new candle time is older, insert it in the correct position
-        const updatedCandles = [...candles, newCandle].sort((a, b) => a.time - b.time);
-        setCandles(updatedCandles);
-        
-        // Recalculate indicators with sorted data
+        const updatedCandles = [...currentCandles, newCandle].sort((a, b) => a.time - b.time);
+        store.setCandles(updatedCandles);
         const calculatedIndicators = calculateAllIndicators(updatedCandles);
-        setIndicators(calculatedIndicators);
+        store.setIndicators(calculatedIndicators);
         return;
       }
-      
-      // Recalculate indicators with new data
-      const updatedCandles = lastCandle && newCandle.time === lastCandle.time
-        ? [...candles.slice(0, -1), newCandle]
-        : [...candles, newCandle];
-      
-      // Ensure candles are sorted by time
+
+      const updatedCandles =
+        lastCandle && newCandle.time === lastCandle.time
+          ? [...currentCandles.slice(0, -1), newCandle]
+          : [...currentCandles, newCandle];
       const sortedCandles = updatedCandles.sort((a, b) => a.time - b.time);
       const calculatedIndicators = calculateAllIndicators(sortedCandles);
-      setIndicators(calculatedIndicators);
+      store.setIndicators(calculatedIndicators);
+    };
+
+    // Throttled handler to avoid updating chart on every tick
+    const handleNewCandle = (incomingCandle) => {
+      tickThrottlePendingRef.current = incomingCandle;
+      const now = Date.now();
+
+      const elapsed = now - (tickThrottleLastEmitRef.current || 0);
+      if (elapsed >= TICK_UPDATE_THROTTLE_MS) {
+        const toApply = tickThrottlePendingRef.current;
+        tickThrottlePendingRef.current = null;
+        tickThrottleLastEmitRef.current = now;
+        if (toApply) applyCandle(toApply);
+      } else if (!tickThrottleTimerRef.current) {
+        const remaining = Math.max(TICK_UPDATE_THROTTLE_MS - elapsed, 0);
+        tickThrottleTimerRef.current = setTimeout(() => {
+          tickThrottleTimerRef.current = null;
+          tickThrottleLastEmitRef.current = Date.now();
+          const toApplyLater = tickThrottlePendingRef.current;
+          tickThrottlePendingRef.current = null;
+          if (toApplyLater) applyCandle(toApplyLater);
+        }, remaining);
+      }
     };
 
     const handleError = (error) => {
@@ -407,6 +441,11 @@ export const UnifiedChart = () => {
 
     return () => {
       console.log('🧹 WebSocket cleanup: disconnecting');
+      if (tickThrottleTimerRef.current) {
+        clearTimeout(tickThrottleTimerRef.current);
+        tickThrottleTimerRef.current = null;
+      }
+      tickThrottlePendingRef.current = null;
       realMarketService.disconnectWebSocket();
       setConnected(false);
     };

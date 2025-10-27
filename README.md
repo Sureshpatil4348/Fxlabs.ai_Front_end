@@ -2,6 +2,18 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Advanced Chart Tick Throttling (Latest)
+
+To prevent excessive re-renders, the advanced chart now throttles real-time updates from the market WebSocket and does not update on every tick message. Updates are batched and applied at most once per second by default.
+
+- Behavior: Aggregates incoming ticks and applies only the latest snapshot per throttle window
+- Default rate: 1000ms between chart updates
+- Configuration: Set `REACT_APP_TRADING_CHART_TICK_THROTTLE_MS` to adjust the throttle interval
+- Scope: Affects the advanced chart (`TradingChart` → `UnifiedChart`), not the basic embedded TradingView widget
+
+Files affected:
+- `src/components/widget/components/UnifiedChart.jsx`
+
 ## Grid Toggle Functionality (Latest)
 
 **Implemented a professional grid toggle feature for K-line charts with real-time visibility control**
