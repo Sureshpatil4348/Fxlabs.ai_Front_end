@@ -102,6 +102,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Display format in Advanced Symbol Search now shows currency pairs as `ABC/DEF` (e.g., `EUR/USD`, `XAU/USD`).
 - Search recognizes inputs with or without a slash. Typing `eur/usd` or `eurusd` both match `EUR/USD`.
 - Implementation: `formatSymbolDisplay` is applied to the modal list; search matching normalizes slashes for consistent results.
+- Trading header symbol display now shows pairs as `ABC/DEF` for selected currency pairs.
+- Symbol results in the selector modal are sorted alphabetically for easier scanning.
 
 ## K-line Chart Migration (Previous)
 

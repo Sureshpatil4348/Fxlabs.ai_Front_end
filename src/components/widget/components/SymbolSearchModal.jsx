@@ -153,7 +153,9 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
       displayLc.includes(queryLc) ||
       symbol.description.toLowerCase().includes(queryLc)
     );
-  }) || [];
+  })
+  // Sort results alphabetically by symbol for consistent UX
+  ?.sort((a, b) => a.symbol.localeCompare(b.symbol, 'en', { sensitivity: 'base' })) || [];
 
   const handleSymbolClick = (symbol) => {
     onSymbolSelect(symbol.symbol);

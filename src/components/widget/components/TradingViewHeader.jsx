@@ -5,6 +5,7 @@ import SymbolSearchModal from './SymbolSearchModal';
 import useMarketCacheStore from '../../../store/useMarketCacheStore';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
+import { formatSymbolDisplay } from '../../../utils/formatters';
 
 export const TradingViewHeader = () => {
   const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
@@ -145,7 +146,7 @@ export const TradingViewHeader = () => {
               onClick={() => setShowSymbolSearch(true)}
               className="px-2 py-1 border border-gray-300 rounded text-[10px] font-medium bg-white hover:border-gray-400 hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
             >
-              <span>{settings.symbol || 'Select Symbol'}</span>
+              <span>{settings.symbol ? formatSymbolDisplay(settings.symbol) : 'Select Symbol'}</span>
               <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
