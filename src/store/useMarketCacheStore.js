@@ -102,7 +102,7 @@ const useMarketCacheStore = create(
         errorCallback: () => {
           // keep cache
         },
-        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'quantum_update', 'ticks', 'tick', 'trending_pairs', 'trending_update', 'trending_snapshot', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'indicator_updates', 'quantum_update', 'ticks', 'tick', 'trending_pairs', 'trending_update', 'trending_snapshot', 'pong', 'error']
       });
 
       // Ensure WS connection
@@ -432,6 +432,43 @@ const useMarketCacheStore = create(
             }
           }
 
+          get().persistToSession();
+          get().broadcastToLegacyStoresDebounced();
+          break;
+        }
+        case 'indicator_updates': {
+          const tf = (message?.timeframe || '').toUpperCase();
+          const arr = Array.isArray(message?.data) ? message.data : [];
+          if (!tf || arr.length === 0) break;
+
+          const indiMap = new Map(get().indicatorsBySymbol || new Map());
+          const byTfAll = new Map(get().rsiBySymbolTimeframe || new Map());
+
+          arr.forEach((entry) => {
+            if (!entry || !entry.symbol || !entry.indicators) return;
+            const symbol = entry.symbol;
+            const barTime = entry?.bar_time ?? null;
+            const indicators = entry.indicators;
+
+            // Update indicatorsBySymbol
+            const existing = indiMap.get(symbol) || { symbol, timeframes: new Map() };
+            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+            tfMap.set(tf, { indicators, barTime, lastUpdate: new Date() });
+            indiMap.set(symbol, { symbol, timeframes: tfMap });
+
+            // Update RSI view if present
+            if (indicators && indicators.rsi) {
+              const periodKey = Object.keys(indicators.rsi)[0];
+              const value = indicators.rsi[periodKey];
+              if (typeof value === 'number') {
+                const symTf = byTfAll.get(symbol) instanceof Map ? byTfAll.get(symbol) : new Map(byTfAll.get(symbol) || []);
+                symTf.set(tf, { value, period: periodKey, timeframe: tf, updatedAt: new Date() });
+                byTfAll.set(symbol, symTf);
+              }
+            }
+          });
+
+          set({ indicatorsBySymbol: indiMap, rsiBySymbolTimeframe: byTfAll });
           get().persistToSession();
           get().broadcastToLegacyStoresDebounced();
           break;

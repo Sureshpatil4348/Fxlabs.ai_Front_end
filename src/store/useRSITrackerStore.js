@@ -131,7 +131,7 @@ const useRSITrackerStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'indicator_updates', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -388,6 +388,71 @@ const useRSITrackerStore = create(
                 }
               }
             }
+          }
+          break;
+
+        case 'indicator_updates':
+          {
+            // Consolidated indicator updates by timeframe
+            const timeframe = (message?.timeframe || '').toUpperCase();
+            const arr = Array.isArray(message?.data) ? message.data : [];
+            if (!timeframe || arr.length === 0) break;
+
+            const indicatorDataMap = new Map(state.indicatorData || new Map());
+            const rsiByTfMap = new Map(state.rsiDataByTimeframe || new Map());
+            const flatRsiMap = new Map(state.rsiData);
+            const rsiHist = new Map(get().rsiHistory);
+            const rsiHistByTf = new Map(get().rsiHistoryByTimeframe || new Map());
+
+            arr.forEach((entry) => {
+              if (!entry || !entry.symbol || !entry.indicators) return;
+              const symbol = entry.symbol;
+              const indicators = entry.indicators;
+              const barTime = entry?.bar_time ?? null;
+
+              // Update indicator data per timeframe
+              const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
+              const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+              tfMap.set(timeframe, { indicators, barTime, lastUpdate: new Date() });
+              existing.symbol = symbol;
+              existing.timeframe = timeframe;
+              existing.indicators = indicators;
+              existing.barTime = barTime;
+              existing.lastUpdate = new Date();
+              existing.timeframes = tfMap;
+              indicatorDataMap.set(symbol, existing);
+
+              // Update RSI per timeframe and flat if matching current timeframe
+              const rsiObj = indicators?.rsi;
+              if (rsiObj) {
+                const periodKey = Object.keys(rsiObj)[0];
+                const rsiValue = rsiObj[periodKey];
+                if (typeof rsiValue === 'number') {
+                  const symTf = rsiByTfMap.get(symbol) instanceof Map ? rsiByTfMap.get(symbol) : new Map(rsiByTfMap.get(symbol) || []);
+                  symTf.set(timeframe, { value: rsiValue, period: periodKey, timeframe, updatedAt: new Date() });
+                  rsiByTfMap.set(symbol, symTf);
+
+                  if (timeframe === state.settings.timeframe) {
+                    flatRsiMap.set(symbol, { value: rsiValue, period: periodKey, timeframe, updatedAt: new Date() });
+                  }
+
+                  // Maintain history
+                  const hist = [...(rsiHist.get(symbol) || [])];
+                  hist.push({ time: Date.now(), value: rsiValue });
+                  if (hist.length > 200) hist.shift();
+                  rsiHist.set(symbol, hist);
+
+                  const tfHistSym = rsiHistByTf.get(symbol) instanceof Map ? rsiHistByTf.get(symbol) : new Map(rsiHistByTf.get(symbol) || []);
+                  const tfHist = [...(tfHistSym.get(timeframe) || [])];
+                  tfHist.push({ time: Date.now(), value: rsiValue });
+                  if (tfHist.length > 200) tfHist.shift();
+                  tfHistSym.set(timeframe, tfHist);
+                  rsiHistByTf.set(symbol, tfHistSym);
+                }
+              }
+            });
+
+            set({ indicatorData: indicatorDataMap, rsiDataByTimeframe: rsiByTfMap, rsiData: flatRsiMap, rsiHistory: rsiHist, rsiHistoryByTimeframe: rsiHistByTf });
           }
           break;
           

@@ -144,7 +144,7 @@ const useMarketStore = create(
           });
           get().addLog('Connection error (Market v2 probe)', 'error');
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'indicator_updates', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -280,6 +280,45 @@ const useMarketStore = create(
             }
           }
           break;
+
+        case 'indicator_updates': {
+          // Consolidated indicators for a timeframe
+          const tf = (message?.timeframe || '').toUpperCase();
+          const arr = Array.isArray(message?.data) ? message.data : [];
+          if (!tf || arr.length === 0) break;
+
+          const currentIndicatorData = new Map(state.indicatorData || new Map());
+          const newRsiData = new Map(state.rsiData);
+
+          arr.forEach((entry) => {
+            if (!entry || !entry.symbol || !entry.indicators) return;
+            currentIndicatorData.set(entry.symbol, {
+              symbol: entry.symbol,
+              timeframe: tf,
+              indicators: entry.indicators,
+              barTime: entry.bar_time,
+              lastUpdate: new Date()
+            });
+
+            // Update RSI data if available
+            const rsiObj = entry.indicators?.rsi;
+            if (rsiObj) {
+              const periodKey = Object.keys(rsiObj)[0];
+              const rsiValue = rsiObj[periodKey];
+              if (typeof rsiValue === 'number') {
+                newRsiData.set(entry.symbol, {
+                  value: rsiValue,
+                  period: periodKey,
+                  timeframe: tf,
+                  updatedAt: new Date()
+                });
+              }
+            }
+          });
+
+          set({ indicatorData: currentIndicatorData, rsiData: newRsiData });
+          break;
+        }
           
         case 'pong':
           get().addLog('Pong received', 'info');

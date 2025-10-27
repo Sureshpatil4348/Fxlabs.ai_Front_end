@@ -45,6 +45,37 @@ Files affected:
 - `src/store/useRSICorrelationStore.js`
 - `src/components/widget/services/realMarketService.js`
 
+## Consolidated Indicator Updates (Latest)
+
+Backend now sends consolidated indicator updates per timeframe every ~10 seconds on closed bars.
+
+- Type: `indicator_updates`
+- Fields:
+  - `timeframe`: string (e.g., `5M`, `1H`)
+  - `data`: array of entries `{ symbol, bar_time, indicators }`
+- Example:
+  {
+    "type": "indicator_updates",
+    "timeframe": "5M",
+    "data": [
+      { "symbol": "EURUSDm", "bar_time": 1696229940000, "indicators": { "rsi": {"14": 51.23} } },
+      { "symbol": "BTCUSDm",  "bar_time": 1696229940000, "indicators": { "rsi": {"14": 48.10} } }
+    ]
+  }
+
+Frontend changes:
+- Subscribed to `indicator_updates` across stores
+- Normalize and update per-symbol indicator maps and RSI caches
+- Maintain per-timeframe RSI maps and flat RSI snapshot where appropriate
+- Session persistence and legacy broadcasts updated through MarketCache
+
+Files affected:
+- `src/services/websocketMessageRouter.js` (logging)
+- `src/store/useMarketCacheStore.js`
+- `src/store/useMarketStore.js`
+- `src/store/useCurrencyStrengthStore.js`
+- `src/store/useRSITrackerStore.js`
+
 ### Unified real-time data path
 - The chart’s real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart’s top price bar.
 - This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.

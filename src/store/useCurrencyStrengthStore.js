@@ -144,7 +144,7 @@ const useCurrencyStrengthStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'currency_strength_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'indicator_updates', 'currency_strength_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -322,6 +322,39 @@ const useCurrencyStrengthStore = create(
             existing.timeframes = tfMap;
 
             indicatorDataMap.set(symbol, existing);
+            set({ indicatorData: indicatorDataMap });
+            // Keep recalculation manual/scheduled to avoid flickering
+          }
+          break;
+
+        case 'indicator_updates':
+          {
+            const timeframe = (message?.timeframe || '').toUpperCase();
+            const arr = Array.isArray(message?.data) ? message.data : [];
+            if (!timeframe || arr.length === 0) break;
+
+            const indicatorDataMap = new Map(state.indicatorData || new Map());
+
+            arr.forEach((entry) => {
+              if (!entry || !entry.symbol || !entry.indicators) return;
+              const symbol = entry.symbol;
+              const barTime = entry?.bar_time ?? null;
+              const indicators = entry.indicators;
+
+              const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
+              const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
+              tfMap.set(timeframe, { indicators, barTime, lastUpdate: new Date() });
+
+              existing.symbol = symbol;
+              existing.timeframe = timeframe;
+              existing.indicators = indicators;
+              existing.barTime = barTime;
+              existing.lastUpdate = new Date();
+              existing.timeframes = tfMap;
+
+              indicatorDataMap.set(symbol, existing);
+            });
+
             set({ indicatorData: indicatorDataMap });
             // Keep recalculation manual/scheduled to avoid flickering
           }
