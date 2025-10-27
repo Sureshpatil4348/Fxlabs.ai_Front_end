@@ -1,13 +1,15 @@
 // src/components/widget/services/realMarketService.js
 
+import websocketService from '../../../services/websocketService';
+
 export class RealMarketService {
     static BASE_URL = 'https://api.fxlabsprime.com';
-    static WS_URL = 'wss://api.fxlabsprime.com/market-v2';
-    
-    ws = null;
-    reconnectAttempts = 0;
-    maxReconnectAttempts = 5;
-    reconnectDelay = 1000;
+    // Uses centralized WS service via websocketMessageRouter
+
+    // Router registration bookkeeping (no direct socket)
+    _routerStoreName = null;
+    _onClose = null;
+    _onOpen = null;
   
     /**
      * Fetch historical OHLC data from your real market data API
@@ -296,7 +298,8 @@ export class RealMarketService {
   }
   
   /**
-   * Connect to your real market WebSocket for real-time data
+   * Connect: register a transient handler with the shared WS router.
+   * Streams each tick immediately to the chart via onMessage.
    */
     connectWebSocket(
       symbol = 'EURUSD',
@@ -306,128 +309,94 @@ export class RealMarketService {
       onClose,
       onOpen
     ) {
-      console.log('🔌 Connecting to real market WebSocket for', symbol, interval);
-      
       try {
-        // Close existing connection if any
-        if (this.ws) {
-          this.ws.close();
-          this.ws = null;
+        // Cleanup any existing registration
+        if (this._routerStoreName) {
+          websocketService.unregisterStore(this._routerStoreName);
+          this._routerStoreName = null;
         }
-        
-        // For now, we'll use a simple WebSocket connection
-        // TODO: Integrate with the existing websocketService properly
-        const wsUrl = `${RealMarketService.WS_URL}`;
-        console.log('🌐 WebSocket URL:', wsUrl);
-        
-        this.ws = new WebSocket(wsUrl);
-        
-        this.ws.onopen = () => {
-          console.log('✅ Real Market WebSocket connected');
-          if (onOpen) onOpen();
+
+        // Normalize symbol matching against server suffix
+        const wants = [symbol, symbol + 'm', symbol.replace('m', '')];
+        const storeName = `realMarketChart:${symbol}:${interval}:${Date.now()}`;
+        this._routerStoreName = storeName;
+        this._onClose = onClose;
+        this._onOpen = onOpen;
+
+        // Helper to emit a candle for a single tick
+        const emitFromTick = (tick) => {
+          const price = parseFloat(tick.price || tick.ask || tick.bid || 0);
+          if (!Number.isFinite(price) || price <= 0) return;
+          const candleData = {
+            time: Math.floor(Date.now() / 1000),
+            open: price,
+            high: price,
+            low: price,
+            close: price,
+            volume: parseFloat(tick.volume || 0)
+          };
+          if (onMessage) onMessage(candleData);
         };
-        
-        this.ws.onmessage = (event) => {
+
+        // Message handler via router
+        const handler = (message) => {
           try {
-            let message;
-            
-            // Handle Blob data
-            if (event.data instanceof Blob) {
-              event.data.text().then((text) => {
-                try {
-                  const parsedMessage = JSON.parse(text);
-                  console.log('📨 Real Market WebSocket message (Blob):', parsedMessage);
-                  handleWebSocketMessage(parsedMessage, symbol, onMessage);
-                } catch (error) {
-                  console.error('Error parsing Blob WebSocket message:', error);
-                }
-              }).catch((error) => {
-                console.error('Error reading Blob data:', error);
-              });
+            if (!message || !message.type) return;
+            // Per-tick handling
+            if (message.type === 'ticks') {
+              const arr = Array.isArray(message.data) ? message.data : [];
+              if (arr.length === 0) return;
+              // Filter for the chart symbol and emit each tick
+              for (let i = 0; i < arr.length; i++) {
+                const t = arr[i];
+                const sym = (t.symbol || t.pair || '').toString();
+                if (wants.includes(sym)) emitFromTick(t);
+              }
               return;
             }
-            
-            // Handle string data
-            if (typeof event.data === 'string') {
-              message = JSON.parse(event.data);
-            } else {
-              message = event.data;
+            if (message.type === 'tick') {
+              const t = message.data || message.tick || message;
+              const sym = (t?.symbol || t?.pair || '').toString();
+              if (wants.includes(sym)) emitFromTick(t);
+              return;
             }
-            
-            console.log('📨 Real Market WebSocket message:', message);
-            handleWebSocketMessage(message, symbol, onMessage);
-            
-          } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
+            // Bar-level update passthrough for the symbol
+            if (message.type === 'ohlc_update' && (message.symbol === symbol || message.symbol === symbol + 'm')) {
+              const candleData = {
+                time: message.time,
+                open: parseFloat(message.open),
+                high: parseFloat(message.high),
+                low: parseFloat(message.low),
+                close: parseFloat(message.close),
+                volume: parseFloat(message.volume || 0)
+              };
+              if (onMessage) onMessage(candleData);
+            }
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('RealMarketService handler error:', e);
+            if (onError) onError(e);
           }
         };
-        
-        // Helper function to handle WebSocket messages
-        const handleWebSocketMessage = (message, symbol, onMessage) => {
-          console.log('📨 Processing WebSocket message:', message.type);
-          
-          if (message.type === 'ticks' && message.data) {
-            // Process ticks data to create OHLC candles
-            console.log('📊 Processing ticks data:', message.data.length, 'ticks');
-            
-            // Find ticks for our symbol
-            const symbolTicks = message.data.filter(tick => {
-              const tickSymbol = tick.symbol || tick.pair;
-              return tickSymbol === symbol || tickSymbol === symbol + 'm' || tickSymbol === symbol.replace('m', '');
-            });
-            
-            if (symbolTicks.length > 0) {
-              console.log('📊 Found ticks for symbol:', symbol, symbolTicks.length, 'ticks');
-              
-              // Create OHLC data from ticks
-              symbolTicks.forEach(tick => {
-                const currentTime = Math.floor(Date.now() / 1000);
-                const price = parseFloat(tick.price || tick.ask || tick.bid || 0);
-                
-                if (price > 0) {
-                  const candleData = {
-                    time: currentTime,
-                    open: price,
-                    high: price,
-                    low: price,
-                    close: price,
-                    volume: parseFloat(tick.volume || 0),
-                  };
-                  
-                  console.log('📊 Created candle from tick:', candleData);
-                  if (onMessage) onMessage(candleData);
-                }
-                
-                // Daily change data is now handled by the centralized market cache
-                // No need to extract and store separately in chart store
-              });
-            }
-          } else if (message.type === 'ohlc_update' && message.symbol === symbol) {
-            const candleData = {
-              time: message.time,
-              open: parseFloat(message.open),
-              high: parseFloat(message.high),
-              low: parseFloat(message.low),
-              close: parseFloat(message.close),
-              volume: parseFloat(message.volume || 0),
-            };
-            
-            if (onMessage) onMessage(candleData);
-          }
-        };
-        
-        this.ws.onerror = (error) => {
-          console.error('❌ Real Market WebSocket error:', error);
-          if (onError) onError(error);
-        };
-        
-        this.ws.onclose = (event) => {
-          console.log('🔌 Real Market WebSocket closed:', event.code, event.reason);
-          if (onClose) onClose(event);
-        };
-        
+
+        // Register with the centralized router
+        websocketService.registerStore(storeName, {
+          messageHandler: handler,
+          connectionCallback: () => { if (typeof onOpen === 'function') onOpen(); },
+          disconnectionCallback: (ev) => { if (typeof onClose === 'function') onClose(ev); },
+          errorCallback: (err) => { if (typeof onError === 'function') onError(err); },
+          subscribedMessageTypes: ['ticks', 'ohlc_update']
+        });
+
+        // Ensure the shared connection is up
+        if (websocketService.getStatus()?.isConnected) {
+          if (typeof onOpen === 'function') onOpen();
+        } else {
+          websocketService.connect().catch((err) => { if (onError) onError(err); });
+        }
       } catch (error) {
-        console.error('❌ Error creating real market WebSocket connection:', error);
+        // eslint-disable-next-line no-console
+        console.error('❌ Error registering real market handler:', error);
         if (onError) onError(error);
       }
     }
@@ -436,10 +405,14 @@ export class RealMarketService {
      * Disconnect WebSocket
      */
     disconnectWebSocket() {
-      if (this.ws) {
-        console.log('🔌 Disconnecting Real Market WebSocket...');
-        this.ws.close(1000, 'Manual disconnect');
-        this.ws = null;
+      if (this._routerStoreName) {
+        try {
+          websocketService.unregisterStore(this._routerStoreName);
+        } catch (_e) { /* ignore */ }
+        this._routerStoreName = null;
+      }
+      if (typeof this._onClose === 'function') {
+        try { this._onClose({ code: 1000, reason: 'Manual disconnect' }); } catch (_e) { /* ignore */ }
       }
     }
   
@@ -447,7 +420,7 @@ export class RealMarketService {
      * Check if WebSocket is connected
      */
     isConnected() {
-      return this.ws?.isConnected || false;
+      try { return !!websocketService.getStatus()?.isConnected; } catch (_e) { return false; }
     }
   
     /**

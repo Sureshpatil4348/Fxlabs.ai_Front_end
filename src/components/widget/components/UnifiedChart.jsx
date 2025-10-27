@@ -32,8 +32,8 @@ export const UnifiedChart = () => {
   const tickThrottleTimerRef = useRef(null);
   const tickThrottlePendingRef = useRef(null);
   const TICK_UPDATE_THROTTLE_MS = useMemo(() => {
-    const val = parseInt(process.env.REACT_APP_TRADING_CHART_TICK_THROTTLE_MS || '1000', 10);
-    return Number.isFinite(val) && val > 0 ? val : 1000;
+    const val = parseInt(process.env.REACT_APP_TRADING_CHART_TICK_THROTTLE_MS || '0', 10);
+    return Number.isFinite(val) && val >= 0 ? val : 0;
   }, []);
   
   const {
@@ -388,8 +388,12 @@ export const UnifiedChart = () => {
       store.setIndicators(calculatedIndicators);
     };
 
-    // Throttled handler to avoid updating chart on every tick
+    // Tick handler (per-tick if throttle is 0, otherwise throttled)
     const handleNewCandle = (incomingCandle) => {
+      if (TICK_UPDATE_THROTTLE_MS <= 0) {
+        applyCandle(incomingCandle);
+        return;
+      }
       tickThrottlePendingRef.current = incomingCandle;
       const now = Date.now();
 

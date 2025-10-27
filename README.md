@@ -4,15 +4,20 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Advanced Chart Tick Throttling (Latest)
 
-To prevent excessive re-renders, the advanced chart now throttles real-time updates from the market WebSocket and does not update on every tick message. Updates are batched and applied at most once per second by default.
+Real-time chart updates now process each tick immediately by default. You can optionally enable throttling via an env var if needed.
 
-- Behavior: Aggregates incoming ticks and applies only the latest snapshot per throttle window
-- Default rate: 1000ms between chart updates
-- Configuration: Set `REACT_APP_TRADING_CHART_TICK_THROTTLE_MS` to adjust the throttle interval
+- Behavior: Per-tick streaming updates to the chart as ticks arrive
+- Default rate: 0ms (no throttle; applies every tick)
+- Configuration: Set `REACT_APP_TRADING_CHART_TICK_THROTTLE_MS` to a positive integer (e.g., `250`) to batch UI updates
 - Scope: Affects the advanced chart (`TradingChart` → `UnifiedChart`), not the basic embedded TradingView widget
 
 Files affected:
 - `src/components/widget/components/UnifiedChart.jsx`
+
+### Unified real-time data path
+- The chart’s real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart’s top price bar.
+- This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.
+- Files: `src/components/widget/services/realMarketService.js`, `src/services/websocketService.js`, `src/services/websocketMessageRouter.js`
 
 ## Grid Toggle Functionality (Latest)
 
