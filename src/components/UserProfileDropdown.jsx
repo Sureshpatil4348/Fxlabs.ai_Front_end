@@ -57,15 +57,27 @@ const UserProfileDropdown = () => {
     return parts.substring(0, 2).toUpperCase()
   }
 
+  // Connection status for showing connecting animation on avatar
+  const connectionStatus = useMarketStore(state => state.globalConnectionState.status)
+  const isConnecting = connectionStatus === 'CONNECTING' || connectionStatus === 'RETRYING'
+
   return (
     <>
       <div className="relative" ref={dropdownRef}>
         {/* Avatar Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#19235d] hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
+          className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#19235d] hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
+          aria-label="Account menu"
         >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg border-2 border-white/20">
+          {/* Spinning ring when connecting */}
+          {isConnecting && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-1 rounded-full border-2 border-emerald-500/70 border-t-transparent animate-spin"
+            />
+          )}
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg border-2 border-white/20">
             {getUserInitials(user?.email)}
           </div>
         </button>
