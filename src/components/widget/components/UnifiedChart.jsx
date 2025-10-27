@@ -480,14 +480,6 @@ export const UnifiedChart = () => {
             }
         }
       >
-        {(() => {
-          console.log('📊 UnifiedChart: Rendering decision', {
-            chartType: settings.chartType,
-            isCandlestick: settings.chartType === 'candlestick',
-            candlesCount: candles.length
-          });
-          return null;
-        })()}
         {settings.chartType === 'candlestick' ? (
           // Show Enhanced Candlestick Chart with drawing tools, sized to container
           <div className="absolute" style={{ top: 0, left: 0, right: 0, bottom: 0 }}>

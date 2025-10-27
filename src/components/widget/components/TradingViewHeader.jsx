@@ -2,14 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import SymbolSearchModal from './SymbolSearchModal';
-import useMarketCacheStore from '../../../store/useMarketCacheStore';
 import { formatSymbolDisplay } from '../../../utils/formatters';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
   const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
-  const { pricingBySymbol } = useMarketCacheStore();
   const [_activeTimeframe, setActiveTimeframe] = useState('1h');
   const [showIndicators, setShowIndicators] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -47,21 +45,6 @@ export const TradingViewHeader = () => {
     { value: 'Asia/Seoul', label: 'KST (GMT+9)', city: 'Seoul', market: 'KRX', offset: 9 },
   ];
   
-  // Get daily change data from market cache (same approach as trending pairs)
-  const currentSymbol = settings.symbol ? `${settings.symbol}m` : null;
-  const pricing = currentSymbol ? pricingBySymbol.get(currentSymbol) || {} : {};
-  const dailyChangePct = typeof pricing.daily_change_pct === 'number' ? pricing.daily_change_pct : 0;
-  const dailyChange = typeof pricing.daily_change === 'number' ? pricing.daily_change : 0;
-  
-  // Debug logging to check data
-  console.log('🔍 TradingViewHeader Debug:', {
-    currentSymbol,
-    pricing,
-    dailyChangePct,
-    dailyChange,
-    pricingKeys: Object.keys(pricing)
-  });
-
   // Check if current symbol is in watchlist
   useEffect(() => {
     if (settings.symbol) {
