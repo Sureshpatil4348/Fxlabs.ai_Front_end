@@ -14,6 +14,40 @@ Real-time chart updates now process each tick immediately by default. You can op
 Files affected:
 - `src/components/widget/components/UnifiedChart.jsx`
 
+## WebSocket Tick Format (Latest)
+
+Backend now pushes one tick per message using type `tick` with a single object payload.
+
+- Type: `tick`
+- Payload: single tick object on `data`
+- Example:
+  {
+    "type": "tick",
+    "data": {
+      "symbol": "EURUSDm",
+      "time": 1696229945123,
+      "time_iso": "2025-10-02T14:19:05.123Z",
+      "bid": 1.06871,
+      "daily_change_pct": -0.12,
+      "daily_change": -0.00129
+    }
+  }
+
+Frontend changes:
+- Accepts both `tick` (single) and legacy `ticks` (array) seamlessly
+- Updated stores and router subscriptions to include `tick`
+- Suppresses noisy logging for `tick` unless enabled via `REACT_APP_ENABLE_TICK_LOGGING=true`
+
+Files affected:
+- `src/services/websocketService.js`
+- `src/services/websocketMessageRouter.js`
+- `src/store/useMarketCacheStore.js`
+- `src/store/useMarketStore.js`
+- `src/store/useCurrencyStrengthStore.js`
+- `src/store/useRSITrackerStore.js`
+- `src/store/useRSICorrelationStore.js`
+- `src/components/widget/services/realMarketService.js`
+
 ### Unified real-time data path
 - The chart’s real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart’s top price bar.
 - This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.

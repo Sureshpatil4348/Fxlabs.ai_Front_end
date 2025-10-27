@@ -186,7 +186,7 @@ class WebSocketMessageRouter {
     if (messageType === 'indicator_update') {
       console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
       console.log(`[Router][${new Date().toISOString()}] Full ${messageType} message:`, JSON.stringify(message, null, 2));
-    } else if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'ticks') {
+    } else if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'ticks' && messageType !== 'tick') {
       // Log other message types only when debug flag is enabled (skip noisy types like 'ticks')
       if (targetStores.size > 0) {
         console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);

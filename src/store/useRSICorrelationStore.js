@@ -294,8 +294,10 @@ const useRSICorrelationStore = create(
           break;
           
         case 'ticks':
+        case 'tick': {
           const tickData = new Map(state.tickData);
-          message.data.forEach(tick => {
+          const ticks = Array.isArray(message.data) ? message.data : (message?.data ? [message.data] : []);
+          ticks.forEach(tick => {
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)]; // Keep last 50 ticks
             existing.lastUpdate = new Date();
@@ -303,6 +305,7 @@ const useRSICorrelationStore = create(
           });
           set({ tickData });
           break;
+        }
           
         case 'ohlc_update':
           const currentOhlcData = new Map(state.ohlcData);

@@ -144,7 +144,7 @@ const useMarketStore = create(
           });
           get().addLog('Connection error (Market v2 probe)', 'error');
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -237,8 +237,10 @@ const useMarketStore = create(
           break;
           
         case 'ticks':
+        case 'tick': {
           const tickData = new Map(state.tickData);
-          message.data.forEach(tick => {
+          const ticks = Array.isArray(message.data) ? message.data : (message?.data ? [message.data] : []);
+          ticks.forEach(tick => {
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)]; // Keep last 50 ticks
             existing.lastUpdate = new Date();
@@ -246,6 +248,7 @@ const useMarketStore = create(
           });
           set({ tickData });
           break;
+        }
           
         case 'indicator_update':
           // Handle live indicator updates

@@ -385,7 +385,7 @@ export class RealMarketService {
           connectionCallback: () => { if (typeof onOpen === 'function') onOpen(); },
           disconnectionCallback: (ev) => { if (typeof onClose === 'function') onClose(ev); },
           errorCallback: (err) => { if (typeof onError === 'function') onError(err); },
-          subscribedMessageTypes: ['ticks', 'ohlc_update']
+          subscribedMessageTypes: ['ticks', 'tick', 'ohlc_update']
         });
 
         // Ensure the shared connection is up
