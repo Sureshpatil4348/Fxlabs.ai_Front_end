@@ -1,5 +1,5 @@
 import { Sun, Moon, Globe2 } from "lucide-react";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
 import { computeMarketHours, listTimezonesWithOffsets } from '../utils/marketHoursEngine';
@@ -167,11 +167,15 @@ const ForexMarketTimeZone = () => {
     if (!timelineRef.current || !trackRef.current) return;
     const containerRect = timelineRef.current.getBoundingClientRect();
     const trackRect = trackRef.current.getBoundingClientRect();
-    const leftPx = (trackRect.left - containerRect.left) + (sliderPosition / 100) * trackRect.width;
+    // Guard against zero-width measurements (e.g., when hidden under a non-active tab)
+    const width = trackRect.width || 0;
+    const baseLeft = trackRect.left - containerRect.left;
+    const leftPx = baseLeft + (sliderPosition / 100) * width;
     setIndicatorLeft(leftPx);
   }, [sliderPosition]);
 
-  useEffect(() => {
+  // Ensure we calculate after layout to avoid 0-width on first paint under hidden tabs
+  useLayoutEffect(() => {
     updateIndicatorLeft();
   }, [sliderPosition, selectedTimezone, updateIndicatorLeft]);
 
@@ -179,6 +183,35 @@ const ForexMarketTimeZone = () => {
     const onResize = () => updateIndicatorLeft();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
+  }, [updateIndicatorLeft]);
+
+  // Recalculate when the track/timeline size changes (e.g., when tab becomes visible)
+  useEffect(() => {
+    if (!('ResizeObserver' in window)) return; // graceful degradation
+    if (!timelineRef.current) return;
+    let rafId;
+    const schedule = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => updateIndicatorLeft());
+    };
+    const ro = new ResizeObserver(() => schedule());
+    ro.observe(timelineRef.current);
+    if (trackRef.current) ro.observe(trackRef.current);
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
+  }, [updateIndicatorLeft]);
+
+  // Also handle visibility/focus changes which can affect layout measurements
+  useEffect(() => {
+    const handler = () => requestAnimationFrame(() => updateIndicatorLeft());
+    document.addEventListener('visibilitychange', handler);
+    window.addEventListener('focus', handler);
+    return () => {
+      document.removeEventListener('visibilitychange', handler);
+      window.removeEventListener('focus', handler);
+    };
   }, [updateIndicatorLeft]);
 
   // Auto-scroll to current time indicator on mount and when indicator position changes (mobile only)

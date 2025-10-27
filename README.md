@@ -3258,3 +3258,21 @@ How to use
 - Open any candlestick panel in the Advanced TradingView view.
 - Use the toolbar above the chart to pick a tool, then click on the chart.
 - Use Clear to remove all drawings; Export to download drawings as JSON.
+## Forex Market Time Zone Converter — Time Indicator Position Fix (Latest)
+
+- Fixed the vertical time indicator (the moving “timezone stick”) incorrectly sticking to the absolute left when navigating from Dashboard (Analysis tab) to Tools tab.
+- Root cause: the timeline was initially measured while hidden, yielding zero width and a left position of 0, so the indicator never re‑positioned after the tab became visible.
+- Solution: recalculate after layout and whenever the timeline becomes visible or resizes.
+  - Added `useLayoutEffect` to compute after layout.
+  - Added `ResizeObserver` on the timeline/track to recompute on size changes (e.g., tab switch).
+  - Added visibility/focus listeners to reflow and recalc on tab focus changes.
+
+Files affected:
+- `src/components/MultiTimeAnalysis.jsx` — recalc indicator with `useLayoutEffect`, `ResizeObserver`, and focus/visibility handlers.
+
+How to verify locally:
+- Open the Dashboard with the Analysis tab active, then switch to the Tools tab.
+- The purple vertical indicator aligns with the current time within the time bar (not at the absolute widget left) and updates every second.
+
+ESLint note:
+- The fix adheres to typical React hook dependency best practices. If you run ESLint locally, there should be no new warnings for these changes.
