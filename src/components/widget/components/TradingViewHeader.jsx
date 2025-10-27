@@ -3,9 +3,9 @@ import { createPortal } from 'react-dom';
 
 import SymbolSearchModal from './SymbolSearchModal';
 import useMarketCacheStore from '../../../store/useMarketCacheStore';
+import { formatSymbolDisplay } from '../../../utils/formatters';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
-import { formatSymbolDisplay } from '../../../utils/formatters';
 
 export const TradingViewHeader = () => {
   const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
