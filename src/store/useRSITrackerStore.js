@@ -131,7 +131,7 @@ const useRSITrackerStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'indicator_updates', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_updates', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -288,10 +288,9 @@ const useRSITrackerStore = create(
           }
           break;
           
-        case 'ticks':
-        case 'tick': {
+        case 'ticks': {
           const tickData = new Map(state.tickData);
-          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
+          const ticks = Array.isArray(message?.data) ? message.data : [];
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
@@ -302,94 +301,6 @@ const useRSITrackerStore = create(
           set({ tickData });
           break;
         }
-
-        case 'indicator_update':
-          {
-            // Handle live indicator updates with normalized payload
-            const symbol = message.symbol || message?.data?.symbol;
-            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
-            const indicators = message?.data?.indicators || message?.indicators;
-            const barTime = message?.data?.bar_time ?? message?.bar_time;
-
-            if (!symbol || !indicators) break;
-
-            const indicatorDataMap = new Map(state.indicatorData || new Map());
-            const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
-            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
-
-            if (timeframe) {
-              tfMap.set(timeframe, {
-                indicators,
-                barTime,
-                lastUpdate: new Date()
-              });
-            }
-
-            // Maintain backward-compatible flat fields using latest update
-            existing.symbol = symbol;
-            if (timeframe) existing.timeframe = timeframe;
-            existing.indicators = indicators;
-            existing.barTime = barTime;
-            existing.lastUpdate = new Date();
-            existing.timeframes = tfMap;
-
-            indicatorDataMap.set(symbol, existing);
-            set({ indicatorData: indicatorDataMap });
-            
-            // Update RSI data if available
-            if (indicators && indicators.rsi) {
-              const rsiPeriodKey = Object.keys(indicators.rsi)[0];
-              const rsiValue = indicators.rsi[rsiPeriodKey];
-              if (typeof rsiValue === 'number') {
-                // Store per-timeframe RSI
-                const rsiByTfMap = new Map(state.rsiDataByTimeframe || new Map());
-                const symTfMap = rsiByTfMap.get(symbol) instanceof Map ? rsiByTfMap.get(symbol) : new Map(rsiByTfMap.get(symbol) || []);
-                if (timeframe) {
-                  symTfMap.set(timeframe, {
-                    value: rsiValue,
-                    period: rsiPeriodKey,
-                    timeframe,
-                    updatedAt: new Date()
-                  });
-                }
-                rsiByTfMap.set(symbol, symTfMap);
-                set({ rsiDataByTimeframe: rsiByTfMap });
-
-                // Update flat RSI only if this timeframe matches current tracker setting
-                if (!timeframe || timeframe === state.settings.timeframe) {
-                  const newRsiData = new Map(state.rsiData);
-                  newRsiData.set(symbol, {
-                    value: rsiValue,
-                    period: rsiPeriodKey,
-                    timeframe: timeframe || state.settings.timeframe,
-                    updatedAt: new Date()
-                  });
-                  set({ rsiData: newRsiData });
-                }
-                
-                // Maintain minimal RSI history per symbol for event tracking
-                const historyMap = new Map(get().rsiHistory);
-                const hist = [...(historyMap.get(symbol) || [])];
-                hist.push({ time: Date.now(), value: rsiValue });
-                if (hist.length > 200) hist.shift();
-                historyMap.set(symbol, hist);
-                set({ rsiHistory: historyMap });
-
-                // Maintain per-timeframe RSI history
-                if (timeframe) {
-                  const historyByTf = new Map(get().rsiHistoryByTimeframe || new Map());
-                  const symTfHistMap = historyByTf.get(symbol) instanceof Map ? historyByTf.get(symbol) : new Map(historyByTf.get(symbol) || []);
-                  const tfHist = [...(symTfHistMap.get(timeframe) || [])];
-                  tfHist.push({ time: Date.now(), value: rsiValue });
-                  if (tfHist.length > 200) tfHist.shift();
-                  symTfHistMap.set(timeframe, tfHist);
-                  historyByTf.set(symbol, symTfHistMap);
-                  set({ rsiHistoryByTimeframe: historyByTf });
-                }
-              }
-            }
-          }
-          break;
 
         case 'indicator_updates':
           {

@@ -144,7 +144,7 @@ const useMarketStore = create(
           });
           get().addLog('Connection error (Market v2 probe)', 'error');
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'indicator_updates', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_updates', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -236,10 +236,9 @@ const useMarketStore = create(
           }
           break;
           
-        case 'ticks':
-        case 'tick': {
+        case 'ticks': {
           const tickData = new Map(state.tickData);
-          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
+          const ticks = Array.isArray(message?.data) ? message.data : [];
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
@@ -251,35 +250,7 @@ const useMarketStore = create(
           break;
         }
           
-        case 'indicator_update':
-          // Handle live indicator updates
-          const currentIndicatorData = new Map(state.indicatorData || new Map());
-          if (message.data && message.data.symbol) {
-            currentIndicatorData.set(message.data.symbol, {
-              symbol: message.data.symbol,
-              timeframe: message.data.timeframe,
-              indicators: message.data.indicators,
-              barTime: message.data.bar_time,
-              lastUpdate: new Date()
-            });
-            set({ indicatorData: currentIndicatorData });
-            
-            // Update RSI data if available
-            if (message.data.indicators && message.data.indicators.rsi) {
-              const newRsiData = new Map(state.rsiData);
-              const rsiValue = message.data.indicators.rsi[Object.keys(message.data.indicators.rsi)[0]];
-              if (typeof rsiValue === 'number') {
-                newRsiData.set(message.data.symbol, {
-                  value: rsiValue,
-                  period: Object.keys(message.data.indicators.rsi)[0],
-                  timeframe: message.data.timeframe,
-                  updatedAt: new Date()
-                });
-                set({ rsiData: newRsiData });
-              }
-            }
-          }
-          break;
+        
 
         case 'indicator_updates': {
           // Consolidated indicators for a timeframe

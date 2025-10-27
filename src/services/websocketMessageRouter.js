@@ -117,7 +117,7 @@ class WebSocketMessageRouter {
         targetStores.add(storeName);
       });
     }
-
+    
     // Route to target stores
     targetStores.forEach(storeName => {
       const handler = this.storeHandlers.get(storeName);
@@ -130,25 +130,8 @@ class WebSocketMessageRouter {
       }
     });
 
-    // Targeted BTCUSDm logging for indicator pushes (correlation removed)
+    // Best-effort targeted logging (wrapped to avoid impacting routing)
     try {
-      if (messageType === 'indicator_update') {
-        const sym = (message?.symbol || message?.data?.symbol || '').toString().toUpperCase();
-        if (sym === 'BTCUSDm'.toUpperCase()) {
-          const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
-          const rsiVal = message?.data?.indicators?.rsi ?? message?.indicators?.rsi;
-          console.log(
-            `[WS][Indicator][BTCUSDm] timeframe=${tf}`,
-            {
-              indicators: message?.data?.indicators || message?.indicators || null,
-              barTime: message?.data?.bar_time ?? message?.bar_time ?? null,
-              rsi: rsiVal ?? null,
-              raw: message
-            }
-          );
-        }
-      }
-
       // Targeted logging for currency strength pushes
       if (messageType === 'currency_strength_update') {
         const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
@@ -182,17 +165,14 @@ class WebSocketMessageRouter {
       // best-effort logging only
     }
 
-    // Always log indicator updates verbosely
-    if (messageType === 'indicator_update') {
-      console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
-      console.log(`[Router][${new Date().toISOString()}] Full ${messageType} message:`, JSON.stringify(message, null, 2));
-    } else if (messageType === 'indicator_updates') {
+    // Log consolidated indicator updates verbosely
+    if (messageType === 'indicator_updates') {
       const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
       const count = Array.isArray(message?.data) ? message.data.length : 0;
       console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} (tf=${tf}, count=${count}) to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
       console.log(`[Router][${new Date().toISOString()}] Full ${messageType} message:`, JSON.stringify(message, null, 2));
-    } else if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'tick' && messageType !== 'ticks') {
-      // Log other message types only when debug flag is enabled (skip noisy tick/ticks)
+    } else if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'ticks') {
+      // Log other message types only when debug flag is enabled (skip noisy ticks)
       if (targetStores.size > 0) {
         console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
       } else {

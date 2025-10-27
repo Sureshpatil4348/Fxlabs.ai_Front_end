@@ -144,7 +144,7 @@ const useCurrencyStrengthStore = create(
             });
           });
         },
-        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'tick', 'indicator_update', 'indicator_updates', 'currency_strength_update', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'subscribed', 'unsubscribed', 'initial_indicators', 'ticks', 'indicator_updates', 'currency_strength_update', 'pong', 'error']
       });
       
       // Connect to shared WebSocket service
@@ -272,10 +272,9 @@ const useCurrencyStrengthStore = create(
           }
           break;
           
-        case 'ticks':
-        case 'tick': {
+        case 'ticks': {
           const tickData = new Map(state.tickData);
-          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
+          const ticks = Array.isArray(message?.data) ? message.data : [];
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
@@ -292,40 +291,6 @@ const useCurrencyStrengthStore = create(
           // }
           break;
         }
-          
-        case 'indicator_update':
-          {
-            const symbol = message.symbol || message?.data?.symbol;
-            const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
-            const indicators = message?.data?.indicators || message?.indicators;
-            const barTime = message?.data?.bar_time ?? message?.bar_time;
-
-            if (!symbol || !indicators) break;
-
-            const indicatorDataMap = new Map(state.indicatorData || new Map());
-            const existing = indicatorDataMap.get(symbol) || { symbol, timeframes: new Map() };
-            const tfMap = existing.timeframes instanceof Map ? existing.timeframes : new Map(existing.timeframes || []);
-
-            if (timeframe) {
-              tfMap.set(timeframe, {
-                indicators,
-                barTime,
-                lastUpdate: new Date()
-              });
-            }
-
-            existing.symbol = symbol;
-            if (timeframe) existing.timeframe = timeframe;
-            existing.indicators = indicators;
-            existing.barTime = barTime;
-            existing.lastUpdate = new Date();
-            existing.timeframes = tfMap;
-
-            indicatorDataMap.set(symbol, existing);
-            set({ indicatorData: indicatorDataMap });
-            // Keep recalculation manual/scheduled to avoid flickering
-          }
-          break;
 
         case 'indicator_updates':
           {

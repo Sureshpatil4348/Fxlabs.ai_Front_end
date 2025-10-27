@@ -16,10 +16,9 @@ Files affected:
 
 ## WebSocket Tick Format (Latest)
 
-Backend pushes aggregated ticks roughly once per second. Each `ticks` message contains the latest bid-only tick per pair since the last scan. Single `tick` messages are also accepted for robustness, but primary flow is `ticks`.
+Backend pushes aggregated ticks roughly once per second. Each `ticks` message contains the latest bid-only tick per pair since the last scan.
 
-- Primary type: `ticks` with `data: Tick[]`
-- Optional type: `tick` with `data: Tick`
+- Type: `ticks` with `data: Tick[]`
 - Example (aggregated):
   {
     "type": "ticks",
@@ -30,10 +29,10 @@ Backend pushes aggregated ticks roughly once per second. Each `ticks` message co
   }
 
 Frontend changes:
-- All stores/services now subscribe to `ticks` (and `tick` for safety)
-- Handlers normalize to arrays and update both `ticksBySymbol` and `pricingBySymbol`
+- All stores/services subscribe to `ticks`
+- Handlers update `ticksBySymbol` and `pricingBySymbol`
 - Bid-only fallback: when `ask` is absent, it falls back to `bid`
-- Logging skips tick/ticks noise unless `REACT_APP_ENABLE_TICK_LOGGING=true`
+- Logging skips ticks noise unless `REACT_APP_ENABLE_TICK_LOGGING=true`
 
 Files affected:
 - `src/services/websocketService.js`
@@ -64,7 +63,7 @@ Backend now sends consolidated indicator updates per timeframe every ~10 seconds
   }
 
 Frontend changes:
-- Subscribed to `indicator_updates` across stores
+- Subscribed to `indicator_updates` across stores (legacy `indicator_update` removed)
 - Normalize and update per-symbol indicator maps and RSI caches
 - Maintain per-timeframe RSI maps and flat RSI snapshot where appropriate
 - Session persistence and legacy broadcasts updated through MarketCache

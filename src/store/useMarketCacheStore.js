@@ -102,7 +102,7 @@ const useMarketCacheStore = create(
         errorCallback: () => {
           // keep cache
         },
-        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_update', 'indicator_updates', 'quantum_update', 'ticks', 'tick', 'trending_pairs', 'trending_update', 'trending_snapshot', 'pong', 'error']
+        subscribedMessageTypes: ['connected', 'initial_indicators', 'indicator_updates', 'quantum_update', 'ticks', 'trending_pairs', 'trending_update', 'trending_snapshot', 'pong', 'error']
       });
 
       // Ensure WS connection
@@ -395,8 +395,7 @@ const useMarketCacheStore = create(
           }
           break;
         }
-        case 'initial_indicators':
-        case 'indicator_update': {
+        case 'initial_indicators': {
           const symbol = message.symbol || message?.data?.symbol;
           const timeframe = (message.timeframe || message?.data?.timeframe || '').toUpperCase();
           const indicators = message?.data?.indicators || message?.indicators;
@@ -490,8 +489,7 @@ const useMarketCacheStore = create(
           get().persistToSession();
           break;
         }
-        case 'ticks':
-        case 'tick': {
+        case 'ticks': {
           // Log the entire input message for ticks
           try {
             if (typeof rawData === 'string') {
@@ -503,7 +501,7 @@ const useMarketCacheStore = create(
             // best-effort logging only
             console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (fallback)`, message);
           }
-          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
+          const ticks = Array.isArray(message?.data) ? message.data : [];
           if (ticks.length === 0) break;
           const ticksBySymbol = new Map(get().ticksBySymbol || new Map());
           const pricingBySymbol = new Map(get().pricingBySymbol || new Map());

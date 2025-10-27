@@ -343,12 +343,6 @@ export class RealMarketService {
           try {
             if (!message || !message.type) return;
             // Per-tick handling
-            if (message.type === 'tick') {
-              const t = message.data || message.tick || message;
-              const sym = (t?.symbol || t?.pair || '').toString();
-              if (wants.includes(sym)) emitFromTick(t);
-              return;
-            }
             if (message.type === 'ticks') {
               const arr = Array.isArray(message.data) ? message.data : [];
               if (arr.length === 0) return;
@@ -384,7 +378,7 @@ export class RealMarketService {
           connectionCallback: () => { if (typeof onOpen === 'function') onOpen(); },
           disconnectionCallback: (ev) => { if (typeof onClose === 'function') onClose(ev); },
           errorCallback: (err) => { if (typeof onError === 'function') onError(err); },
-          subscribedMessageTypes: ['ticks', 'tick', 'ohlc_update']
+          subscribedMessageTypes: ['ticks', 'ohlc_update']
         });
 
         // Ensure the shared connection is up

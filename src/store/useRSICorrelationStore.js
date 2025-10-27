@@ -293,10 +293,9 @@ const useRSICorrelationStore = create(
           }, 200);
           break;
           
-        case 'ticks':
-        case 'tick': {
+        case 'ticks': {
           const tickData = new Map(state.tickData);
-          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
+          const ticks = Array.isArray(message?.data) ? message.data : [];
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
