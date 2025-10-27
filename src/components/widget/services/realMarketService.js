@@ -343,21 +343,20 @@ export class RealMarketService {
           try {
             if (!message || !message.type) return;
             // Per-tick handling
+            if (message.type === 'tick') {
+              const t = message.data || message.tick || message;
+              const sym = (t?.symbol || t?.pair || '').toString();
+              if (wants.includes(sym)) emitFromTick(t);
+              return;
+            }
             if (message.type === 'ticks') {
               const arr = Array.isArray(message.data) ? message.data : [];
               if (arr.length === 0) return;
-              // Filter for the chart symbol and emit each tick
               for (let i = 0; i < arr.length; i++) {
                 const t = arr[i];
                 const sym = (t.symbol || t.pair || '').toString();
                 if (wants.includes(sym)) emitFromTick(t);
               }
-              return;
-            }
-            if (message.type === 'tick') {
-              const t = message.data || message.tick || message;
-              const sym = (t?.symbol || t?.pair || '').toString();
-              if (wants.includes(sym)) emitFromTick(t);
               return;
             }
             // Bar-level update passthrough for the symbol

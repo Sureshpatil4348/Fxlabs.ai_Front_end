@@ -16,27 +16,24 @@ Files affected:
 
 ## WebSocket Tick Format (Latest)
 
-Backend now pushes one tick per message using type `tick` with a single object payload.
+Backend pushes aggregated ticks roughly once per second. Each `ticks` message contains the latest bid-only tick per pair since the last scan. Single `tick` messages are also accepted for robustness, but primary flow is `ticks`.
 
-- Type: `tick`
-- Payload: single tick object on `data`
-- Example:
+- Primary type: `ticks` with `data: Tick[]`
+- Optional type: `tick` with `data: Tick`
+- Example (aggregated):
   {
-    "type": "tick",
-    "data": {
-      "symbol": "EURUSDm",
-      "time": 1696229945123,
-      "time_iso": "2025-10-02T14:19:05.123Z",
-      "bid": 1.06871,
-      "daily_change_pct": -0.12,
-      "daily_change": -0.00129
-    }
+    "type": "ticks",
+    "data": [
+      {"symbol": "EURUSDm", "time": 1696229945123, "time_iso": "2025-10-02T14:19:05.123Z", "bid": 1.06871, "daily_change_pct": -0.12, "daily_change": -0.00129},
+      {"symbol": "BTCUSDm", "time": 1696229946123, "time_iso": "2025-10-02T14:19:06.123Z", "bid": 27123.5, "daily_change_pct": 0.35, "daily_change": 95.2}
+    ]
   }
 
 Frontend changes:
-- Accepts both `tick` (single) and legacy `ticks` (array) seamlessly
-- Updated stores and router subscriptions to include `tick`
-- Suppresses noisy logging for `tick` unless enabled via `REACT_APP_ENABLE_TICK_LOGGING=true`
+- All stores/services now subscribe to `ticks` (and `tick` for safety)
+- Handlers normalize to arrays and update both `ticksBySymbol` and `pricingBySymbol`
+- Bid-only fallback: when `ask` is absent, it falls back to `bid`
+- Logging skips tick/ticks noise unless `REACT_APP_ENABLE_TICK_LOGGING=true`
 
 Files affected:
 - `src/services/websocketService.js`

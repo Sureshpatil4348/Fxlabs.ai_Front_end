@@ -466,13 +466,13 @@ const useMarketCacheStore = create(
             // best-effort logging only
             console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (fallback)`, message);
           }
-          const ticks = Array.isArray(message.data) ? message.data : (message?.data ? [message.data] : []);
+          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
           if (ticks.length === 0) break;
           const ticksBySymbol = new Map(get().ticksBySymbol || new Map());
           const pricingBySymbol = new Map(get().pricingBySymbol || new Map());
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
-            
+
             // Debug logging for tick data (BTC only)
             if (tick.symbol === 'BTCUSDm') {
               console.log('🔍 MarketCache: Processing tick data:', {
@@ -483,16 +483,16 @@ const useMarketCacheStore = create(
                 ask: tick.ask
               });
             }
-            
+
             const existing = ticksBySymbol.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)];
             existing.lastUpdate = new Date();
             ticksBySymbol.set(tick.symbol, existing);
 
-            // Update pricing view
+            // Update pricing view with bid-only fallback
             const pricingData = {
               bid: tick.bid,
-              ask: tick.ask,
+              ask: (typeof tick.ask === 'number' ? tick.ask : tick.bid),
               time: tick.time || Date.now(),
               time_iso: tick.time_iso || new Date().toISOString(),
               daily_change_pct: typeof tick.daily_change_pct === 'number' ? tick.daily_change_pct : (pricingBySymbol.get(tick.symbol)?.daily_change_pct || 0),

@@ -291,8 +291,9 @@ const useRSITrackerStore = create(
         case 'ticks':
         case 'tick': {
           const tickData = new Map(state.tickData);
-          const ticks = Array.isArray(message.data) ? message.data : (message?.data ? [message.data] : []);
-          ticks.forEach(tick => {
+          const ticks = Array.isArray(message?.data) ? message.data : (message?.data ? [message.data] : []);
+          ticks.forEach((tick) => {
+            if (!tick || !tick.symbol) return;
             const existing = tickData.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)]; // Keep last 50 ticks
             existing.lastUpdate = new Date();
