@@ -7,7 +7,8 @@ export const Sidebar = () => {
   const { 
     settings, 
     setChartType,
-    setCursorType
+    setCursorType,
+    klineChartRef
   } = useChartStore();
   
   const {
@@ -17,18 +18,52 @@ export const Sidebar = () => {
   } = useDrawingTools();
   
   const [activeSection, setActiveSection] = useState(null);
+  
+  // Check if we're in candlestick mode
+  const isCandlestickMode = settings.chartType === 'candlestick';
 
   const toggleSection = (section) => {
     setActiveSection(activeSection === section ? null : section);
   };
+  
+  // KLine drawing tools handlers
+  const handleKLineToolSelect = (toolId) => {
+    if (klineChartRef && klineChartRef._handleDrawingToolChange) {
+      try {
+        klineChartRef._handleDrawingToolChange(toolId);
+        console.log('📈 KLine Drawing tool activated:', toolId);
+        setActiveSection(null);
+      } catch (error) {
+        console.warn('📈 Error activating KLine drawing tool:', error);
+      }
+    }
+  };
+  
+  const handleKLineClearAll = () => {
+    if (!window.confirm('Clear all drawings? This cannot be undone.')) {
+      return;
+    }
+    if (klineChartRef) {
+      try {
+        const overlays = klineChartRef.getAllOverlays();
+        overlays.forEach(overlay => {
+          klineChartRef.removeOverlay(overlay.id);
+        });
+        console.log('📈 All KLine drawings cleared');
+        setActiveSection(null);
+      } catch (error) {
+        console.warn('📈 Error clearing KLine drawings:', error);
+      }
+    }
+  };
 
   return (
-    <div className="w-16 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
+    <div className="w-12 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
       {/* Chart Type Button */}
       <div className="relative">
         <button
           onClick={() => toggleSection('chartTypes')}
-          className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+          className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
             activeSection === 'chartTypes'
               ? 'text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -43,7 +78,7 @@ export const Sidebar = () => {
 
         {/* Chart Types Dropdown */}
         {activeSection === 'chartTypes' && (
-          <div className="absolute left-16 top-0 ml-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
+          <div className="absolute left-12 top-0 ml-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
             <div className="p-2">
               <div className="text-xs font-semibold text-gray-500 px-3 py-2 mb-1">Chart Type</div>
               
@@ -95,7 +130,7 @@ export const Sidebar = () => {
       <div className="relative">
         <button
           onClick={() => toggleSection('drawing')}
-          className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+          className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
             activeSection === 'drawing'
               ? 'text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -110,10 +145,12 @@ export const Sidebar = () => {
 
         {/* Drawing Tools Dropdown */}
         {activeSection === 'drawing' && (
-          <div className="absolute left-16 top-0 ml-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] overflow-y-auto">
+          <div className="absolute left-12 top-0 ml-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] overflow-y-auto">
             <div className="p-2">
               <div className="flex items-center justify-between mb-2 sticky top-0 bg-white z-10 pb-1.5 border-b border-gray-100">
-                <h3 className="text-xs font-bold text-gray-900">Drawing Tools</h3>
+                <h3 className="text-xs font-bold text-gray-900">
+                  {isCandlestickMode ? 'K-Line Tools' : 'Drawing Tools'}
+                </h3>
                 <button
                   onClick={() => setActiveSection(null)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -124,7 +161,136 @@ export const Sidebar = () => {
                 </button>
               </div>
 
-              <div className="space-y-1">
+              {isCandlestickMode ? (
+                // KLine-specific drawing tools
+                <div className="space-y-1">
+                  {/* Trend Line Tool */}
+                  <button
+                    onClick={() => handleKLineToolSelect('trendLine')}
+                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-md flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Trend Line</p>
+                        <p className="text-[9px] text-gray-500">Draw trend lines</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Horizontal Line Tool */}
+                  <button
+                    onClick={() => handleKLineToolSelect('horizontalLine')}
+                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-700 rounded-md flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h16" />
+                        </svg>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Horizontal Line</p>
+                        <p className="text-[9px] text-gray-500">Support/resistance</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Fibonacci Tool */}
+                  <button
+                    onClick={() => handleKLineToolSelect('fibonacci')}
+                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-md flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 12l3-3 3 3 4-4M3 4h18" />
+                        </svg>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Fibonacci</p>
+                        <p className="text-[9px] text-gray-500">Retracement levels</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Rectangle Tool */}
+                  <button
+                    onClick={() => handleKLineToolSelect('rectangle')}
+                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-teal-700 rounded-md flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4h16v16H4z" />
+                        </svg>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Rectangle</p>
+                        <p className="text-[9px] text-gray-500">Draw zones</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Text Tool */}
+                  <button
+                    onClick={() => handleKLineToolSelect('text')}
+                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-pink-700 rounded-md flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Text</p>
+                        <p className="text-[9px] text-gray-500">Add annotations</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Arrow Tool */}
+                  <button
+                    onClick={() => handleKLineToolSelect('arrow')}
+                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-md flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Arrow</p>
+                        <p className="text-[9px] text-gray-500">Point directions</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Clear All KLine Drawings */}
+                  <div className="border-t border-gray-200 pt-1.5 mt-1.5">
+                    <button
+                      type="button"
+                      onClick={handleKLineClearAll}
+                      className="w-full p-1.5 rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-600 hover:from-red-100 hover:to-red-200 transition-all hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-center space-x-1.5">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span className="text-[11px] font-semibold">Clear All</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Original drawing tools for non-candlestick charts
+                <div className="space-y-1">
                 {/* Trend Line Tool */}
                 <button
                   onClick={() => { 
@@ -239,7 +405,8 @@ export const Sidebar = () => {
                     </div>
                   </button>
                 </div>
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -249,7 +416,7 @@ export const Sidebar = () => {
       <div className="relative">
         <button
           onClick={() => toggleSection('cursor')}
-          className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all ${
+          className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
             activeSection === 'cursor'
               ? 'text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -264,7 +431,7 @@ export const Sidebar = () => {
 
         {/* Cursor Selector Dropdown */}
         {activeSection === 'cursor' && (
-          <div className="absolute left-16 top-0 ml-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
+          <div className="absolute left-12 top-0 ml-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
             <div className="p-2">
               <div className="text-xs font-semibold text-gray-500 px-3 py-2 mb-1">Cursor Type</div>
               
@@ -364,7 +531,7 @@ export const Sidebar = () => {
             document.exitFullscreen();
           }
         }}
-        className="w-12 h-12 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
+        className="w-10 h-10 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
         title="Fullscreen"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

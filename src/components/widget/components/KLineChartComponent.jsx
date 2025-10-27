@@ -1,7 +1,7 @@
 import { init, registerOverlay } from 'klinecharts';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
-import { KLineDrawingToolbar } from './KLineDrawingToolbar';
+import { useChartStore } from '../stores/useChartStore';
 
 export const KLineChartComponent = ({
   candles = [],
@@ -9,13 +9,16 @@ export const KLineChartComponent = ({
   onLoadMoreHistory,
   isLoadingHistory = false,
   hasMoreHistory = true,
-  panelSettings = {}
+  panelSettings: _panelSettings = {}
 }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const [error, setError] = useState(null);
-  const [currentOHLC, setCurrentOHLC] = useState(null);
+  const [_currentOHLC, setCurrentOHLC] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
+  // Get the setter from store
+  const { setKLineChartRef } = useChartStore();
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -27,6 +30,26 @@ export const KLineChartComponent = ({
   // Keep latest candles for event handlers
   const candlesRef = useRef(candles);
   useEffect(() => { candlesRef.current = candles; }, [candles]);
+
+  // Update grid visibility when settings change
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.setStyles({
+        grid: {
+          horizontal: { 
+            show: settings.showGrid !== false,
+            color: '#e5e7eb',
+            size: 1
+          },
+          vertical: { 
+            show: settings.showGrid !== false,
+            color: '#e5e7eb',
+            size: 1
+          }
+        }
+      });
+    }
+  }, [settings.showGrid]);
   
   // Update current OHLC data when candles change
   useEffect(() => {
@@ -211,12 +234,12 @@ export const KLineChartComponent = ({
       chart.setStyles({
         grid: {
           horizontal: { 
-            show: true,
+            show: settings.showGrid !== false,
             color: '#e5e7eb',
             size: 1
           },
           vertical: { 
-            show: true,
+            show: settings.showGrid !== false,
             color: '#e5e7eb',
             size: 1
           }
@@ -365,6 +388,9 @@ export const KLineChartComponent = ({
       });
 
       chartRef.current = chart;
+      
+      // Register chart ref with store for sidebar access
+      setKLineChartRef(chart);
 
       // Set up event listeners
       chart.subscribeAction('crosshair', (data) => {
@@ -452,6 +478,7 @@ export const KLineChartComponent = ({
             // KLineChart v10+ auto-cleanup - just nullify the reference
             // No need to call remove() as it doesn't exist in v10+
             chartRef.current = null;
+            setKLineChartRef(null); // Clear from store
           } catch (error) {
             console.warn('📈 Error cleaning up K-line chart:', error);
           }
@@ -462,7 +489,7 @@ export const KLineChartComponent = ({
       console.error('📈 Error initializing K-line chart:', error);
       setError(error instanceof Error ? error.message : 'Failed to initialize K-line chart');
     }
-  }, []); // Empty dependency array - initialize only once
+  }, [settings.showGrid, setKLineChartRef]); // Include settings.showGrid and setKLineChartRef dependencies
 
   // Handle scroll events for pagination
   useEffect(() => {
@@ -670,19 +697,19 @@ export const KLineChartComponent = ({
   }, [candles, isInitialLoad, isLoadingHistory]);
 
   // Chart navigation methods
-  const scrollToLatest = useCallback(() => {
+  const _scrollToLatest = useCallback(() => {
     if (chartRef.current) {
       chartRef.current.scrollToRealTime();
     }
   }, []);
 
-  const scrollLeft = useCallback((pixels = 100) => {
+  const _scrollLeft = useCallback((pixels = 100) => {
     if (chartRef.current) {
       chartRef.current.scrollByDistance(-pixels);
     }
   }, []);
 
-  const scrollRight = useCallback((pixels = 100) => {
+  const _scrollRight = useCallback((pixels = 100) => {
     if (chartRef.current) {
       chartRef.current.scrollByDistance(pixels);
     }
@@ -758,90 +785,15 @@ export const KLineChartComponent = ({
 
   return (
     <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-sm  " >
-      {/* Header - Ultra Compact */}
-      <div className="flex-shrink-0 flex items-center justify-between px-2 py-1 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-gray-900">
-            {settings.symbol || panelSettings.symbol}
-          </h3>
-          
-          {/* Real-time OHLC Display - Ultra Compact */}
-          {currentOHLC && (
-            <div className="flex items-center gap-1 text-xs">
-              <div className="flex items-center gap-0.5">
-                <span className="text-gray-500 font-medium text-[9px]">O</span>
-                <span className={`font-semibold text-[10px] ${currentOHLC.isBullish ? 'text-green-600' : 'text-red-600'}`}>
-                  {currentOHLC.open.toFixed(4)}
-                </span>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <span className="text-gray-500 font-medium text-[9px]">H</span>
-                <span className={`font-semibold text-[10px] ${currentOHLC.isBullish ? 'text-green-600' : 'text-red-600'}`}>
-                  {currentOHLC.high.toFixed(4)}
-                </span>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <span className="text-gray-500 font-medium text-[9px]">L</span>
-                <span className={`font-semibold text-[10px] ${currentOHLC.isBullish ? 'text-green-600' : 'text-red-600'}`}>
-                  {currentOHLC.low.toFixed(4)}
-                </span>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <span className="text-gray-500 font-medium text-[9px]">C</span>
-                <span className={`font-semibold text-[10px] ${currentOHLC.isBullish ? 'text-green-600' : 'text-red-600'}`}>
-                  {currentOHLC.close.toFixed(4)}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {/* Navigation Controls */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={scrollLeft}
-              className="p-0.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded text-xs"
-              title="Scroll Left"
-            >
-              ←
-            </button>
-            <button
-              onClick={scrollRight}
-              className="p-0.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded text-xs"
-              title="Scroll Right"
-            >
-              →
-            </button>
-            <button
-              onClick={scrollToLatest}
-              className="p-0.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded text-xs"
-              title="Go to Latest"
-            >
-              ⏭️
-            </button>
-          </div>
-          
-          <div className="text-[9px] text-gray-500 ml-1">
-            {candles.length}
-          </div>
-        </div>
-      </div>
-
-      {/* Drawing Tools Toolbar */}
-      <div className="flex-shrink-0 border-b border-gray-200 bg-gray-50">
-        <KLineDrawingToolbar chartRef={chartRef} />
-      </div>
-
-
       {/* Chart Container - ZERO GAPS */}
-      <div className="flex-1 relative min-h-0 overflow-hidden " style={{ height: '150px', padding: '0', margin: '0' }}>
+      <div className="flex-1 relative min-h-0 overflow-hidden " style={{ height: '370px', padding: '0', margin: '0' }}>
         <div 
           ref={chartContainerRef} 
           className="absolute inset-0"
           style={{ 
             backgroundColor: '#ffffff',
-            minHeight: '320px',
-            maxHeight: '320px',
+            minHeight: '370px',
+            maxHeight: '370px',
             padding: '0',
             margin: '0',
             width: '100%',
