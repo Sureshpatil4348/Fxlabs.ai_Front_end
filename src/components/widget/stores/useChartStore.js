@@ -6,6 +6,8 @@ const defaultSettings = {
   timeframe: '1h',
   chartType: 'candlestick',
   cursorType: 'crosshair',
+  timezone: 'UTC',
+  showGrid: true,
   indicators: {
     ema20: true,
     ema200: true,
@@ -152,6 +154,8 @@ export const useChartStore = create(
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
+      // KLine chart ref (not persisted)
+      klineChartRef: null,
       // Pagination state
       currentPage: 1,
       hasMoreHistory: true,
@@ -195,6 +199,19 @@ export const useChartStore = create(
         }));
       },
       
+      setIndicatorsPreset: (indicatorsConfig) => {
+        console.log('💾 ChartStore: Setting indicators preset', indicatorsConfig);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            indicators: {
+              ...state.settings.indicators,
+              ...indicatorsConfig
+            }
+          }
+        }));
+      },
+      
       setSymbol: (symbol) => {
         console.log('💾 ChartStore: Setting symbol to', symbol);
         set((state) => ({
@@ -231,6 +248,26 @@ export const useChartStore = create(
           settings: {
             ...state.settings,
             cursorType
+          }
+        }));
+      },
+      
+      setTimezone: (timezone) => {
+        console.log('💾 ChartStore: Setting timezone to', timezone);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            timezone
+          }
+        }));
+      },
+      
+      toggleGrid: () => {
+        console.log('💾 ChartStore: Toggling grid visibility');
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            showGrid: !state.settings.showGrid
           }
         }));
       },
@@ -311,6 +348,12 @@ export const useChartStore = create(
       clearAllDrawings: () => {
         console.log('🎨 ChartStore: Clearing all drawings');
         set({ drawings: [], activeDrawingTool: null });
+      },
+      
+      // KLine chart ref actions
+      setKLineChartRef: (ref) => {
+        console.log('📊 ChartStore: Setting KLine chart ref');
+        set({ klineChartRef: ref });
       },
       
       // Daily change data actions

@@ -155,7 +155,8 @@ export const ChartPanel = ({ panelSettings }) => {
       settings={{
         symbol: panelSettings.symbol,
         timeframe: panelSettings.timeframe,
-        chartType: panelSettings.chartType || 'candlestick'
+        chartType: panelSettings.chartType || 'candlestick',
+        showGrid: _settings.showGrid
       }}
       panelSettings={panelSettings}
       onLoadMoreHistory={handleLoadMoreHistory}

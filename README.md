@@ -2,17 +2,103 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Connection UI Update (Latest)
+## Grid Toggle Functionality (Latest)
 
-- Removed the websocket "Connecting..." modal overlay from the Dashboard.
-- While connecting (or retrying), a subtle spinning ring now animates around the user profile avatar in the top-right.
-- No blocking overlay; users can explore the UI while connections establish.
+**Implemented a professional grid toggle feature for K-line charts with real-time visibility control**
 
-Files affected:
-- `src/pages/Dashboard.jsx` — Removed `LoadingOverlay` usage.
-- `src/components/UserProfileDropdown.jsx` — Added connecting spinner ring around avatar.
+### Key Features:
+- **Interactive Grid Toggle**: Click the Grid button in the bottom bar to show/hide chart grid lines
+- **Visual Feedback**: Grid button changes appearance based on current state (blue when active, gray when inactive)
+- **Real-time Updates**: Grid visibility changes instantly without chart reload
+- **Persistent Settings**: Grid preference saved in chart store and localStorage
+- **Clean Chart View**: When disabled, provides a clean, uncluttered chart view behind candlesticks
+- **Professional UI**: Matches TradingView-style grid toggle functionality
 
-## K-line Chart Migration (Latest)
+### Technical Implementation:
+- Added `showGrid` setting to chart store with default value `true`
+- Implemented `toggleGrid()` function in chart store for state management
+- Updated KLineChartComponent to respond to grid setting changes
+- Added useEffect hook to update grid visibility when settings change
+- Enhanced TradingChart component with interactive grid button
+- Grid button shows visual state (blue background when grid is visible)
+
+### Benefits:
+- ✅ **Clean Chart View** (grid can be hidden for cleaner appearance)
+- ✅ **User Control** (traders can choose their preferred chart style)
+- ✅ **Real-time Updates** (instant grid visibility changes)
+- ✅ **Persistent Settings** (grid preference remembered across sessions)
+- ✅ **Professional Interface** (matches industry-standard trading platforms)
+
+## Premium Timezone Dropdown (Previous)
+
+**Implemented a professional TradingView-style timezone dropdown with real market integration and premium UX**
+
+### Key Features:
+- **Premium UI Design**: Clean, modern interface matching TradingView's timezone selector
+- **Real Market Integration**: 20 major financial markets with accurate timezone data
+- **Live Time Display**: Real-time clock showing current time in selected timezone
+- **Market Context**: Each timezone shows associated financial markets (NYSE, LSE, TSE, etc.)
+- **Persistent Settings**: Timezone preference saved in chart store and localStorage
+- **Professional Layout**: Two-line display with city name and GMT offset
+- **Accessibility**: Full keyboard navigation and screen reader support
+
+### Supported Markets:
+1. **Americas**: New York (NYSE/NASDAQ), Chicago (CME/CBOT), Los Angeles, Toronto (TSX), São Paulo (B3)
+2. **Europe**: London (LSE/FX), Frankfurt (XETRA), Paris (Euronext), Zurich (SIX), Moscow (MOEX)
+3. **Asia-Pacific**: Tokyo (TSE), Shanghai (SSE), Hong Kong (HKEX), Singapore (SGX), Seoul (KRX), Mumbai (NSE/BSE)
+4. **Oceania**: Sydney (ASX), Melbourne (ASX)
+5. **Middle East**: Dubai (DFM)
+
+### Technical Implementation:
+- Uses real timezone data with proper market associations
+- Integrates with chart store for persistent timezone settings
+- Real-time clock updates using JavaScript Date API
+- Responsive design with proper z-index layering
+- Clean separation from existing UI elements
+
+### Benefits:
+- ✅ **Professional Trading Interface** (TradingView-style)
+- ✅ **Real Market Data Integration** (20 major markets)
+- ✅ **Enhanced User Experience** (premium timezone functionality)
+- ✅ **Live Time Synchronization** (real-time clock display)
+- ✅ **Accessibility Compliant** (keyboard navigation, ARIA labels)
+
+## Premium Symbol Search Modal (Previous)
+
+**Implemented a professional TradingView-style symbol search modal with comprehensive market data integration**
+
+### Key Features:
+- **Premium UI Design**: Clean, modern interface matching TradingView's symbol search
+- **Comprehensive Symbol Coverage**: All 32 supported trading pairs from real market data
+- **Advanced Search Functionality**: Real-time search with magnifying glass icon
+- **Category Filtering**: Organized by All, Forex, CFD, Crypto
+- **Source Integration**: Multiple broker sources (OANDA, FOREXCOM, FXCM, Pepperstone, FXOpen)
+- **Accessibility**: Full keyboard navigation and screen reader support
+
+### Symbol Categories:
+1. **All Symbols (32 total)** - Complete symbol universe
+2. **Forex (28 pairs)** - Major and cross currency pairs
+3. **CFD (2 pairs)** - Precious metals (Gold, Silver)
+4. **Crypto (2 pairs)** - Bitcoin and Ethereum
+
+### Components Added:
+- `SymbolSearchModal.jsx` - Premium symbol search modal component
+- Updated `TradingViewHeader.jsx` - Integrated symbol search button
+
+### Technical Implementation:
+- Uses real market data from `constants/pairs.js`
+- Integrates with existing chart store for symbol selection
+- Responsive design with proper z-index layering
+- Clean separation from existing UI elements
+
+### Benefits:
+- ✅ **Professional Trading Interface** (TradingView-style)
+- ✅ **Real Market Data Integration** (32 actual symbols)
+- ✅ **Enhanced User Experience** (premium search functionality)
+- ✅ **Future-Ready Architecture** (expandable categories)
+- ✅ **Accessibility Compliant** (keyboard navigation, ARIA labels)
+
+## K-line Chart Migration (Previous)
 
 **Successfully migrated from Lightweight Charts to K-line Charts for superior drawing tools support**
 

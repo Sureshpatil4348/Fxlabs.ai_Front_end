@@ -455,7 +455,7 @@ export const UnifiedChart = () => {
       <div className="bg-white px-4 py-1 flex-shrink-0 sticky top-0 z-10 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 overflow-x-auto">
-            <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{settings.symbol}</span>
+           
             <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
                   ${latestPrice?.toFixed(5) || '0.00000'}
             </span>
@@ -463,10 +463,6 @@ export const UnifiedChart = () => {
               {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(5)} ({priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%)
             </span>
                 </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-600 whitespace-nowrap">
-            <span>Connected: {isConnected ? '🟢' : '🔴'}</span>
-            <span>Candles: {displayCandles.length}</span>
-          </div>
         </div>
       </div>
 

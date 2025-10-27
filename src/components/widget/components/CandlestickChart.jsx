@@ -227,13 +227,6 @@ export const CandlestickChart = ({
 
   return (
     <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Candlestick Chart - {settings.symbol}
-        </h3>
-      </div>
-
       {/* Chart Container */}
       <div className="flex-1 p-3" style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>
         <div 
