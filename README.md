@@ -19,6 +19,10 @@ Files affected:
 - This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.
 - Files: `src/components/widget/services/realMarketService.js`, `src/services/websocketService.js`, `src/services/websocketMessageRouter.js`
 
+### Tick logging (debug)
+- Market cache logs the full incoming tick message when a `ticks` payload arrives to help verify backend payloads.
+- File: `src/store/useMarketCacheStore.js`
+
 ## Grid Toggle Functionality (Latest)
 
 **Implemented a professional grid toggle feature for K-line charts with real-time visibility control**

@@ -80,8 +80,8 @@ const useMarketCacheStore = create(
 
       // Register to WebSocket router for live updates
       websocketService.registerStore('marketCache', {
-        messageHandler: (message, _raw) => {
-          try { get().handleMessage(message); } catch (e) { /* eslint-disable-next-line no-console */ console.error('[MarketCache] handleMessage error:', e); }
+        messageHandler: (message, raw) => {
+          try { get().handleMessage(message, raw); } catch (e) { /* eslint-disable-next-line no-console */ console.error('[MarketCache] handleMessage error:', e); }
         },
         connectionCallback: () => {
           // Notify global dashboard that at least one store is connected so the loader can close
@@ -386,7 +386,7 @@ const useMarketCacheStore = create(
     },
 
     // --- WebSocket message handling ---
-    handleMessage: (message) => {
+    handleMessage: (message, rawData) => {
       switch (message?.type) {
         case 'connected': {
           const tfs = Array.isArray(message.supported_timeframes) ? message.supported_timeframes : null;
@@ -454,6 +454,17 @@ const useMarketCacheStore = create(
           break;
         }
         case 'ticks': {
+          // Log the entire input message for ticks
+          try {
+            if (typeof rawData === 'string') {
+              console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (raw):`, rawData);
+            } else {
+              console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (obj):`, JSON.stringify(message));
+            }
+          } catch (_e) {
+            // best-effort logging only
+            console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (fallback)`, message);
+          }
           const ticks = Array.isArray(message.data) ? message.data : [];
           if (ticks.length === 0) break;
           const ticksBySymbol = new Map(get().ticksBySymbol || new Map());
@@ -662,4 +673,3 @@ const useMarketCacheStore = create(
 );
 
 export default useMarketCacheStore;
-
