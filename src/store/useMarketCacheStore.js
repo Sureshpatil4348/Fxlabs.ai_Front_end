@@ -462,14 +462,16 @@ const useMarketCacheStore = create(
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
             
-            // Debug logging for tick data
-            console.log('🔍 MarketCache: Processing tick data:', {
-              symbol: tick.symbol,
-              daily_change_pct: tick.daily_change_pct,
-              daily_change: tick.daily_change,
-              bid: tick.bid,
-              ask: tick.ask
-            });
+            // Debug logging for tick data (BTC only)
+            if (tick.symbol === 'BTCUSDm') {
+              console.log('🔍 MarketCache: Processing tick data:', {
+                symbol: tick.symbol,
+                daily_change_pct: tick.daily_change_pct,
+                daily_change: tick.daily_change,
+                bid: tick.bid,
+                ask: tick.ask
+              });
+            }
             
             const existing = ticksBySymbol.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)];
@@ -487,7 +489,9 @@ const useMarketCacheStore = create(
               lastUpdate: new Date()
             };
             
-            console.log('🔍 MarketCache: Setting pricing data:', pricingData);
+            if (tick.symbol === 'BTCUSDm') {
+              console.log('🔍 MarketCache: Setting pricing data:', pricingData);
+            }
             pricingBySymbol.set(tick.symbol, pricingData);
           });
           set({ ticksBySymbol, pricingBySymbol });
