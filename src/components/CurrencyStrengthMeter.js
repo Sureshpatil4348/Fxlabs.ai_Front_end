@@ -29,17 +29,17 @@ const CurrencyStrengthSkeleton = () => (
   <div className="space-y-2">
     {/* Strongest Currencies Skeleton */}
     <div>
-      <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-1.5 px-1 shimmer-text"></div>
+      <div className="h-3.5 w-36 bg-gray-100 dark:bg-gray-800 rounded mb-1.5 px-1 shimmer-text"></div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {[1, 2, 3, 4].map((i) => (
           <div 
             key={i} 
-            className="py-4 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 relative overflow-hidden"
+            className="py-3 px-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden"
           >
             <div className="absolute inset-0 shimmer-bg"></div>
             <div className="flex items-center justify-between relative z-10">
-              <div className="h-4 w-12 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
-              <div className="h-4 w-8 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+              <div className="h-3.5 w-10 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+              <div className="h-3.5 w-7 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
             </div>
           </div>
         ))}
@@ -48,17 +48,17 @@ const CurrencyStrengthSkeleton = () => (
 
     {/* Weakest Currencies Skeleton */}
     <div>
-      <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-1.5 px-1 shimmer-text"></div>
+      <div className="h-3.5 w-36 bg-gray-100 dark:bg-gray-800 rounded mb-1.5 px-1 shimmer-text"></div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {[1, 2, 3, 4].map((i) => (
           <div 
             key={i} 
-            className="py-4 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 relative overflow-hidden"
+            className="py-3 px-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden"
           >
             <div className="absolute inset-0 shimmer-bg"></div>
             <div className="flex items-center justify-between relative z-10">
-              <div className="h-4 w-12 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
-              <div className="h-4 w-8 bg-gray-300 dark:bg-gray-600 rounded shimmer-text"></div>
+              <div className="h-3.5 w-10 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+              <div className="h-3.5 w-7 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
             </div>
           </div>
         ))}
