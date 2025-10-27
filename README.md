@@ -2,6 +2,16 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Connection UI Update (Latest)
+
+- Removed the websocket "Connecting..." modal overlay from the Dashboard.
+- While connecting (or retrying), a subtle spinning ring now animates around the user profile avatar in the top-right.
+- No blocking overlay; users can explore the UI while connections establish.
+
+Files affected:
+- `src/pages/Dashboard.jsx` — Removed `LoadingOverlay` usage.
+- `src/components/UserProfileDropdown.jsx` — Added connecting spinner ring around avatar.
+
 ## K-line Chart Migration (Latest)
 
 **Successfully migrated from Lightweight Charts to K-line Charts for superior drawing tools support**

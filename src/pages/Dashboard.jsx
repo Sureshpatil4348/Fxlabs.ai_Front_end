@@ -3,7 +3,6 @@
   import { useAuth } from '../auth/AuthProvider'
   import AINewsAnalysis from '../components/AINewsAnalysis'
   import CurrencyStrengthMeter from '../components/CurrencyStrengthMeter'
-  import LoadingOverlay from '../components/LoadingOverlay'
   import LotSizeCalculator from '../components/LotSizeCalculator'
   import MultiIndicatorHeatmap from '../components/MultiIndicatorHeatmap'
   import MultiTimeAnalysis from '../components/MultiTimeAnalysis'
@@ -24,13 +23,11 @@
 
   const Dashboard = () => {
     const { user } = useAuth()
-    const { retryAllConnections } = useMarketStore()
     const connectionInitiated = React.useRef(false)
     
     // Subscribe only to the specific parts we need for rendering
-    const showLoader = useMarketStore(state => state.globalConnectionState.showLoader)
     const connectionStatus = useMarketStore(state => state.globalConnectionState.status)
-    const connectionAttempts = useMarketStore(state => state.globalConnectionState.connectionAttempts)
+    
 
   const { loadTabState, tabStateHasLoaded: _tabStateHasLoaded } = useBaseMarketStore();
   const [activeTab, setActiveTab] = React.useState(null) // Start with null to indicate loading
@@ -147,14 +144,7 @@
 
     return (
       <div className="relative h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] overflow-hidden flex flex-col transition-colors duration-300">
-        {/* Loading Overlay - Render at root level to avoid layout constraints */}
-        {showLoader && (
-          <LoadingOverlay
-            status={connectionStatus}
-            connectionAttempts={connectionAttempts}
-            onRetry={retryAllConnections}
-          />
-        )}
+        {/* Connecting modal removed: show inline feedback elsewhere */}
 
         {/* Navbar - pass tab state for centered navbar buttons */}
         <Navbar activeTab={activeTab || 'analysis'} onChangeTab={setActiveTab} />
