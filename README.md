@@ -75,6 +75,24 @@ Files affected:
 - `src/store/useCurrencyStrengthStore.js`
 - `src/store/useRSITrackerStore.js`
 
+## OHLC Updates (Latest)
+
+Backend pushes consolidated OHLC updates on closed candles approximately every 10 seconds.
+
+- Type: `ohlc_updates`
+- Fields:
+  - `timeframe`: string (e.g., `5M`, `1H`)
+  - `data`: array of entries `{ symbol, bar_time, ohlc: { open, high, low, close, volume?, tick_volume?, spread?, time_iso? } }`
+
+Advanced TradingView integration:
+- REST loads historical candles on init and as you scroll back (pagination)
+- WebSocket ohlc_updates appends new closed candles seamlessly in real time
+- Symbol/timeframe filtering is applied client-side to match the current chart
+
+Files affected:
+- `src/components/widget/services/realMarketService.js` (subscribe to `ohlc_updates`, emit per-candle)
+- `src/components/widget/components/UnifiedChart.jsx` (receives candles and updates KLine)
+
 ### Unified real-time data path
 - The chart’s real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart’s top price bar.
 - This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.

@@ -353,17 +353,44 @@ export class RealMarketService {
               }
               return;
             }
-            // Bar-level update passthrough for the symbol
-            if (message.type === 'ohlc_update' && (message.symbol === symbol || message.symbol === symbol + 'm')) {
-              const candleData = {
-                time: message.time,
-                open: parseFloat(message.open),
-                high: parseFloat(message.high),
-                low: parseFloat(message.low),
-                close: parseFloat(message.close),
-                volume: parseFloat(message.volume || 0)
-              };
-              if (onMessage) onMessage(candleData);
+            // Consolidated OHLC updates on closed candles
+            if (message.type === 'ohlc_updates') {
+              const tf = this.convertIntervalToTimeframe(interval);
+              const msgTf = (message?.timeframe || '').toString().toUpperCase();
+              if (tf !== msgTf) return; // Ignore other timeframes
+              const arr = Array.isArray(message?.data) ? message.data : [];
+              if (arr.length === 0) return;
+              for (let i = 0; i < arr.length; i++) {
+                const entry = arr[i];
+                const sym = (entry?.symbol || '').toString();
+                if (!wants.includes(sym)) continue;
+                const o = entry?.ohlc || {};
+                // Determine time seconds from bar_time (ms) or time_iso
+                let timeSec = 0;
+                if (typeof entry?.bar_time === 'number') {
+                  timeSec = Math.floor(entry.bar_time / 1000);
+                } else if (typeof o?.time_iso === 'string') {
+                  const parsed = Date.parse(o.time_iso);
+                  if (Number.isFinite(parsed)) timeSec = Math.floor(parsed / 1000);
+                }
+                const open = parseFloat(o.open);
+                const high = parseFloat(o.high);
+                const low = parseFloat(o.low);
+                const close = parseFloat(o.close);
+                const volume = parseFloat(o.volume || o.tick_volume || 0);
+                if (!Number.isFinite(timeSec) || timeSec <= 0) continue;
+                if (!Number.isFinite(open) || !Number.isFinite(high) || !Number.isFinite(low) || !Number.isFinite(close)) continue;
+                const candleData = {
+                  time: timeSec,
+                  open,
+                  high,
+                  low,
+                  close,
+                  volume
+                };
+                if (onMessage) onMessage(candleData);
+              }
+              return;
             }
           } catch (e) {
             // eslint-disable-next-line no-console
@@ -378,7 +405,7 @@ export class RealMarketService {
           connectionCallback: () => { if (typeof onOpen === 'function') onOpen(); },
           disconnectionCallback: (ev) => { if (typeof onClose === 'function') onClose(ev); },
           errorCallback: (err) => { if (typeof onError === 'function') onError(err); },
-          subscribedMessageTypes: ['ticks', 'ohlc_update']
+          subscribedMessageTypes: ['ticks', 'ohlc_updates']
         });
 
         // Ensure the shared connection is up
