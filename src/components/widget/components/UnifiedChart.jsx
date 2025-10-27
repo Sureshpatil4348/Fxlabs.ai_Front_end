@@ -32,7 +32,6 @@ export const UnifiedChart = () => {
     indicators,
     settings,
     isLoading,
-    isConnected,
     error,
     currentPage,
     hasMoreHistory,
@@ -181,16 +180,6 @@ export const UnifiedChart = () => {
   const priceChange = dailyChange;
   const priceChangePercent = dailyChangePct;
   
-  // Debug logging for candles
-  console.log('📊 UnifiedChart render - Candles state:', {
-    candlesLength: candles.length,
-    isLoading,
-    isConnected,
-    error,
-    latestPrice,
-    settings: settings
-  });
-
   // Initialize chart
   useEffect(() => {
     console.log('Unified Chart initialization effect running...');
