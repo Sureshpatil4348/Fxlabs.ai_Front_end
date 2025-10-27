@@ -75,8 +75,12 @@ class WebSocketService {
             event.data.text().then((text) => {
               try {
                 const message = JSON.parse(text);
-                // Only log non-tick messages to reduce console noise (unless explicitly enabled)
-                if (message.type !== 'ticks' || ENABLE_TICK_LOGGING) {
+                // Simplified logging for quantum updates
+                if (message.type === 'quantum_update') {
+                  const symbol = message.symbol || message?.data?.symbol || 'unknown';
+                  const timeframes = message?.data?.per_timeframe ? Object.keys(message.data.per_timeframe).join(', ') : 'N/A';
+                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received quantum update for ${symbol} (timeframes: ${timeframes})`);
+                } else if (message.type !== 'ticks' || ENABLE_TICK_LOGGING) {
                   console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, text);
                 }
                 websocketMessageRouter.routeMessage(message, text);
@@ -89,8 +93,12 @@ class WebSocketService {
           } else {
             try {
               const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
-              // Only log non-tick messages to reduce console noise (unless explicitly enabled)
-              if (message.type !== 'ticks' || ENABLE_TICK_LOGGING) {
+              // Simplified logging for quantum updates
+              if (message.type === 'quantum_update') {
+                const symbol = message.symbol || message?.data?.symbol || 'unknown';
+                const timeframes = message?.data?.per_timeframe ? Object.keys(message.data.per_timeframe).join(', ') : 'N/A';
+                console.log(`[WS][Market-v2][${new Date().toISOString()}] Received quantum update for ${symbol} (timeframes: ${timeframes})`);
+              } else if (message.type !== 'ticks' || ENABLE_TICK_LOGGING) {
                 if (typeof event?.data === 'string') {
                   console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, event.data);
                 } else {

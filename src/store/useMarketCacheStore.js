@@ -387,12 +387,6 @@ const useMarketCacheStore = create(
 
     // --- WebSocket message handling ---
     handleMessage: (message) => {
-      // Only log quantum updates with simplified info, skip others
-      if (message?.type === 'quantum_update') {
-        const symbol = message.symbol || message?.data?.symbol;
-        const timeframes = message?.data?.per_timeframe ? Object.keys(message.data.per_timeframe).join(', ') : 'N/A';
-        console.log(`🔍 MarketCache: Received quantum update for ${symbol} (timeframes: ${timeframes})`);
-      }
       switch (message?.type) {
         case 'connected': {
           const tfs = Array.isArray(message.supported_timeframes) ? message.supported_timeframes : null;
