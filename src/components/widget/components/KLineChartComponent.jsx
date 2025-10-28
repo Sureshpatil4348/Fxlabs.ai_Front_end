@@ -1109,14 +1109,14 @@ export const KLineChartComponent = ({
           )}
 
           {/* Overlay Controls - centered above bottom panel */}
-          <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '46px', zIndex: 50, pointerEvents: 'none' }}>
+          <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '20px', zIndex: 50, pointerEvents: 'none' }}>
             <div className="flex items-center gap-3" style={{ pointerEvents: 'auto' }}>
               {/* Zoom out card */}
               <button
                 type="button"
                 aria-label="Zoom out"
                 onClick={handleZoomOut}
-                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
+                className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14"/></svg>
@@ -1127,7 +1127,7 @@ export const KLineChartComponent = ({
                 type="button"
                 aria-label="Zoom in"
                 onClick={handleZoomIn}
-                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
+                className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14M5 12h14"/></svg>
@@ -1137,8 +1137,8 @@ export const KLineChartComponent = ({
               <button
                 type="button"
                 aria-label="Scroll left"
-                onClick={handleScrollLeft}
-                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
+                onClick={handleScrollRight}
+                className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/></svg>
@@ -1148,8 +1148,8 @@ export const KLineChartComponent = ({
               <button
                 type="button"
                 aria-label="Scroll right"
-                onClick={handleScrollRight}
-                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
+                onClick={handleScrollLeft}
+                className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
@@ -1160,7 +1160,7 @@ export const KLineChartComponent = ({
                 type="button"
                 aria-label="Reload chart"
                 onClick={handleReload}
-                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
+                className="w-8 h-8 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 00-14.906-2M4 16a8 8 0 0014.906 2"/></svg>
