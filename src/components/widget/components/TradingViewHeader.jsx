@@ -14,11 +14,13 @@ export const TradingViewHeader = () => {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [showSymbolSearch, setShowSymbolSearch] = useState(false);
   const [showTimezoneDropdown, setShowTimezoneDropdown] = useState(false);
+  const [showMoreTimeframesDropdown, setShowMoreTimeframesDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   
   const dropdownRef = useRef(null);
   const timezoneDropdownRef = useRef(null);
   const indicatorsButtonRef = useRef(null);
+  const moreTimeframesDropdownRef = useRef(null);
 
   // Quick-access timeframes are 1m, 5m, 15m; remaining in dropdown
   const _timeframes = ['1m', '5m', '15m'];
@@ -52,16 +54,19 @@ export const TradingViewHeader = () => {
       if (timezoneDropdownRef.current && !timezoneDropdownRef.current.contains(event.target)) {
         setShowTimezoneDropdown(false);
       }
+      if (moreTimeframesDropdownRef.current && !moreTimeframesDropdownRef.current.contains(event.target)) {
+        setShowMoreTimeframesDropdown(false);
+      }
     };
 
-    if (showIndicators || showTimezoneDropdown) {
+    if (showIndicators || showTimezoneDropdown || showMoreTimeframesDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showIndicators, showTimezoneDropdown]);
+  }, [showIndicators, showTimezoneDropdown, showMoreTimeframesDropdown]);
 
 
 
@@ -169,24 +174,47 @@ export const TradingViewHeader = () => {
                 {tf}
               </button>
             ))}
-          </div>
 
-            {/* More Timeframes Dropdown */}
-            <select
-              value={['30m','1h','4h','1d','1w'].includes(settings.timeframe) ? settings.timeframe : ''}
-              onChange={(e) => {
-                setTimeframe(e.target.value);
-                setActiveTimeframe(e.target.value);
-              }}
-              className="px-2 py-1 border border-gray-200 rounded-md text-[9px] font-semibold bg-white hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[60px] shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="" disabled>More</option>
-              <option value="30m">30m</option>
-              <option value="1h">1h</option>
-              <option value="4h">4h</option>
-              <option value="1d">1d</option>
-              <option value="1w">1w</option>
-            </select>
+            {/* More Timeframes Button */}
+            <div className="relative" ref={moreTimeframesDropdownRef}>
+              <button
+                onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
+                className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1 ${
+                  showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(settings.timeframe)
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                More
+                <svg className={`w-3 h-3 transition-transform ${showMoreTimeframesDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* More Timeframes Dropdown Menu */}
+              {showMoreTimeframesDropdown && (
+                <div className="absolute top-full left-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999] overflow-hidden">
+                  {['30m', '1h', '4h', '1d', '1w'].map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => {
+                        setTimeframe(tf);
+                        setActiveTimeframe(tf);
+                        setShowMoreTimeframesDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-all ${
+                        settings.timeframe === tf
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {tf}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           </div>
 
           {/* Indicators Button */}

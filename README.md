@@ -170,7 +170,7 @@ Files affected:
 
 ## Timeframe Controls and Initial Window (Latest)
 
-- Timeframe UI now shows quick buttons for `1m`, `5m`, `15m` and a compact dropdown for `30m`, `1h`, `4h`, `1d`, `1w`.
+- **Updated**: Timeframe UI now displays quick-access buttons for `1m`, `5m`, `15m` integrated with a `More` dropdown button (as the 4th option in the card) for `30m`, `1h`, `4h`, `1d`, `1w`. The `More` button features a rotating dropdown arrow indicator for a premium UI experience.
 - On timeframe change, the chart fetches enough historical candles to cover this initial window and reconnects to the proper OHLC WebSocket stream:
   - `1m`: 6 hours (~360 bars)
   - `5m`: 24 hours (~288 bars)
