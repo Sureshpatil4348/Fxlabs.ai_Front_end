@@ -2,14 +2,28 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Manual Scroll Persistence (Latest)
+## Manual Scroll Persistence - New Candle Formation Fix (Latest)
 
-- Issue: The advanced K-line chart snapped back to the newest tick after every data update, breaking manual exploration of historical/future bars.
-- Fix: Track manual scroll state, restore the user-selected range (including right-offset distance) after pagination or live updates, and switch real-time ticks to incremental `updateData` calls so the viewport never resets unless you are intentionally following the latest bar.
-- Additional: Unified chart loader effect now lists the store setters in its dependency array to satisfy strict linting.
+- **Issue**: The advanced K-line chart auto-scrolled back to current position when a NEW CANDLE formed, even if the user had manually scrolled to view historical data. The chart correctly maintained scroll position during tick updates (same candle), but not when a new candle was added to the chart.
+
+- **Root Cause**: When a new candle forms (`appendedCount > 0`), the code was checking the `shouldAutoFollow` flag from before the update, without verifying if the user was actually viewing the latest candles. This caused unwanted auto-scroll even when users were viewing past data.
+
+- **Fix**: Enhanced the new candle handling logic to verify the user's visible range before auto-scrolling:
+  - When a new candle is added, check if user's pre-update visible range included the latest candles (within 2 candles of the end)
+  - Only auto-scroll to real-time if user was actively viewing the latest area
+  - If user was viewing historical data, maintain their scroll position and disable auto-follow
+  - Added debug logging to track auto-scroll decisions
+
+- **Behavior**:
+  - ✅ **Tick updates** (same candle): Scroll position maintained
+  - ✅ **New candle formation** (user viewing history): Scroll position maintained
+  - ✅ **New candle formation** (user at latest): Auto-scroll to follow new candles
+  - ✅ **Pagination loads**: Scroll position adjusted correctly for new historical data
+
+- **Additional**: Previous fixes include tracking manual scroll state, restoring user-selected range (including right-offset distance) after pagination or live updates, and switching real-time ticks to incremental `updateData` calls.
 
 Files affected:
-- `src/components/widget/components/KLineChartComponent.jsx`
+- `src/components/widget/components/KLineChartComponent.jsx` (lines 735-773)
 - `src/components/widget/components/UnifiedChart.jsx`
 
 ## Advanced Chart Tick Throttling (Latest)

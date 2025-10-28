@@ -732,13 +732,44 @@ export const KLineChartComponent = ({
           });
         }
 
+        // When a new candle is added (appendedCount > 0), verify user is actually viewing latest candles
+        // before auto-scrolling. This prevents unwanted scroll when user has manually scrolled to history.
         if (appendedCount > 0 && shouldAutoFollow) {
-          markProgrammaticScroll();
-          chartRef.current.scrollToRealTime();
-          isAutoFollowRef.current = true;
-          lastManualVisibleRangeRef.current = null;
-          if (typeof chartRef.current.getOffsetRightDistance === 'function') {
-            lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+          // Check if user's visible range (before update) included the latest candle
+          const prevDataLength = prevCandleCountRef.current;
+          const wasViewingLatest = previousVisibleRange && 
+            typeof previousVisibleRange.to === 'number' &&
+            prevDataLength > 0 &&
+            previousVisibleRange.to >= prevDataLength - 2; // Within 2 candles of the end
+          
+          console.log('📊 New candle formed - checking auto-scroll:', {
+            appendedCount,
+            prevDataLength,
+            visibleRangeTo: previousVisibleRange?.to,
+            wasViewingLatest,
+            willAutoScroll: wasViewingLatest
+          });
+          
+          if (wasViewingLatest) {
+            // User was viewing the latest area, safe to auto-scroll
+            markProgrammaticScroll();
+            chartRef.current.scrollToRealTime();
+            isAutoFollowRef.current = true;
+            lastManualVisibleRangeRef.current = null;
+            if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+              lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+            }
+          } else {
+            // User was viewing historical data, maintain their position
+            console.log('📊 User viewing history - maintaining scroll position');
+            const maintainedRange = chartRef.current.getVisibleRange();
+            if (maintainedRange) {
+              lastManualVisibleRangeRef.current = maintainedRange;
+            }
+            if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+              lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+            }
+            isAutoFollowRef.current = false;
           }
         } else if (!shouldAutoFollow) {
           const maintainedRange = chartRef.current.getVisibleRange();
