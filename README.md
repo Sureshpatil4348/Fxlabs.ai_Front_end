@@ -94,6 +94,20 @@ Files affected:
 - `src/components/widget/services/realMarketService.js` (subscribe to `ohlc_updates`, emit per-candle)
 - `src/components/widget/components/UnifiedChart.jsx` (receives candles and updates KLine)
 
+## Duplicate Candles Fix (Latest)
+
+Eliminated intermittent duplicate candles in the custom K-line (klinecharts) widget caused by overlapping pagination pages and occasional repeated timestamps in API responses.
+
+- Root cause: Overlapping historical pages and mixed seconds/milliseconds handling could introduce repeated bars with identical timestamps.
+- Fixes applied:
+  - Component-level deduplication by `timestamp` before applying to klinecharts.
+  - Initial-page and pagination-page dedupe by `time` in seconds, also guarding against duplicates within a single page.
+- Result: Stable, strictly increasing candle series without duplicates.
+
+Files affected:
+- `src/components/widget/components/KLineChartComponent.jsx:611` (dedupe by `timestamp` before `applyNewData`)
+- `src/components/widget/components/ChartPanel.jsx:51` (initial load dedupe) and `src/components/widget/components/ChartPanel.jsx:119` (pagination dedupe)
+
 ### Unified real-time data path
 - The chart’s real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart’s top price bar.
 - This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.

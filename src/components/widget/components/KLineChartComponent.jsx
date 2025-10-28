@@ -589,11 +589,11 @@ export const KLineChartComponent = ({
         !isNaN(candle.close) &&
         candle.time > 0
       );
-      
+      // Sort by time (ascending)
       const sortedCandles = validCandles.sort((a, b) => a.time - b.time);
-      
+
       // Convert to KLineChart format
-      const klineData = sortedCandles.map(candle => {
+      const rawKlineData = sortedCandles.map(candle => {
         // Ensure timestamp is in milliseconds (KLineChart requirement)
         // If timestamp is less than year 2000 in milliseconds (946684800000), it's likely in seconds
         const timestamp = candle.time < 946684800000 ? candle.time * 1000 : candle.time;
@@ -607,6 +607,16 @@ export const KLineChartComponent = ({
           volume: Number(candle.volume) || 0,
         };
       });
+
+      // Deduplicate by timestamp to prevent duplicate candles (keep the latest occurrence)
+      const dedupeMap = new Map();
+      for (let i = rawKlineData.length - 1; i >= 0; i--) {
+        const d = rawKlineData[i];
+        if (!dedupeMap.has(d.timestamp)) {
+          dedupeMap.set(d.timestamp, d);
+        }
+      }
+      const klineData = Array.from(dedupeMap.values()).sort((a, b) => a.timestamp - b.timestamp);
 
       // Determine if this is a pagination load (more history added)
       const isPaginationLoad = !isInitialLoad && 
@@ -634,7 +644,7 @@ export const KLineChartComponent = ({
           visibleRange
         });
         
-        // Apply new data (this will prepend historical candles)
+        // Apply new data (this replaces chart data with deduped dataset)
         chartRef.current.applyNewData(klineData);
         
         // Force chart to recalculate y-axis based on visible data
@@ -695,7 +705,7 @@ export const KLineChartComponent = ({
         }
       }
       
-      // Update previous count
+      // Update previous count (after dedupe)
       prevCandleCountRef.current = klineData.length;
 
       console.log('📈 K-line chart data updated:', {

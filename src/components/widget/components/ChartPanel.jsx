@@ -48,7 +48,16 @@ export const ChartPanel = ({ panelSettings }) => {
           lastCandle: result.candles[result.candles.length - 1]
         });
         
-        setCandles(result.candles);
+        // Deduplicate any duplicate timestamps within the initial page
+        const seenInit = new Set();
+        const uniqueInitial = [];
+        for (const c of result.candles) {
+          if (!seenInit.has(c.time)) {
+            seenInit.add(c.time);
+            uniqueInitial.push(c);
+          }
+        }
+        setCandles(uniqueInitial);
         setHasMoreHistory(result.hasMore);
         
         // Track the oldest loaded timestamp
@@ -107,9 +116,15 @@ export const ChartPanel = ({ panelSettings }) => {
       });
       
       if (result.candles.length > 0) {
-        // Filter out any duplicate candles based on timestamp
-        const existingTimes = new Set(candles.map(c => c.time));
-        const newCandles = result.candles.filter(c => !existingTimes.has(c.time));
+        // Filter out any duplicate candles based on timestamp, including duplicates within the new page
+        const seenTimes = new Set(candles.map(c => c.time));
+        const newCandles = [];
+        for (const c of result.candles) {
+          if (!seenTimes.has(c.time)) {
+            seenTimes.add(c.time);
+            newCandles.push(c);
+          }
+        }
         
         if (newCandles.length > 0) {
           // Prepend new historical candles to the beginning
