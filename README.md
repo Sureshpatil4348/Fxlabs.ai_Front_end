@@ -26,6 +26,25 @@ Files affected:
 - `src/components/widget/components/KLineChartComponent.jsx` (lines 735-773)
 - `src/components/widget/components/UnifiedChart.jsx`
 
+## Default Scroll Position on Page/Pair/Timeframe Load (Latest)
+
+- **Feature**: When the page loads for the first time, or when the user changes the trading pair, or switches to a different timeframe, the chart now defaults to showing the **current candle position** (real-time view).
+
+- **Implementation**:
+  - Initial load and all pair/timeframe changes reset the `isInitialLoad` flag via dependency array: `[settings.symbol, settings.timeframe]`
+  - On initial data arrival, the chart scrolls to real-time using `scrollToRealTime()` instead of manually scrolling back 100 candles
+  - The `isAutoFollowRef` is set to `true`, enabling auto-follow for subsequent new candles
+  - Manual scroll position tracking is cleared, allowing fresh tracking of user interactions
+
+- **Behavior**:
+  - ✅ **First page load**: Chart shows the latest/current candle position
+  - ✅ **Pair change**: Chart resets and shows the latest candle for the new pair
+  - ✅ **Timeframe change**: Chart resets and shows the latest candle for the new timeframe
+  - ✅ **After initial load**: User can manually scroll to history; scroll position is maintained per previous fix
+
+Files affected:
+- `src/components/widget/components/KLineChartComponent.jsx` (line 839-842, dependency array line 50)
+
 ## Advanced Chart Tick Throttling (Latest)
 
 Real-time chart updates now process each tick immediately by default. You can optionally enable throttling via an env var if needed.
@@ -147,7 +166,7 @@ Files affected:
 - `src/components/widget/components/ChartPanel.jsx:51` (initial load dedupe) and `src/components/widget/components/ChartPanel.jsx:119` (pagination dedupe)
 
 ### Unified real-time data path
-- The chart’s real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart’s top price bar.
+- The chart's real-time feed now listens through the centralized WebSocket router so the same tick stream powers: Trending Pairs, RSI Tracker, and the chart's top price bar.
 - This eliminates duplicate sockets and ensures consistent, per-tick updates across the UI.
 - Files: `src/components/widget/services/realMarketService.js`, `src/services/websocketService.js`, `src/services/websocketMessageRouter.js`
 
@@ -464,12 +483,12 @@ Files affected:
   - Sydney: 07:00–16:00 local → 20:00–05:00 UTC (AEDT), 21:00–06:00 UTC (AEST)
   - London: 08:00–17:00 local → 07:00–16:00 UTC (BST), 08:00–17:00 UTC (GMT)
   - New York: 08:00–17:00 local → 12:00–21:00 UTC (EDT), 13:00–22:00 UTC (EST)
-- The converter projects these sessions onto the viewer’s 24‑hour day with cross‑midnight segments handled correctly.
+- The converter projects these sessions onto the viewer's 24‑hour day with cross‑midnight segments handled correctly.
 - Two‑part segments fix: When a session overlaps a viewer day on both sides of midnight (e.g., Sydney in UTC during AEDT), the timeline now renders two separate bars (e.g., 00:00–05:00 and 20:00–24:00) for all markets consistently.
 
 Files affected:
 - `src/utils/marketHoursEngine.js` — session definitions updated to BabyPips windows (Sydney 07:00–16:00; London/NY 08:00–17:00)
-  and cross‑midnight projection updated to consider both local days that intersect the viewer’s 24‑hour window (ensures two‑part bars when needed)
+  and cross‑midnight projection updated to consider both local days that intersect the viewer's 24‑hour window (ensures two‑part bars when needed)
 
 ### Forex Market Time Zone Converter — Bar Label Formatting (Latest)
 - Removed space before AM/PM in bar labels inside market bars (e.g., `1:30AM-10:30AM`).
@@ -1022,7 +1041,7 @@ All features that relied on client-side calculations now expect server-provided 
   - **Result**: Time labels now correctly reflect the selected timezone and 12h/24h format
 - **Multi-segment projection**: Engine returns all segments overlapping the viewer's day window for each market
   - Provides `projectedSegmentsInViewer` (array) and `projectedSegmentInViewer` (first segment for backward-compat)
-  - Shows both yesterday’s tail and today’s segment when applicable (e.g., New York in IST)
+  - Shows both yesterday's tail and today's segment when applicable (e.g., New York in IST)
 - **Session detection logic**:
   - **Yesterday extends check** and **today overlaps check** used to build all segments
   - No merging at engine level; component renders all segments clipped to 24h window
@@ -2138,7 +2157,7 @@ The system automatically handles symbol format conversion:
   - Post-invite redirect: When a user accepts a Supabase invite and the app receives an auth callback (`type=invite` or `type=signup` with tokens), the session is established and the user is redirected to the dashboard (`/dashboard`).
   - This logic is handled on the Home page by parsing URL parameters and invoking `supabase.auth.setSession`, then cleaning the URL and navigating to the dashboard.
   - To avoid a race where the dashboard route loads before `user` is available, the app now waits for the authenticated `user` to be set before navigating.
-  - Additionally, at the provider level, on Supabase `SIGNED_IN` events (including invite acceptance that auto-logs in), if the current path is `/`, the app navigates to `/dashboard`. This ensures redirects still work even if tokens aren’t present in the URL.
+  - Additionally, at the provider level, on Supabase `SIGNED_IN` events (including invite acceptance that auto-logs in), if the current path is `/`, the app navigates to `/dashboard`. This ensures redirects still work even if tokens aren't present in the URL.
 
 ### Troubleshooting: Invite redirects not opening Dashboard
 - Expected landing URL contains `#access_token=...&refresh_token=...&type=invite|signup` (may also arrive in search params). If these tokens are absent on landing, Supabase likely did not append them.
@@ -2148,7 +2167,7 @@ The system automatically handles symbol format conversion:
     - Add `https://fxlabsprime.com` (and any specific paths you use) to "Additional Redirect URLs".
     - If you want to skip Home entirely, set the invite `redirect_to` to `https://fxlabsprime.com/dashboard` (ensure your hosting rewrites support SPA routes — Netlify is configured via `netlify.toml`).
   - Re-send the invite after updating settings.
-- If tokens are present but redirect still doesn’t happen, open DevTools Console and look for messages like:
+- If tokens are present but redirect still doesn't happen, open DevTools Console and look for messages like:
   - `[FxLabs Prime] Invite session error:` or `[FxLabs Prime] Invite processing failed:`
   - These indicate session set failure or unexpected callback shape.
 
@@ -3454,7 +3473,7 @@ Benefits:
 - Affected widgets:
   - Currency Strength Meter (`src/components/CurrencyStrengthMeter.js`)
   - RSI Tracker (`src/components/RSIOverboughtOversoldTracker.js`)
-- Behavior: Reflects each widget’s selected `settings.timeframe` value (e.g., 5M, 15M, 1H, 4H, 1D, 1W).
+- Behavior: Reflects each widget's selected `settings.timeframe` value (e.g., 5M, 15M, 1H, 4H, 1D, 1W).
 ### Feature Flag: Advanced TradingView Widget (Planned)
 - Purpose: Introduce an advanced TradingView widget that preserves the current visuals while adding only two capabilities: state persistence and custom indicators.
 - Flag: `REACT_APP_FEATURE_FLAG_USE_ADVANCED_TRADINGVIEW_WIDGET`
@@ -3518,7 +3537,7 @@ How to use
 - Use Clear to remove all drawings; Export to download drawings as JSON.
 ## Forex Market Time Zone Converter — Time Indicator Position Fix (Latest)
 
-- Fixed the vertical time indicator (the moving “timezone stick”) incorrectly sticking to the absolute left when navigating from Dashboard (Analysis tab) to Tools tab.
+- Fixed the vertical time indicator (the moving "timezone stick") incorrectly sticking to the absolute left when navigating from Dashboard (Analysis tab) to Tools tab.
 - Root cause: the timeline was initially measured while hidden, yielding zero width and a left position of 0, so the indicator never re‑positioned after the tab became visible.
 - Solution: recalculate after layout and whenever the timeline becomes visible or resizes.
   - Added `useLayoutEffect` to compute after layout.

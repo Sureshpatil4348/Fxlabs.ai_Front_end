@@ -836,10 +836,9 @@ export const KLineChartComponent = ({
           setTimeout(() => {
             if (!chartRef.current) return;
 
-            const targetIndex = Math.max(0, klineData.length - 100);
-            console.log('📊 Initial load - scrolling to index:', targetIndex, 'of', klineData.length);
+            console.log('📊 Initial load - scrolling to current candle (real-time)');
             markProgrammaticScroll();
-            chartRef.current.scrollToDataIndex(targetIndex);
+            chartRef.current.scrollToRealTime();
             setIsInitialLoad(false);
             isAutoFollowRef.current = true;
             lastManualVisibleRangeRef.current = null;
