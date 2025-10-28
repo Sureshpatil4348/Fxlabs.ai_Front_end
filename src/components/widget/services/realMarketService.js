@@ -294,7 +294,8 @@ export class RealMarketService {
       '1d': 86400,
       '1w': 604800
     };
-    return intervals[interval] || 60; // Default to 1 minute
+    const key = (interval || '').toLowerCase();
+    return intervals[key] || 60; // Default to 1 minute
   }
   
   /**
@@ -330,8 +331,29 @@ export class RealMarketService {
         const handler = (message) => {
           try {
             if (!message || !message.type) return;
-            // Ignore ticks for KLine rendering (only use OHLC updates)
-            if (message.type === 'ticks') return;
+            // Live ticks -> update the current (open) candle only
+            if (message.type === 'ticks') {
+              const arr = Array.isArray(message.data) ? message.data : [];
+              if (arr.length === 0) return;
+              const tfSec = this.getTimeIntervalInSeconds(interval);
+              for (let i = 0; i < arr.length; i++) {
+                const t = arr[i];
+                const sym = (t.symbol || t.pair || '').toString();
+                if (!wants.includes(sym)) continue;
+                const price = parseFloat(t.bid || t.ask || t.price || 0);
+                if (!Number.isFinite(price) || price <= 0) continue;
+                const nowSec = Number.isFinite(t.time) ? Math.floor(t.time / 1000) : Math.floor(Date.now() / 1000);
+                const bucketStart = Math.floor(nowSec / tfSec) * tfSec;
+                const tickUpdate = {
+                  source: 'tick',
+                  time: bucketStart,
+                  price,
+                  volume: parseFloat(t.volume || 0)
+                };
+                if (onMessage) onMessage(tickUpdate);
+              }
+              return;
+            }
             // Consolidated OHLC updates on closed candles
             if (message.type === 'ohlc_updates') {
               const tf = this.convertIntervalToTimeframe(interval);
@@ -384,7 +406,7 @@ export class RealMarketService {
           connectionCallback: () => { if (typeof onOpen === 'function') onOpen(); },
           disconnectionCallback: (ev) => { if (typeof onClose === 'function') onClose(ev); },
           errorCallback: (err) => { if (typeof onError === 'function') onError(err); },
-          subscribedMessageTypes: ['ohlc_updates']
+          subscribedMessageTypes: ['ticks', 'ohlc_updates']
         });
 
         // Ensure the shared connection is up

@@ -350,7 +350,52 @@ export const UnifiedChart = () => {
 
     // Internal apply function that always uses the latest store state
     const applyCandle = (newCandle) => {
-      // Validate the new candle data
+      const store = useChartStore.getState();
+      const currentCandles = store.candles;
+      const lastCandle = currentCandles[currentCandles.length - 1];
+
+      // Special handling for live tick updates (partial bar updates)
+      if (newCandle && newCandle.source === 'tick') {
+        const price = Number(newCandle.price);
+        const time = Number(newCandle.time);
+        if (!Number.isFinite(price) || !Number.isFinite(time) || time <= 0) return;
+
+        // If the latest bar matches this bucket, update H/L/C; preserve the original open
+        if (lastCandle && lastCandle.time === time) {
+          const merged = {
+            time,
+            open: Number.isFinite(lastCandle.open) ? lastCandle.open : price,
+            high: Math.max(Number(lastCandle.high ?? price), price),
+            low: Math.min(Number(lastCandle.low ?? price), price),
+            close: price,
+            volume: (Number(lastCandle.volume) || 0) + (Number(newCandle.volume) || 0)
+          };
+          store.updateLastCandle(merged);
+        } else if (!lastCandle || lastCandle.time < time) {
+          // Start a new (live) bar for this timeframe bucket
+          const live = {
+            time,
+            open: price,
+            high: price,
+            low: price,
+            close: price,
+            volume: Number(newCandle.volume) || 0
+          };
+          store.addCandle(live);
+        } else {
+          // Older tick than last candle's time — ignore to keep chart stable
+          return;
+        }
+
+        // Recalculate indicators with updated candles
+        const postUpdate = useChartStore.getState().candles;
+        const sorted = [...postUpdate].sort((a, b) => a.time - b.time);
+        const calculatedIndicators = calculateAllIndicators(sorted);
+        store.setIndicators(calculatedIndicators);
+        return;
+      }
+
+      // Full candle validation and merge (REST/ohlc_updates)
       if (
         isNaN(newCandle.time) ||
         isNaN(newCandle.open) ||
@@ -362,10 +407,6 @@ export const UnifiedChart = () => {
         console.warn('Invalid candle data received:', newCandle);
         return;
       }
-
-      const store = useChartStore.getState();
-      const currentCandles = store.candles;
-      const lastCandle = currentCandles[currentCandles.length - 1];
 
       if (lastCandle && newCandle.time === lastCandle.time) {
         store.updateLastCandle(newCandle);

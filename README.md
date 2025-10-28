@@ -86,7 +86,8 @@ Backend pushes consolidated OHLC updates on closed candles approximately every 1
 
 Advanced TradingView integration:
 - REST loads historical candles on init and as you scroll back (pagination)
-- WebSocket ohlc_updates appends new closed candles seamlessly in real time
+- WebSocket ticks update only the current open candle (H/L/C adjust; O preserved)
+- WebSocket ohlc_updates finalizes closed candles at 10s cadence by timeframe
 - Symbol/timeframe filtering is applied client-side to match the current chart
 
 Files affected:
