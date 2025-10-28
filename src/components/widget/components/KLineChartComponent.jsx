@@ -228,7 +228,9 @@ export const KLineChartComponent = ({
     try {
       setError(null);
       
-      const chart = init(container);
+      // Initialize chart with timezone awareness
+      const tz = settings.timezone || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+      const chart = init(container, { timezone: tz });
 
       // Configure chart styles using setStyles (not setStyleOptions)
       chart.setStyles({
@@ -489,7 +491,20 @@ export const KLineChartComponent = ({
       console.error('📈 Error initializing K-line chart:', error);
       setError(error instanceof Error ? error.message : 'Failed to initialize K-line chart');
     }
-  }, [settings.showGrid, setKLineChartRef]); // Include settings.showGrid and setKLineChartRef dependencies
+  }, [settings.showGrid, setKLineChartRef, settings.timezone]); // Include timezone for initial setup
+
+  // Apply timezone changes to the chart dynamically
+  useEffect(() => {
+    if (!chartRef.current) return;
+    try {
+      const tz = settings.timezone || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+      if (typeof chartRef.current.setTimezone === 'function') {
+        chartRef.current.setTimezone(tz);
+      }
+    } catch (e) {
+      console.warn('📈 Failed to apply chart timezone:', e);
+    }
+  }, [settings.timezone]);
 
   // Handle scroll events for pagination
   useEffect(() => {

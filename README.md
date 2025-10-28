@@ -164,6 +164,18 @@ Files affected:
 - ✅ **Live Time Synchronization** (real-time clock display)
 - ✅ **Accessibility Compliant** (keyboard navigation, ARIA labels)
 
+## K-line Chart Timezone Support (Latest)
+
+- K-line chart now fully respects the selected timezone from the header dropdown.
+- Auto-detects the system timezone on first load and applies it by default.
+- Switching timezone immediately updates chart axis/crosshair timestamps via `klinecharts.setTimezone`.
+- Comprehensive Forex Market Time Zone Converter list used in the dropdown, including half/quarter offsets, plus an Auto (System) option.
+
+Technical notes:
+- `useChartStore` defaults `settings.timezone` to the system IANA timezone.
+- `ChartPanel` passes `settings.timezone` to `KLineChartComponent`.
+- `KLineChartComponent` initializes with `{ timezone }` and listens for changes to apply `chart.setTimezone(...)`.
+
 ## Premium Symbol Search Modal (Previous)
 
 **Implemented a professional TradingView-style symbol search modal with comprehensive market data integration**

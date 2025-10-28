@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 
 import SymbolSearchModal from './SymbolSearchModal';
 import { formatSymbolDisplay } from '../../../utils/formatters';
+import { listTimezonesWithOffsets } from '../../../utils/marketHoursEngine';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
@@ -20,30 +21,19 @@ export const TradingViewHeader = () => {
   const indicatorsButtonRef = useRef(null);
 
   const _timeframes = ['1m', '30m', '1h'];
-  
-  // Premium timezone data with major financial markets
-  const timezones = [
-    { value: 'UTC', label: 'UTC (GMT+0)', city: 'London', market: 'Global', offset: 0 },
-    { value: 'America/New_York', label: 'EST (GMT-5)', city: 'New York', market: 'NYSE/NASDAQ', offset: -5 },
-    { value: 'America/Chicago', label: 'CST (GMT-6)', city: 'Chicago', market: 'CME/CBOT', offset: -6 },
-    { value: 'America/Los_Angeles', label: 'PST (GMT-8)', city: 'Los Angeles', market: 'West Coast', offset: -8 },
-    { value: 'Europe/London', label: 'GMT (GMT+0)', city: 'London', market: 'LSE/FX', offset: 0 },
-    { value: 'Europe/Frankfurt', label: 'CET (GMT+1)', city: 'Frankfurt', market: 'XETRA', offset: 1 },
-    { value: 'Europe/Paris', label: 'CET (GMT+1)', city: 'Paris', market: 'Euronext', offset: 1 },
-    { value: 'Europe/Zurich', label: 'CET (GMT+1)', city: 'Zurich', market: 'SIX', offset: 1 },
-    { value: 'Asia/Tokyo', label: 'JST (GMT+9)', city: 'Tokyo', market: 'TSE', offset: 9 },
-    { value: 'Asia/Shanghai', label: 'CST (GMT+8)', city: 'Shanghai', market: 'SSE', offset: 8 },
-    { value: 'Asia/Hong_Kong', label: 'HKT (GMT+8)', city: 'Hong Kong', market: 'HKEX', offset: 8 },
-    { value: 'Asia/Singapore', label: 'SGT (GMT+8)', city: 'Singapore', market: 'SGX', offset: 8 },
-    { value: 'Australia/Sydney', label: 'AEST (GMT+10)', city: 'Sydney', market: 'ASX', offset: 10 },
-    { value: 'Australia/Melbourne', label: 'AEST (GMT+10)', city: 'Melbourne', market: 'ASX', offset: 10 },
-    { value: 'Asia/Dubai', label: 'GST (GMT+4)', city: 'Dubai', market: 'DFM', offset: 4 },
-    { value: 'Asia/Mumbai', label: 'IST (GMT+5:30)', city: 'Mumbai', market: 'NSE/BSE', offset: 5.5 },
-    { value: 'America/Sao_Paulo', label: 'BRT (GMT-3)', city: 'São Paulo', market: 'B3', offset: -3 },
-    { value: 'America/Toronto', label: 'EST (GMT-5)', city: 'Toronto', market: 'TSX', offset: -5 },
-    { value: 'Europe/Moscow', label: 'MSK (GMT+3)', city: 'Moscow', market: 'MOEX', offset: 3 },
-    { value: 'Asia/Seoul', label: 'KST (GMT+9)', city: 'Seoul', market: 'KRX', offset: 9 },
-  ];
+  // Comprehensive timezone list + Auto(System)
+  const [timezones, setTimezones] = useState(() => listTimezonesWithOffsets(new Date()));
+  const systemTz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
+  const systemTzItem = (() => {
+    const nowList = listTimezonesWithOffsets(new Date());
+    const match = nowList.find(z => z.value === systemTz);
+    return match ? { ...match, label: `${match.label} (Auto)` } : { value: systemTz, label: `${systemTz} (Auto)`, gmt: '+00:00', offsetMinutes: 0 };
+  })();
+  useEffect(() => {
+    const refresh = () => setTimezones(listTimezonesWithOffsets(new Date()));
+    const id = setInterval(refresh, 60 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
   
   // Check if current symbol is in watchlist
   useEffect(() => {
@@ -96,7 +86,8 @@ export const TradingViewHeader = () => {
   };
 
   const getCurrentTimezoneInfo = () => {
-    return timezones.find(tz => tz.value === settings.timezone) || timezones[0];
+    const match = timezones.find(tz => tz.value === settings.timezone);
+    return match || systemTzItem;
   };
 
   const calculateDropdownPosition = () => {
@@ -253,7 +244,7 @@ export const TradingViewHeader = () => {
                   <svg className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-gray-700 group-hover:text-blue-700 transition-colors">{getCurrentTimezoneInfo().city}</span>
+                  <span className="text-gray-700 group-hover:text-blue-700 transition-colors">{`${getCurrentTimezoneInfo().label} (GMT${getCurrentTimezoneInfo().gmt})`}</span>
                 </div>
                 <svg className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -283,6 +274,30 @@ export const TradingViewHeader = () => {
                   </div>
 
                   <div className="p-2 space-y-1 overflow-y-auto" style={{ maxHeight: '320px' }}>
+                    {/* Auto (System) */}
+                    <button
+                      key={`auto-${systemTzItem.value}`}
+                      onClick={() => handleTimezoneSelect(systemTzItem.value)}
+                      className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                        settings.timezone === systemTzItem.value
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-[1.02]'
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className={`font-semibold ${settings.timezone === systemTzItem.value ? 'text-white' : 'text-gray-900'}`}>{systemTzItem.label}</span>
+                          <span className={`text-xs ${settings.timezone === systemTzItem.value ? 'text-blue-100' : 'text-gray-500'}`}>GMT{systemTzItem.gmt}</span>
+                        </div>
+                        {settings.timezone === systemTzItem.value && (
+                          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* All supported timezones */}
                     {timezones.map((timezone) => (
                       <button
                         key={timezone.value}
@@ -294,21 +309,18 @@ export const TradingViewHeader = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <div className="flex items-center space-x-2">
-                                <span className={`font-semibold ${settings.timezone === timezone.value ? 'text-white' : 'text-gray-900'}`}>{timezone.city}</span>
-                                <span className={`text-xs ${settings.timezone === timezone.value ? 'text-blue-100' : 'text-gray-500'}`}>{timezone.label}</span>
-                              </div>
-                              <span className={`text-xs mt-0.5 ${settings.timezone === timezone.value ? 'text-blue-100' : 'text-gray-600'}`}>{timezone.market}</span>
-                            </div>
-                            {settings.timezone === timezone.value && (
-                              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
+                          <div className="flex items-center space-x-2">
+                            <span className={`font-semibold ${settings.timezone === timezone.value ? 'text-white' : 'text-gray-900'}`}>{timezone.label}</span>
+                            <span className={`text-xs ${settings.timezone === timezone.value ? 'text-blue-100' : 'text-gray-500'}`}>GMT{timezone.gmt}</span>
                           </div>
-                        </button>
-                      ))}
+                          {settings.timezone === timezone.value && (
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                      </button>
+                    ))}
 
                     {/* Current Time Display */}
                     <div className="mt-3 pt-3 border-t border-gray-200 px-3 pb-2">

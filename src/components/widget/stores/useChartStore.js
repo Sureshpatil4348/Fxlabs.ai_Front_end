@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+// Resolve system timezone once on load; fallback to 'UTC'
+const SYSTEM_TIMEZONE = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
+
 const defaultSettings = {
   symbol: 'BTCUSDT',
   timeframe: '1h',
   chartType: 'candlestick',
   cursorType: 'crosshair',
-  timezone: 'UTC',
+  // Auto-detect system timezone by default
+  timezone: SYSTEM_TIMEZONE,
   showGrid: true,
   indicators: {
     ema20: true,
@@ -431,6 +435,15 @@ export const useChartStore = create(
             indicators: _state.settings.indicators,
             layoutType: _state.layoutType
           });
+          // If timezone wasn't previously set, ensure we apply system timezone automatically
+          try {
+            if (!_state.settings.timezone) {
+              const tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
+              _state.settings.timezone = tz;
+            }
+          } catch (_e) {
+            // noop
+          }
         }
       },
     }

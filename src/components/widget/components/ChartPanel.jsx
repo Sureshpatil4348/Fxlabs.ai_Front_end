@@ -156,7 +156,8 @@ export const ChartPanel = ({ panelSettings }) => {
         symbol: panelSettings.symbol,
         timeframe: panelSettings.timeframe,
         chartType: panelSettings.chartType || 'candlestick',
-        showGrid: _settings.showGrid
+        showGrid: _settings.showGrid,
+        timezone: _settings.timezone
       }}
       panelSettings={panelSettings}
       onLoadMoreHistory={handleLoadMoreHistory}
@@ -165,4 +166,3 @@ export const ChartPanel = ({ panelSettings }) => {
     />
   );
 };
-
