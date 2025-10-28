@@ -3553,3 +3553,17 @@ How to verify locally:
 
 ESLint note:
 - The fix adheres to typical React hook dependency best practices. If you run ESLint locally, there should be no new warnings for these changes.
+
+## K-Line Chart — Centered Overlay Controls (Latest)
+
+- Added floating controls to the advanced klinecharts widget, centered horizontally and positioned just above the bottom panel.
+- Each control is its own small opaque square card with rounded corners; hover shows a hand cursor.
+- Buttons: Minus (zoom out), Plus (zoom in), Arrow Left (pan left), Arrow Right (pan right), Reload (reset to latest + restore initial zoom).
+- Location: rendered inside the chart container so it stays aligned with the chart and never overlaps other layout elements.
+
+Files affected:
+- `src/components/widget/components/KLineChartComponent.jsx`
+
+Usage:
+- Hover or move near the bottom center of the chart to see the five mini cards.
+- Click Minus/Plus to zoom around the chart center; Left/Right to pan several bars; Reload to jump to live candles and restore the initial bar space.

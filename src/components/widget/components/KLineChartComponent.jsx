@@ -16,6 +16,7 @@ export const KLineChartComponent = ({
   const [error, setError] = useState(null);
   const [_currentOHLC, setCurrentOHLC] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const initialBarSpaceRef = useRef(null);
   
   // Get the setter from store
   const { setKLineChartRef } = useChartStore();
@@ -412,6 +413,17 @@ export const KLineChartComponent = ({
       });
 
       chartRef.current = chart;
+      // Capture initial bar space for reset/reload behavior
+      try {
+        if (typeof chart.getBarSpace === 'function') {
+          const bs = chart.getBarSpace();
+          if (bs && typeof bs.bar === 'number') {
+            initialBarSpaceRef.current = bs.bar;
+          }
+        }
+      } catch (_e) {
+        // no-op: optional API
+      }
       
       // Register chart ref with store for sidebar access
       setKLineChartRef(chart);
@@ -955,6 +967,69 @@ export const KLineChartComponent = ({
     }
   }, []);
 
+  // Overlay control handlers
+  const handleZoomIn = useCallback(() => {
+    const chart = chartRef.current;
+    const el = chartContainerRef.current;
+    if (!chart || !el) return;
+    const width = el.clientWidth || 0;
+    const height = el.clientHeight || 0;
+    // Zoom in around center
+    chart.zoomAtCoordinate(1.2, { x: width / 2, y: height / 2 }, 120);
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    const chart = chartRef.current;
+    const el = chartContainerRef.current;
+    if (!chart || !el) return;
+    const width = el.clientWidth || 0;
+    const height = el.clientHeight || 0;
+    // Zoom out around center
+    chart.zoomAtCoordinate(0.83, { x: width / 2, y: height / 2 }, 120);
+  }, []);
+
+  const handleScrollLeft = useCallback(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    let step = 160; // px fallback
+    try {
+      if (typeof chart.getBarSpace === 'function') {
+        const bs = chart.getBarSpace();
+        if (bs && typeof bs.bar === 'number') step = bs.bar * 18; // ~18 bars
+      }
+    } catch (_e) { /* ignore */ }
+    chart.scrollByDistance(-step, 120);
+    isAutoFollowRef.current = false;
+  }, []);
+
+  const handleScrollRight = useCallback(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    let step = 160; // px fallback
+    try {
+      if (typeof chart.getBarSpace === 'function') {
+        const bs = chart.getBarSpace();
+        if (bs && typeof bs.bar === 'number') step = bs.bar * 18; // ~18 bars
+      }
+    } catch (_e) { /* ignore */ }
+    chart.scrollByDistance(step, 120);
+    isAutoFollowRef.current = false;
+  }, []);
+
+  const handleReload = useCallback(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    try {
+      // Reset bar space if available
+      if (initialBarSpaceRef.current && typeof chart.setBarSpace === 'function') {
+        chart.setBarSpace(initialBarSpaceRef.current);
+      }
+    } catch (_e) { /* ignore optional API */ }
+    // Jump to latest and re-enable auto-follow
+    chart.scrollToRealTime(150);
+    isAutoFollowRef.current = true;
+  }, []);
+
   const _exportDrawings = useCallback(() => {
     if (chartRef.current) {
       try {
@@ -1032,6 +1107,61 @@ export const KLineChartComponent = ({
               </div>
             </div>
           )}
+
+          {/* Overlay Controls - centered above bottom panel */}
+          <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none" style={{ bottom: '46px' }}>
+            <div className="flex items-center gap-3 pointer-events-auto">
+              {/* Zoom out card */}
+              <button
+                type="button"
+                aria-label="Zoom out"
+                onClick={handleZoomOut}
+                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14"/></svg>
+              </button>
+
+              {/* Zoom in card */}
+              <button
+                type="button"
+                aria-label="Zoom in"
+                onClick={handleZoomIn}
+                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14M5 12h14"/></svg>
+              </button>
+
+              {/* Pan left card */}
+              <button
+                type="button"
+                aria-label="Scroll left"
+                onClick={handleScrollLeft}
+                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+
+              {/* Pan right card */}
+              <button
+                type="button"
+                aria-label="Scroll right"
+                onClick={handleScrollRight}
+                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+
+              {/* Reload / reset card */}
+              <button
+                type="button"
+                aria-label="Reload chart"
+                onClick={handleReload}
+                className="w-9 h-9 grid place-items-center rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 active:bg-gray-100 text-gray-700 cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 00-14.906-2M4 16a8 8 0 0014.906 2"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
