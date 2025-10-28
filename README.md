@@ -123,7 +123,7 @@ Files affected:
 
 ### Key Features:
 - **Interactive Grid Toggle**: Click the Grid button in the bottom bar to show/hide chart grid lines
-- **Visual Feedback**: Grid button changes appearance based on current state (blue when active, gray when inactive)
+- **Visual Feedback**: Grid button shows a green border and light green background when active (gray when inactive)
 - **Real-time Updates**: Grid visibility changes instantly without chart reload
 - **Persistent Settings**: Grid preference saved in chart store and localStorage
 - **Clean Chart View**: When disabled, provides a clean, uncluttered chart view behind candlesticks
@@ -135,7 +135,7 @@ Files affected:
 - Updated KLineChartComponent to respond to grid setting changes
 - Added useEffect hook to update grid visibility when settings change
 - Enhanced TradingChart component with interactive grid button
-- Grid button shows visual state (blue background when grid is visible)
+- Grid button shows visual state (green border + light green background when grid is visible)
 
 ### Benefits:
 - ✅ **Clean Chart View** (grid can be hidden for cleaner appearance)

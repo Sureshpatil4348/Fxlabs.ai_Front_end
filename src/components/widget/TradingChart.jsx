@@ -184,7 +184,7 @@ function TradingChart() {
                     onClick={toggleGrid}
                     className={`flex items-center space-x-1 px-2 py-1 border rounded text-xs transition-colors ${
                       settings.showGrid 
-                        ? 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100' 
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 hover:bg-emerald-100' 
                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
                     }`}
                   >
