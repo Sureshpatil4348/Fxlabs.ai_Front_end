@@ -2,6 +2,37 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## K-Line Chart Control Buttons - Fixed Implementation (Latest)
+
+### Chart Navigation Buttons
+
+The advanced K-line chart now includes fully functional control buttons at the bottom-center of the chart for easy navigation and zooming:
+
+- **Zoom Out** (-): Decreases the magnification level to see more candles on the screen
+- **Zoom In** (+): Increases the magnification level for detailed analysis
+- **Scroll Left** (←): Pans the chart to the left to view older historical data
+- **Scroll Right** (→): Pans the chart to the right to move toward current prices
+- **Reset/Reload** (↻): Resets the zoom level to default and scrolls to the current candle
+
+### Features
+
+- ✅ **Mouse cursor changes to pointer** when hovering over buttons
+- ✅ **Fully clickable** with proper event handling
+- ✅ **Smooth transitions** on hover and active states
+- ✅ **Proper z-index management** to ensure buttons are always clickable above the chart
+- ✅ **Keyboard accessible** with proper ARIA labels
+- ✅ **Auto-follow disabled** on manual navigation (scroll left/right), allowing users to explore historical data while maintaining their scroll position
+
+### Technical Implementation
+
+- Implemented proper `pointer-events` configuration for both parent and child containers
+- Added explicit z-index (50) to ensure buttons are always interactive above the canvas
+- Each button has inline `style={{ cursor: 'pointer', pointerEvents: 'auto' }}` for maximum compatibility
+- Smooth color transitions during hover/active states using `transition-colors duration-200`
+
+Files affected:
+- `src/components/widget/components/KLineChartComponent.jsx` (lines 1111-1165, handlers on lines 971-1031)
+
 ## Manual Scroll Persistence - New Candle Formation Fix (Latest)
 
 - **Issue**: The advanced K-line chart auto-scrolled back to current position when a NEW CANDLE formed, even if the user had manually scrolled to view historical data. The chart correctly maintained scroll position during tick updates (same candle), but not when a new candle was added to the chart.
