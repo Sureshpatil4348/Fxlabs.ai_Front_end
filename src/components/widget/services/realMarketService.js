@@ -323,36 +323,15 @@ export class RealMarketService {
         this._onClose = onClose;
         this._onOpen = onOpen;
 
-        // Helper to emit a candle for a single tick
-        const emitFromTick = (tick) => {
-          const price = parseFloat(tick.price || tick.ask || tick.bid || 0);
-          if (!Number.isFinite(price) || price <= 0) return;
-          const candleData = {
-            time: Math.floor(Date.now() / 1000),
-            open: price,
-            high: price,
-            low: price,
-            close: price,
-            volume: parseFloat(tick.volume || 0)
-          };
-          if (onMessage) onMessage(candleData);
-        };
+        // Note: Do NOT synthesize candles from ticks for KLine.
+        // KLine should only update on closed-bar OHLC updates to avoid jitter.
 
         // Message handler via router
         const handler = (message) => {
           try {
             if (!message || !message.type) return;
-            // Per-tick handling
-            if (message.type === 'ticks') {
-              const arr = Array.isArray(message.data) ? message.data : [];
-              if (arr.length === 0) return;
-              for (let i = 0; i < arr.length; i++) {
-                const t = arr[i];
-                const sym = (t.symbol || t.pair || '').toString();
-                if (wants.includes(sym)) emitFromTick(t);
-              }
-              return;
-            }
+            // Ignore ticks for KLine rendering (only use OHLC updates)
+            if (message.type === 'ticks') return;
             // Consolidated OHLC updates on closed candles
             if (message.type === 'ohlc_updates') {
               const tf = this.convertIntervalToTimeframe(interval);
@@ -405,7 +384,7 @@ export class RealMarketService {
           connectionCallback: () => { if (typeof onOpen === 'function') onOpen(); },
           disconnectionCallback: (ev) => { if (typeof onClose === 'function') onClose(ev); },
           errorCallback: (err) => { if (typeof onError === 'function') onError(err); },
-          subscribedMessageTypes: ['ticks', 'ohlc_updates']
+          subscribedMessageTypes: ['ohlc_updates']
         });
 
         // Ensure the shared connection is up
