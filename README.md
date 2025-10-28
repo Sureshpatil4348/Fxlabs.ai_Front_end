@@ -94,6 +94,20 @@ Files affected:
 - `src/components/widget/services/realMarketService.js` (subscribe to `ohlc_updates`, emit per-candle)
 - `src/components/widget/components/UnifiedChart.jsx` (receives candles and updates KLine)
 
+## Timeframe Controls and Initial Window (Latest)
+
+- Timeframe UI now shows quick buttons for `1m`, `5m`, `15m` and a compact dropdown for `30m`, `1h`, `4h`, `1d`, `1w`.
+- On timeframe change, the chart fetches enough historical candles to cover this initial window and reconnects to the proper OHLC WebSocket stream:
+  - `1m`: 6 hours (~360 bars)
+  - `5m`: 24 hours (~288 bars)
+  - `15m`: 72 hours (~288 bars)
+  - `30m`: 1 week (~336 bars)
+  - `1h`: 2 weeks (~336 bars)
+  - `4h`: 2 months (~360 bars)
+  - `1d`: 6 months (~180 bars)
+  - `1w`: 2 years (~104 bars)
+- Pagination continues to work when scrolling left; additional pages load in batches of 1000 candles.
+
 ## Duplicate Candles Fix (Latest)
 
 Eliminated intermittent duplicate candles in the custom K-line (klinecharts) widget caused by overlapping pagination pages and occasional repeated timestamps in API responses.

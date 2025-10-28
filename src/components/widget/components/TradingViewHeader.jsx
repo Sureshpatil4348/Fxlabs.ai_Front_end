@@ -9,7 +9,7 @@ import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
   const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
-  const [_activeTimeframe, setActiveTimeframe] = useState('1h');
+  const [_activeTimeframe, setActiveTimeframe] = useState('1m');
   const [showIndicators, setShowIndicators] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [showSymbolSearch, setShowSymbolSearch] = useState(false);
@@ -20,7 +20,8 @@ export const TradingViewHeader = () => {
   const timezoneDropdownRef = useRef(null);
   const indicatorsButtonRef = useRef(null);
 
-  const _timeframes = ['1m', '30m', '1h'];
+  // Quick-access timeframes are 1m, 5m, 15m; remaining in dropdown
+  const _timeframes = ['1m', '5m', '15m'];
   // Comprehensive timezone list + Auto(System)
   const [timezones, setTimezones] = useState(() => listTimezonesWithOffsets(new Date()));
   const systemTz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
@@ -152,7 +153,7 @@ export const TradingViewHeader = () => {
             
             {/* Quick Timeframe Buttons - Premium Style */}
           <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
-              {['5m', '15m', '1h'].map((tf) => (
+              {['1m', '5m', '15m'].map((tf) => (
               <button
                 key={tf}
                   onClick={() => {
@@ -172,16 +173,14 @@ export const TradingViewHeader = () => {
 
             {/* More Timeframes Dropdown */}
             <select
-              value={settings.timeframe}
+              value={['30m','1h','4h','1d','1w'].includes(settings.timeframe) ? settings.timeframe : ''}
               onChange={(e) => {
                 setTimeframe(e.target.value);
                 setActiveTimeframe(e.target.value);
               }}
               className="px-2 py-1 border border-gray-200 rounded-md text-[9px] font-semibold bg-white hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 min-w-[60px] shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="1m">1m</option>
-              <option value="5m">5m</option>
-              <option value="15m">15m</option>
+              <option value="" disabled>More</option>
               <option value="30m">30m</option>
               <option value="1h">1h</option>
               <option value="4h">4h</option>

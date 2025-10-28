@@ -58,6 +58,31 @@ export const UnifiedChart = () => {
     prependCandles,
     resetPagination
   } = useChartStore();
+
+  // Determine how many initial bars to load per timeframe to match desired visible period
+  const getInitialBarsForTimeframe = useMemo(() => (tf) => {
+    const key = String(tf || '').toLowerCase();
+    switch (key) {
+      case '1m': // 6 hours
+        return 6 * 60; // 360
+      case '5m': // 24 hours
+        return (24 * 60) / 5; // 288
+      case '15m': // 72 hours
+        return (72 * 60) / 15; // 288
+      case '30m': // 1 week (~7 days)
+        return Math.round((7 * 24 * 60) / 30); // 336
+      case '1h': // 2 weeks (~14 days)
+        return 14 * 24; // 336
+      case '4h': // 2 months (~60 days)
+        return 60 * 6; // 360
+      case '1d': // 6 months (~180 days)
+        return 180; // 180
+      case '1w': // 2 years (~104 weeks)
+        return 2 * 52; // 104
+      default:
+        return 500; // fallback
+    }
+  }, []);
   
   const { pricingBySymbol } = useMarketCacheStore();
   
@@ -220,7 +245,7 @@ export const UnifiedChart = () => {
         settings.symbol,
         settings.timeframe,
         currentPage + 1,
-        500
+        1000
       );
       
       console.log('📊 loadMoreHistory: Received', result.candles.length, 'candles');
@@ -261,22 +286,53 @@ export const UnifiedChart = () => {
       resetPagination(); // Reset pagination when loading new data
       
       try {
-        console.log('📡 Calling realMarketService.getHistoricalData...');
-        const data = await realMarketService.getHistoricalData(
-          settings.symbol,
-          settings.timeframe,
-          500
-        );
-        
-        console.log('✅ Historical data loaded successfully!');
-        console.log('📈 Data length:', data.length, 'candles');
-        console.log('📈 First candle:', data[0]);
-        console.log('📈 Last candle:', data[data.length - 1]);
-        console.log('📈 Full data array:', data);
+        // Figure out how many bars we want initially for the selected timeframe
+        const desiredBars = getInitialBarsForTimeframe(settings.timeframe);
+        const PER_PAGE = 1000;
+        const pagesNeeded = Math.max(1, Math.ceil(desiredBars / PER_PAGE));
+
+        console.log('📡 Loading initial OHLC data', { desiredBars, pagesNeeded, perPage: PER_PAGE });
+
+        let combined = [];
+        let lastHasMore = true;
+        for (let page = 1; page <= pagesNeeded; page++) {
+          // For single-page small limits, use a smaller per_page
+          const perPageForThisCall = pagesNeeded === 1 ? Math.min(PER_PAGE, desiredBars) : PER_PAGE;
+          // eslint-disable-next-line no-await-in-loop
+          const res = await realMarketService.getHistoricalDataWithPage(
+            settings.symbol,
+            settings.timeframe,
+            page,
+            perPageForThisCall
+          );
+          combined = combined.concat(res.candles || []);
+          lastHasMore = !!res.hasMore;
+        }
+
+        // Deduplicate by time and sort ascending
+        const seen = new Set();
+        const unique = [];
+        for (let i = 0; i < combined.length; i++) {
+          const c = combined[i];
+          if (!seen.has(c.time)) {
+            seen.add(c.time);
+            unique.push(c);
+          }
+        }
+        unique.sort((a, b) => a.time - b.time);
+        const sliced = unique.length > desiredBars ? unique.slice(-desiredBars) : unique;
+
+        console.log('✅ Historical data loaded successfully!', {
+          desiredBars,
+          pagesNeeded,
+          received: combined.length,
+          unique: unique.length,
+          used: sliced.length,
+        });
         
         // Validate the data structure
-        if (data.length > 0) {
-          const firstCandle = data[0];
+        if (sliced.length > 0) {
+          const firstCandle = sliced[0];
           console.log('🔍 Data validation:', {
             hasTime: typeof firstCandle.time === 'number' && !isNaN(firstCandle.time),
             hasOpen: typeof firstCandle.open === 'number' && !isNaN(firstCandle.open),
@@ -288,16 +344,20 @@ export const UnifiedChart = () => {
           });
         } else {
           console.warn('⚠️ No data received from realMarketService!');
-          console.warn('⚠️ Data is empty or null:', data);
+          console.warn('⚠️ Data is empty or null:', sliced);
         }
         
         console.log('💾 Setting candles in store...');
-        setCandles(data);
-        console.log('✅ Candles set in store, length:', data.length);
+        setCandles(sliced);
+        console.log('✅ Candles set in store, length:', sliced.length);
+
+        // Update pagination counters to reflect how many pages we fetched
+        setCurrentPage(pagesNeeded);
+        setHasMoreHistory(lastHasMore);
         
         // Calculate indicators
         console.log('🧮 Calculating indicators...');
-        const calculatedIndicators = calculateAllIndicators(data);
+        const calculatedIndicators = calculateAllIndicators(sliced);
         console.log('✅ Indicators calculated:', Object.keys(calculatedIndicators));
         setIndicators(calculatedIndicators);
         
