@@ -2,6 +2,16 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Manual Scroll Persistence (Latest)
+
+- Issue: The advanced K-line chart snapped back to the newest tick after every data update, breaking manual exploration of historical/future bars.
+- Fix: Track manual scroll state, restore the user-selected range (including right-offset distance) after pagination or live updates, and switch real-time ticks to incremental `updateData` calls so the viewport never resets unless you are intentionally following the latest bar.
+- Additional: Unified chart loader effect now lists the store setters in its dependency array to satisfy strict linting.
+
+Files affected:
+- `src/components/widget/components/KLineChartComponent.jsx`
+- `src/components/widget/components/UnifiedChart.jsx`
+
 ## Advanced Chart Tick Throttling (Latest)
 
 Real-time chart updates now process each tick immediately by default. You can optionally enable throttling via an env var if needed.

@@ -26,6 +26,28 @@ export const KLineChartComponent = ({
   const isLoadingRef = useRef(false);
   const scrollDebounceTimerRef = useRef(null);
   const lastLoadRequestTimeRef = useRef(0);
+  const isAutoFollowRef = useRef(true);
+  const lastManualVisibleRangeRef = useRef(null);
+  const lastOffsetRightDistanceRef = useRef(null);
+  const isProgrammaticScrollRef = useRef(false);
+  const prevFirstTimestampRef = useRef(null);
+  const prevLastTimestampRef = useRef(null);
+  const markProgrammaticScroll = useCallback(() => {
+    isProgrammaticScrollRef.current = true;
+    setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 0);
+  }, []);
+  useEffect(() => {
+    prevCandleCountRef.current = 0;
+    prevFirstTimestampRef.current = null;
+    prevLastTimestampRef.current = null;
+    isAutoFollowRef.current = true;
+    lastManualVisibleRangeRef.current = null;
+    lastOffsetRightDistanceRef.current = null;
+    currentScrollIndexRef.current = null;
+    setIsInitialLoad(true);
+  }, [settings.symbol, settings.timeframe]);
   
   // Keep latest candles for event handlers
   const candlesRef = useRef(candles);
@@ -511,15 +533,43 @@ export const KLineChartComponent = ({
     if (!chartRef.current) return;
 
     const handleScroll = (data) => {
-      // Check if we're near the left edge and should load more history
-      if (data && typeof data.from === 'number') {
-        const visibleRange = chartRef.current.getVisibleRange();
-        
-        // Save current scroll position before loading more data
-        if (visibleRange && visibleRange.from !== undefined) {
+      if (!chartRef.current) return;
+
+      const visibleRange = chartRef.current.getVisibleRange();
+
+      if (visibleRange) {
+        if (typeof visibleRange.from === 'number') {
           currentScrollIndexRef.current = visibleRange.from;
         }
-        
+
+        if (!isProgrammaticScrollRef.current) {
+          lastManualVisibleRangeRef.current = visibleRange;
+
+          if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+            lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+          }
+
+          const dataList = typeof chartRef.current.getDataList === 'function'
+            ? chartRef.current.getDataList()
+            : [];
+          const totalCandles = Array.isArray(dataList) ? dataList.length : 0;
+
+          if (totalCandles > 0 && typeof visibleRange.to === 'number') {
+            const latestIndex = totalCandles - 1;
+            const futureDistance = visibleRange.to - latestIndex;
+            const nearRightEdge = futureDistance >= -1 && futureDistance <= 0;
+
+            if (futureDistance > 0) {
+              isAutoFollowRef.current = false;
+            } else {
+              isAutoFollowRef.current = nearRightEdge;
+            }
+          }
+        }
+      }
+
+      // Check if we're near the left edge and should load more history
+      if (data && typeof data.from === 'number' && visibleRange) {
         // Clear any existing debounce timer
         if (scrollDebounceTimerRef.current) {
           clearTimeout(scrollDebounceTimerRef.current);
@@ -618,36 +668,103 @@ export const KLineChartComponent = ({
       }
       const klineData = Array.from(dedupeMap.values()).sort((a, b) => a.timestamp - b.timestamp);
 
-      // Determine if this is a pagination load (more history added)
-      const isPaginationLoad = !isInitialLoad && 
-                               klineData.length > prevCandleCountRef.current &&
-                               prevCandleCountRef.current > 0;
-      
-      if (isPaginationLoad) {
-        // Calculate how many new candles were added
-        const newCandlesCount = klineData.length - prevCandleCountRef.current;
+      const previousVisibleRange = chartRef.current.getVisibleRange() || lastManualVisibleRangeRef.current;
+      const previousOffsetRightDistance = typeof chartRef.current.getOffsetRightDistance === 'function'
+        ? chartRef.current.getOffsetRightDistance()
+        : lastOffsetRightDistanceRef.current;
+      const shouldAutoFollow = isAutoFollowRef.current;
+
+      const firstTimestamp = klineData.length > 0 ? klineData[0].timestamp : null;
+      const lastTimestamp = klineData.length > 0 ? klineData[klineData.length - 1].timestamp : null;
+      const prevFirstTimestamp = prevFirstTimestampRef.current;
+
+      const dataLengthIncreased = klineData.length > prevCandleCountRef.current;
+      const appendedCount = dataLengthIncreased ? klineData.length - prevCandleCountRef.current : 0;
+      const hasOlderHistory = dataLengthIncreased &&
+        prevFirstTimestamp !== null &&
+        firstTimestamp !== null &&
+        firstTimestamp < prevFirstTimestamp;
+      const isPaginationLoad = hasOlderHistory;
+      const handledWithIncrementalUpdate = !isInitialLoad && !isPaginationLoad;
+
+      const restoreManualRange = (range, offsetRight, adjustForHistory = false, historyDelta = 0) => {
+        if (!chartRef.current || !range || typeof range.from !== 'number' || typeof range.to !== 'number') {
+          return;
+        }
+
+        const rangeSize = Math.max(0, range.to - range.from);
+        let targetFrom = range.from + (adjustForHistory ? historyDelta : 0);
+        const maxFrom = Math.max(0, klineData.length - Math.max(1, rangeSize));
+        targetFrom = Math.max(0, Math.min(targetFrom, maxFrom));
+
+        markProgrammaticScroll();
+        chartRef.current.scrollToDataIndex(targetFrom);
+
+        if (typeof chartRef.current.setOffsetRightDistance === 'function' && typeof offsetRight === 'number') {
+          chartRef.current.setOffsetRightDistance(offsetRight);
+        }
+
+        const cappedLength = Math.max(0, klineData.length - 1);
+        const targetTo = Math.min(cappedLength, targetFrom + rangeSize);
+        lastManualVisibleRangeRef.current = {
+          from: targetFrom,
+          to: targetTo
+        };
+        currentScrollIndexRef.current = targetFrom;
+
+        if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+          lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+        }
+
+        isAutoFollowRef.current = false;
+      };
+      if (handledWithIncrementalUpdate) {
+        const latestCandles = appendedCount > 0 ? klineData.slice(-appendedCount) : (klineData.length > 0 ? [klineData[klineData.length - 1]] : []);
+        latestCandles.forEach((candle) => {
+          chartRef.current.updateData(candle);
+        });
+
+        if (chartRef.current.setOptions) {
+          chartRef.current.setOptions({
+            yAxis: {
+              autoMinMax: true
+            }
+          });
+        }
+
+        if (appendedCount > 0 && shouldAutoFollow) {
+          markProgrammaticScroll();
+          chartRef.current.scrollToRealTime();
+          isAutoFollowRef.current = true;
+          lastManualVisibleRangeRef.current = null;
+          if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+            lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+          }
+        } else if (!shouldAutoFollow) {
+          const maintainedRange = chartRef.current.getVisibleRange();
+          if (maintainedRange) {
+            lastManualVisibleRangeRef.current = maintainedRange;
+          }
+          if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+            lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+          }
+        } else if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+          lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+          lastManualVisibleRangeRef.current = null;
+        }
+
+        isLoadingRef.current = false;
+      } else if (isPaginationLoad) {
+        const newCandlesCount = appendedCount;
         
         console.log('📊 Pagination load detected:', {
           newCandles: newCandlesCount,
           totalCandles: klineData.length,
           previousTotal: prevCandleCountRef.current
         });
-        
-        // Get current visible range before updating data
-        const visibleRange = chartRef.current.getVisibleRange();
-        const wasAtIndex = visibleRange ? visibleRange.from : 0;
-        const wasViewingRealTime = visibleRange ? (visibleRange.to >= prevCandleCountRef.current - 1) : false;
-        
-        console.log('📊 Before pagination update:', {
-          wasAtIndex,
-          wasViewingRealTime,
-          visibleRange
-        });
-        
-        // Apply new data (this replaces chart data with deduped dataset)
+
         chartRef.current.applyNewData(klineData);
         
-        // Force chart to recalculate y-axis based on visible data
         if (chartRef.current.setOptions) {
           chartRef.current.setOptions({
             yAxis: {
@@ -656,33 +773,26 @@ export const KLineChartComponent = ({
           });
         }
         
-        // Restore scroll position by adjusting for the new candles added
-        // The user was viewing candle at index X, now that same candle is at index X + newCandlesCount
         setTimeout(() => {
-          if (chartRef.current) {
-            if (wasViewingRealTime) {
-              // If user was viewing real-time, keep them at the latest
-              console.log('📊 Keeping user at real-time view');
-              chartRef.current.scrollToRealTime();
-            } else {
-              // Adjust the scroll position to maintain the same view
-              const newIndex = wasAtIndex + newCandlesCount;
-              console.log('📊 Restoring scroll position:', {
-                wasAtIndex,
-                newCandlesCount,
-                newIndex,
-                totalCandles: klineData.length
-              });
-              chartRef.current.scrollToDataIndex(newIndex);
+          if (!chartRef.current) return;
+
+          if (shouldAutoFollow) {
+            markProgrammaticScroll();
+            chartRef.current.scrollToRealTime();
+            isAutoFollowRef.current = true;
+            lastManualVisibleRangeRef.current = null;
+            if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+              lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
             }
-            isLoadingRef.current = false;
+          } else {
+            restoreManualRange(previousVisibleRange, previousOffsetRightDistance, true, newCandlesCount);
           }
+
+          isLoadingRef.current = false;
         }, 100);
       } else {
-        // Initial load or real-time update
         chartRef.current.applyNewData(klineData);
         
-        // Force chart to recalculate y-axis based on visible data
         if (chartRef.current.setOptions) {
           chartRef.current.setOptions({
             yAxis: {
@@ -691,60 +801,94 @@ export const KLineChartComponent = ({
           });
         }
         
-        // On initial load, scroll to show recent data
         if (isInitialLoad && klineData.length > 0) {
           setTimeout(() => {
-            if (chartRef.current) {
-              // Show the most recent ~100 candles or all if less
-              const targetIndex = Math.max(0, klineData.length - 100);
-              console.log('📊 Initial load - scrolling to index:', targetIndex, 'of', klineData.length);
-              chartRef.current.scrollToDataIndex(targetIndex);
-              setIsInitialLoad(false);
+            if (!chartRef.current) return;
+
+            const targetIndex = Math.max(0, klineData.length - 100);
+            console.log('📊 Initial load - scrolling to index:', targetIndex, 'of', klineData.length);
+            markProgrammaticScroll();
+            chartRef.current.scrollToDataIndex(targetIndex);
+            setIsInitialLoad(false);
+            isAutoFollowRef.current = true;
+            lastManualVisibleRangeRef.current = null;
+            if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+              lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
             }
           }, 100);
+        } else if (!shouldAutoFollow && previousVisibleRange) {
+          setTimeout(() => {
+            if (!chartRef.current) return;
+            restoreManualRange(previousVisibleRange, previousOffsetRightDistance);
+          }, 0);
+        } else if (shouldAutoFollow) {
+          markProgrammaticScroll();
+          chartRef.current.scrollToRealTime();
+          isAutoFollowRef.current = true;
+          lastManualVisibleRangeRef.current = null;
+          if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+            lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+          }
         }
+
+        isLoadingRef.current = false;
       }
-      
-      // Update previous count (after dedupe)
+
+      // Update previous dataset metadata (after dedupe and chart updates)
       prevCandleCountRef.current = klineData.length;
+      prevFirstTimestampRef.current = firstTimestamp;
+      prevLastTimestampRef.current = lastTimestamp;
 
       console.log('📈 K-line chart data updated:', {
         originalCount: candles.length,
         validCount: validCandles.length,
         appliedCount: klineData.length,
-        isPagination: isPaginationLoad
+        isPagination: isPaginationLoad,
+        incremental: handledWithIncrementalUpdate
       });
     } catch (error) {
       console.error('📈 Error updating K-line chart data:', error);
       setError(error instanceof Error ? error.message : 'Failed to update chart data');
       isLoadingRef.current = false;
     }
-  }, [candles, isInitialLoad, isLoadingHistory]);
+  }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
     if (chartRef.current) {
+      markProgrammaticScroll();
       chartRef.current.scrollToRealTime();
+      isAutoFollowRef.current = true;
+      lastManualVisibleRangeRef.current = null;
+      if (typeof chartRef.current.getOffsetRightDistance === 'function') {
+        lastOffsetRightDistanceRef.current = chartRef.current.getOffsetRightDistance();
+      }
     }
-  }, []);
+  }, [markProgrammaticScroll]);
 
   const _scrollLeft = useCallback((pixels = 100) => {
     if (chartRef.current) {
+      markProgrammaticScroll();
       chartRef.current.scrollByDistance(-pixels);
+      isAutoFollowRef.current = false;
     }
-  }, []);
+  }, [markProgrammaticScroll]);
 
   const _scrollRight = useCallback((pixels = 100) => {
     if (chartRef.current) {
+      markProgrammaticScroll();
       chartRef.current.scrollByDistance(pixels);
+      isAutoFollowRef.current = false;
     }
-  }, []);
+  }, [markProgrammaticScroll]);
 
   const _scrollToCandle = useCallback((index) => {
     if (chartRef.current) {
+      markProgrammaticScroll();
       chartRef.current.scrollToDataIndex(index);
+      isAutoFollowRef.current = false;
     }
-  }, []);
+  }, [markProgrammaticScroll]);
 
   const _getVisibleRange = useCallback(() => {
     if (chartRef.current) {

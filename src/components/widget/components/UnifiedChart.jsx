@@ -395,7 +395,19 @@ export const UnifiedChart = () => {
     if (isInitialized) {
       loadHistoricalData();
     }
-  }, [isInitialized, settings.symbol, settings.timeframe, setCandles, setIndicators, setLoading, setError, resetPagination]);
+  }, [
+    isInitialized,
+    settings.symbol,
+    settings.timeframe,
+    setCandles,
+    setIndicators,
+    setLoading,
+    setError,
+    resetPagination,
+    getInitialBarsForTimeframe,
+    setCurrentPage,
+    setHasMoreHistory
+  ]);
 
 
   // WebSocket connection for real-time data (throttled)
