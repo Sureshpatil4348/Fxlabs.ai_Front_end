@@ -266,7 +266,7 @@ export const UnifiedChart = () => {
                 settings.symbol,
                 settings.timeframe,
                 currentPage + 1,
-                200 // Always fetch 200 candles per page regardless of timeframe
+                500
             );
 
             console.log(
@@ -323,7 +323,7 @@ export const UnifiedChart = () => {
                 const desiredBars = getInitialBarsForTimeframe(
                     settings.timeframe
                 );
-                const PER_PAGE = 200; // Use 200 candles per page
+                const PER_PAGE = 500;
                 const pagesNeeded = Math.max(
                     1,
                     Math.ceil(desiredBars / PER_PAGE)
@@ -338,8 +338,8 @@ export const UnifiedChart = () => {
                 let combined = [];
                 let lastHasMore = true;
                 for (let page = 1; page <= pagesNeeded; page++) {
-                    // Always fetch 200 candles per page regardless of timeframe
-                    const perPageForThisCall = 200;
+                    // Always request a fixed per_page=500 from the OHLC API
+                    const perPageForThisCall = PER_PAGE;
                     // eslint-disable-next-line no-await-in-loop
                     const res =
                         await realMarketService.getHistoricalDataWithPage(
