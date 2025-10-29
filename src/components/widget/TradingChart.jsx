@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import { ChartLayout } from './components/ChartLayout.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
 import { TradingViewHeader } from './components/TradingViewHeader.jsx';
+import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
 
 function TradingChart() {
@@ -136,9 +136,8 @@ function TradingChart() {
           
           {/* Chart Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Chart Layout - Renders different layouts based on user selection */}
             <div className="flex-1 overflow-hidden">
-              <ChartLayout />
+              <UnifiedChart />
             </div>
             
             {/* Bottom Bar */}

@@ -25,7 +25,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Uses `REACT_APP_API_BASE_URL` if set, else defaults to `https://api.fxlabsprime.com`.
   - Adds `X-API-Key: {API_TOKEN}` header when `REACT_APP_API_TOKEN` (or `REACT_APP_FXLABS_API_TOKEN`) is configured.
 - Components:
-  - `ChartPanel.jsx` and `UnifiedChart.jsx` load initial data with `limit=300` and keep `next_before` as an in-memory cursor to fetch older pages on demand (also using `limit=300`).
+  - `UnifiedChart.jsx` loads initial data with `limit=300` and keeps `next_before` as an in-memory cursor to fetch older pages on demand (also using `limit=300`).
   - Candles are deduplicated by `time` and kept sorted ascending before being applied to charts.
 
 ### Environment variables

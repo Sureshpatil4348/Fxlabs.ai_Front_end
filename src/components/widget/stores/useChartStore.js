@@ -30,97 +30,6 @@ const defaultSettings = {
   }
 };
 
-const defaultChartPanels = [
-  {
-    id: 'panel-1',
-    symbol: 'BTCUSDT',
-    timeframe: '1h',
-    chartType: 'candlestick',
-    indicators: {
-      ema20: true,
-      ema200: true,
-      rsi: false,
-      macd: false,
-      atr: false,
-      sma50: false,
-      sma100: false,
-      bollinger: false,
-      stoch: false,
-      williams: false,
-      cci: false,
-      obv: false,
-      vwap: false,
-      change24h: true,
-    }
-  },
-  {
-    id: 'panel-2',
-    symbol: 'ETHUSDT',
-    timeframe: '1h',
-    chartType: 'line',
-    indicators: {
-      ema20: true,
-      ema200: false,
-      rsi: false,
-      macd: false,
-      atr: false,
-      sma50: false,
-      sma100: false,
-      bollinger: false,
-      stoch: false,
-      williams: false,
-      cci: false,
-      obv: false,
-      vwap: false,
-      change24h: true,
-    }
-  },
-  {
-    id: 'panel-3',
-    symbol: 'BNBUSDT',
-    timeframe: '30m',
-    chartType: 'candlestick',
-    indicators: {
-      ema20: true,
-      ema200: false,
-      rsi: true,
-      macd: false,
-      atr: false,
-      sma50: false,
-      sma100: false,
-      bollinger: false,
-      stoch: false,
-      williams: false,
-      cci: false,
-      obv: false,
-      vwap: false,
-      change24h: true,
-    }
-  },
-  {
-    id: 'panel-4',
-    symbol: 'ADAUSDT',
-    timeframe: '1h',
-    chartType: 'line',
-    indicators: {
-      ema20: false,
-      ema200: false,
-      rsi: false,
-      macd: true,
-      atr: false,
-      sma50: false,
-      sma100: false,
-      bollinger: false,
-      stoch: false,
-      williams: false,
-      cci: false,
-      obv: false,
-      vwap: false,
-      change24h: true,
-    }
-  },
-];
-
 export const useChartStore = create(
   persist(
     (set) => ({
@@ -150,8 +59,6 @@ export const useChartStore = create(
         isPositive: false
       },
       settings: defaultSettings,
-      layoutType: 'single',
-      chartPanels: defaultChartPanels,
       isLoading: false,
       isConnected: false,
       error: null,
@@ -276,14 +183,6 @@ export const useChartStore = create(
         }));
       },
       
-      setLayoutType: (layoutType) => set({ layoutType }),
-      
-      updateChartPanel: (panelId, updates) => set((state) => ({
-        chartPanels: state.chartPanels.map(panel =>
-          panel.id === panelId ? { ...panel, ...updates } : panel
-        )
-      })),
-      
       setLoading: (isLoading) => set({ isLoading }),
       
       setConnected: (isConnected) => set({ isConnected }),
@@ -323,9 +222,7 @@ export const useChartStore = create(
       resetSettings: () => {
         console.log('💾 ChartStore: Resetting settings to defaults');
         set(() => ({
-          settings: defaultSettings,
-          layoutType: 'single',
-          chartPanels: defaultChartPanels
+          settings: defaultSettings
         }));
       },
       
@@ -422,9 +319,7 @@ export const useChartStore = create(
       name: 'tradingview-chart-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        settings: state.settings,
-        layoutType: state.layoutType,
-        chartPanels: state.chartPanels
+        settings: state.settings
       }),
       onRehydrateStorage: () => (_state) => {
         if (_state) {
@@ -432,8 +327,7 @@ export const useChartStore = create(
             symbol: _state.settings.symbol,
             timeframe: _state.settings.timeframe,
             chartType: _state.settings.chartType,
-            indicators: _state.settings.indicators,
-            layoutType: _state.layoutType
+            indicators: _state.settings.indicators
           });
           // If timezone wasn't previously set, ensure we apply system timezone automatically
           try {
