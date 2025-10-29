@@ -266,7 +266,7 @@ export const UnifiedChart = () => {
                 settings.symbol,
                 settings.timeframe,
                 currentPage + 1,
-                500
+                300
             );
 
             console.log(
@@ -323,7 +323,7 @@ export const UnifiedChart = () => {
                 const desiredBars = getInitialBarsForTimeframe(
                     settings.timeframe
                 );
-                const PER_PAGE = 200;
+                const PER_PAGE = 300;
                 const pagesNeeded = Math.max(
                     1,
                     Math.ceil(desiredBars / PER_PAGE)

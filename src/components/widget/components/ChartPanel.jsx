@@ -60,7 +60,7 @@ export const ChartPanel = ({ panelSettings }) => {
         
         // Determine desired number of initial bars for timeframe
         const desiredBars = getInitialBarsForTimeframe(panelSettings.timeframe);
-        const PER_PAGE = 200;
+        const PER_PAGE = 300;
         const pagesNeeded = Math.max(1, Math.ceil(desiredBars / PER_PAGE));
 
         console.log('📡 Loading initial OHLC data (ChartPanel)', { desiredBars, pagesNeeded, perPage: PER_PAGE });
@@ -146,7 +146,7 @@ export const ChartPanel = ({ panelSettings }) => {
         panelSettings.symbol,
         panelSettings.timeframe,
         nextPage,
-        500 // Fixed per_page for all OHLC requests
+        300 // Fixed per_page for all OHLC requests
       );
       
       console.log('📊 More history loaded:', {

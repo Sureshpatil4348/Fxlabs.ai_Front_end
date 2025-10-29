@@ -15,7 +15,7 @@ export class RealMarketService {
      * Fetch historical OHLC data from your real market data API
      * Uses the new OHLC endpoint with pagination support
      */
-    async getHistoricalData(
+async getHistoricalData(
       symbol = 'EURUSD',
       interval = '1m',
       limit = 500
@@ -32,8 +32,8 @@ export class RealMarketService {
         const apiTimeframe = this.convertIntervalToTimeframe(interval);
         console.log('🔄 Converted timeframe:', apiTimeframe);
         
-        // Calculate per_page (max 1000 per API spec)
-        const perPage = Math.min(limit, 1000);
+        // Force per_page to 300 (max cap still respected if backend enforces)
+        const perPage = Math.min(300, 1000);
         
         // Build the new OHLC API URL
         const url = `${RealMarketService.BASE_URL}/api/ohlc?symbol=${apiSymbol}&timeframe=${apiTimeframe}&page=1&per_page=${perPage}`;
@@ -149,7 +149,7 @@ export class RealMarketService {
     symbol = 'EURUSD',
     interval = '1m',
     page = 1,
-    perPage = 500
+    perPage = 300
   ) {
     try {
       console.log('🔍 RealMarketService: getHistoricalDataWithPage', { symbol, interval, page, perPage });
