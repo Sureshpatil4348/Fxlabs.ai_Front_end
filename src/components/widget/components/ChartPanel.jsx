@@ -60,7 +60,7 @@ export const ChartPanel = ({ panelSettings }) => {
         
         // Determine desired number of initial bars for timeframe
         const desiredBars = getInitialBarsForTimeframe(panelSettings.timeframe);
-        const PER_PAGE = 1000;
+        const PER_PAGE = 200; // Always fetch 200 candles per page regardless of timeframe
         const pagesNeeded = Math.max(1, Math.ceil(desiredBars / PER_PAGE));
 
         console.log('📡 Loading initial OHLC data (ChartPanel)', { desiredBars, pagesNeeded, perPage: PER_PAGE });
@@ -68,7 +68,7 @@ export const ChartPanel = ({ panelSettings }) => {
         let combined = [];
         let lastHasMore = true;
         for (let page = 1; page <= pagesNeeded; page++) {
-          const perPageForThisCall = pagesNeeded === 1 ? Math.min(PER_PAGE, desiredBars) : PER_PAGE;
+          const perPageForThisCall = 200; // Always use 200 candles per page
           // eslint-disable-next-line no-await-in-loop
           const res = await realMarketService.getHistoricalDataWithPage(
             panelSettings.symbol,
@@ -146,7 +146,7 @@ export const ChartPanel = ({ panelSettings }) => {
         panelSettings.symbol,
         panelSettings.timeframe,
         nextPage,
-        1000 // Load max candles per page for efficiency
+        200 // Load max candles per page for efficiency
       );
       
       console.log('📊 More history loaded:', {
