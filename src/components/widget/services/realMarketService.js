@@ -3,7 +3,8 @@
 import websocketService from '../../../services/websocketService';
 
 export class RealMarketService {
-    static BASE_URL = 'https://api.fxlabsprime.com';
+    // Allow overriding via env; fallback to production API
+    static BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'https://api.fxlabsprime.com');
     // Uses centralized WS service via websocketMessageRouter
 
     // Router registration bookkeeping (no direct socket)
@@ -12,75 +13,43 @@ export class RealMarketService {
     _onOpen = null;
   
     /**
-     * Fetch historical OHLC data from your real market data API
-     * Uses the new OHLC endpoint with pagination support
+     * Fetch an OHLC slice using cursor-based pagination.
+     * - If neither before/after is provided: returns most recent `limit` bars.
+     * - If `before` provided: returns bars strictly older than `before`.
+     * - If `after` provided: returns bars strictly newer than `after`.
+     * Returns ascending bars plus cursors.
      */
-async getHistoricalData(
-      symbol = 'EURUSD',
-      interval = '1m',
-      limit = 500
-    ) {
+    async fetchOhlcSlice(symbol = 'EURUSD', interval = '1m', { limit = 300, before = null, after = null } = {}) {
       try {
-        console.log('🔍 RealMarketService: Starting getHistoricalData with new OHLC API');
-        console.log('📊 Parameters:', { symbol, interval, limit });
-        
-        // Convert symbol format for your API (add 'm' suffix if not present)
         const apiSymbol = symbol.endsWith('m') ? symbol : symbol + 'm';
-        console.log('🔄 Converted symbol:', apiSymbol);
-        
-        // Convert interval to API format (1m -> 1M, 5m -> 5M, etc.)
         const apiTimeframe = this.convertIntervalToTimeframe(interval);
-        console.log('🔄 Converted timeframe:', apiTimeframe);
-        
-        // Force per_page to 300 (max cap still respected if backend enforces)
-        const perPage = Math.min(300, 1000);
-        
-        // Build the new OHLC API URL
-        const url = `${RealMarketService.BASE_URL}/api/ohlc?symbol=${apiSymbol}&timeframe=${apiTimeframe}&page=1&per_page=${perPage}`;
-        console.log('🌐 API URL:', url);
-        
-        console.log('📡 Making API request...');
-        const response = await fetch(url);
-        console.log('📡 Response status:', response.status, response.statusText);
-        
+
+        const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
+
+        // Build URL (avoid double encoding for search params values)
+        const url = `${RealMarketService.BASE_URL}/api/ohlc?symbol=${encodeURIComponent(apiSymbol)}&timeframe=${encodeURIComponent(apiTimeframe)}&limit=${safeLimit}` +
+          (Number.isFinite(before) && before > 0 ? `&before=${before}` : '') +
+          (Number.isFinite(after) && after > 0 ? `&after=${after}` : '');
+
+        const headers = {};
+        const apiKey = process.env.REACT_APP_API_TOKEN || process.env.REACT_APP_FXLABS_API_TOKEN;
+        if (apiKey) headers['X-API-Key'] = apiKey;
+
+        const response = await fetch(url, { headers });
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ API Error:', response.status, errorText);
           throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
-        
-        console.log('📥 Parsing JSON response...');
+
         const data = await response.json();
-        
-        console.log('📊 Raw OHLC API response:', data);
-        console.log('📊 Response structure:', {
-          symbol: data.symbol,
-          timeframe: data.timeframe,
-          page: data.page,
-          per_page: data.per_page,
-          count: data.count,
-          barsCount: data.bars?.length
-        });
-        
-        // Validate response format
-        if (!data || !data.bars || !Array.isArray(data.bars)) {
-          console.error('❌ Invalid response format - no bars array:', data);
+
+        if (!data || !Array.isArray(data.bars)) {
           throw new Error('Invalid response format from OHLC API');
         }
-        
-        if (data.bars.length === 0) {
-          console.warn('⚠️ No bars returned from API');
-          return [];
-        }
-        
-        console.log('📊 Processing', data.bars.length, 'bars');
-        console.log('📊 First bar:', data.bars[0]);
-        console.log('📊 Last bar:', data.bars[data.bars.length - 1]);
-        
-        // Transform bars to candle format
-        // The API returns bars in ascending time order within the page
-        const candles = data.bars.map(bar => ({
-          time: Math.floor(bar.time / 1000), // Convert milliseconds to seconds
+
+        // Transform bars (ascending order expected)
+        const candles = data.bars.map((bar) => ({
+          time: Math.floor(Number(bar.time) / 1000),
           open: parseFloat(bar.open),
           high: parseFloat(bar.high),
           low: parseFloat(bar.low),
@@ -88,54 +57,55 @@ async getHistoricalData(
           volume: parseFloat(bar.volume || 0),
           tick_volume: parseFloat(bar.tick_volume || 0),
           spread: parseFloat(bar.spread || 0),
-          is_closed: bar.is_closed || false,
-          // Store additional bid/ask data if needed
-          openBid: parseFloat(bar.openBid || bar.open),
-          highBid: parseFloat(bar.highBid || bar.high),
-          lowBid: parseFloat(bar.lowBid || bar.low),
-          closeBid: parseFloat(bar.closeBid || bar.close),
-          openAsk: parseFloat(bar.openAsk || bar.open),
-          highAsk: parseFloat(bar.highAsk || bar.high),
-          lowAsk: parseFloat(bar.lowAsk || bar.low),
-          closeAsk: parseFloat(bar.closeAsk || bar.close)
-        }));
-        
-        console.log('✅ Transformed candles:', candles.length);
-        console.log('📊 First candle:', candles[0]);
-        console.log('📊 Last candle:', candles[candles.length - 1]);
-        
-        // Validate candle data
-        const validCandles = candles.filter(candle => 
-          !isNaN(candle.time) && 
-          !isNaN(candle.open) && 
-          !isNaN(candle.high) && 
-          !isNaN(candle.low) && 
-          !isNaN(candle.close) &&
-          candle.time > 0 &&
-          candle.high >= candle.low &&
-          candle.high >= candle.open &&
-          candle.high >= candle.close &&
-          candle.low <= candle.open &&
-          candle.low <= candle.close
-        );
-        
-        if (validCandles.length < candles.length) {
-          console.warn(`⚠️ Filtered out ${candles.length - validCandles.length} invalid candles`);
-        }
-        
-        console.log('✅ Returning', validCandles.length, 'valid candles');
-        return validCandles;
-        
-      } catch (error) {
-        console.error('❌ Error fetching OHLC data:', error);
-        console.error('❌ Error details:', {
-          message: error.message,
-          stack: error.stack,
-          name: error.name
+          is_closed: Boolean(bar.is_closed),
+          openBid: parseFloat(bar.openBid ?? bar.open),
+          highBid: parseFloat(bar.highBid ?? bar.high),
+          lowBid: parseFloat(bar.lowBid ?? bar.low),
+          closeBid: parseFloat(bar.closeBid ?? bar.close),
+          openAsk: parseFloat(bar.openAsk ?? bar.open),
+          highAsk: parseFloat(bar.highAsk ?? bar.high),
+          lowAsk: parseFloat(bar.lowAsk ?? bar.low),
+          closeAsk: parseFloat(bar.closeAsk ?? bar.close),
+        })).filter((c) => {
+          return (
+            Number.isFinite(c.time) &&
+            Number.isFinite(c.open) &&
+            Number.isFinite(c.high) &&
+            Number.isFinite(c.low) &&
+            Number.isFinite(c.close) &&
+            c.time > 0 &&
+            c.high >= c.low &&
+            c.high >= c.open &&
+            c.high >= c.close &&
+            c.low <= c.open &&
+            c.low <= c.close
+          );
         });
+
+        const count = Array.isArray(data.bars) ? data.bars.length : 0;
+        const nextBefore = Number.isFinite(data.next_before) ? data.next_before : (typeof data.next_before === 'number' ? data.next_before : null);
+        const prevAfter = Number.isFinite(data.prev_after) ? data.prev_after : (typeof data.prev_after === 'number' ? data.prev_after : null);
+
+        return { candles, count, nextBefore, prevAfter, raw: data };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('❌ Error fetching OHLC slice:', error);
         throw error;
       }
-  }
+    }
+
+    /**
+     * Deprecated: page/per_page-based pagination. Use fetchOhlcSlice instead.
+     * Kept for reference; not used by updated components.
+     */
+    async getHistoricalData(
+      symbol = 'EURUSD',
+      interval = '1m',
+      limit = 500
+    ) {
+      const res = await this.fetchOhlcSlice(symbol, interval, { limit: Math.min(limit || 300, 1000) });
+      return res.candles;
+    }
   
   /**
    * Fetch historical OHLC data with pagination support
@@ -148,118 +118,13 @@ async getHistoricalData(
   async getHistoricalDataWithPage(
     symbol = 'EURUSD',
     interval = '1m',
-    page = 1,
+    _page = 1,
     perPage = 300
   ) {
-    try {
-      console.log('🔍 RealMarketService: getHistoricalDataWithPage', { symbol, interval, page, perPage });
-      
-      // Convert symbol format for your API (add 'm' suffix if not present)
-      const apiSymbol = symbol.endsWith('m') ? symbol : symbol + 'm';
-      
-      // Convert interval to API format (1m -> 1M, 5m -> 5M, etc.)
-      const apiTimeframe = this.convertIntervalToTimeframe(interval);
-      
-      // Calculate per_page (max 1000 per API spec)
-      const actualPerPage = Math.min(perPage, 1000);
-      
-      // Build the OHLC API URL with pagination
-      const url = `${RealMarketService.BASE_URL}/api/ohlc?symbol=${apiSymbol}&timeframe=${apiTimeframe}&page=${page}&per_page=${actualPerPage}`;
-      console.log('🌐 API URL:', url);
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error:', response.status, errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-      
-      const data = await response.json();
-      
-      console.log('📊 OHLC API response (page ' + page + '):', {
-        symbol: data.symbol,
-        timeframe: data.timeframe,
-        page: data.page,
-        per_page: data.per_page,
-        count: data.count,
-        barsCount: data.bars?.length
-      });
-      
-      // Validate response format
-      if (!data || !data.bars || !Array.isArray(data.bars)) {
-        console.error('❌ Invalid response format - no bars array:', data);
-        throw new Error('Invalid response format from OHLC API');
-      }
-      
-      // Transform bars to candle format
-      const candles = data.bars.map(bar => ({
-        time: Math.floor(bar.time / 1000), // Convert milliseconds to seconds
-        open: parseFloat(bar.open),
-        high: parseFloat(bar.high),
-        low: parseFloat(bar.low),
-        close: parseFloat(bar.close),
-        volume: parseFloat(bar.volume || 0),
-        tick_volume: parseFloat(bar.tick_volume || 0),
-        spread: parseFloat(bar.spread || 0),
-        is_closed: bar.is_closed || false,
-        openBid: parseFloat(bar.openBid || bar.open),
-        highBid: parseFloat(bar.highBid || bar.high),
-        lowBid: parseFloat(bar.lowBid || bar.low),
-        closeBid: parseFloat(bar.closeBid || bar.close),
-        openAsk: parseFloat(bar.openAsk || bar.open),
-        highAsk: parseFloat(bar.highAsk || bar.high),
-        lowAsk: parseFloat(bar.lowAsk || bar.low),
-        closeAsk: parseFloat(bar.closeAsk || bar.close)
-      }));
-      
-      // Validate candle data
-      const validCandles = candles.filter(candle => 
-        !isNaN(candle.time) && 
-        !isNaN(candle.open) && 
-        !isNaN(candle.high) && 
-        !isNaN(candle.low) && 
-        !isNaN(candle.close) &&
-        candle.time > 0 &&
-        candle.high >= candle.low &&
-        candle.high >= candle.open &&
-        candle.high >= candle.close &&
-        candle.low <= candle.open &&
-        candle.low <= candle.close
-      );
-      
-      if (validCandles.length < candles.length) {
-        console.warn(`⚠️ Filtered out ${candles.length - validCandles.length} invalid candles`);
-      }
-      
-      // Determine if there are more pages
-      // First check if API provides explicit hasMore/hasNext flag
-      let hasMore;
-      if (typeof data.hasMore === 'boolean') {
-        hasMore = data.hasMore;
-      } else if (typeof data.hasNext === 'boolean') {
-        hasMore = data.hasNext;
-      } else if (typeof data.count === 'number') {
-        // 'count' is the number of records in this page, not total
-        // If count < per_page, we've reached the last page
-        hasMore = data.count >= actualPerPage;
-      } else {
-        // Fallback: check if we received a full page of data
-        hasMore = validCandles.length >= actualPerPage;
-      }
-      
-      console.log('✅ Returning page', page, ':', validCandles.length, 'candles, hasMore:', hasMore, 
-        data.count !== undefined ? `(pageCount: ${data.count})` : '');
-      
-      return {
-        candles: validCandles,
-        hasMore: hasMore
-      };
-      
-    } catch (error) {
-      console.error('❌ Error fetching OHLC data with pagination:', error);
-      throw error;
-    }
+    // Shim to avoid breaking callers that might still use this method.
+    const res = await this.fetchOhlcSlice(symbol, interval, { limit: Math.min(perPage || 300, 1000) });
+    // Approximate hasMore via presence of nextBefore and non-empty result
+    return { candles: res.candles, hasMore: !!(res.nextBefore && res.count > 0) };
   }
   
   /**

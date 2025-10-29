@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import { KLineChartComponent } from './KLineChartComponent';
 import useMarketCacheStore from '../../../store/useMarketCacheStore';
@@ -9,9 +9,9 @@ export const ChartPanel = ({ panelSettings }) => {
   const [candles, setCandles] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasMoreHistory, setHasMoreHistory] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [oldestLoadedTime, setOldestLoadedTime] = useState(null);
+  const olderCursorRef = useRef(null); // next_before cursor for paging older
   
   // Match initial bars with UnifiedChart behavior per timeframe
   const getInitialBarsForTimeframe = (tf) => {
@@ -50,8 +50,8 @@ export const ChartPanel = ({ panelSettings }) => {
       try {
         setIsLoadingHistory(true);
         setIsInitialLoad(true);
-        setCurrentPage(1);
         setOldestLoadedTime(null);
+        olderCursorRef.current = null;
         
         console.log('📊 Loading initial data:', {
           symbol: panelSettings.symbol,
@@ -60,24 +60,27 @@ export const ChartPanel = ({ panelSettings }) => {
         
         // Determine desired number of initial bars for timeframe
         const desiredBars = getInitialBarsForTimeframe(panelSettings.timeframe);
-        const PER_PAGE = 300;
-        const pagesNeeded = Math.max(1, Math.ceil(desiredBars / PER_PAGE));
-
-        console.log('📡 Loading initial OHLC data (ChartPanel)', { desiredBars, pagesNeeded, perPage: PER_PAGE });
-
-        let combined = [];
-        let lastHasMore = true;
-        for (let page = 1; page <= pagesNeeded; page++) {
-          const perPageForThisCall = PER_PAGE;
+        const MAX_PER_CALL = 1000;
+        const combined = [];
+        let keepFetching = true;
+        let before = null; // no cursor on first call
+        while (keepFetching && combined.length < desiredBars) {
+          const limit = Math.min(MAX_PER_CALL, desiredBars - combined.length);
           // eslint-disable-next-line no-await-in-loop
-          const res = await realMarketService.getHistoricalDataWithPage(
+          const { candles, nextBefore, count } = await realMarketService.fetchOhlcSlice(
             panelSettings.symbol,
             panelSettings.timeframe,
-            page,
-            perPageForThisCall
+            { limit, before }
           );
-          combined = combined.concat(res.candles || []);
-          lastHasMore = !!res.hasMore;
+          if (candles.length > 0) {
+            combined.push(...candles);
+          }
+          if (!nextBefore || !count) {
+            keepFetching = false;
+          } else {
+            before = nextBefore;
+            olderCursorRef.current = nextBefore;
+          }
         }
 
         // Deduplicate by time and sort ascending, slice to desiredBars
@@ -100,13 +103,13 @@ export const ChartPanel = ({ panelSettings }) => {
         });
 
         setCandles(sliced);
-        setHasMoreHistory(lastHasMore);
+        // We have more history if the last response provided a next_before cursor
+        setHasMoreHistory(Boolean(olderCursorRef.current));
 
         if (sliced.length > 0) {
           setOldestLoadedTime(sliced[0].time);
         }
 
-        setCurrentPage(pagesNeeded);
         setIsInitialLoad(false);
       } catch (error) {
         console.error('❌ Error loading initial data:', error);
@@ -131,37 +134,32 @@ export const ChartPanel = ({ panelSettings }) => {
     
     try {
       setIsLoadingHistory(true);
-      const nextPage = currentPage + 1;
-      
       console.log('📊 Loading more history:', {
         symbol: panelSettings.symbol,
         timeframe: panelSettings.timeframe,
-        page: nextPage,
         currentCandles: candles.length,
-        oldestLoadedTime
+        oldestLoadedTime,
+        beforeCursor: olderCursorRef.current
       });
       
-      // Load next page
-      const result = await realMarketService.getHistoricalDataWithPage(
+      const { candles: newSlice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
         panelSettings.symbol,
         panelSettings.timeframe,
-        nextPage,
-        300 // Fixed per_page for all OHLC requests
+        { limit: 300, before: olderCursorRef.current || (oldestLoadedTime ? oldestLoadedTime * 1000 : null) }
       );
-      
+
       console.log('📊 More history loaded:', {
-        newCandlesCount: result.candles.length,
-        hasMore: result.hasMore,
-        page: nextPage,
-        firstNewCandle: result.candles[0],
-        lastNewCandle: result.candles[result.candles.length - 1]
+        newCandlesCount: newSlice.length,
+        hasMore: Boolean(nextBefore && count > 0),
+        firstNewCandle: newSlice[0],
+        lastNewCandle: newSlice[newSlice.length - 1]
       });
       
-      if (result.candles.length > 0) {
+      if (newSlice.length > 0) {
         // Filter out any duplicate candles based on timestamp, including duplicates within the new page
         const seenTimes = new Set(candles.map(c => c.time));
         const newCandles = [];
-        for (const c of result.candles) {
+        for (const c of newSlice) {
           if (!seenTimes.has(c.time)) {
             seenTimes.add(c.time);
             newCandles.push(c);
@@ -175,7 +173,7 @@ export const ChartPanel = ({ panelSettings }) => {
             console.log('📊 Combined candles:', {
               previous: prevCandles.length,
               new: newCandles.length,
-              filtered: result.candles.length - newCandles.length,
+              filtered: newSlice.length - newCandles.length,
               total: combined.length
             });
             return combined;
@@ -183,12 +181,12 @@ export const ChartPanel = ({ panelSettings }) => {
           
           // Update oldest loaded time
           setOldestLoadedTime(newCandles[0].time);
-          setCurrentPage(nextPage);
+          olderCursorRef.current = nextBefore || null;
         } else {
           console.log('📊 All loaded candles were duplicates');
         }
         
-        setHasMoreHistory(result.hasMore);
+        setHasMoreHistory(Boolean(nextBefore && count > 0));
       } else {
         console.log('📊 No more historical data available');
         setHasMoreHistory(false);

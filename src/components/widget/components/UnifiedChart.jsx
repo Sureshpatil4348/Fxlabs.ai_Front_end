@@ -89,6 +89,8 @@ export const UnifiedChart = () => {
     );
 
     const { pricingBySymbol } = useMarketCacheStore();
+    // Cursors for OHLC keyset pagination
+    const olderCursorRef = useRef(null); // use next_before from last response to page older
 
     // Apply cursor style based on settings
     useEffect(() => {
@@ -259,36 +261,31 @@ export const UnifiedChart = () => {
         }
 
         try {
-            console.log("📊 loadMoreHistory: Loading page", currentPage + 1);
+            console.log("📊 loadMoreHistory: Loading older via cursor", olderCursorRef.current);
             setLoadingHistory(true);
-
-            const result = await realMarketService.getHistoricalDataWithPage(
-                settings.symbol,
-                settings.timeframe,
-                currentPage + 1,
-                300
+            const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
+              settings.symbol,
+              settings.timeframe,
+              { limit: 300, before: olderCursorRef.current }
             );
 
-            console.log(
-                "📊 loadMoreHistory: Received",
-                result.candles.length,
-                "candles"
-            );
+            console.log("📊 loadMoreHistory: Received", slice.length, "candles");
 
-            if (result.candles.length > 0) {
+            if (slice.length > 0) {
                 // Prepend the new candles
-                prependCandles(result.candles);
+                prependCandles(slice);
 
                 // Recalculate indicators with all candles
-                const allCandles = [...result.candles, ...candles].sort(
+                const allCandles = [...slice, ...candles].sort(
                     (a, b) => a.time - b.time
                 );
                 const calculatedIndicators = calculateAllIndicators(allCandles);
                 setIndicators(calculatedIndicators);
 
                 // Update pagination state
-                setCurrentPage(currentPage + 1);
-                setHasMoreHistory(result.hasMore);
+                setCurrentPage(currentPage + 1); // retained for UI, though cursor-based now
+                olderCursorRef.current = nextBefore || null;
+                setHasMoreHistory(Boolean(nextBefore && count > 0));
 
                 console.log(
                     "✅ loadMoreHistory: Success, now on page",
@@ -323,33 +320,25 @@ export const UnifiedChart = () => {
                 const desiredBars = getInitialBarsForTimeframe(
                     settings.timeframe
                 );
-                const PER_PAGE = 300;
-                const pagesNeeded = Math.max(
-                    1,
-                    Math.ceil(desiredBars / PER_PAGE)
-                );
-
-                console.log("📡 Loading initial OHLC data", {
-                    desiredBars,
-                    pagesNeeded,
-                    perPage: PER_PAGE,
-                });
-
-                let combined = [];
-                let lastHasMore = true;
-                for (let page = 1; page <= pagesNeeded; page++) {
-                    // Always request a fixed per_page=500 from the OHLC API
-                    const perPageForThisCall = PER_PAGE;
+                const MAX_PER_CALL = 1000;
+                const combined = [];
+                let before = null; // no cursor -> most recent slice
+                let hasMoreOlder = true;
+                while (combined.length < desiredBars && hasMoreOlder) {
+                    const limit = Math.min(MAX_PER_CALL, desiredBars - combined.length);
                     // eslint-disable-next-line no-await-in-loop
-                    const res =
-                        await realMarketService.getHistoricalDataWithPage(
-                            settings.symbol,
-                            settings.timeframe,
-                            page,
-                            perPageForThisCall
-                        );
-                    combined = combined.concat(res.candles || []);
-                    lastHasMore = !!res.hasMore;
+                    const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
+                        settings.symbol,
+                        settings.timeframe,
+                        { limit, before }
+                    );
+                    if (slice.length > 0) combined.push(...slice);
+                    if (!nextBefore || !count) {
+                        hasMoreOlder = false;
+                    } else {
+                        before = nextBefore;
+                        olderCursorRef.current = nextBefore;
+                    }
                 }
 
                 // Deduplicate by time and sort ascending
@@ -370,7 +359,6 @@ export const UnifiedChart = () => {
 
                 console.log("✅ Historical data loaded successfully!", {
                     desiredBars,
-                    pagesNeeded,
                     received: combined.length,
                     unique: unique.length,
                     used: sliced.length,
@@ -408,8 +396,8 @@ export const UnifiedChart = () => {
                 console.log("✅ Candles set in store, length:", sliced.length);
 
                 // Update pagination counters to reflect how many pages we fetched
-                setCurrentPage(pagesNeeded);
-                setHasMoreHistory(lastHasMore);
+                setCurrentPage(Math.ceil(combined.length / 300));
+                setHasMoreHistory(Boolean(olderCursorRef.current));
 
                 // Calculate indicators
                 console.log("🧮 Calculating indicators...");
