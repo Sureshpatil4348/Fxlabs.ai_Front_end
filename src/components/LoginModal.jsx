@@ -50,13 +50,9 @@ const LoginModal = ({ isOpen, onClose }) => {
                 setError(error.message);
             } else {
                 // Immediately verify subscription status via Edge Function (unless bypassed)
-                // Support both REACT_APP_BYPASS_SUBSCRIPTION_CHECK and BYPASS_SUBSCRIPTION_CHECK
-                const bypassCheck =
-                    process.env.REACT_APP_BYPASS_SUBSCRIPTION_CHECK ===
-                        "true" ||
-                    process.env.BYPASS_SUBSCRIPTION_CHECK === "true";
-
-                if (!bypassCheck) {
+                if (
+                    process.env.REACT_APP_BYPASS_SUBSCRIPTION_CHECK !== "true"
+                ) {
                     // Re-fetch the current session to get fresh token
                     const { data: sessionData } =
                         await supabase.auth.getSession();
