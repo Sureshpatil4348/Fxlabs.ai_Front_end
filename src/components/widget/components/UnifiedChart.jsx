@@ -323,7 +323,7 @@ export const UnifiedChart = () => {
                 const desiredBars = getInitialBarsForTimeframe(
                     settings.timeframe
                 );
-                const PER_PAGE = 500;
+                const PER_PAGE = 200;
                 const pagesNeeded = Math.max(
                     1,
                     Math.ceil(desiredBars / PER_PAGE)
