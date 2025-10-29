@@ -540,11 +540,11 @@ export const KLineChartComponent = ({
     }
   }, [settings.timezone]);
 
-  // Handle scroll events for pagination
+  // Handle scroll/zoom events for pagination
   useEffect(() => {
     if (!chartRef.current) return;
 
-    const handleScroll = (data) => {
+    const handleScroll = (_data) => {
       if (!chartRef.current) return;
 
       const visibleRange = chartRef.current.getVisibleRange();
@@ -581,7 +581,7 @@ export const KLineChartComponent = ({
       }
 
       // Check if we're near the left edge and should load more history
-      if (data && typeof data.from === 'number' && visibleRange) {
+      if (visibleRange) {
         // Clear any existing debounce timer
         if (scrollDebounceTimerRef.current) {
           clearTimeout(scrollDebounceTimerRef.current);
@@ -617,6 +617,8 @@ export const KLineChartComponent = ({
     };
 
     chartRef.current.subscribeAction('scroll', handleScroll);
+    // Also trigger the same logic on zoom out since visibleRange can expand left
+    chartRef.current.subscribeAction('zoom', handleScroll);
 
     return () => {
       // Clear debounce timer on cleanup
@@ -730,6 +732,29 @@ export const KLineChartComponent = ({
 
         isAutoFollowRef.current = false;
       };
+      const maybeTriggerLeftEdgeBackfill = () => {
+        try {
+          if (!chartRef.current || !onLoadMoreHistory) return;
+          const vr = chartRef.current.getVisibleRange();
+          const dl = typeof chartRef.current.getDataList === 'function' ? chartRef.current.getDataList() : [];
+          const total = Array.isArray(dl) ? dl.length : 0;
+          if (vr && typeof vr.from === 'number' && total > 0) {
+            const fromIdx = Math.max(0, Math.floor(vr.from));
+            const nearLeft = fromIdx <= 2; // robust threshold
+            const now = Date.now();
+            const elapsed = now - lastLoadRequestTimeRef.current;
+            if (nearLeft && hasMoreHistory && !isLoadingHistory && !isLoadingRef.current && elapsed > 2000) {
+              console.log('📊 Left-edge backfill (post-update) triggering load more...', { fromIdx, total });
+              isLoadingRef.current = true;
+              lastLoadRequestTimeRef.current = now;
+              onLoadMoreHistory();
+            }
+          }
+        } catch (_e) {
+          // no-op
+        }
+      };
+
       if (handledWithIncrementalUpdate) {
         const latestCandles = appendedCount > 0 ? klineData.slice(-appendedCount) : (klineData.length > 0 ? [klineData[klineData.length - 1]] : []);
         latestCandles.forEach((candle) => {
@@ -797,6 +822,8 @@ export const KLineChartComponent = ({
         }
 
         isLoadingRef.current = false;
+        // Fallback: if user is already at far left, trigger backfill
+        maybeTriggerLeftEdgeBackfill();
       } else if (isPaginationLoad) {
         const newCandlesCount = appendedCount;
         
@@ -832,6 +859,8 @@ export const KLineChartComponent = ({
           }
 
           isLoadingRef.current = false;
+          // After pagination load, check again in case user remains at left edge
+          maybeTriggerLeftEdgeBackfill();
         }, 100);
       } else {
         chartRef.current.applyNewData(klineData);
@@ -874,6 +903,8 @@ export const KLineChartComponent = ({
         }
 
         isLoadingRef.current = false;
+        // Initial/full apply path: check left edge too
+        maybeTriggerLeftEdgeBackfill();
       }
 
       // Update previous dataset metadata (after dedupe and chart updates)
@@ -893,7 +924,7 @@ export const KLineChartComponent = ({
       setError(error instanceof Error ? error.message : 'Failed to update chart data');
       isLoadingRef.current = false;
     }
-  }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll]);
+  }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll, hasMoreHistory, onLoadMoreHistory]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
