@@ -74,12 +74,21 @@ export const AuthProvider = ({ children }) => {
                             "get-subscription-status"
                         );
 
+                        // Re-fetch the current session to get fresh token
+                        const { data: s } = await supabase.auth.getSession();
+                        const token = s?.session?.access_token;
+
                         const { data: subCheckData, error: subCheckError } =
-                            await supabase.functions.invoke(functionName, {
-                                headers: {
-                                    Authorization: `Bearer ${session.access_token}`,
-                                },
-                            });
+                            await supabase.functions.invoke(
+                                functionName,
+                                token
+                                    ? {
+                                          headers: {
+                                              Authorization: `Bearer ${token}`,
+                                          },
+                                      }
+                                    : undefined
+                            );
 
                         // Treat any error or missing data as expired
                         if (
