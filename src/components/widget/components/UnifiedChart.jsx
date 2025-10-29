@@ -61,8 +61,8 @@ export const UnifiedChart = () => {
     } = useChartStore();
 
     // Determine how many initial bars to load.
-    // Business rule: always fetch 300 candles via REST `limit` param.
-    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 300, []);
+    // Business rule: always fetch 200 candles via REST `limit` param.
+    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 200, []);
 
     const { pricingBySymbol } = useMarketCacheStore();
     // Cursors for OHLC keyset pagination
@@ -242,7 +242,7 @@ export const UnifiedChart = () => {
             const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
               settings.symbol,
               settings.timeframe,
-              { limit: 300, before: olderCursorRef.current }
+              { limit: 200, before: olderCursorRef.current }
             );
 
             console.log("📊 loadMoreHistory: Received", slice.length, "candles");
@@ -292,12 +292,12 @@ export const UnifiedChart = () => {
             resetPagination(); // Reset pagination when loading new data
 
             try {
-                // Figure out how many bars to fetch initially (fixed at 300)
+                // Figure out how many bars to fetch initially (fixed at 200)
                 const desiredBars = getInitialBarsForTimeframe(
                     settings.timeframe
                 );
-                // Always request 300 candles per REST call
-                const LIMIT_PER_CALL = 300;
+                // Always request 200 candles per REST call
+                const LIMIT_PER_CALL = 200;
                 const combined = [];
                 let before = null; // no cursor -> most recent slice
                 let hasMoreOlder = true;
@@ -373,7 +373,7 @@ export const UnifiedChart = () => {
                 console.log("✅ Candles set in store, length:", sliced.length);
 
                 // Update pagination counters to reflect how many pages we fetched
-                setCurrentPage(Math.ceil(combined.length / 300));
+                setCurrentPage(Math.ceil(combined.length / 200));
                 setHasMoreHistory(Boolean(olderCursorRef.current));
 
                 // Calculate indicators

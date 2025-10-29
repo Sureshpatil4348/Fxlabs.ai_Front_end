@@ -19,7 +19,7 @@ export class RealMarketService {
      * - If `after` provided: returns bars strictly newer than `after`.
      * Returns ascending bars plus cursors.
      */
-    async fetchOhlcSlice(symbol = 'EURUSD', interval = '1m', { limit = 300, before = null, after = null } = {}) {
+    async fetchOhlcSlice(symbol = 'EURUSD', interval = '1m', { limit = 200, before = null, after = null } = {}) {
       try {
         const apiSymbol = symbol.endsWith('m') ? symbol : symbol + 'm';
         const apiTimeframe = this.convertIntervalToTimeframe(interval);
@@ -103,7 +103,7 @@ export class RealMarketService {
       interval = '1m',
       limit = 500
     ) {
-      const res = await this.fetchOhlcSlice(symbol, interval, { limit: Math.min(limit || 300, 1000) });
+      const res = await this.fetchOhlcSlice(symbol, interval, { limit: Math.min(limit || 200, 1000) });
       return res.candles;
     }
   
@@ -119,10 +119,10 @@ export class RealMarketService {
     symbol = 'EURUSD',
     interval = '1m',
     _page = 1,
-    perPage = 300
+    perPage = 200
   ) {
     // Shim to avoid breaking callers that might still use this method.
-    const res = await this.fetchOhlcSlice(symbol, interval, { limit: Math.min(perPage || 300, 1000) });
+    const res = await this.fetchOhlcSlice(symbol, interval, { limit: Math.min(perPage || 200, 1000) });
     // Approximate hasMore via presence of nextBefore and non-empty result
     return { candles: res.candles, hasMore: !!(res.nextBefore && res.count > 0) };
   }
