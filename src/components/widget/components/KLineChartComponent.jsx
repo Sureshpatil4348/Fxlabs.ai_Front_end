@@ -635,15 +635,6 @@ export const KLineChartComponent = ({
     try {
       setError(null);
       
-      console.log('📈 KLineChart received candles:', {
-        count: candles.length,
-        prevCount: prevCandleCountRef.current,
-        firstCandle: candles[0],
-        lastCandle: candles[candles.length - 1],
-        isInitialLoad: isInitialLoad,
-        isLoadingHistory: isLoadingHistory
-      });
-      
       // Filter and sort candles
       const validCandles = candles.filter(candle => 
         !isNaN(candle.time) && 
@@ -911,14 +902,6 @@ export const KLineChartComponent = ({
       prevCandleCountRef.current = klineData.length;
       prevFirstTimestampRef.current = firstTimestamp;
       prevLastTimestampRef.current = lastTimestamp;
-
-      console.log('📈 K-line chart data updated:', {
-        originalCount: candles.length,
-        validCount: validCandles.length,
-        appliedCount: klineData.length,
-        isPagination: isPaginationLoad,
-        incremental: handledWithIncrementalUpdate
-      });
     } catch (error) {
       console.error('📈 Error updating K-line chart data:', error);
       setError(error instanceof Error ? error.message : 'Failed to update chart data');
