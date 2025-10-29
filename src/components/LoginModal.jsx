@@ -49,48 +49,62 @@ const LoginModal = ({ isOpen, onClose }) => {
             if (error) {
                 setError(error.message);
             } else {
-                // Immediately verify subscription status via Edge Function
-                const { data: sessionData } = await supabase.auth.getSession();
-                const token = sessionData?.session?.access_token;
+                // Immediately verify subscription status via Edge Function (unless bypassed)
+                // Support both REACT_APP_BYPASS_SUBSCRIPTION_CHECK and BYPASS_SUBSCRIPTION_CHECK
+                const bypassCheck =
+                    process.env.REACT_APP_BYPASS_SUBSCRIPTION_CHECK ===
+                        "true" ||
+                    process.env.BYPASS_SUBSCRIPTION_CHECK === "true";
 
-                if (token) {
-                    const functionName = resolveEdgeFunctionName(
-                        "get-subscription-status"
+                if (!bypassCheck) {
+                    // Re-fetch the current session to get fresh token
+                    const { data: sessionData } =
+                        await supabase.auth.getSession();
+                    const token = sessionData?.session?.access_token;
+
+                    if (token) {
+                        const functionName = resolveEdgeFunctionName(
+                            "get-subscription-status"
+                        );
+                        const { data: subCheckData, error: subCheckError } =
+                            await supabase.functions.invoke(functionName, {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+
+                        if (subCheckError) {
+                            console.error(
+                                "Subscription check error:",
+                                subCheckError
+                            );
+                            // Treat as expired/unverifiable: sign out and show global modal
+                            setSubscriptionExpired(true);
+                            await supabase.auth.signOut();
+                            navigate("/");
+                            return;
+                        }
+
+                        if (
+                            !subCheckData ||
+                            subCheckData.subscription_status === "expired"
+                        ) {
+                            setSubscriptionExpired(true);
+                            setError(
+                                "Your subscription has expired. You have been logged out."
+                            );
+                            await supabase.auth.signOut();
+                            navigate("/");
+                            return;
+                        }
+                    }
+                } else {
+                    console.log(
+                        "Subscription check bypassed via environment variable"
                     );
-                    const { data: subCheckData, error: subCheckError } =
-                        await supabase.functions.invoke(functionName, {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        });
-
-                    if (subCheckError) {
-                        console.error(
-                            "Subscription check error:",
-                            subCheckError
-                        );
-                        // Treat as expired/unverifiable: sign out and show global modal
-                        setSubscriptionExpired(true);
-                        await supabase.auth.signOut();
-                        navigate("/");
-                        return;
-                    }
-
-                    if (
-                        !subCheckData ||
-                        subCheckData.subscription_status === "expired"
-                    ) {
-                        setSubscriptionExpired(true);
-                        setError(
-                            "Your subscription has expired. You have been logged out."
-                        );
-                        await supabase.auth.signOut();
-                        navigate("/");
-                        return;
-                    }
                 }
 
-                // Valid subscription, ensure flag is cleared (stateless)
+                // Valid subscription (or bypassed), ensure flag is cleared (stateless)
                 setSubscriptionExpired(false);
                 setSuccess("Login successful! Redirecting...");
                 setTimeout(() => {
