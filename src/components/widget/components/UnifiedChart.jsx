@@ -60,33 +60,9 @@ export const UnifiedChart = () => {
         resetPagination,
     } = useChartStore();
 
-    // Determine how many initial bars to load per timeframe to match desired visible period
-    const getInitialBarsForTimeframe = useMemo(
-        () => (tf) => {
-            const key = String(tf || "").toLowerCase();
-            switch (key) {
-                case "1m": // 6 hours
-                    return 6 * 60; // 360
-                case "5m": // 24 hours
-                    return (24 * 60) / 5; // 288
-                case "15m": // 72 hours
-                    return (72 * 60) / 15; // 288
-                case "30m": // 1 week (~7 days)
-                    return Math.round((7 * 24 * 60) / 30); // 336
-                case "1h": // 2 weeks (~14 days)
-                    return 14 * 24; // 336
-                case "4h": // 2 months (~60 days)
-                    return 60 * 6; // 360
-                case "1d": // 6 months (~180 days)
-                    return 180; // 180
-                case "1w": // 2 years (~104 weeks)
-                    return 2 * 52; // 104
-                default:
-                    return 500; // fallback
-            }
-        },
-        []
-    );
+    // Determine how many initial bars to load.
+    // Business rule: always fetch 300 candles via REST `limit` param.
+    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 300, []);
 
     const { pricingBySymbol } = useMarketCacheStore();
     // Cursors for OHLC keyset pagination
@@ -316,16 +292,17 @@ export const UnifiedChart = () => {
             resetPagination(); // Reset pagination when loading new data
 
             try {
-                // Figure out how many bars we want initially for the selected timeframe
+                // Figure out how many bars to fetch initially (fixed at 300)
                 const desiredBars = getInitialBarsForTimeframe(
                     settings.timeframe
                 );
-                const MAX_PER_CALL = 1000;
+                // Always request 300 candles per REST call
+                const LIMIT_PER_CALL = 300;
                 const combined = [];
                 let before = null; // no cursor -> most recent slice
                 let hasMoreOlder = true;
                 while (combined.length < desiredBars && hasMoreOlder) {
-                    const limit = Math.min(MAX_PER_CALL, desiredBars - combined.length);
+                    const limit = LIMIT_PER_CALL;
                     // eslint-disable-next-line no-await-in-loop
                     const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
                         settings.symbol,
