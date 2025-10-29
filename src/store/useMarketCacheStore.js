@@ -386,7 +386,7 @@ const useMarketCacheStore = create(
     },
 
     // --- WebSocket message handling ---
-    handleMessage: (message, rawData) => {
+    handleMessage: (message, _rawData) => {
       switch (message?.type) {
         case 'connected': {
           const tfs = Array.isArray(message.supported_timeframes) ? message.supported_timeframes : null;
@@ -490,34 +490,12 @@ const useMarketCacheStore = create(
           break;
         }
         case 'ticks': {
-          // Log the entire input message for ticks
-          try {
-            if (typeof rawData === 'string') {
-              console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (raw):`, rawData);
-            } else {
-              console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (obj):`, JSON.stringify(message));
-            }
-          } catch (_e) {
-            // best-effort logging only
-            console.log(`[MarketCache][${new Date().toISOString()}] Ticks input message (fallback)`, message);
-          }
           const ticks = Array.isArray(message?.data) ? message.data : [];
           if (ticks.length === 0) break;
           const ticksBySymbol = new Map(get().ticksBySymbol || new Map());
           const pricingBySymbol = new Map(get().pricingBySymbol || new Map());
           ticks.forEach((tick) => {
             if (!tick || !tick.symbol) return;
-
-            // Debug logging for tick data (BTC only)
-            if (tick.symbol === 'BTCUSDm') {
-              console.log('🔍 MarketCache: Processing tick data:', {
-                symbol: tick.symbol,
-                daily_change_pct: tick.daily_change_pct,
-                daily_change: tick.daily_change,
-                bid: tick.bid,
-                ask: tick.ask
-              });
-            }
 
             const existing = ticksBySymbol.get(tick.symbol) || { ticks: [], lastUpdate: null };
             existing.ticks = [tick, ...existing.ticks.slice(0, 49)];
@@ -534,10 +512,6 @@ const useMarketCacheStore = create(
               daily_change: typeof tick.daily_change === 'number' ? tick.daily_change : (pricingBySymbol.get(tick.symbol)?.daily_change || 0),
               lastUpdate: new Date()
             };
-            
-            if (tick.symbol === 'BTCUSDm') {
-              console.log('🔍 MarketCache: Setting pricing data:', pricingData);
-            }
             pricingBySymbol.set(tick.symbol, pricingData);
           });
           set({ ticksBySymbol, pricingBySymbol });

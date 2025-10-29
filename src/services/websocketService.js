@@ -10,9 +10,6 @@ import websocketMessageRouter from './websocketMessageRouter';
 // WebSocket URL configuration - v2 with indicator support
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api.fxlabsprime.com/market-v2';
 
-// Debug configuration
-const ENABLE_TICK_LOGGING = process.env.REACT_APP_ENABLE_TICK_LOGGING === 'true';
-
 class WebSocketService {
   constructor() {
     this.ws = null;
@@ -70,19 +67,11 @@ class WebSocketService {
         };
 
         this.ws.onmessage = (event) => {
-          // Parse message first to determine if we should log it
+          // Parse message - only log errors, skip tick messages to reduce noise
           if (event?.data instanceof Blob) {
             event.data.text().then((text) => {
               try {
                 const message = JSON.parse(text);
-                // Simplified logging for quantum updates
-                if (message.type === 'quantum_update') {
-                  const symbol = message.symbol || message?.data?.symbol || 'unknown';
-                  const timeframes = message?.data?.per_timeframe ? Object.keys(message.data.per_timeframe).join(', ') : 'N/A';
-                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received quantum update for ${symbol} (timeframes: ${timeframes})`);
-                } else if ((message.type !== 'ticks') || ENABLE_TICK_LOGGING) {
-                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, text);
-                }
                 websocketMessageRouter.routeMessage(message, text);
               } catch (error) {
                 console.error(`[WS][Market-v2][${new Date().toISOString()}] Failed to parse blob message:`, error);
@@ -93,22 +82,6 @@ class WebSocketService {
           } else {
             try {
               const message = typeof event?.data === 'string' ? JSON.parse(event.data) : event?.data;
-              // Simplified logging for quantum updates
-              if (message.type === 'quantum_update') {
-                const symbol = message.symbol || message?.data?.symbol || 'unknown';
-                const timeframes = message?.data?.per_timeframe ? Object.keys(message.data.per_timeframe).join(', ') : 'N/A';
-                console.log(`[WS][Market-v2][${new Date().toISOString()}] Received quantum update for ${symbol} (timeframes: ${timeframes})`);
-              } else if ((message.type !== 'ticks') || ENABLE_TICK_LOGGING) {
-                if (typeof event?.data === 'string') {
-                  console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, event.data);
-                } else {
-                  try {
-                    console.log(`[WS][Market-v2][${new Date().toISOString()}] Received:`, JSON.stringify(event?.data));
-                  } catch (_e) {
-                    console.log(`[WS][Market-v2][${new Date().toISOString()}] Received (non-string)`, event?.data);
-                  }
-                }
-              }
               websocketMessageRouter.routeMessage(message, event?.data);
             } catch (error) {
               console.error(`[WS][Market-v2][${new Date().toISOString()}] Failed to parse message:`, error);

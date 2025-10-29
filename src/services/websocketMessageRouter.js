@@ -130,49 +130,8 @@ class WebSocketMessageRouter {
       }
     });
 
-    // Best-effort targeted logging (wrapped to avoid impacting routing)
-    try {
-      // Targeted logging for currency strength pushes
-      if (messageType === 'currency_strength_update') {
-        const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
-        const barTime = message?.data?.bar_time ?? message?.bar_time ?? null;
-        const strength = message?.data?.strength || message?.strength || null;
-        const keys = strength && typeof strength === 'object' ? Object.keys(strength) : [];
-        const sample = keys.slice(0, 5).reduce((acc, k) => {
-          acc[k] = strength[k];
-          return acc;
-        }, {});
-        // Summary log
-        console.log(
-          `[WS][CurrencyStrength] timeframe=${tf}`,
-          {
-            barTime,
-            count: keys.length,
-            keys,
-            sample
-          }
-        );
-        // Full payload log
-        try {
-          console.log(`[WS][CurrencyStrength] Full message:`, JSON.stringify(message, null, 2));
-        } catch (_e) {
-          // ignore stringify issues
-        }
-      }
-
-      // correlation_update removed
-    } catch (_e) {
-      // best-effort logging only
-    }
-
-    // Log consolidated indicator updates verbosely
-    if (messageType === 'indicator_updates') {
-      const tf = (message?.timeframe || message?.data?.timeframe || '').toString().toUpperCase();
-      const count = Array.isArray(message?.data) ? message.data.length : 0;
-      console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} (tf=${tf}, count=${count}) to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
-      console.log(`[Router][${new Date().toISOString()}] Full ${messageType} message:`, JSON.stringify(message, null, 2));
-    } else if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'ticks') {
-      // Log other message types only when debug flag is enabled (skip noisy ticks)
+    // Only log when debug flag is enabled (skip noisy messages to reduce console clutter)
+    if (this.enableDebugLogs && messageType !== 'connected' && messageType !== 'ticks') {
       if (targetStores.size > 0) {
         console.log(`[Router][${new Date().toISOString()}] Routed ${messageType} to ${targetStores.size} stores: ${Array.from(targetStores).join(', ')}`);
       } else {

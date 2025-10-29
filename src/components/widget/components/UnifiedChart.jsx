@@ -436,20 +436,9 @@ export const UnifiedChart = () => {
 
     // WebSocket connection for real-time data (throttled)
     useEffect(() => {
-        console.log(
-            "🔄 WebSocket effect triggered. isInitialized:",
-            isInitialized
-        );
         if (!isInitialized) {
-            console.log(
-                "⏸️ WebSocket effect: Chart not initialized yet, skipping connection"
-            );
             return;
         }
-
-        console.log(
-            "🚀 WebSocket effect: Chart is initialized, proceeding with connection"
-        );
 
         // Internal apply function that always uses the latest store state
         const applyCandle = (newCandle) => {
@@ -587,18 +576,9 @@ export const UnifiedChart = () => {
         };
 
         const handleOpen = () => {
-            console.log(
-                "🟢 UnifiedChart: WebSocket opened - setting connected to true"
-            );
             setConnected(true);
             setError(null);
         };
-
-        console.log(
-            "🔧 UnifiedChart: Setting up WebSocket connection for",
-            settings.symbol,
-            settings.timeframe
-        );
 
         // Connect to WebSocket
         realMarketService.connectWebSocket(
@@ -611,7 +591,6 @@ export const UnifiedChart = () => {
         );
 
         return () => {
-            console.log("🧹 WebSocket cleanup: disconnecting");
             if (tickThrottleTimerRef.current) {
                 clearTimeout(tickThrottleTimerRef.current);
                 tickThrottleTimerRef.current = null;
