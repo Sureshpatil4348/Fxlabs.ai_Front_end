@@ -69,6 +69,17 @@ export const AuthProvider = ({ children }) => {
 
                 // Start the periodic subscription check
                 const checkSubscription = async () => {
+                    // Bypass subscription check if env var is set
+                    if (
+                        process.env.REACT_APP_BYPASS_SUBSCRIPTION_CHECK ===
+                        "true"
+                    ) {
+                        console.log(
+                            "Subscription check bypassed via environment variable"
+                        );
+                        return;
+                    }
+
                     try {
                         const functionName = resolveEdgeFunctionName(
                             "get-subscription-status"
