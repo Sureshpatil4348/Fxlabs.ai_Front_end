@@ -209,16 +209,6 @@ export const UnifiedChart = () => {
             : candles.length > 0
             ? candles[candles.length - 1].close
             : 0;
-    const dailyChangePct =
-        typeof pricing.daily_change_pct === "number"
-            ? pricing.daily_change_pct
-            : 0;
-    const dailyChange =
-        typeof pricing.daily_change === "number" ? pricing.daily_change : 0;
-
-    // Use backend daily change data instead of calculating from candles
-    const priceChange = dailyChange;
-    const priceChangePercent = dailyChangePct;
 
     // Initialize chart
     useEffect(() => {
@@ -713,29 +703,6 @@ export const UnifiedChart = () => {
 
     return (
         <div className="flex-1 min-h-0 bg-white flex flex-col h-full overflow-hidden">
-            {/* Price Info Bar */}
-            <div className="bg-white px-4 py-1 flex-shrink-0 sticky top-0 z-10 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 overflow-x-auto">
-                        <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
-                            ${latestPrice?.toFixed(5) || "0.00000"}
-                        </span>
-                        <span
-                            className={`text-sm font-medium whitespace-nowrap ${
-                                priceChange >= 0
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                            }`}
-                        >
-                            {priceChange >= 0 ? "+" : ""}
-                            {priceChange.toFixed(5)} (
-                            {priceChangePercent >= 0 ? "+" : ""}
-                            {priceChangePercent.toFixed(2)}%)
-                        </span>
-                    </div>
-                </div>
-            </div>
-
             {/* Chart Container: candlestick uses container-sized chart, others can scroll */}
             <div
                 className={`unified-chart-container ${
