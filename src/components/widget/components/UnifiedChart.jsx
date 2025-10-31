@@ -349,9 +349,29 @@ export const UnifiedChart = () => {
                 timeframe: settings.timeframe,
             });
 
-            setLoading(true);
-            setError(null);
-            resetPagination(); // Reset pagination when loading new data
+      // If candles are already loaded for this symbol/timeframe, reuse cache and skip REST
+      try {
+        const state = useChartStore.getState();
+        const hasCached = Array.isArray(state.candles) && state.candles.length > 0
+          && state.candlesMeta
+          && state.candlesMeta.symbol === settings.symbol
+          && state.candlesMeta.timeframe === settings.timeframe;
+
+        if (hasCached) {
+          console.log('♻️ Using cached candles; skipping REST fetch');
+          // Ensure indicators align with cached candles
+          try {
+            const calc = calculateAllIndicators(state.candles);
+            setIndicators(calc);
+          } catch (_) {}
+          setLoading(false);
+          return;
+        }
+      } catch (_) {}
+
+      setLoading(true);
+      setError(null);
+      resetPagination(); // Reset pagination when loading new data
 
             try {
                 // Figure out how many bars to fetch initially (fixed at 150)

@@ -31,6 +31,8 @@ export const useChartStore = create(
     (set) => ({
       // Initial state
       candles: [],
+      // Tracks which symbol/timeframe the current candles belong to
+      candlesMeta: null,
       indicators: {
         // Keep indicators map minimal; legacy keys will be ignored
         rsiEnhanced: [],
@@ -65,7 +67,13 @@ export const useChartStore = create(
       isLoadingHistory: false,
 
       // Actions
-      setCandles: (candles) => set({ candles }),
+      setCandles: (candles) => set((state) => ({
+        candles,
+        candlesMeta: {
+          symbol: state.settings.symbol,
+          timeframe: state.settings.timeframe,
+        }
+      })),
       
 
 
@@ -185,6 +193,7 @@ export const useChartStore = create(
       
       resetChart: () => set({
         candles: [],
+        candlesMeta: null,
         indicators: {
           rsiEnhanced: [],
           emaTouch: [],
