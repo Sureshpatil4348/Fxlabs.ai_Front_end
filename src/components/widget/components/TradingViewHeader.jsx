@@ -947,16 +947,6 @@ export const TradingViewHeader = () => {
                 </button>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-gray-200 space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Active On‑chart:</span>
-                <span className="font-bold text-blue-600">{`${activeOnChart} / ${ON_CHART_LIMIT}`}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Active Below‑chart:</span>
-                <span className="font-bold text-blue-600">{`${activeBelowChart} / ${BELOW_CHART_LIMIT}`}</span>
-              </div>
-            </div>
 
             {toastMessage && (
               <div className="absolute left-1/2 -translate-x-1/2 bottom-2 px-3 py-1.5 rounded-md bg-gray-900 text-white text-[13px] shadow-md">
