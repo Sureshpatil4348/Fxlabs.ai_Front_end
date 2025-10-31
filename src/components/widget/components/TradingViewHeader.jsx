@@ -213,7 +213,7 @@ export const TradingViewHeader = () => {
                   }}
                   className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
                     settings.timeframe === tf
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white transform scale-105'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white transform scale-105 rounded-lg'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -227,7 +227,7 @@ export const TradingViewHeader = () => {
                 onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
                 className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 flex items-center gap-1 ${
                   showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(settings.timeframe)
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
