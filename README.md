@@ -77,7 +77,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Remove the previous logic that increased the DOM height by a fixed base plus per‑pane pixels. This prevented cases where the chart expanded vertically beyond its allocated space when RSI was enabled. File: `KLineChartComponent.jsx`.
 - Use the correct `removeIndicator({ ... })` filter form instead of passing a string id; remove by `paneId` for separate panes and by `name` for overlays. File: `KLineChartComponent.jsx`.
 
-**Result:** Toggling RSI shows/hides a dedicated RSI pane under the candles in candlestick mode. This also improves behavior for MACD/ATR/etc.
+**Result:** Toggling RSI shows/hides a dedicated RSI pane under the candles in candlestick mode. The RSI indicator displays three lines using periods 14, 10, and 21. This also improves behavior for MACD/ATR/etc.
 
 ## Layout Fix: TradingChart Height
 
@@ -90,7 +90,7 @@ Additionally, several flex containers now include `min-h-0` to allow children to
 - `src/components/widget/components/UnifiedChart.jsx` (root wrapper)
 
 **Indicators Mapping to KLineCharts API:**
-- `rsi` → `RSI`
+- `rsi` → `RSI` with `calcParams: [14, 10, 21]` (RSI1/RSI2/RSI3)
 - `ema20` / `ema200` → `EMA` (with periods parameter)
 - `macd` → `MACD`
 - `atr` → `ATR`

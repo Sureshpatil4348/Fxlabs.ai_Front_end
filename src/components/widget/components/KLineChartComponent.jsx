@@ -918,7 +918,9 @@ export const KLineChartComponent = ({
 
       // Map of indicator names to their KLineCharts API names
       const indicatorMap = {
-        rsi: { name: 'RSI', params: {}, newPane: true },
+        // RSI with three periods (14, 10, 21)
+        // KLineCharts accepts calcParams as an array to draw RSI1/RSI2/RSI3
+        rsi: { name: 'RSI', params: { calcParams: [14, 10, 21] }, newPane: true },
         ema20: { name: 'EMA', params: { periods: 20 }, newPane: false },
         ema200: { name: 'EMA', params: { periods: 200 }, newPane: false },
         macd: { name: 'MACD', params: {}, newPane: true },
@@ -957,7 +959,11 @@ export const KLineChartComponent = ({
               const paneOptions = config.newPane
                 ? { id: `pane-${key}`, height: 120 }
                 : undefined;
-              chartRef.current.createIndicator(indicatorName, isOverlayOnMain, paneOptions);
+              // For RSI we need to pass calcParams for 14,10,21; for others, pass the name
+              const indicatorArg = (key === 'rsi' && config.params?.calcParams)
+                ? { name: indicatorName, calcParams: config.params.calcParams }
+                : indicatorName;
+              chartRef.current.createIndicator(indicatorArg, isOverlayOnMain, paneOptions);
               console.log(`✅ KLineChart: ${key} indicator added`);
             } else {
               console.warn('📈 KLineChart: createIndicator method not available');
