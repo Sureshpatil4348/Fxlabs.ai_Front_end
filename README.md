@@ -62,3 +62,37 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - How to verify:
   - Open the chart, click Indicators, toggle RSI. The switch updates, a log prints from the store toggle, and the UnifiedChart renders the RSI panel.
   - Toggling again hides the RSI panel.
+
+## KLineChart Indicator Display Fix
+
+**Issue:** Clicking the Indicators dropdown and toggling RSI (or other indicators) had no effect in the KLineChart widget. The toggle didn't check the switch on, didn't show RSI in the chart, and didn't produce console logs.
+
+**Root Cause:** The `KLineChartComponent` had no logic to respond to changes in `settings.indicators`. While the `toggleIndicator` action in the store was working correctly, the KLineChart display layer wasn't listening to these changes.
+
+**Solution:** Added a new `useEffect` hook to `KLineChartComponent` that:
+1. Monitors `settings.indicators` for changes
+2. Calls `chart.createIndicator()` to add indicators when enabled
+3. Calls `chart.removeIndicator()` to remove indicators when disabled
+4. Supports all indicators: RSI, EMA (20/200), MACD, ATR, SMA (50/100), Bollinger Bands, Stochastic (KDJ), Williams %R, CCI, OBV, and VWAP
+5. Logs all operations for debugging
+
+**Indicators Mapping to KLineCharts API:**
+- `rsi` → `RSI`
+- `ema20` / `ema200` → `EMA` (with periods parameter)
+- `macd` → `MACD`
+- `atr` → `ATR`
+- `sma50` / `sma100` → `SMA` (with periods parameter)
+- `bollinger` → `BOLL`
+- `stoch` → `KDJ` (KLineCharts uses KDJ for Stochastic)
+- `williams` → `WR` (Williams %R)
+- `cci` → `CCI`
+- `obv` → `OBV`
+- `vwap` → `VWAP`
+
+**File Modified:** `src/components/widget/components/KLineChartComponent.jsx` (lines 912-974)
+
+**How to Verify:**
+1. Open the TradingView widget with a candlestick chart
+2. Click the Indicators button in the header
+3. Toggle RSI on/off
+4. Observe: The toggle switch updates, console logs appear (📈 KLineChart: Adding RSI indicator → ✅ KLineChart: RSI indicator added), and RSI appears/disappears on the KLineChart

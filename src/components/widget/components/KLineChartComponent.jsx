@@ -909,6 +909,77 @@ export const KLineChartComponent = ({
     }
   }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll, hasMoreHistory, onLoadMoreHistory]);
 
+  // Handle indicator visibility changes
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    try {
+      console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
+
+      // Map of indicator names to their KLineCharts API names
+      const indicatorMap = {
+        rsi: { name: 'RSI', params: {} },
+        ema20: { name: 'EMA', params: { periods: 20 } },
+        ema200: { name: 'EMA', params: { periods: 200 } },
+        macd: { name: 'MACD', params: {} },
+        atr: { name: 'ATR', params: {} },
+        sma50: { name: 'SMA', params: { periods: 50 } },
+        sma100: { name: 'SMA', params: { periods: 100 } },
+        bollinger: { name: 'BOLL', params: {} },
+        stoch: { name: 'KDJ', params: {} }, // KLineCharts uses KDJ for Stochastic
+        williams: { name: 'WR', params: {} }, // Williams %R
+        cci: { name: 'CCI', params: {} },
+        obv: { name: 'OBV', params: {} },
+        vwap: { name: 'VWAP', params: {} },
+        change24h: { name: null, params: {} } // Not a KLineCharts indicator
+      };
+
+      // Process each indicator
+      Object.entries(indicatorMap).forEach(([key, config]) => {
+        if (!config.name) return; // Skip if not a KLineCharts indicator
+
+        const isEnabled = settings.indicators?.[key];
+        const indicatorName = config.name;
+
+        // Create unique key for indicators with params
+        const uniqueKey = key === 'ema20' || key === 'ema200' || key === 'sma50' || key === 'sma100' 
+          ? `${indicatorName}${config.params.periods}` 
+          : indicatorName;
+
+        if (isEnabled) {
+          console.log(`📈 KLineChart: Adding ${key} (${uniqueKey}) indicator`);
+          try {
+            if (typeof chartRef.current.createIndicator === 'function') {
+              // For indicators with parameters
+              if (Object.keys(config.params).length > 0) {
+                chartRef.current.createIndicator(indicatorName, false, config.params);
+              } else {
+                chartRef.current.createIndicator(indicatorName, false);
+              }
+              console.log(`✅ KLineChart: ${key} indicator added`);
+            } else {
+              console.warn('📈 KLineChart: createIndicator method not available');
+            }
+          } catch (error) {
+            console.warn(`⚠️ KLineChart: Error adding ${key}:`, error?.message);
+          }
+        } else {
+          // Remove indicator
+          try {
+            if (typeof chartRef.current.removeIndicator === 'function') {
+              chartRef.current.removeIndicator(uniqueKey);
+              console.log(`📈 KLineChart: ${key} indicator removed`);
+            }
+          } catch (error) {
+            // Silently ignore if indicator doesn't exist
+          }
+        }
+      });
+    } catch (error) {
+      console.error('📈 KLineChart: Error handling indicator changes:', error);
+    }
+  }, [settings.indicators]);
+
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
     if (chartRef.current) {
