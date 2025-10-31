@@ -40,6 +40,7 @@ export const TradingViewHeader = () => {
   const countActive = (keys) => keys.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
   const activeOnChart = countActive(ON_CHART_KEYS);
   const activeBelowChart = countActive(BELOW_CHART_KEYS);
+  const totalActiveIndicators = activeOnChart + activeBelowChart;
 
   const handleToggleIndicator = (key) => {
     const isOn = !!settings.indicators?.[key];
@@ -274,7 +275,7 @@ export const TradingViewHeader = () => {
               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
-              <span>Indicators</span>
+              <span>Indicators{totalActiveIndicators > 0 ? ` (${totalActiveIndicators})` : ''}</span>
               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
