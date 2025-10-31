@@ -166,12 +166,12 @@ export const TradingViewHeader = () => {
     <div className="bg-white border-b border-gray-200 px-4 py-2 h-11 shadow-sm">
       <div className="flex items-center justify-between h-full">
         {/* Left Section - Symbol Selector */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center">
           {/* Symbol Search Button */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             <button
               onClick={() => setShowSymbolSearch(true)}
-              className="px-2 py-1 border border-gray-300 rounded text-[10px] font-medium bg-white hover:border-gray-400 hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
+              className="px-2 py-1 text-[13px] font-medium bg-white hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
             >
               <span>{settings.symbol ? formatSymbolDisplay(settings.symbol) : 'Select Symbol'}</span>
               <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,12 +197,13 @@ export const TradingViewHeader = () => {
             )}
           </div>
 
-          
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
 
           {/* Timeframe Buttons + Dropdown */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             {/* Quick Timeframe Buttons - Premium Style */}
-          <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
+          <div className="flex items-center gap-1 bg-white">
               {['1m', '5m', '15m'].map((tf) => (
               <button
                 key={tf}
@@ -210,9 +211,9 @@ export const TradingViewHeader = () => {
                     setTimeframe(tf);
                     setActiveTimeframe(tf);
                   }}
-                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 ${
+                  className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
                     settings.timeframe === tf
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-105'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white transform scale-105'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -224,9 +225,9 @@ export const TradingViewHeader = () => {
             <div className="relative" ref={moreTimeframesDropdownRef}>
               <button
                 onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
-                className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1 ${
+                className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 flex items-center gap-1 ${
                   showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(settings.timeframe)
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -247,7 +248,7 @@ export const TradingViewHeader = () => {
                         setActiveTimeframe(tf);
                         setShowMoreTimeframesDropdown(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-all ${
+                      className={`w-full text-left px-3 py-2 text-[13px] font-medium transition-all ${
                         settings.timeframe === tf
                           ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                           : 'text-gray-700 hover:bg-gray-100'
@@ -262,18 +263,21 @@ export const TradingViewHeader = () => {
           </div>
           </div>
 
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
           {/* Indicators Button */}
           <div className="relative" ref={dropdownRef}>
             <button 
               ref={indicatorsButtonRef}
               onClick={handleIndicatorsToggle}
-              className="px-3 py-1.5 bg-white border border-gray-300 rounded text-[10px] font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors flex items-center space-x-0.5"
+              className="px-3 py-1.5 bg-white text-[13px] font-medium hover:bg-gray-50 transition-colors flex items-center gap-1"
             >
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
               <span>Indicators{totalActiveIndicators > 0 ? ` (${totalActiveIndicators})` : ''}</span>
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-3 h-3 transition-transform ${showIndicators ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
@@ -283,37 +287,33 @@ export const TradingViewHeader = () => {
                   </div>
 
         {/* Right Section - Split Graph + Timezone */}
-        <div className="flex items-center space-x-3">
-          {/* Split Graph Button - Premium */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Split:</span>
-            <button
-              className="group px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-[10px] font-semibold hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-1.5"
-              title="Split Graph View"
-            >
-              <svg className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-              </svg>
-              <svg className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+        <div className="flex items-center">
+          {/* Split Graph Button */}
+          <button
+            className="flex items-center space-x-1 px-2 py-1 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            title="Split Graph View"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+            <span>Split</span>
+          </button>
+
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
 
           {/* Premium Timezone Dropdown */}
           <div className="flex items-center space-x-2">
             <div className="relative" ref={timezoneDropdownRef}>
               <button
                 onClick={() => setShowTimezoneDropdown(!showTimezoneDropdown)}
-                className="group px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-[10px] font-semibold hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md min-w-[120px] flex items-center justify-between gap-2"
+                className="px-3 py-1.5 bg-white text-[13px] font-medium hover:bg-blue-50 transition-all duration-200 min-w-[120px] flex items-center gap-1"
               >
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-gray-700 group-hover:text-blue-700 transition-colors">{`${getCurrentTimezoneInfo().label} (GMT${getCurrentTimezoneInfo().gmt})`}</span>
-                </div>
-                <svg className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-gray-700">{`${getCurrentTimezoneInfo().label} (GMT${getCurrentTimezoneInfo().gmt})`}</span>
+                <svg className={`w-3 h-3 transition-transform ${showTimezoneDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
@@ -968,7 +968,7 @@ export const TradingViewHeader = () => {
             </div>
 
             {toastMessage && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-2 px-3 py-1.5 rounded-md bg-gray-900 text-white text-[11px] shadow-md">
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-2 px-3 py-1.5 rounded-md bg-gray-900 text-white text-[13px] shadow-md">
                 {toastMessage}
               </div>
             )}

@@ -183,7 +183,7 @@ function TradingChart() {
                   <button 
                     ref={presetButtonRef}
                     onClick={handlePresetToggle}
-                    className={`flex items-center space-x-1 px-2 py-1 border rounded text-xs transition-colors ${
+                    className={`flex items-center space-x-1 px-2 py-1 border rounded text-[13px] font-medium transition-colors ${
                       showPresetDropdown 
                         ? 'bg-blue-50 border-blue-300 text-blue-700' 
                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
@@ -204,7 +204,7 @@ function TradingChart() {
 
               {/* Right Side - Alert & Grid */}
               <div className="flex items-center space-x-2">
-                <button className="flex items-center space-x-1 px-2 py-1 bg-white border border-gray-300 rounded text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors">
+                <button className="flex items-center space-x-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4.828 7l2.586 2.586a2 2 0 002.828 0L12.828 7H4.828zM4.828 17H12l-2.586-2.586a2 2 0 00-2.828 0L4.828 17z" />
                   </svg>
@@ -212,7 +212,7 @@ function TradingChart() {
                 </button>
                 <button 
                   onClick={toggleGrid}
-                  className={`flex items-center space-x-1 px-2 py-1 border rounded text-xs transition-colors ${
+                  className={`flex items-center space-x-1 px-2 py-1 border rounded text-[10px] font-medium transition-colors ${
                     settings.showGrid 
                       ? 'bg-white border-emerald-500 text-emerald-700 hover:bg-gray-50' 
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
