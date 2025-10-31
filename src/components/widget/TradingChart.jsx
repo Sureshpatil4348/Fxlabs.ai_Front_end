@@ -1,6 +1,6 @@
+import { X } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
@@ -282,6 +282,13 @@ function TradingChart() {
               setIsFullscreen(false);
             }
           }}
+          onKeyDown={(e) => {
+            // Close on Escape key press
+            if (e.key === 'Escape') {
+              setIsFullscreen(false);
+            }
+          }}
+          tabIndex={-1}
         >
           {/* Close Button */}
           <button
