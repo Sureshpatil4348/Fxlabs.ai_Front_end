@@ -918,20 +918,20 @@ export const KLineChartComponent = ({
 
       // Map of indicator names to their KLineCharts API names
       const indicatorMap = {
-        rsi: { name: 'RSI', params: {} },
-        ema20: { name: 'EMA', params: { periods: 20 } },
-        ema200: { name: 'EMA', params: { periods: 200 } },
-        macd: { name: 'MACD', params: {} },
-        atr: { name: 'ATR', params: {} },
-        sma50: { name: 'SMA', params: { periods: 50 } },
-        sma100: { name: 'SMA', params: { periods: 100 } },
-        bollinger: { name: 'BOLL', params: {} },
-        stoch: { name: 'KDJ', params: {} }, // KLineCharts uses KDJ for Stochastic
-        williams: { name: 'WR', params: {} }, // Williams %R
-        cci: { name: 'CCI', params: {} },
-        obv: { name: 'OBV', params: {} },
-        vwap: { name: 'VWAP', params: {} },
-        change24h: { name: null, params: {} } // Not a KLineCharts indicator
+        rsi: { name: 'RSI', params: {}, newPane: true },
+        ema20: { name: 'EMA', params: { periods: 20 }, newPane: false },
+        ema200: { name: 'EMA', params: { periods: 200 }, newPane: false },
+        macd: { name: 'MACD', params: {}, newPane: true },
+        atr: { name: 'ATR', params: {}, newPane: true },
+        sma50: { name: 'SMA', params: { periods: 50 }, newPane: false },
+        sma100: { name: 'SMA', params: { periods: 100 }, newPane: false },
+        bollinger: { name: 'BOLL', params: {}, newPane: false },
+        stoch: { name: 'KDJ', params: {}, newPane: true }, // Stochastic
+        williams: { name: 'WR', params: {}, newPane: true }, // Williams %R
+        cci: { name: 'CCI', params: {}, newPane: true },
+        obv: { name: 'OBV', params: {}, newPane: true },
+        vwap: { name: 'VWAP', params: {}, newPane: false },
+        change24h: { name: null, params: {}, newPane: false } // Not a KLineCharts indicator
       };
 
       // Process each indicator
@@ -941,7 +941,7 @@ export const KLineChartComponent = ({
         const isEnabled = settings.indicators?.[key];
         const indicatorName = config.name;
 
-        // Create unique key for indicators with params
+        // Create unique key for logs only
         const uniqueKey = key === 'ema20' || key === 'ema200' || key === 'sma50' || key === 'sma100' 
           ? `${indicatorName}${config.params.periods}` 
           : indicatorName;
@@ -950,12 +950,9 @@ export const KLineChartComponent = ({
           console.log(`📈 KLineChart: Adding ${key} (${uniqueKey}) indicator`);
           try {
             if (typeof chartRef.current.createIndicator === 'function') {
-              // For indicators with parameters
-              if (Object.keys(config.params).length > 0) {
-                chartRef.current.createIndicator(indicatorName, false, config.params);
-              } else {
-                chartRef.current.createIndicator(indicatorName, false);
-              }
+              // Provide explicit id for this indicator instance for clean removal
+              const indicatorOptions = { id: key };
+              chartRef.current.createIndicator(indicatorName, !!config.newPane, indicatorOptions);
               console.log(`✅ KLineChart: ${key} indicator added`);
             } else {
               console.warn('📈 KLineChart: createIndicator method not available');
@@ -964,13 +961,13 @@ export const KLineChartComponent = ({
             console.warn(`⚠️ KLineChart: Error adding ${key}:`, error?.message);
           }
         } else {
-          // Remove indicator
+          // Remove indicator by explicit id
           try {
             if (typeof chartRef.current.removeIndicator === 'function') {
-              chartRef.current.removeIndicator(uniqueKey);
+              chartRef.current.removeIndicator(key);
               console.log(`📈 KLineChart: ${key} indicator removed`);
             }
-          } catch (error) {
+          } catch (_error) {
             // Silently ignore if indicator doesn't exist
           }
         }
