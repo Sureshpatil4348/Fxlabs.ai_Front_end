@@ -950,9 +950,14 @@ export const KLineChartComponent = ({
           console.log(`📈 KLineChart: Adding ${key} (${uniqueKey}) indicator`);
           try {
             if (typeof chartRef.current.createIndicator === 'function') {
-              // Provide explicit id for this indicator instance for clean removal
-              const indicatorOptions = { id: key };
-              chartRef.current.createIndicator(indicatorName, !!config.newPane, indicatorOptions);
+              // Correct API usage:
+              // - Second arg is `isStack` (stack multiple indicators in same pane)
+              // - Third arg is `paneOptions` (new pane descriptor when creating a separate pane)
+              const isOverlayOnMain = !config.newPane; // overlays like EMA/SMA/BOLL/VWAP
+              const paneOptions = config.newPane
+                ? { id: `pane-${key}`, height: 120 }
+                : undefined;
+              chartRef.current.createIndicator(indicatorName, isOverlayOnMain, paneOptions);
               console.log(`✅ KLineChart: ${key} indicator added`);
             } else {
               console.warn('📈 KLineChart: createIndicator method not available');
@@ -964,7 +969,13 @@ export const KLineChartComponent = ({
           // Remove indicator by explicit id
           try {
             if (typeof chartRef.current.removeIndicator === 'function') {
-              chartRef.current.removeIndicator(key);
+              if (config.newPane) {
+                // Remove any indicators in our dedicated pane and let chart clean it up
+                chartRef.current.removeIndicator({ paneId: `pane-${key}` });
+              } else {
+                // Remove by name from the price pane
+                chartRef.current.removeIndicator({ name: indicatorName });
+              }
               console.log(`📈 KLineChart: ${key} indicator removed`);
             }
           } catch (_error) {
@@ -1140,21 +1151,23 @@ export const KLineChartComponent = ({
   }, []);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-sm  " >
-      {/* Chart Container - ZERO GAPS */}
-      <div className="flex-1 relative min-h-0 overflow-hidden " style={{ height: '370px', padding: '0', margin: '0' }}>
-        <div 
-          ref={chartContainerRef} 
+    <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-sm">
+      {/* Chart Container - fill parent height so indicator panes have room */}
+      <div className="flex-1 relative min-h-0 overflow-hidden" style={{ padding: '0', margin: '0' }}>
+        <div
+          ref={chartContainerRef}
           className="absolute inset-0"
-          style={{ 
+          style={{
             backgroundColor: '#ffffff',
-            minHeight: '370px',
-            maxHeight: '370px',
-            padding: '0',
-            margin: '0',
+            // Let klinecharts manage internal pane heights by using full container size
+            height: '100%',
             width: '100%',
             left: '0',
-            right: '0'
+            right: '0',
+            top: '0',
+            bottom: '0',
+            padding: '0',
+            margin: '0'
           }}
         >
           {!chartRef.current && (

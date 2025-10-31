@@ -65,16 +65,18 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## KLineChart Indicator Display Fix
 
-**Issue:** Clicking the Indicators dropdown and toggling RSI (or other indicators) had no effect in the KLineChart widget. The toggle didn't check the switch on, didn't show RSI in the chart, and didn't produce console logs.
+**Issue:** Enabling RSI in the K-line chart sometimes did not show the RSI panel.
 
-**Root Cause:** The `KLineChartComponent` had no logic to respond to changes in `settings.indicators`. While the `toggleIndicator` action in the store was working correctly, the KLineChart display layer wasn't listening to these changes.
+**Root Causes:**
+- The chart container height was hard‑limited to 370px, leaving no vertical space for additional indicator panes like RSI.
+- The indicator API usage mixed arguments and removal semantics, which could prevent proper teardown/creation sequences.
 
-**Solution:** Added a new `useEffect` hook to `KLineChartComponent` that:
-1. Monitors `settings.indicators` for changes
-2. Calls `chart.createIndicator()` to add indicators when enabled
-3. Calls `chart.removeIndicator()` to remove indicators when disabled
-4. Supports all indicators: RSI, EMA (20/200), MACD, ATR, SMA (50/100), Bollinger Bands, Stochastic (KDJ), Williams %R, CCI, OBV, and VWAP
-5. Logs all operations for debugging
+**Fixes:**
+- Make the chart container fill available height (remove fixed 370px min/max). This allows new panes (e.g., RSI) to render visibly. File: `src/components/widget/components/KLineChartComponent.jsx`.
+- Create new‑pane indicators (RSI/MACD/ATR/etc.) with explicit `paneOptions` and a default height of ~120px. Overlay indicators (EMA/SMA/BOLL/VWAP) are stacked on the main pane. File: `KLineChartComponent.jsx`.
+- Use the correct `removeIndicator({ ... })` filter form instead of passing a string id; remove by `paneId` for separate panes and by `name` for overlays. File: `KLineChartComponent.jsx`.
+
+**Result:** Toggling RSI shows/hides a dedicated RSI pane under the candles in candlestick mode. This also improves behavior for MACD/ATR/etc.
 
 **Indicators Mapping to KLineCharts API:**
 - `rsi` → `RSI`
