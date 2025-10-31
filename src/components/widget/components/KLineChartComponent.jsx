@@ -1,4 +1,4 @@
-import { init, registerOverlay, registerIndicator, getSupportedIndicators, IndicatorSeries } from 'klinecharts';
+import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
 import { Trash2, Settings } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
@@ -139,7 +139,7 @@ export const KLineChartComponent = ({
         registerIndicator({
           name: 'EMA_TOUCH_ENH',
           shortName: 'EMA Touch',
-          series: IndicatorSeries.Price,
+          series: 'price',
           precision: 4,
           // bbLen, bbMult, atrLen, tp1, tp2, tp3, slMult, horizonBars
           calcParams: [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25],
@@ -246,7 +246,7 @@ export const KLineChartComponent = ({
         registerIndicator({
           name: 'ORB_ENH',
           shortName: 'ORB',
-          series: IndicatorSeries.Price,
+          series: 'price',
           precision: 2,
           calcParams: [9, 15, 1, 4.0], // hour, minute, period bars, RR
           figures: [
@@ -333,7 +333,7 @@ export const KLineChartComponent = ({
         registerIndicator({
           name: 'ST_ENH',
           shortName: 'ST',
-          series: IndicatorSeries.Price,
+          series: 'price',
           precision: 4,
           calcParams: [10, 3.0], // atrPeriod, atrMultiplier
           figures: [
@@ -381,7 +381,7 @@ export const KLineChartComponent = ({
         registerIndicator({
           name: 'SR_ENH',
           shortName: 'S/R',
-          series: IndicatorSeries.Price,
+          series: 'price',
           precision: 2,
           calcParams: [15, 15], // leftBars, rightBars
           figures: [
