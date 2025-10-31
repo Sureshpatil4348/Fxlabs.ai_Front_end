@@ -768,6 +768,17 @@ export const KLineChartComponent = ({
             left: 0,
             right: 0
           },
+          // Hide the default 'Time' legend from candle tooltip
+          // by overriding tooltip.custom without the '{time}' entry.
+          tooltip: {
+            custom: [
+              { title: 'open', value: '{open}' },
+              { title: 'high', value: '{high}' },
+              { title: 'low', value: '{low}' },
+              { title: 'close', value: '{close}' },
+              { title: 'volume', value: '{volume}' }
+            ]
+          },
           priceMark: {
             show: true,
             high: {
