@@ -172,7 +172,7 @@ function TradingChart() {
           </div>
           
           {/* Bottom Bar */}
-          <div className="flex-shrink-0 bg-gray-50 border-t border-gray-200 px-3 py-1">
+          <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1">
             <div className="flex items-center justify-between">
               {/* Left Side - Session & Preset */}
               <div className="flex items-center space-x-2">

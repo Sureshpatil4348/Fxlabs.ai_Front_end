@@ -163,7 +163,7 @@ export const TradingViewHeader = () => {
 
   return (
     <>
-    <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-200 px-4 py-2 h-11 shadow-sm">
+    <div className="bg-white border-b border-gray-200 px-4 py-2 h-11 shadow-sm">
       <div className="flex items-center justify-between h-full">
         {/* Left Section - Symbol Selector */}
         <div className="flex items-center space-x-3">
