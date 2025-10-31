@@ -1,5 +1,6 @@
 import { init, registerOverlay, registerIndicator, getSupportedIndicators, IndicatorSeries } from 'klinecharts';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Trash2, Settings } from 'lucide-react';
 
 import { useChartStore } from '../stores/useChartStore';
 
@@ -17,6 +18,7 @@ export const KLineChartComponent = ({
   const [_currentOHLC, setCurrentOHLC] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const initialBarSpaceRef = useRef(null);
+  const [isHoveringBelowPanes, setIsHoveringBelowPanes] = useState(false);
   
   // Get the setter from store
   const { setKLineChartRef } = useChartStore();
@@ -1768,6 +1770,24 @@ export const KLineChartComponent = ({
             padding: '0',
             margin: '0'
           }}
+          onMouseMove={(e) => {
+            try {
+              const container = chartContainerRef.current;
+              if (!container) return;
+              const rect = container.getBoundingClientRect();
+              const y = e.clientY - rect.top;
+              const totalHeight = rect.height;
+              // Determine active below-chart panes and their aggregate height (each pane created with height: 120)
+              const BELOW_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+              const activeBelowCount = Array.isArray(BELOW_KEYS)
+                ? BELOW_KEYS.reduce((acc, k) => acc + (settings?.indicators?.[k] ? 1 : 0), 0)
+                : 0;
+              const belowHeight = activeBelowCount * 120;
+              const hovering = belowHeight > 0 && y >= Math.max(0, totalHeight - belowHeight);
+              if (hovering !== isHoveringBelowPanes) setIsHoveringBelowPanes(hovering);
+            } catch (_) {}
+          }}
+          onMouseLeave={() => setIsHoveringBelowPanes(false)}
         >
           {!chartRef.current && (
             <div className="absolute inset-0 flex items-start justify-center pt-16 bg-gradient-to-br from-gray-50 to-gray-100 z-10">
@@ -1873,6 +1893,52 @@ export const KLineChartComponent = ({
               </button>
             </div>
           </div>
+
+          {/* Hover actions for below-chart indicator panes */}
+          {(() => {
+            const BELOW_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+            const activeBelow = BELOW_KEYS.filter((k) => settings?.indicators?.[k]);
+            if (activeBelow.length === 0) return null;
+            return (
+              <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 60 }}>
+                {activeBelow.map((key, idx) => {
+                  const bottomOffset = idx * 120;
+                  return (
+                    <div
+                      key={key}
+                      className="absolute left-0 right-0"
+                      style={{ height: 120, bottom: bottomOffset }}
+                    >
+                      {/* Action panel */}
+                      <div
+                        className={`absolute top-2 right-2 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
+                        style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none' }}
+                      >
+                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-white/95 border border-gray-200 rounded-md shadow-sm">
+                          <button
+                            type="button"
+                            title="Delete"
+                            className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
+                            aria-label="Delete indicator"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Configure"
+                            className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
+                            aria-label="Configure indicator"
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>

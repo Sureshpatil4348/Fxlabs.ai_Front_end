@@ -115,6 +115,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Toggling EMA Touch overlays Bollinger Bands on the main pane.
 - Toggling ATR Enhanced shows/hides an ATR pane under the candles (ATR 14).
 
+## Below‑Chart Indicator Hover Actions
+
+- When you hover over the below‑chart indicator region(s) (e.g., RSI/ATR/MACD panes), a small actions panel appears in the top‑right of each pane with two icons: Delete and Configure.
+- These actions are UI‑only for now (no functionality wired yet). They are hidden by default and only appear while hovering over the below‑chart area.
+- Implementation lives in `src/components/widget/components/KLineChartComponent.jsx` and auto‑positions over active pane(s) using the known pane height (120px).
+
 ## Layout Fix: TradingChart Height
 
 - The `TradingChart` root container used `h-screen`, which caused the chart to exceed the grid cell height in the dashboard layout. This produced vertical overflow even when no indicators were enabled.
