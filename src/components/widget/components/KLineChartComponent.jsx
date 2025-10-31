@@ -131,6 +131,113 @@ export const KLineChartComponent = ({
           }
         });
       }
+      // Register EMA_TOUCH_ENH (BB signals + ATR targets) — on chart
+      if (Array.isArray(supported) && !supported.includes('EMA_TOUCH_ENH')) {
+        registerIndicator({
+          name: 'EMA_TOUCH_ENH',
+          shortName: 'EMA Touch',
+          series: IndicatorSeries.Price,
+          precision: 4,
+          // bbLen, bbMult, atrLen, tp1, tp2, tp3, slMult, horizonBars
+          calcParams: [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25],
+          figures: [
+            { key: 'buySL', title: 'BUY SL: ', type: 'line' },
+            { key: 'buyTP1', title: 'BUY TP1: ', type: 'line' },
+            { key: 'buyTP2', title: 'BUY TP2: ', type: 'line' },
+            { key: 'buyTP3', title: 'BUY TP3: ', type: 'line' },
+            { key: 'sellSL', title: 'SELL SL: ', type: 'line' },
+            { key: 'sellTP1', title: 'SELL TP1: ', type: 'line' },
+            { key: 'sellTP2', title: 'SELL TP2: ', type: 'line' },
+            { key: 'sellTP3', title: 'SELL TP3: ', type: 'line' },
+          ],
+          calc: (dataList, indicator) => {
+            const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25];
+            const bbLen = Math.max(1, Number(p[0]) || 20);
+            const bbMult = Number(p[1]) || 2.0;
+            const atrLen = Math.max(1, Number(p[2]) || 14);
+            const m1 = Number(p[3]) || 1.0;
+            const m2 = Number(p[4]) || 2.5;
+            const m3 = Number(p[5]) || 4.0;
+            const slMult = Number(p[6]) || 1.5;
+            const horizon = Math.max(1, Number(p[7]) || 25);
+
+            const len = dataList.length;
+            // Rolling mean and std for BB
+            const win = [];
+            let sum = 0;
+            let sumSq = 0;
+            // Wilder ATR
+            let prevAtr = null;
+
+            // Output arrays initialized NaN
+            const out = new Array(len).fill(null).map(() => ({ buySL: NaN, buyTP1: NaN, buyTP2: NaN, buyTP3: NaN, sellSL: NaN, sellTP1: NaN, sellTP2: NaN, sellTP3: NaN }));
+
+            let lastSignal = '';
+
+            for (let i = 0; i < len; i++) {
+              const k = dataList[i];
+              const close = k.close;
+              // Update BB window
+              win.push(close);
+              sum += close;
+              sumSq += close * close;
+              if (win.length > bbLen) {
+                const removed = win.shift();
+                sum -= removed;
+                sumSq -= removed * removed;
+              }
+              // ATR calc
+              const prev = dataList[i - 1] || k;
+              const tr = Math.max(k.high - k.low, Math.abs(k.high - prev.close), Math.abs(k.low - prev.close));
+              let atr = tr;
+              if (i > 0 && prevAtr != null) atr = ((prevAtr * (atrLen - 1)) + tr) / atrLen;
+              prevAtr = atr;
+
+              if (win.length === bbLen) {
+                const mean = sum / bbLen;
+                // variance
+                const variance = Math.max(0, (sumSq / bbLen) - mean * mean);
+                const stdev = Math.sqrt(variance);
+                const upper = mean + bbMult * stdev;
+                const lower = mean - bbMult * stdev;
+
+                const sellSignal = close > upper && lastSignal !== 'SELL';
+                const buySignal = close < lower && lastSignal !== 'BUY';
+
+                if (sellSignal) {
+                  lastSignal = 'SELL';
+                  const sellSL = close + (slMult * atr);
+                  const sellTP1 = close - (m1 * atr);
+                  const sellTP2 = close - (m2 * atr);
+                  const sellTP3 = close - (m3 * atr);
+                  const end = Math.min(len - 1, i + horizon);
+                  for (let j = i; j <= end; j++) {
+                    out[j].sellSL = sellSL;
+                    out[j].sellTP1 = sellTP1;
+                    out[j].sellTP2 = sellTP2;
+                    out[j].sellTP3 = sellTP3;
+                  }
+                }
+                if (buySignal) {
+                  lastSignal = 'BUY';
+                  const buySL = close - (slMult * atr);
+                  const buyTP1 = close + (m1 * atr);
+                  const buyTP2 = close + (m2 * atr);
+                  const buyTP3 = close + (m3 * atr);
+                  const end = Math.min(len - 1, i + horizon);
+                  for (let j = i; j <= end; j++) {
+                    out[j].buySL = buySL;
+                    out[j].buyTP1 = buyTP1;
+                    out[j].buyTP2 = buyTP2;
+                    out[j].buyTP3 = buyTP3;
+                  }
+                }
+              }
+            }
+            return out;
+          },
+        });
+      }
       // Register ORB_ENH (Opening Range Breakout - on chart)
       if (Array.isArray(supported) && !supported.includes('ORB_ENH')) {
         registerIndicator({
@@ -1233,9 +1340,41 @@ export const KLineChartComponent = ({
           // Overlay on main price pane by targeting the candle pane id
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: BOLL overlay added to candle pane', { mode: settings.indicators?.bbPro ? 'pro' : 'default' });
-        } else if (hasBoll) {
-          chartRef.current.removeIndicator({ name: 'BOLL' });
-          console.log('📈 KLineChart: BOLL overlay removed');
+
+          // If EMA Touch is enabled, add ATR targets + signals lines
+          const existingTouch = typeof chartRef.current.getIndicators === 'function'
+            ? chartRef.current.getIndicators({ name: 'EMA_TOUCH_ENH' })
+            : [];
+          const hasTouch = Array.isArray(existingTouch) && existingTouch.length > 0;
+          if (settings.indicators?.emaTouch) {
+            if (hasTouch && typeof chartRef.current.removeIndicator === 'function') {
+              chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
+            }
+            chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25], styles: {
+              lines: [
+                { color: '#EF4444', size: 2 }, // buy SL
+                { color: '#22C55E', size: 1 }, // buy TP1
+                { color: '#22C55E', size: 1 }, // buy TP2
+                { color: '#22C55E', size: 1 }, // buy TP3
+                { color: '#EF4444', size: 2 }, // sell SL
+                { color: '#22C55E', size: 1 }, // sell TP1
+                { color: '#22C55E', size: 1 }, // sell TP2
+                { color: '#22C55E', size: 1 }, // sell TP3
+              ]
+            } }, true, { id: 'candle_pane' });
+            console.log('✅ KLineChart: EMA Touch targets overlay added');
+          } else if (hasTouch) {
+            chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
+          }
+        } else {
+          if (hasBoll) {
+            chartRef.current.removeIndicator({ name: 'BOLL' });
+            console.log('📈 KLineChart: BOLL overlay removed');
+          }
+          // Remove EMA_TOUCH_ENH if present
+          try {
+            chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
+          } catch (_) {}
         }
       } catch (e) {
         console.warn('📈 KLineChart: Error handling BOLL overlay:', e);
