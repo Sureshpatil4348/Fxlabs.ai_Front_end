@@ -8,7 +8,7 @@ import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
-  const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
+  const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef(null);
   const [_activeTimeframe, setActiveTimeframe] = useState('1m');
