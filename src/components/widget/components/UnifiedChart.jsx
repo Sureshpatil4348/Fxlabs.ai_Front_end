@@ -243,7 +243,7 @@ export const UnifiedChart = () => {
         // Only start after we have at least the first page
         if (currentPage >= 1 && hasMoreHistory && !backgroundPreloadStartedRef.current) {
             const sessionId = preloadSessionRef.current;
-            const MAX_TOTAL_PAGES = 20;
+            const MAX_TOTAL_PAGES = 30;
 
             const timer = setTimeout(() => {
                 // Mark started only when the timer actually fires to avoid premature cancellation on re-renders
@@ -266,7 +266,7 @@ export const UnifiedChart = () => {
                                 const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
                                   settings.symbol,
                                   settings.timeframe,
-                                  { limit: 150, before: olderCursorRef.current }
+                                  { limit: 500, before: olderCursorRef.current }
                                 );
                                 if (slice.length > 0) {
                                     // Merge candles and recalc indicators using latest store data

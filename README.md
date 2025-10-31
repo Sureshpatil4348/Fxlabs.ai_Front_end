@@ -5,7 +5,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ## K-line Chart History Loading (Background Preload)
 
 - Initial candles are fetched with a fixed count of 150 using the REST `limit=150` parameter. `getInitialBarsForTimeframe` returns 150 regardless of timeframe to enforce this.
-- After the first page is displayed (150 bars), the system waits 2 seconds, then automatically preloads older candles in the background using keyset (cursor) pagination. The preloader fetches pages sequentially up to a total of 20 pages (including the first), with no scroll needed. Scroll/zoom left-edge detection for pagination has been disabled.
+- After the first page is displayed (150 bars), the system waits 2 seconds, then automatically preloads older candles in the background using keyset (cursor) pagination. The preloader fetches pages sequentially up to a total of 30 pages (including the first), requesting 500 candles per slice, with no scroll needed. Scroll/zoom left-edge detection for pagination has been disabled.
 - Data source (REST): `GET /api/ohlc?symbol=EURUSDm&timeframe=5M&limit=100&before=1696230060000`
   - Query params:
     - `symbol` (required): instrument name, e.g., `EURUSDm`.
