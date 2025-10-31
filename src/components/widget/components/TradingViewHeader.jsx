@@ -21,6 +21,7 @@ export const TradingViewHeader = () => {
   const timezoneDropdownRef = useRef(null);
   const indicatorsButtonRef = useRef(null);
   const moreTimeframesDropdownRef = useRef(null);
+  const indicatorsPanelRef = useRef(null);
 
   // Quick-access timeframes are 1m, 5m, 15m; remaining in dropdown
   const _timeframes = ['1m', '5m', '15m'];
@@ -48,12 +49,20 @@ export const TradingViewHeader = () => {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      // Close Indicators only if click is outside BOTH the button container AND the portal panel
+      const clickedOutsideIndicators = (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        (!indicatorsPanelRef.current || !indicatorsPanelRef.current.contains(event.target))
+      );
+      if (clickedOutsideIndicators) {
         setShowIndicators(false);
       }
+      // Close timezone dropdown on outside click
       if (timezoneDropdownRef.current && !timezoneDropdownRef.current.contains(event.target)) {
         setShowTimezoneDropdown(false);
       }
+      // Close more timeframes dropdown on outside click
       if (moreTimeframesDropdownRef.current && !moreTimeframesDropdownRef.current.contains(event.target)) {
         setShowMoreTimeframesDropdown(false);
       }
@@ -392,6 +401,7 @@ export const TradingViewHeader = () => {
             top: dropdownPosition.top,
             right: dropdownPosition.right
           }}
+          ref={indicatorsPanelRef}
         >
           <div className="p-3">
             <div className="flex items-center justify-between mb-3">

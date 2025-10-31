@@ -53,3 +53,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **After initialization** (`chartRef.current` exists): Show error UI only if an actual error persists after the chart has been initialized.
 - **Implementation**: The error UI condition requires both `error` state AND `chartRef.current` to be truthy. This ensures errors from during initialization don't flash to the user—they'll only see the loading state.
 - **Related file**: `src/components/widget/components/KLineChartComponent.jsx` (lines 1092-1135)
+
+## Fix: Indicators Dropdown Click Handling (RSI toggle)
+
+- Issue: Clicking the Indicators dropdown and toggling items (e.g., RSI) had no effect because the dropdown was rendered via a portal, but the outside-click handler only checked the header button container. A `mousedown` on the portal closed the dropdown before the toggle `onClick` could fire, so no console logs or state updates occurred.
+- Change: Add a ref to the portal panel and update the outside-click logic to only close when the click is outside both the button container and the portal panel.
+- File: `src/components/widget/components/TradingViewHeader.jsx`
+- How to verify:
+  - Open the chart, click Indicators, toggle RSI. The switch updates, a log prints from the store toggle, and the UnifiedChart renders the RSI panel.
+  - Toggling again hides the RSI panel.
