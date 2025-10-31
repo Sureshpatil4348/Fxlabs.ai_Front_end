@@ -38,3 +38,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - In `src/components/widget/components/UnifiedChart.jsx`, `getInitialBarsForTimeframe` is created via `useMemo` to provide a stable function reference across renders and returns a fixed value of `150`.
 - This stability allows it to be safely listed in `useEffect` dependencies without causing unnecessary effect re-runs, and keeps ESLint's `react-hooks/exhaustive-deps` satisfied (see the effect dependency in the same file).
 - An equivalent, more idiomatic alternative would be `useCallback`: `const getInitialBarsForTimeframe = useCallback(() => 150, [])`.
+
+## K-line Chart Loading States
+
+### Loading vs. Error UI Priority
+
+- **During initialization** (`!chartRef.current`): Always show loading spinner, even if a transient error occurred. This prevents error UI from flashing briefly on first page load.
+- **After initialization** (`chartRef.current` exists): Show error UI only if an actual error persists after the chart has been initialized.
+- **Implementation**: The error UI condition requires both `error` state AND `chartRef.current` to be truthy. This ensures errors from during initialization don't flash to the user—they'll only see the loading state.
+- **Related file**: `src/components/widget/components/KLineChartComponent.jsx` (lines 1092-1135)
