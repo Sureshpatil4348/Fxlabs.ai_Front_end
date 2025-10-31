@@ -13,20 +13,8 @@ const defaultSettings = {
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
   indicators: {
-    ema20: true,
-    ema200: true,
-    rsi: true,
-    macd: true,
-    atr: false,
-    sma50: false,
-    sma100: false,
-    bollinger: false,
-    stoch: false,
-    williams: false,
-    cci: false,
-    obv: false,
-    vwap: false,
-    change24h: true,
+    // Only RSI Enhanced is available now
+    rsiEnhanced: true,
   }
 };
 
@@ -36,20 +24,8 @@ export const useChartStore = create(
       // Initial state
       candles: [],
       indicators: {
-        ema20: [],
-        ema200: [],
-        rsi: [],
-        macd: [],
-        atr: [],
-        sma50: [],
-        sma100: [],
-        bollinger: [],
-        stoch: [],
-        williams: [],
-        cci: [],
-        obv: [],
-        vwap: [],
-        change24h: [],
+        // Keep indicators map minimal; legacy keys will be ignored
+        rsiEnhanced: [],
       },
       dailyChangeData: {
         symbol: null,
@@ -194,20 +170,7 @@ export const useChartStore = create(
       resetChart: () => set({
         candles: [],
         indicators: {
-          ema20: [],
-          ema200: [],
-          rsi: [],
-          macd: [],
-          atr: [],
-          sma50: [],
-          sma100: [],
-          bollinger: [],
-          stoch: [],
-          williams: [],
-          cci: [],
-          obv: [],
-          vwap: [],
-          change24h: [],
+          rsiEnhanced: [],
         },
         dailyChangeData: {
           symbol: null,

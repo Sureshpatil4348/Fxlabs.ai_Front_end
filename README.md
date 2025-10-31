@@ -63,6 +63,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Open the chart, click Indicators, toggle RSI. The switch updates, a log prints from the store toggle, and the UnifiedChart renders the RSI panel.
   - Toggling again hides the RSI panel.
 
+## Indicators: RSI Enhanced only
+
+- All previous indicator options are removed from the K-line chart UI. The only available indicator is “RSI Enhanced”, which displays RSI(14) in a dedicated pane beneath the candles.
+- Current implementation uses the built-in KLineCharts `RSI` with `calcParams: [14]`. Overbought/Oversold fills and status table from the provided Pine specification will be added later.
+- Toggle path: Header → Indicators → RSI Enhanced.
+
 ## KLineChart Indicator Display Fix
 
 **Issue:** Enabling RSI in the K-line chart sometimes did not show the RSI panel.
@@ -77,7 +83,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Remove the previous logic that increased the DOM height by a fixed base plus per‑pane pixels. This prevented cases where the chart expanded vertically beyond its allocated space when RSI was enabled. File: `KLineChartComponent.jsx`.
 - Use the correct `removeIndicator({ ... })` filter form instead of passing a string id; remove by `paneId` for separate panes and by `name` for overlays. File: `KLineChartComponent.jsx`.
 
-**Result:** Toggling RSI shows/hides a dedicated RSI pane under the candles in candlestick mode. The RSI indicator displays three lines using periods 14, 10, and 21. This also improves behavior for MACD/ATR/etc.
+**Result:** Toggling RSI Enhanced shows/hides a dedicated RSI pane under the candles in candlestick mode. Currently shows a single RSI(14) line.
 
 ## Layout Fix: TradingChart Height
 
@@ -89,20 +95,7 @@ Additionally, several flex containers now include `min-h-0` to allow children to
 - `src/components/widget/TradingChart.jsx` (main wrappers)
 - `src/components/widget/components/UnifiedChart.jsx` (root wrapper)
 
-**Indicators Mapping to KLineCharts API:**
-- `rsi` → `RSI` with `calcParams: [14, 10, 21]` (RSI1/RSI2/RSI3)
-- `ema20` / `ema200` → `EMA` (with periods parameter)
-- `macd` → `MACD`
-- `atr` → `ATR`
-- `sma50` / `sma100` → `SMA` (with periods parameter)
-- `bollinger` → `BOLL`
-- `stoch` → `KDJ` (KLineCharts uses KDJ for Stochastic)
-- `williams` → `WR` (Williams %R)
-- `cci` → `CCI`
-- `obv` → `OBV`
-- `vwap` → `VWAP`
-
-**File Modified:** `src/components/widget/components/KLineChartComponent.jsx` (lines 912-974)
+**File Modified:** `src/components/widget/components/KLineChartComponent.jsx`
 
 **How to Verify:**
 1. Open the Trading view with the candlestick chart.

@@ -394,7 +394,7 @@ export const TradingViewHeader = () => {
       />
 
       {/* Portal-based Indicators Dropdown */}
-      {showIndicators && createPortal(
+      {false && showIndicators && createPortal(
         <div 
           className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
           style={{
@@ -471,24 +471,24 @@ export const TradingViewHeader = () => {
                 </button>
               </div>
 
-              {/* RSI */}
+              {/* RSI Enhanced */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-0.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
                   <div>
-                    <p className="text-xs font-medium text-gray-900">RSI</p>
-                    <p className="text-xs text-gray-500">Relative Strength Index (14-period)</p>
+                    <p className="text-xs font-medium text-gray-900">RSI Enhanced</p>
+                    <p className="text-xs text-gray-500">Clean RSI (14) — OB/OS panel</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => toggleIndicator('rsi')}
+                  onClick={() => toggleIndicator('rsiEnhanced')}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.indicators.rsi ? 'bg-blue-600' : 'bg-gray-300'
+                    settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.indicators.rsi ? 'translate-x-6' : 'translate-x-1'
+                      settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -755,6 +755,47 @@ export const TradingViewHeader = () => {
                 <span className="font-bold text-blue-600">
                   {Object.values(settings.indicators).filter(Boolean).length} / 14
                 </span>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* New minimal Indicators panel (RSI Enhanced only) */}
+      {showIndicators && createPortal(
+        <div 
+          className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
+          style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
+          ref={indicatorsPanelRef}
+        >
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900">Technical Indicators</h3>
+              <button onClick={() => setShowIndicators(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-2 overflow-y-auto" style={{ maxHeight: '400px', scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6', scrollBehavior: 'smooth' }}>
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center space-x-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-600"></div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-900">RSI Enhanced</p>
+                    <p className="text-xs text-gray-500">Clean RSI (14) — OB/OS panel</p>
+                  </div>
+                </div>
+                <button onClick={() => toggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Active Indicators:</span>
+                <span className="font-bold text-blue-600">{Object.values(settings.indicators).filter(Boolean).length} / 1</span>
               </div>
             </div>
           </div>

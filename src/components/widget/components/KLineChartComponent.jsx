@@ -916,24 +916,9 @@ export const KLineChartComponent = ({
     try {
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
-      // Map of indicator names to their KLineCharts API names
+      // Only support RSI Enhanced (RSI 14 in a separate pane)
       const indicatorMap = {
-        // RSI with three periods (14, 10, 21)
-        // KLineCharts accepts calcParams as an array to draw RSI1/RSI2/RSI3
-        rsi: { name: 'RSI', params: { calcParams: [14, 10, 21] }, newPane: true },
-        ema20: { name: 'EMA', params: { periods: 20 }, newPane: false },
-        ema200: { name: 'EMA', params: { periods: 200 }, newPane: false },
-        macd: { name: 'MACD', params: {}, newPane: true },
-        atr: { name: 'ATR', params: {}, newPane: true },
-        sma50: { name: 'SMA', params: { periods: 50 }, newPane: false },
-        sma100: { name: 'SMA', params: { periods: 100 }, newPane: false },
-        bollinger: { name: 'BOLL', params: {}, newPane: false },
-        stoch: { name: 'KDJ', params: {}, newPane: true }, // Stochastic
-        williams: { name: 'WR', params: {}, newPane: true }, // Williams %R
-        cci: { name: 'CCI', params: {}, newPane: true },
-        obv: { name: 'OBV', params: {}, newPane: true },
-        vwap: { name: 'VWAP', params: {}, newPane: false },
-        change24h: { name: null, params: {}, newPane: false } // Not a KLineCharts indicator
+        rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
       };
 
       // Process each indicator
@@ -944,9 +929,7 @@ export const KLineChartComponent = ({
         const indicatorName = config.name;
 
         // Create unique key for logs only
-        const uniqueKey = key === 'ema20' || key === 'ema200' || key === 'sma50' || key === 'sma100' 
-          ? `${indicatorName}${config.params.periods}` 
-          : indicatorName;
+        const uniqueKey = indicatorName;
 
         if (isEnabled) {
           console.log(`📈 KLineChart: Adding ${key} (${uniqueKey}) indicator`);
@@ -955,12 +938,9 @@ export const KLineChartComponent = ({
               // Correct API usage:
               // - Second arg is `isStack` (stack multiple indicators in same pane)
               // - Third arg is `paneOptions` (new pane descriptor when creating a separate pane)
-              const isOverlayOnMain = !config.newPane; // overlays like EMA/SMA/BOLL/VWAP
-              const paneOptions = config.newPane
-                ? { id: `pane-${key}`, height: 120 }
-                : undefined;
-              // For RSI we need to pass calcParams for 14,10,21; for others, pass the name
-              const indicatorArg = (key === 'rsi' && config.params?.calcParams)
+              const isOverlayOnMain = !config.newPane;
+              const paneOptions = config.newPane ? { id: `pane-${key}`, height: 120 } : undefined;
+              const indicatorArg = config.params?.calcParams
                 ? { name: indicatorName, calcParams: config.params.calcParams }
                 : indicatorName;
               chartRef.current.createIndicator(indicatorArg, isOverlayOnMain, paneOptions);
@@ -975,13 +955,8 @@ export const KLineChartComponent = ({
           // Remove indicator by explicit id
           try {
             if (typeof chartRef.current.removeIndicator === 'function') {
-              if (config.newPane) {
-                // Remove any indicators in our dedicated pane and let chart clean it up
-                chartRef.current.removeIndicator({ paneId: `pane-${key}` });
-              } else {
-                // Remove by name from the price pane
-                chartRef.current.removeIndicator({ name: indicatorName });
-              }
+              // RSI Enhanced is on its own pane
+              chartRef.current.removeIndicator({ paneId: `pane-${key}` });
               console.log(`📈 KLineChart: ${key} indicator removed`);
             }
           } catch (_error) {
