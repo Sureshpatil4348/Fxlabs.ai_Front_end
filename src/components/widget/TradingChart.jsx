@@ -125,18 +125,18 @@ function TradingChart() {
 
   return (
     <ErrorBoundary>
-      <div className="h-screen bg-white flex flex-col overflow-hidden border border-gray-200 shadow-lg rounded-lg">
+      <div className="h-full bg-white flex flex-col overflow-hidden border border-gray-200 shadow-lg rounded-lg">
         {/* Header */}
         <TradingViewHeader />
         
         {/* Main Content with Sidebar */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 min-h-0 flex overflow-hidden">
           {/* Left Sidebar */}
           <Sidebar />
           
           {/* Chart Area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <UnifiedChart />
             </div>
             

@@ -668,7 +668,7 @@ export const UnifiedChart = () => {
 
     if (isLoading) {
         return (
-            <div className="flex-1 bg-white flex items-start justify-center pt-16 h-screen">
+            <div className="flex-1 bg-white flex items-start justify-center pt-16 h-full">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
                     <p className="text-gray-600 text-sm">Loading Chart...</p>
@@ -692,7 +692,7 @@ export const UnifiedChart = () => {
     }
 
     return (
-        <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
+        <div className="flex-1 min-h-0 bg-white flex flex-col h-full overflow-hidden">
             {/* Price Info Bar */}
             <div className="bg-white px-4 py-1 flex-shrink-0 sticky top-0 z-10 border-b border-gray-200">
                 <div className="flex items-center justify-between">
@@ -725,9 +725,9 @@ export const UnifiedChart = () => {
                 }`}
                 style={
                     settings.chartType === "candlestick"
-                        ? { minHeight: "500px" }
+                        ? { minHeight: 0 }
                         : {
-                              minHeight: "400px",
+                              minHeight: 0,
                               maxHeight: "calc(100vh - 200px)",
                               scrollbarWidth: "thin",
                               scrollbarColor: "#d1d5db #f3f4f6",

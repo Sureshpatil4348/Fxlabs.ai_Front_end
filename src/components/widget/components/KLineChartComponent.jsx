@@ -1150,17 +1150,10 @@ export const KLineChartComponent = ({
     }
   }, []);
 
-  // Dynamically size the chart: base candle height + per-indicator pane height
-  const paneIndicators = ['rsi', 'macd', 'atr', 'stoch', 'williams', 'cci', 'obv'];
-  const enabledPaneCount = (() => {
-    try {
-      const ind = settings?.indicators || {};
-      return paneIndicators.reduce((n, k) => n + (ind[k] ? 1 : 0), 0);
-    } catch (_e) { return 0; }
-  })();
-  const BASE_CANDLE_HEIGHT = 370; // previous stable height
-  const PANE_HEIGHT = 120;        // default per-extra-pane height
-  const TOTAL_HEIGHT = BASE_CANDLE_HEIGHT + enabledPaneCount * PANE_HEIGHT;
+  // Use container-driven sizing so the chart never overflows its slot.
+  // Any indicator panes (RSI/MACD/etc.) must be managed within the chart
+  // itself, not by expanding the DOM container height. This prevents the
+  // chart from growing taller than its parent when extra panes are toggled.
 
   return (
     <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-sm">
@@ -1171,7 +1164,7 @@ export const KLineChartComponent = ({
           className="absolute inset-0"
           style={{
             backgroundColor: '#ffffff',
-            height: `${TOTAL_HEIGHT}px`,
+            height: '100%',
             width: '100%',
             left: '0',
             right: '0',
