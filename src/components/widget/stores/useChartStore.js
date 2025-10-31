@@ -144,11 +144,13 @@ export const useChartStore = create(
       },
       
       setChartType: (chartType) => {
-        console.log('💾 ChartStore: Setting chartType to', chartType);
+        // Lock to candlestick mode only
+        const nextType = 'candlestick';
+        console.log('💾 ChartStore: Setting chartType to', chartType, '-> enforced as', nextType);
         set((state) => ({
           settings: {
             ...state.settings,
-            chartType
+            chartType: nextType
           }
         }));
       },
@@ -334,6 +336,10 @@ export const useChartStore = create(
             if (!_state.settings.timezone) {
               const tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
               _state.settings.timezone = tz;
+            }
+            // Enforce candlestick-only mode on rehydrate
+            if (_state.settings.chartType !== 'candlestick') {
+              _state.settings.chartType = 'candlestick';
             }
           } catch (_e) {
             // noop

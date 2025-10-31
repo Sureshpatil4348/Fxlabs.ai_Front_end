@@ -2,6 +2,12 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Candlestick-Only Mode
+
+- The TradingView widget now supports only the K-line candlestick chart. The separate Line Chart page (with volume, 24h change, and multiple indicator panels) has been removed from the UI.
+- Any attempts to switch to a line chart are ignored; the store enforces `candlestick` mode on set and on state rehydrate.
+- Sidebar > Chart Type menu shows only Candlestick.
+
 ## K-line Chart History Loading (Background Preload)
 
 - Initial candles are fetched with a fixed count of 150 using the REST `limit=150` parameter. `getInitialBarsForTimeframe` returns 150 regardless of timeframe to enforce this.

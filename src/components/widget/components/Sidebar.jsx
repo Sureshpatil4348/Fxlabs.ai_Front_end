@@ -59,7 +59,7 @@ export const Sidebar = () => {
 
   return (
     <div className="w-12 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
-      {/* Chart Type Button */}
+      {/* Chart Type Button (Candlestick only) */}
       <div className="relative">
         <button
           onClick={() => toggleSection('chartTypes')}
@@ -98,29 +98,6 @@ export const Sidebar = () => {
                   </svg>
                 )}
               </button>
-
-              <button
-                onClick={() => { 
-                  console.log('🖱️ Sidebar: Line Chart button clicked'); 
-                  setChartType('line'); 
-                  setActiveSection(null); 
-                  console.log('✅ Sidebar: Chart type set to line');
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.chartType === 'line' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-                <span className="text-sm font-medium">Line Chart</span>
-                {settings.chartType === 'line' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-
             </div>
           </div>
         )}
@@ -542,4 +519,3 @@ export const Sidebar = () => {
     </div>
   );
 };
-
