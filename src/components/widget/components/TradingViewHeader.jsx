@@ -169,7 +169,6 @@ export const TradingViewHeader = () => {
         <div className="flex items-center space-x-3">
           {/* Symbol Search Button */}
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Symbol:</span>
             <button
               onClick={() => setShowSymbolSearch(true)}
               className="px-2 py-1 border border-gray-300 rounded text-[10px] font-medium bg-white hover:border-gray-400 hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
@@ -202,8 +201,6 @@ export const TradingViewHeader = () => {
 
           {/* Timeframe Buttons + Dropdown */}
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Timeframe:</span>
-            
             {/* Quick Timeframe Buttons - Premium Style */}
           <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
               {['1m', '5m', '15m'].map((tf) => (
@@ -305,7 +302,6 @@ export const TradingViewHeader = () => {
 
           {/* Premium Timezone Dropdown */}
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Timezone:</span>
             <div className="relative" ref={timezoneDropdownRef}>
               <button
                 onClick={() => setShowTimezoneDropdown(!showTimezoneDropdown)}
