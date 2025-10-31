@@ -1,4 +1,4 @@
-import { init, registerOverlay } from 'klinecharts';
+import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 import { useChartStore } from '../stores/useChartStore';
@@ -95,6 +95,46 @@ export const KLineChartComponent = ({
 
   // Register drawing tools overlays
   useEffect(() => {
+    // Register custom indicators once (e.g., ATR_ENH)
+    try {
+      const supported = typeof getSupportedIndicators === 'function' ? getSupportedIndicators() : [];
+      if (Array.isArray(supported) && !supported.includes('ATR_ENH')) {
+        registerIndicator({
+          name: 'ATR_ENH',
+          shortName: 'ATR',
+          calcParams: [14],
+          precision: 4,
+          figures: [
+            { key: 'atr', title: 'ATR: ', type: 'line' }
+          ],
+          calc: (dataList, indicator) => {
+            const len = Array.isArray(indicator.calcParams) && indicator.calcParams.length > 0 ? Math.max(1, Number(indicator.calcParams[0]) || 14) : 14;
+            let prevAtr = null;
+            return dataList.map((k, i) => {
+              const prev = dataList[i - 1] || k;
+              const high = Number(k.high);
+              const low = Number(k.low);
+              const closePrev = Number(prev.close);
+              const tr = Math.max(high - low, Math.abs(high - closePrev), Math.abs(low - closePrev));
+              const out = {};
+              if (i === 0) {
+                prevAtr = tr;
+                out.atr = tr;
+              } else {
+                // Wilder's RMA
+                const atr = ((prevAtr * (len - 1)) + tr) / len;
+                out.atr = atr;
+                prevAtr = atr;
+              }
+              return out;
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('📈 Failed to register custom indicators:', e);
+    }
+
     // Register trend line overlay
     registerOverlay({
       name: 'trendLine',
@@ -920,7 +960,7 @@ export const KLineChartComponent = ({
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
         emaTouch: { name: 'BOLL', params: {}, newPane: false },
-        atrEnhanced: { name: 'ATR', params: { calcParams: [14] }, newPane: true },
+        atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [14] }, newPane: true },
       };
 
       // Process each indicator
