@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 import { useDrawingTools } from '../hooks/useDrawingTools';
 import { useChartStore } from '../stores/useChartStore';
 
-export const Sidebar = ({ onFullscreenToggle }) => {
+export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
   const { 
     settings, 
     setChartType,
@@ -499,7 +500,7 @@ export const Sidebar = ({ onFullscreenToggle }) => {
       {/* Divider */}
       <div className="w-8 h-px bg-gray-300 my-2"></div>
 
-      {/* Fullscreen Button */}
+      {/* Fullscreen/Compact Button */}
       <button
         onClick={() => {
           if (onFullscreenToggle) {
@@ -507,12 +508,14 @@ export const Sidebar = ({ onFullscreenToggle }) => {
           }
         }}
         className="w-10 h-10 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
-        title="Fullscreen"
+        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-        </svg>
-        <span className="text-[10px] mt-1">Full</span>
+        {isFullscreen ? (
+          <Minimize2 className="w-5 h-5" />
+        ) : (
+          <Maximize2 className="w-5 h-5" />
+        )}
+        <span className="text-[10px] mt-1">{isFullscreen ? "Compact" : "Full"}</span>
       </button>
     </div>
   );
