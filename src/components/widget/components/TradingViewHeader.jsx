@@ -802,12 +802,8 @@ export const TradingViewHeader = () => {
             </div>
             <div className="space-y-2 overflow-y-auto relative" style={{ maxHeight: '400px', scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6', scrollBehavior: 'smooth' }}>
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-purple-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">RSI Enhanced</p>
-                    <p className="text-xs text-gray-500">Clean RSI (14) — OB/OS panel</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">RSI Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -815,12 +811,8 @@ export const TradingViewHeader = () => {
               </div>
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">EMA Touch</p>
-                    <p className="text-xs text-gray-500">BB signals + ATR targets</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">EMA Touch</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.emaTouch ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -828,12 +820,8 @@ export const TradingViewHeader = () => {
               </div>
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">Bollinger Bands Pro</p>
-                    <p className="text-xs text-gray-500">On-chart BB with premium styling</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">Bollinger Bands Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.bbPro ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -841,12 +829,8 @@ export const TradingViewHeader = () => {
               </div>
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">ATR Enhanced</p>
-                    <p className="text-xs text-gray-500">ATR(14) pane — premium visuals later</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">ATR Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('atrEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.atrEnhanced ? 'bg-blue-600' : 'bg-gray-300'
@@ -859,12 +843,8 @@ export const TradingViewHeader = () => {
 
               {/* MA Enhanced */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">MA Enhanced</p>
-                    <p className="text-xs text-gray-500">Multi-EMA overlay (9/21/50/100/200)</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">MA Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('maEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.maEnhanced ? 'bg-blue-600' : 'bg-gray-300'
@@ -877,12 +857,8 @@ export const TradingViewHeader = () => {
 
               {/* ORB Enhanced */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">ORB Enhanced</p>
-                    <p className="text-xs text-gray-500">Opening Range Breakout overlay</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">ORB Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('orbEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.orbEnhanced ? 'bg-blue-600' : 'bg-gray-300'
@@ -895,12 +871,8 @@ export const TradingViewHeader = () => {
 
               {/* SuperTrend Enhanced */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-rose-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">SuperTrend Enhanced</p>
-                    <p className="text-xs text-gray-500">On-chart SuperTrend overlay</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">SuperTrend Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('stEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.stEnhanced ? 'bg-blue-600' : 'bg-gray-300'
@@ -913,12 +885,8 @@ export const TradingViewHeader = () => {
 
               {/* Support/Resistance Enhanced */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-fuchsia-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">S/R Enhanced</p>
-                    <p className="text-xs text-gray-500">Support/Resistance overlay</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">S/R Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.srEnhanced ? 'bg-blue-600' : 'bg-gray-300'
@@ -931,12 +899,8 @@ export const TradingViewHeader = () => {
 
               {/* MACD Enhanced (below chart) */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-sky-600"></div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">MACD Enhanced</p>
-                    <p className="text-xs text-gray-500">MACD pane with premium styling</p>
-                  </div>
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">MACD Enhanced</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('macdEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.macdEnhanced ? 'bg-blue-600' : 'bg-gray-300'
