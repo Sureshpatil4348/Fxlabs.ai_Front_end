@@ -835,7 +835,7 @@ export const TradingViewHeader = () => {
                   <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
                   <div>
                     <p className="text-xs font-medium text-gray-900">EMA Touch</p>
-                    <p className="text-xs text-gray-500">BB overlay + signals (phase 1)</p>
+                    <p className="text-xs text-gray-500">Bollinger Bands overlay</p>
                   </div>
                 </div>
                 <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-blue-600' : 'bg-gray-300'}`}>
