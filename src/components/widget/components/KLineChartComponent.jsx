@@ -218,6 +218,54 @@ export const KLineChartComponent = ({
           },
         });
       }
+      // Register ST_ENH (SuperTrend - on chart)
+      if (Array.isArray(supported) && !supported.includes('ST_ENH')) {
+        registerIndicator({
+          name: 'ST_ENH',
+          shortName: 'ST',
+          series: IndicatorSeries.Price,
+          precision: 4,
+          calcParams: [10, 3.0], // atrPeriod, atrMultiplier
+          figures: [
+            { key: 'st', title: 'ST: ', type: 'line' },
+          ],
+          calc: (dataList, indicator) => {
+            const [len, mult] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [10, 3.0];
+            const l = Math.max(1, Number(len) || 10);
+            const m = Number(mult) || 3.0;
+            let prevAtr = null;
+            let prevFinalUpper = NaN;
+            let prevFinalLower = NaN;
+            let prevTrend = 1; // default bullish
+            return dataList.map((k, i) => {
+              const prev = dataList[i - 1] || k;
+              const hl2 = (k.high + k.low) / 2;
+              const tr = Math.max(k.high - k.low, Math.abs(k.high - prev.close), Math.abs(k.low - prev.close));
+              let atr = tr;
+              if (i > 0 && prevAtr != null) atr = ((prevAtr * (l - 1)) + tr) / l; // Wilder's RMA
+              prevAtr = atr;
+              const basicUpper = hl2 + m * atr;
+              const basicLower = hl2 - m * atr;
+              // final bands
+              let finalUpper;
+              if (!isFinite(prevFinalUpper) || prev.close > prevFinalUpper) finalUpper = basicUpper; else finalUpper = Math.min(basicUpper, prevFinalUpper);
+              let finalLower;
+              if (!isFinite(prevFinalLower) || prev.close < prevFinalLower) finalLower = basicLower; else finalLower = Math.max(basicLower, prevFinalLower);
+              // trend decision using previous final bands
+              let trend = prevTrend;
+              if (i > 0) {
+                if (k.close > prevFinalUpper) trend = 1; else if (k.close < prevFinalLower) trend = -1;
+              }
+              const st = trend === 1 ? finalLower : finalUpper;
+              // persist for next step
+              prevFinalUpper = finalUpper;
+              prevFinalLower = finalLower;
+              prevTrend = trend;
+              return { st };
+            });
+          },
+        });
+      }
     } catch (e) {
       console.warn('📈 Failed to register custom indicators:', e);
     }
@@ -1148,6 +1196,33 @@ export const KLineChartComponent = ({
         }
       } catch (e) {
         console.warn('📈 KLineChart: Error handling ORB Enhanced overlay:', e);
+      }
+
+      // SuperTrend Enhanced (on-chart)
+      try {
+        const wantSt = Boolean(settings.indicators?.stEnhanced);
+        const stStyles = {
+          lines: [
+            { color: '#26A69A', size: 2 }, // ST line (will be static color; dynamic color requires style callbacks)
+          ],
+        };
+        const existingSt = typeof chartRef.current.getIndicators === 'function'
+          ? chartRef.current.getIndicators({ name: 'ST_ENH' })
+          : [];
+        const hasSt = Array.isArray(existingSt) && existingSt.length > 0;
+        if (wantSt) {
+          if (hasSt && typeof chartRef.current.removeIndicator === 'function') {
+            chartRef.current.removeIndicator({ name: 'ST_ENH' });
+          }
+          const indicatorArg = { name: 'ST_ENH', calcParams: [10, 3.0], styles: stStyles };
+          chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: SuperTrend Enhanced overlay added to candle pane');
+        } else if (hasSt) {
+          chartRef.current.removeIndicator({ name: 'ST_ENH' });
+          console.log('📈 KLineChart: SuperTrend Enhanced overlay removed');
+        }
+      } catch (e) {
+        console.warn('📈 KLineChart: Error handling SuperTrend Enhanced overlay:', e);
       }
 
       // Process each indicator (pane indicators only)
