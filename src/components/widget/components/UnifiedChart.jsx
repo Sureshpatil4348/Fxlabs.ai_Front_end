@@ -295,6 +295,39 @@ export const UnifiedChart = () => {
                         // eslint-disable-next-line no-console
                         console.warn("⚠️ Background preload stopped:", e);
                     } finally {
+                        // Log a summary only if we're still in the same session
+                        try {
+                            if (preloadSessionRef.current === sessionId) {
+                                const state = useChartStore.getState();
+                                const all = Array.isArray(state.candles) ? [...state.candles] : [];
+                                if (all.length > 0) {
+                                    const sorted = all.sort((a, b) => a.time - b.time);
+                                    const first = sorted[0];
+                                    const last = sorted[sorted.length - 1];
+                                    const toIso = (t) => {
+                                        const ms = t < 946684800000 ? t * 1000 : t;
+                                        return new Date(ms).toISOString();
+                                    };
+                                    // eslint-disable-next-line no-console
+                                    console.log('[ChartSummary]', {
+                                        timeframe: settings.timeframe,
+                                        totalCandles: sorted.length,
+                                        firstCandle: first,
+                                        lastCandle: last,
+                                        startTime: toIso(first.time),
+                                        endTime: toIso(last.time)
+                                    });
+                                } else {
+                                    // eslint-disable-next-line no-console
+                                    console.log('[ChartSummary]', {
+                                        timeframe: settings.timeframe,
+                                        totalCandles: 0
+                                    });
+                                }
+                            }
+                        } catch (_e) {
+                            // ignore summary errors
+                        }
                         // Guard remains set for this session; resets on symbol/timeframe change
                     }
                 })();
