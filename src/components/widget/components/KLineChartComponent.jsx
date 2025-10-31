@@ -22,7 +22,7 @@ export const KLineChartComponent = ({
   const [isHoveringOnChartOverlays, setIsHoveringOnChartOverlays] = useState(false);
   
   // Get the setter from store
-  const { setKLineChartRef } = useChartStore();
+  const { setKLineChartRef, toggleIndicator } = useChartStore();
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -1927,6 +1927,7 @@ export const KLineChartComponent = ({
                             title="Delete"
                             className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
                             aria-label="Delete indicator"
+                            onClick={() => toggleIndicator(key)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1971,6 +1972,7 @@ export const KLineChartComponent = ({
                         title="Delete"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
                         aria-label={`Delete ${LABELS[key] || key}`}
+                        onClick={() => toggleIndicator(key)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

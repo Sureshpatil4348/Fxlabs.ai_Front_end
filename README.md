@@ -125,7 +125,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ## On‑Chart Overlay Hover Actions
 
 - When you hover over the main price pane and any on‑chart overlay indicator is active (EMA Touch, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced), small action panels appear at the top‑right — one per active overlay — each labeled with the indicator name and showing Delete/Configure icons.
-- UI only for now; actions are intentionally not wired yet.
+- Delete action: Clicking the Delete icon toggles off the indicator (removes it from the chart).
+- Delete action: Clicking the Delete icon toggles off the overlay indicator(s) and removes them from the chart.
 - This mirrors the below‑chart behavior but targets the main pane area. It uses hover detection over the main pane (not line proximity) as a lightweight placeholder and distinguishes multiple overlays by showing separate labeled panels.
 - Panel cards use transparent backgrounds with only a subtle border (no fill).
 
