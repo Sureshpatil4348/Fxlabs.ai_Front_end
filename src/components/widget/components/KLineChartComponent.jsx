@@ -916,10 +916,11 @@ export const KLineChartComponent = ({
     try {
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
-      // Support RSI Enhanced (pane) and EMA Touch (overlay via BOLL)
+      // Support RSI Enhanced (pane), EMA Touch (overlay via BOLL), and ATR Enhanced (pane)
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
         emaTouch: { name: 'BOLL', params: {}, newPane: false },
+        atrEnhanced: { name: 'ATR', params: { calcParams: [14] }, newPane: true },
       };
 
       // Process each indicator

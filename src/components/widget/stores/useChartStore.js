@@ -13,9 +13,10 @@ const defaultSettings = {
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
   indicators: {
-    // RSI Enhanced and EMA Touch only
+    // RSI Enhanced, EMA Touch, ATR Enhanced
     rsiEnhanced: true,
     emaTouch: false,
+    atrEnhanced: false,
   }
 };
 
@@ -28,6 +29,7 @@ export const useChartStore = create(
         // Keep indicators map minimal; legacy keys will be ignored
         rsiEnhanced: [],
         emaTouch: [],
+        atrEnhanced: [],
       },
       dailyChangeData: {
         symbol: null,
@@ -174,6 +176,7 @@ export const useChartStore = create(
         indicators: {
           rsiEnhanced: [],
           emaTouch: [],
+          atrEnhanced: [],
         },
         dailyChangeData: {
           symbol: null,
