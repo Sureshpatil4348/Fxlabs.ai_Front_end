@@ -542,7 +542,7 @@ export const KLineChartComponent = ({
 
   // Handle scroll/zoom events for pagination
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || !onLoadMoreHistory) return;
 
     const handleScroll = (_data) => {
       if (!chartRef.current) return;

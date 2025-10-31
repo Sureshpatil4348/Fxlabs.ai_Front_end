@@ -67,6 +67,9 @@ export const UnifiedChart = () => {
     const { pricingBySymbol } = useMarketCacheStore();
     // Cursors for OHLC keyset pagination
     const olderCursorRef = useRef(null); // use next_before from last response to page older
+    // Background preload session + guard
+    const backgroundPreloadStartedRef = useRef(false);
+    const preloadSessionRef = useRef(0);
 
     // Apply cursor style based on settings
     useEffect(() => {
@@ -77,6 +80,12 @@ export const UnifiedChart = () => {
             chartContainer.style.cursor = settings.cursorType || "crosshair";
         }
     }, [settings.cursorType]);
+
+    // Reset background preload session on symbol/timeframe change
+    useEffect(() => {
+        preloadSessionRef.current += 1;
+        backgroundPreloadStartedRef.current = false;
+    }, [settings.symbol, settings.timeframe]);
 
     // Create lookup maps for better performance
     const indicatorMaps = useMemo(() => {
@@ -227,56 +236,76 @@ export const UnifiedChart = () => {
     }, [settings.chartType]);
 
     // Load more historical data (pagination)
-    const loadMoreHistory = async () => {
-        if (isLoadingHistory || !hasMoreHistory) {
-            console.log("📊 loadMoreHistory: Skip", {
-                isLoadingHistory,
-                hasMoreHistory,
-            });
-            return;
+    // removed loadMoreHistory; background preloader now fetches slices inline
+
+    // Background preloading: after initial page is ready, wait 2s, then sequentially load up to 20 pages total
+    useEffect(() => {
+        // Only start after we have at least the first page
+        if (currentPage >= 1 && hasMoreHistory && !backgroundPreloadStartedRef.current) {
+            const sessionId = preloadSessionRef.current;
+            const MAX_TOTAL_PAGES = 20;
+
+            const timer = setTimeout(() => {
+                // Mark started only when the timer actually fires to avoid premature cancellation on re-renders
+                backgroundPreloadStartedRef.current = true;
+                (async () => {
+                    try {
+                        // Keep fetching older slices until limits reached or new session starts
+                        // eslint-disable-next-line no-constant-condition
+                        while (true) {
+                            // Stop if session changed (symbol/timeframe switched)
+                            if (preloadSessionRef.current !== sessionId) break;
+                            // Stop if we've reached max total pages (include the first page)
+                            const { currentPage: latestPage, hasMoreHistory: stillHasMore } = useChartStore.getState();
+                            if (latestPage >= MAX_TOTAL_PAGES) break;
+                            if (!stillHasMore) break;
+
+                            // Fetch one older slice inline
+                            try {
+                                setLoadingHistory(true);
+                                const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
+                                  settings.symbol,
+                                  settings.timeframe,
+                                  { limit: 150, before: olderCursorRef.current }
+                                );
+                                if (slice.length > 0) {
+                                    // Merge candles and recalc indicators using latest store data
+                                    const existing = useChartStore.getState().candles;
+                                    prependCandles(slice);
+                                    const allCandles = [...slice, ...existing].sort((a, b) => a.time - b.time);
+                                    const calculatedIndicators = calculateAllIndicators(allCandles);
+                                    setIndicators(calculatedIndicators);
+
+                                    setCurrentPage(useChartStore.getState().currentPage + 1);
+                                    olderCursorRef.current = nextBefore || null;
+                                    setHasMoreHistory(Boolean(nextBefore && count > 0));
+                                } else {
+                                    setHasMoreHistory(false);
+                                    break;
+                                }
+                            } catch (e) {
+                                // eslint-disable-next-line no-console
+                                console.warn('⚠️ Preload slice failed:', e);
+                                break; // break on error to avoid tight loop
+                            } finally {
+                                setLoadingHistory(false);
+                            }
+                        }
+                    } catch (e) {
+                        // eslint-disable-next-line no-console
+                        console.warn("⚠️ Background preload stopped:", e);
+                    } finally {
+                        // Guard remains set for this session; resets on symbol/timeframe change
+                    }
+                })();
+            }, 2000);
+
+            return () => {
+                clearTimeout(timer);
+            };
         }
-
-        try {
-            console.log("📊 loadMoreHistory: Loading older via cursor", olderCursorRef.current);
-            setLoadingHistory(true);
-            const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
-              settings.symbol,
-              settings.timeframe,
-              { limit: 150, before: olderCursorRef.current }
-            );
-
-            console.log("📊 loadMoreHistory: Received", slice.length, "candles");
-
-            if (slice.length > 0) {
-                // Prepend the new candles
-                prependCandles(slice);
-
-                // Recalculate indicators with all candles
-                const allCandles = [...slice, ...candles].sort(
-                    (a, b) => a.time - b.time
-                );
-                const calculatedIndicators = calculateAllIndicators(allCandles);
-                setIndicators(calculatedIndicators);
-
-                // Update pagination state
-                setCurrentPage(currentPage + 1); // retained for UI, though cursor-based now
-                olderCursorRef.current = nextBefore || null;
-                setHasMoreHistory(Boolean(nextBefore && count > 0));
-
-                console.log(
-                    "✅ loadMoreHistory: Success, now on page",
-                    currentPage + 1
-                );
-            } else {
-                setHasMoreHistory(false);
-                console.log("📊 loadMoreHistory: No more history");
-            }
-        } catch (err) {
-            console.error("❌ Error loading more history:", err);
-        } finally {
-            setLoadingHistory(false);
-        }
-    };
+        return undefined;
+    }, [currentPage, hasMoreHistory, settings.symbol, settings.timeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory]);
 
     // Load historical data
     useEffect(() => {
@@ -684,7 +713,6 @@ export const UnifiedChart = () => {
                             candles={displayCandles}
                             indicators={indicators}
                             settings={settings}
-                            onLoadMoreHistory={loadMoreHistory}
                             isLoadingHistory={isLoadingHistory}
                             hasMoreHistory={hasMoreHistory}
                         />
