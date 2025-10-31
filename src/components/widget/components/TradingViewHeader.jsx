@@ -180,8 +180,8 @@ export const TradingViewHeader = () => {
               </svg>
             </button>
             
-            {/* Watchlist Star Button - Premium Style */}
-            {settings.symbol && (
+            {/* Watchlist Star Button - Premium Style - Hidden from UI */}
+            {false && settings.symbol && (
               <button
                 onClick={handleWatchlistToggle}
                 className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
