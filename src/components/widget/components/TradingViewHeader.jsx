@@ -273,9 +273,6 @@ export const TradingViewHeader = () => {
               onClick={handleIndicatorsToggle}
               className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1"
             >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
               <span>Indicators{totalActiveIndicators > 0 ? ` ( ${totalActiveIndicators} )` : ''}</span>
               <svg className={`w-3 h-3 transition-transform ${showIndicators ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -290,12 +287,9 @@ export const TradingViewHeader = () => {
         <div className="flex items-center">
           {/* Split Graph Button */}
           <button
-            className="flex items-center space-x-1 px-2 py-1 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-2 py-1 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             title="Split Graph View"
           >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-            </svg>
             <span>Split</span>
           </button>
 
@@ -309,9 +303,6 @@ export const TradingViewHeader = () => {
                 onClick={() => setShowTimezoneDropdown(!showTimezoneDropdown)}
                 className="px-3 py-1.5 bg-white text-[13px] font-medium hover:bg-blue-50 transition-all duration-200 min-w-[120px] flex items-center gap-1"
               >
-                <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
                 <span className="text-gray-700">{`${getCurrentTimezoneInfo().label} (GMT${getCurrentTimezoneInfo().gmt})`}</span>
                 <svg className={`w-3 h-3 transition-transform ${showTimezoneDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
