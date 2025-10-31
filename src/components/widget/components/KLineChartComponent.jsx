@@ -772,11 +772,11 @@ export const KLineChartComponent = ({
           // by overriding tooltip.custom without the '{time}' entry.
           tooltip: {
             custom: [
-              { title: 'open', value: '{open}' },
-              { title: 'high', value: '{high}' },
-              { title: 'low', value: '{low}' },
-              { title: 'close', value: '{close}' },
-              { title: 'volume', value: '{volume}' }
+              { title: 'O:', value: '{open}' },
+              { title: 'H:', value: '{high}' },
+              { title: 'L:', value: '{low}' },
+              { title: 'C:', value: '{close}' },
+              { title: 'V:', value: '{volume}' }
             ]
           },
           priceMark: {

@@ -15,14 +15,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Candlestick-Only Mode
 
-## K-line Tooltip (Hide Time)
+## K-line Tooltip (Hide Time + Abbreviations)
 
 - The default KLineCharts candle tooltip shows: Time, Open, High, Low, Close, Volume.
-- We override the tooltip legends to remove the Time entry while keeping OHLC + Volume.
+- We override the tooltip legends to remove the Time entry and abbreviate labels.
 - Change location: `src/components/widget/components/KLineChartComponent.jsx:~700`
-- Implementation: set `candle.tooltip.custom` to an array without `{time}`.
-  - Example applied:
-    - `{ title: 'open', value: '{open}' }`, `{ title: 'high', value: '{high}' }`, `{ title: 'low', value: '{low}' }`, `{ title: 'close', value: '{close}' }`, `{ title: 'volume', value: '{volume}' }`
+- Implementation: set `candle.tooltip.custom` to an array without `{time}` and with abbreviated titles:
+  - `{ title: 'O:', value: '{open}' }`, `{ title: 'H:', value: '{high}' }`, `{ title: 'L:', value: '{low}' }`, `{ title: 'C:', value: '{close}' }`, `{ title: 'V:', value: '{volume}' }`
 
 - The TradingView widget now supports only the K-line candlestick chart. The separate Line Chart page (with volume, 24h change, and multiple indicator panels) has been removed from the UI.
 - Any attempts to switch to a line chart are ignored; the store enforces `candlestick` mode on set and on state rehydrate.
