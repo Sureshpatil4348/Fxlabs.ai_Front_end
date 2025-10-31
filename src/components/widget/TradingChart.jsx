@@ -209,16 +209,16 @@ function TradingChart() {
                 </button>
                 <button 
                   onClick={toggleGrid}
-                  className={`flex items-center space-x-1 px-2 py-1 border rounded text-[10px] font-medium transition-colors ${
+                  className={`p-2 transition-colors duration-300 group ${
                     settings.showGrid 
-                      ? 'bg-white border-emerald-500 text-emerald-700 hover:bg-gray-50' 
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                      ? 'text-emerald-600' 
+                      : 'text-gray-400 hover:text-emerald-600'
                   }`}
+                  title="Grid"
                 >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
-                  <span>Grid</span>
                 </button>
               </div>
             </div>
