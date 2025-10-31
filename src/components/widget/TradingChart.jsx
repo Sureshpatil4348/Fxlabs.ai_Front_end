@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Bell } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -204,11 +204,8 @@ function TradingChart() {
 
               {/* Right Side - Alert & Grid */}
               <div className="flex items-center space-x-2">
-                <button className="flex items-center space-x-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4.828 7l2.586 2.586a2 2 0 002.828 0L12.828 7H4.828zM4.828 17H12l-2.586-2.586a2 2 0 00-2.828 0L4.828 17z" />
-                  </svg>
-                  <span>Alert</span>
+                <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
+                  <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                 </button>
                 <button 
                   onClick={toggleGrid}
