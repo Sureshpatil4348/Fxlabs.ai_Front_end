@@ -5,7 +5,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 const SYSTEM_TIMEZONE = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
 
 const defaultSettings = {
-  symbol: 'BTCUSDT',
+  symbol: 'EURUSD',
   timeframe: '1h',
   chartType: 'candlestick',
   cursorType: 'crosshair',
