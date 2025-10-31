@@ -266,6 +266,60 @@ export const KLineChartComponent = ({
           },
         });
       }
+      // Register SR_ENH (Support/Resistance - on chart)
+      if (Array.isArray(supported) && !supported.includes('SR_ENH')) {
+        registerIndicator({
+          name: 'SR_ENH',
+          shortName: 'S/R',
+          series: IndicatorSeries.Price,
+          precision: 2,
+          calcParams: [15, 15], // leftBars, rightBars
+          figures: [
+            { key: 'res', title: 'RES: ', type: 'line' },
+            { key: 'sup', title: 'SUP: ', type: 'line' },
+            { key: 'resTop', title: 'RES+: ', type: 'line' },
+            { key: 'supBot', title: 'SUP-: ', type: 'line' },
+          ],
+          calc: (dataList, indicator) => {
+            const [leftBars, rightBars] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [15, 15];
+            const l = Math.max(1, Number(leftBars) || 15);
+            const r = Math.max(1, Number(rightBars) || 15);
+            const len = dataList.length;
+            const resAt = new Array(len).fill(NaN);
+            const supAt = new Array(len).fill(NaN);
+            for (let i = 0; i < len; i++) {
+              const c = i - r;
+              if (c >= l && i >= r && c >= 0 && c < len) {
+                const start = Math.max(0, c - l);
+                const end = Math.min(len - 1, c + r);
+                let isHighPivot = true;
+                let isLowPivot = true;
+                const ch = dataList[c].high;
+                const cl = dataList[c].low;
+                for (let j = start; j <= end; j++) {
+                  if (j === c) continue;
+                  if (dataList[j].high > ch) isHighPivot = false;
+                  if (dataList[j].low < cl) isLowPivot = false;
+                  if (!isHighPivot && !isLowPivot) break;
+                }
+                if (isHighPivot) resAt[c] = ch;
+                if (isLowPivot) supAt[c] = cl;
+              }
+            }
+            let lastRes = NaN;
+            let lastSup = NaN;
+            return dataList.map((_k, idx) => {
+              if (isFinite(resAt[idx])) lastRes = resAt[idx];
+              if (isFinite(supAt[idx])) lastSup = supAt[idx];
+              const res = isFinite(lastRes) ? lastRes : NaN;
+              const sup = isFinite(lastSup) ? lastSup : NaN;
+              const resTop = isFinite(res) ? res * 1.002 : NaN;
+              const supBot = isFinite(sup) ? sup * 0.998 : NaN;
+              return { res, sup, resTop, supBot };
+            });
+          },
+        });
+      }
     } catch (e) {
       console.warn('📈 Failed to register custom indicators:', e);
     }
@@ -1223,6 +1277,36 @@ export const KLineChartComponent = ({
         }
       } catch (e) {
         console.warn('📈 KLineChart: Error handling SuperTrend Enhanced overlay:', e);
+      }
+
+      // Support/Resistance Enhanced (on-chart)
+      try {
+        const wantSr = Boolean(settings.indicators?.srEnhanced);
+        const srStyles = {
+          lines: [
+            { color: '#FF5252', size: 2 }, // Resistance
+            { color: '#00BCD4', size: 2 }, // Support
+            { color: '#FF5252', size: 1, dashedValue: [4, 4] }, // Resistance zone top
+            { color: '#00BCD4', size: 1, dashedValue: [4, 4] }, // Support zone bottom
+          ],
+        };
+        const existingSr = typeof chartRef.current.getIndicators === 'function'
+          ? chartRef.current.getIndicators({ name: 'SR_ENH' })
+          : [];
+        const hasSr = Array.isArray(existingSr) && existingSr.length > 0;
+        if (wantSr) {
+          if (hasSr && typeof chartRef.current.removeIndicator === 'function') {
+            chartRef.current.removeIndicator({ name: 'SR_ENH' });
+          }
+          const indicatorArg = { name: 'SR_ENH', calcParams: [15, 15], styles: srStyles };
+          chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: S/R Enhanced overlay added to candle pane');
+        } else if (hasSr) {
+          chartRef.current.removeIndicator({ name: 'SR_ENH' });
+          console.log('📈 KLineChart: S/R Enhanced overlay removed');
+        }
+      } catch (e) {
+        console.warn('📈 KLineChart: Error handling S/R Enhanced overlay:', e);
       }
 
       // Process each indicator (pane indicators only)
