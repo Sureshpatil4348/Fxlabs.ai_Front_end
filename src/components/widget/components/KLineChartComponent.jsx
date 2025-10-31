@@ -1150,22 +1150,32 @@ export const KLineChartComponent = ({
     }
   }, []);
 
+  // Dynamically size the chart: base candle height + per-indicator pane height
+  const paneIndicators = ['rsi', 'macd', 'atr', 'stoch', 'williams', 'cci', 'obv'];
+  const enabledPaneCount = (() => {
+    try {
+      const ind = settings?.indicators || {};
+      return paneIndicators.reduce((n, k) => n + (ind[k] ? 1 : 0), 0);
+    } catch (_e) { return 0; }
+  })();
+  const BASE_CANDLE_HEIGHT = 370; // previous stable height
+  const PANE_HEIGHT = 120;        // default per-extra-pane height
+  const TOTAL_HEIGHT = BASE_CANDLE_HEIGHT + enabledPaneCount * PANE_HEIGHT;
+
   return (
     <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-sm">
-      {/* Chart Container - fill parent height so indicator panes have room */}
+      {/* Chart Container - bounded height to prevent layout overflow */}
       <div className="flex-1 relative min-h-0 overflow-hidden" style={{ padding: '0', margin: '0' }}>
         <div
           ref={chartContainerRef}
           className="absolute inset-0"
           style={{
             backgroundColor: '#ffffff',
-            // Let klinecharts manage internal pane heights by using full container size
-            height: '100%',
+            height: `${TOTAL_HEIGHT}px`,
             width: '100%',
             left: '0',
             right: '0',
             top: '0',
-            bottom: '0',
             padding: '0',
             margin: '0'
           }}

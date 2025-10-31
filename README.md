@@ -74,6 +74,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 **Fixes:**
 - Make the chart container fill available height (remove fixed 370px min/max). This allows new panes (e.g., RSI) to render visibly. File: `src/components/widget/components/KLineChartComponent.jsx`.
 - Create new‑pane indicators (RSI/MACD/ATR/etc.) with explicit `paneOptions` and a default height of ~120px. Overlay indicators (EMA/SMA/BOLL/VWAP) are stacked on the main pane. File: `KLineChartComponent.jsx`.
+- Prevent vertical overflow: chart height = 370px base + 120px per enabled pane (RSI/MACD/ATR/KDJ/WR/CCI/OBV). This keeps the widget bounded and avoids pushing surrounding UI. File: `KLineChartComponent.jsx`.
 - Use the correct `removeIndicator({ ... })` filter form instead of passing a string id; remove by `paneId` for separate panes and by `name` for overlays. File: `KLineChartComponent.jsx`.
 
 **Result:** Toggling RSI shows/hides a dedicated RSI pane under the candles in candlestick mode. This also improves behavior for MACD/ATR/etc.
