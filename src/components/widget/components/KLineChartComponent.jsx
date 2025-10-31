@@ -320,6 +320,59 @@ export const KLineChartComponent = ({
           },
         });
       }
+      // Register MACD_ENH (below-chart)
+      if (Array.isArray(supported) && !supported.includes('MACD_ENH')) {
+        registerIndicator({
+          name: 'MACD_ENH',
+          shortName: 'MACD',
+          precision: 4,
+          calcParams: [12, 26, 9], // fast, slow, signal
+          figures: [
+            { key: 'macd', title: 'MACD: ', type: 'line' },
+            { key: 'signal', title: 'SIGNAL: ', type: 'line' },
+            { key: 'histPS', title: 'HPS: ', type: 'bar' }, // pos strong
+            { key: 'histPW', title: 'HPW: ', type: 'bar' }, // pos weak
+            { key: 'histNW', title: 'HNW: ', type: 'bar' }, // neg weak
+            { key: 'histNS', title: 'HNS: ', type: 'bar' }, // neg strong
+          ],
+          calc: (dataList, indicator) => {
+            const [fastLen, slowLen, sigLen] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [12, 26, 9];
+            const fl = Math.max(1, Number(fastLen) || 12);
+            const sl = Math.max(1, Number(slowLen) || 26);
+            const sg = Math.max(1, Number(sigLen) || 9);
+            let emaFast = null;
+            let emaSlow = null;
+            let emaSignal = null;
+            const kf = 2 / (fl + 1);
+            const ks = 2 / (sl + 1);
+            const ks2 = 2 / (sg + 1);
+            return dataList.map((k, i, arr) => {
+              const price = k.close; // source close
+              emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
+              emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
+              const macd = (emaFast - emaSlow);
+              emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
+              const hist = macd - emaSignal;
+              const prevHist = i > 0 ? ((arr[i - 1].__macdHist) ?? 0) : 0;
+              // 4-level histogram splits
+              const posStrong = hist > 0 && hist > prevHist ? hist : NaN;
+              const posWeak = hist > 0 && hist <= prevHist ? hist : NaN;
+              const negWeak = hist <= 0 && hist > prevHist ? hist : NaN;
+              const negStrong = hist <= 0 && hist <= prevHist ? hist : NaN;
+              // stash for next comparison
+              k.__macdHist = hist;
+              return {
+                macd,
+                signal: emaSignal,
+                histPS: posStrong,
+                histPW: posWeak,
+                histNW: negWeak,
+                histNS: negStrong,
+              };
+            });
+          },
+        });
+      }
     } catch (e) {
       console.warn('📈 Failed to register custom indicators:', e);
     }
@@ -1145,10 +1198,11 @@ export const KLineChartComponent = ({
     try {
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
-      // Support RSI Enhanced (pane) and ATR Enhanced (pane). BOLL overlays are handled separately below.
+      // Support RSI Enhanced (pane), ATR Enhanced (pane), MACD Enhanced (pane). BOLL overlays are handled separately below.
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
         atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [14] }, newPane: true },
+        macdEnhanced: { name: 'MACD_ENH', params: { calcParams: [12, 26, 9] }, newPane: true },
       };
 
       // First, handle Bollinger overlays (shared by 'emaTouch' and 'bbPro')
@@ -1328,9 +1382,29 @@ export const KLineChartComponent = ({
               // - Third arg is `paneOptions` (new pane descriptor when creating a separate pane)
               const isOverlayOnMain = !config.newPane;
               const paneOptions = config.newPane ? { id: `pane-${key}`, height: 120 } : undefined;
-              const indicatorArg = config.params?.calcParams
-                ? { name: indicatorName, calcParams: config.params.calcParams }
-                : indicatorName;
+              // Enhance styles for known indicators
+              let indicatorArg = indicatorName;
+              if (config.params?.calcParams) {
+                indicatorArg = { name: indicatorName, calcParams: config.params.calcParams };
+              }
+              if (key === 'macdEnhanced') {
+                indicatorArg = {
+                  name: indicatorName,
+                  calcParams: config.params.calcParams,
+                  styles: {
+                    lines: [
+                      { color: '#2962FF', size: 2 }, // MACD
+                      { color: '#FF6D00', size: 2 }, // SIGNAL
+                    ],
+                    bars: [
+                      { upColor: '#26A69A', downColor: '#26A69A' }, // strong bull
+                      { upColor: 'rgba(38,166,154,0.5)', downColor: 'rgba(38,166,154,0.5)' }, // weak bull
+                      { upColor: 'rgba(239,83,80,0.5)', downColor: 'rgba(239,83,80,0.5)' }, // weak bear
+                      { upColor: '#EF5350', downColor: '#EF5350' }, // strong bear
+                    ],
+                  },
+                };
+              }
               chartRef.current.createIndicator(indicatorArg, isOverlayOnMain, paneOptions);
               console.log(`✅ KLineChart: ${key} indicator added`);
             } else {

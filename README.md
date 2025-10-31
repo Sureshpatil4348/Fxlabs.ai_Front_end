@@ -63,9 +63,9 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Open the chart, click Indicators, toggle RSI. The switch updates, a log prints from the store toggle, and the UnifiedChart renders the RSI panel.
   - Toggling again hides the RSI panel.
 
-## Indicators: RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro + MA Enhanced + ORB Enhanced + ST Enhanced + SR Enhanced
+## Indicators: RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro + MA Enhanced + ORB Enhanced + ST Enhanced + SR Enhanced + MACD Enhanced
 
-- Indicators are currently limited to eight options:
+- Indicators are currently limited to nine options:
   - RSI Enhanced: shows RSI(14) in a dedicated pane beneath the candles.
   - EMA Touch: overlay indicator mapped to Bollinger Bands (BB 20, 2.0) on the main pane. Phase 1 renders BB lines only; ATR-based targets and signal labels from the provided Pine will be added next.
   - ATR Enhanced: separate pane using ATR(14). Initial version plots the built-in ATR line; premium visuals (zones, dynamic color, dashboard, alerts) from the provided Pine will be added later.
@@ -74,6 +74,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - ORB Enhanced: on-chart Opening Range Breakout overlay. Initial implementation plots range high/low and derived TP/SL lines. Advanced visuals (box fill, labels, table) to be explored as overlay support allows.
   - SuperTrend Enhanced: on-chart SuperTrend overlay computed from ATR(10) and multiplier 3.0. Current version draws the ST line; dynamic fills/labels and dashboards will be explored next.
   - Support/Resistance Enhanced: on-chart Support/Resistance overlay using pivot-based levels (left/right = 15). Plots last detected resistance/support and thin dashed zone boundaries.
+  - MACD Enhanced: below‑chart MACD pane with MACD and Signal lines and a 4‑level histogram (strong/weak bull/bear) using distinct colors.
 - Toggle path: Header → Indicators → RSI Enhanced / EMA Touch.
 
 ## KLineChart Indicator Display Fix

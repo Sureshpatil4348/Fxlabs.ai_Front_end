@@ -13,7 +13,7 @@ const defaultSettings = {
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
   indicators: {
-    // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced
+    // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
     rsiEnhanced: true,
     emaTouch: false,
     atrEnhanced: false,
@@ -22,6 +22,7 @@ const defaultSettings = {
     orbEnhanced: false,
     stEnhanced: false,
     srEnhanced: false,
+    macdEnhanced: false,
   }
 };
 
@@ -40,6 +41,7 @@ export const useChartStore = create(
         orbEnhanced: [],
         stEnhanced: [],
         srEnhanced: [],
+        macdEnhanced: [],
       },
       dailyChangeData: {
         symbol: null,
@@ -192,6 +194,7 @@ export const useChartStore = create(
           orbEnhanced: [],
           stEnhanced: [],
           srEnhanced: [],
+          macdEnhanced: [],
         },
         dailyChangeData: {
           symbol: null,
