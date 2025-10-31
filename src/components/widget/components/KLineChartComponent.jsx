@@ -1921,7 +1921,7 @@ export const KLineChartComponent = ({
                         className={`absolute top-2 right-2 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
                         style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none' }}
                       >
-                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-white/95 border border-gray-200 rounded-md shadow-sm">
+                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
                           <button
                             type="button"
                             title="Delete"
@@ -1963,7 +1963,7 @@ export const KLineChartComponent = ({
             return (
               <div className="absolute top-2 right-2 space-y-1 transition-opacity duration-150" style={{ zIndex: 60, pointerEvents: isHoveringOnChartOverlays ? 'auto' : 'none', opacity: isHoveringOnChartOverlays ? 1 : 0 }}>
                 {activeOnChart.map((key) => (
-                  <div key={key} className="flex items-center gap-2 px-2 py-1.5 bg-white/95 border border-gray-200 rounded-md shadow-sm">
+                  <div key={key} className="flex items-center gap-2 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
                     <span className="text-[11px] font-medium text-gray-700 whitespace-nowrap">{LABELS[key] || key}</span>
                     <div className="flex items-center gap-1.5">
                       <button
