@@ -1,5 +1,5 @@
 import { X, Bell } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
@@ -10,10 +10,7 @@ import { useChartStore } from './stores/useChartStore';
 
 function TradingChart() {
   const { settings, toggleGrid, setIndicatorsPreset } = useChartStore();
-  const [showPresetDropdown, setShowPresetDropdown] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const presetDropdownRef = useRef(null);
-  const presetButtonRef = useRef(null);
+  const [activePreset, setActivePreset] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Carefully selected indicator presets (2-3 pairs only)
@@ -86,22 +83,6 @@ function TradingChart() {
     }
   ];
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (presetDropdownRef.current && !presetDropdownRef.current.contains(event.target)) {
-        setShowPresetDropdown(false);
-      }
-    };
-
-    if (showPresetDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showPresetDropdown]);
 
   // Handle Escape key to close fullscreen
   useEffect(() => {
@@ -129,26 +110,9 @@ function TradingChart() {
     };
   }, [isFullscreen]);
 
-  const calculateDropdownPosition = () => {
-    if (presetButtonRef.current) {
-      const rect = presetButtonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.top + window.scrollY - 4,
-        left: rect.left + window.scrollX
-      });
-    }
-  };
-
   const handlePresetSelect = (preset) => {
     setIndicatorsPreset(preset.indicators);
-    setShowPresetDropdown(false);
-  };
-
-  const handlePresetToggle = () => {
-    if (!showPresetDropdown) {
-      calculateDropdownPosition();
-    }
-    setShowPresetDropdown(!showPresetDropdown);
+    setActivePreset(preset.id);
   };
 
   // Render the main widget content
@@ -174,31 +138,25 @@ function TradingChart() {
           {/* Bottom Bar */}
           <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1">
             <div className="flex items-center justify-between">
-              {/* Left Side - Session & Preset */}
-              <div className="flex items-center space-x-2">
-                
-                
-                {/* Preset Dropdown */}
-                <div className="relative" ref={presetDropdownRef}>
-                  <button 
-                    ref={presetButtonRef}
-                    onClick={handlePresetToggle}
-                    className={`flex items-center space-x-1 px-2 py-1 border rounded text-[13px] font-medium transition-colors ${
-                      showPresetDropdown 
-                        ? 'bg-blue-50 border-blue-300 text-blue-700' 
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-                    }`}
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span>Preset</span>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
+              {/* Left Side - Preset Buttons */}
+              <div className="flex items-center">
+                <div className="flex items-center gap-1 bg-white">
+                  {indicatorPresets.map((preset, index) => (
+                    <React.Fragment key={preset.id}>
+                      {index > 0 && <div className="h-6 w-px bg-gray-300 mx-2"></div>}
+                      <button
+                        onClick={() => handlePresetSelect(preset)}
+                        className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
+                          activePreset === preset.id
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white transform scale-105'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                        title={preset.description}
+                      >
+                        {preset.name}
+                      </button>
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
 
@@ -232,39 +190,6 @@ function TradingChart() {
     <ErrorBoundary>
       {/* Normal view */}
       {!isFullscreen && renderWidgetContent()}
-
-      {/* Portal-based Preset Dropdown */}
-      {showPresetDropdown && createPortal(
-        <div 
-          className="fixed w-64 bg-white rounded-md shadow-lg border border-gray-200 z-[9999]"
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            transform: 'translateY(-100%)'
-          }}
-        >
-          <div className="p-2">
-            <div className="space-y-1">
-              {indicatorPresets.map((preset) => (
-                <button
-                  key={preset.id}
-                  onClick={() => handlePresetSelect(preset)}
-                  className="w-full text-left p-2 rounded hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm">{preset.icon}</span>
-                    <div className="flex-1">
-                      <div className="text-xs font-medium text-gray-900">{preset.name}</div>
-                      <div className="text-xs text-gray-500">{preset.description}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
 
       {/* Fullscreen Modal */}
       {isFullscreen && createPortal(
