@@ -1,4 +1,4 @@
-import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
+import { init, registerOverlay, registerIndicator, getSupportedIndicators, IndicatorSeries } from 'klinecharts';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 import { useChartStore } from '../stores/useChartStore';
@@ -129,6 +129,93 @@ export const KLineChartComponent = ({
               return out;
             });
           }
+        });
+      }
+      // Register ORB_ENH (Opening Range Breakout - on chart)
+      if (Array.isArray(supported) && !supported.includes('ORB_ENH')) {
+        registerIndicator({
+          name: 'ORB_ENH',
+          shortName: 'ORB',
+          series: IndicatorSeries.Price,
+          precision: 2,
+          calcParams: [9, 15, 1, 4.0], // hour, minute, period bars, RR
+          figures: [
+            { key: 'orHigh', title: 'OR High: ', type: 'line' },
+            { key: 'orLow', title: 'OR Low: ', type: 'line' },
+            { key: 'buyTP', title: 'Buy TP: ', type: 'line' },
+            { key: 'sellTP', title: 'Sell TP: ', type: 'line' },
+            { key: 'buySL', title: 'Buy SL: ', type: 'line' },
+            { key: 'sellSL', title: 'Sell SL: ', type: 'line' },
+          ],
+          calc: (dataList, indicator) => {
+            const [h, m, orPeriod, rr] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [9, 15, 1, 4.0];
+            let lastDay = null;
+            let openingHigh = NaN;
+            let openingLow = NaN;
+            let orStartIdx = -1;
+            let captured = false;
+            let buyTaken = false;
+            let sellTaken = false;
+            let buyEntry = NaN;
+            let sellEntry = NaN;
+            let buyTP = NaN;
+            let sellTP = NaN;
+            let buySL = NaN;
+            let sellSL = NaN;
+            return dataList.map((k, i) => {
+              const d = new Date(k.timestamp);
+              const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+              if (dayKey !== lastDay) {
+                // reset for new day
+                lastDay = dayKey;
+                openingHigh = NaN;
+                openingLow = NaN;
+                orStartIdx = -1;
+                captured = false;
+                buyTaken = false;
+                sellTaken = false;
+                buyEntry = NaN;
+                sellEntry = NaN;
+                buyTP = NaN;
+                sellTP = NaN;
+                buySL = NaN;
+                sellSL = NaN;
+              }
+              const isOpening = d.getHours() === Number(h) && d.getMinutes() === Number(m) && !captured;
+              if (isOpening) {
+                openingHigh = k.high;
+                openingLow = k.low;
+                orStartIdx = i;
+                captured = true;
+              }
+              if (captured && orStartIdx >= 0 && (i - orStartIdx) < Number(orPeriod)) {
+                openingHigh = Math.max(openingHigh, k.high);
+                openingLow = Math.min(openingLow, k.low);
+              }
+              const range = isFinite(openingHigh) && isFinite(openingLow) ? (openingHigh - openingLow) : NaN;
+              const prev = dataList[i - 1] || k;
+              if (captured && isFinite(range) && !buyTaken && k.close > openingHigh && prev.close <= openingHigh) {
+                buyTaken = true;
+                buyEntry = k.close;
+                buyTP = openingHigh + range * Number(rr);
+                buySL = openingLow;
+              }
+              if (captured && isFinite(range) && !sellTaken && k.close < openingLow && prev.close >= openingLow) {
+                sellTaken = true;
+                sellEntry = k.close;
+                sellTP = openingLow - range * Number(rr);
+                sellSL = openingHigh;
+              }
+              return {
+                orHigh: captured && isFinite(openingHigh) ? openingHigh : NaN,
+                orLow: captured && isFinite(openingLow) ? openingLow : NaN,
+                buyTP: buyTaken && isFinite(buyTP) ? buyTP : NaN,
+                sellTP: sellTaken && isFinite(sellTP) ? sellTP : NaN,
+                buySL: buyTaken && isFinite(buySL) ? buySL : NaN,
+                sellSL: sellTaken && isFinite(sellSL) ? sellSL : NaN,
+              };
+            });
+          },
         });
       }
     } catch (e) {
@@ -1029,6 +1116,38 @@ export const KLineChartComponent = ({
         }
       } catch (e) {
         console.warn('📈 KLineChart: Error handling MA Enhanced overlay:', e);
+      }
+
+      // ORB Enhanced (on-chart Opening Range Breakout)
+      try {
+        const wantOrb = Boolean(settings.indicators?.orbEnhanced);
+        const orbStyles = {
+          lines: [
+            { color: '#26a69a', size: 3 }, // OR High
+            { color: '#ef5350', size: 3 }, // OR Low
+            { color: '#26a69a', size: 2, dashedValue: [4, 4] }, // Buy TP
+            { color: '#ef5350', size: 2, dashedValue: [4, 4] }, // Sell TP
+            { color: '#ef5350', size: 2, dashedValue: [2, 2] }, // Buy SL
+            { color: '#26a69a', size: 2, dashedValue: [2, 2] }, // Sell SL
+          ],
+        };
+        const existingOrb = typeof chartRef.current.getIndicators === 'function'
+          ? chartRef.current.getIndicators({ name: 'ORB_ENH' })
+          : [];
+        const hasOrb = Array.isArray(existingOrb) && existingOrb.length > 0;
+        if (wantOrb) {
+          if (hasOrb && typeof chartRef.current.removeIndicator === 'function') {
+            chartRef.current.removeIndicator({ name: 'ORB_ENH' });
+          }
+          const indicatorArg = { name: 'ORB_ENH', calcParams: [9, 15, 1, 4.0], styles: orbStyles };
+          chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane');
+        } else if (hasOrb) {
+          chartRef.current.removeIndicator({ name: 'ORB_ENH' });
+          console.log('📈 KLineChart: ORB Enhanced overlay removed');
+        }
+      } catch (e) {
+        console.warn('📈 KLineChart: Error handling ORB Enhanced overlay:', e);
       }
 
       // Process each indicator (pane indicators only)
