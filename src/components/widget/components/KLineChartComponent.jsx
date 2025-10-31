@@ -1,6 +1,6 @@
 import { init, registerOverlay, registerIndicator, getSupportedIndicators, IndicatorSeries } from 'klinecharts';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Trash2, Settings } from 'lucide-react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 import { useChartStore } from '../stores/useChartStore';
 
@@ -19,6 +19,7 @@ export const KLineChartComponent = ({
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const initialBarSpaceRef = useRef(null);
   const [isHoveringBelowPanes, setIsHoveringBelowPanes] = useState(false);
+  const [isHoveringOnChartOverlays, setIsHoveringOnChartOverlays] = useState(false);
   
   // Get the setter from store
   const { setKLineChartRef } = useChartStore();
@@ -1785,9 +1786,15 @@ export const KLineChartComponent = ({
               const belowHeight = activeBelowCount * 120;
               const hovering = belowHeight > 0 && y >= Math.max(0, totalHeight - belowHeight);
               if (hovering !== isHoveringBelowPanes) setIsHoveringBelowPanes(hovering);
+              // On-chart overlay hover detection (approximate: any hover in main pane and any on-chart overlay active)
+              const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+              const hasOnChart = ON_CHART_KEYS.some((k) => settings?.indicators?.[k]);
+              const mainPaneHeight = Math.max(0, totalHeight - belowHeight);
+              const hoveringMain = hasOnChart && y >= 0 && y < mainPaneHeight;
+              if (hoveringMain !== isHoveringOnChartOverlays) setIsHoveringOnChartOverlays(hoveringMain);
             } catch (_) {}
           }}
-          onMouseLeave={() => setIsHoveringBelowPanes(false)}
+          onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); }}
         >
           {!chartRef.current && (
             <div className="absolute inset-0 flex items-start justify-center pt-16 bg-gradient-to-br from-gray-50 to-gray-100 z-10">
@@ -1936,6 +1943,48 @@ export const KLineChartComponent = ({
                     </div>
                   );
                 })}
+              </div>
+            );
+          })()}
+
+          {/* Hover actions for on-chart overlay indicators (main price pane) */}
+          {(() => {
+            const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+            const LABELS = {
+              emaTouch: 'EMA Touch',
+              bbPro: 'Bollinger Bands Pro',
+              maEnhanced: 'MA Enhanced',
+              orbEnhanced: 'ORB Enhanced',
+              stEnhanced: 'SuperTrend Enhanced',
+              srEnhanced: 'S/R Enhanced'
+            };
+            const activeOnChart = ON_CHART_KEYS.filter((k) => settings?.indicators?.[k]);
+            if (activeOnChart.length === 0) return null;
+            return (
+              <div className="absolute top-2 right-2 space-y-1 transition-opacity duration-150" style={{ zIndex: 60, pointerEvents: isHoveringOnChartOverlays ? 'auto' : 'none', opacity: isHoveringOnChartOverlays ? 1 : 0 }}>
+                {activeOnChart.map((key) => (
+                  <div key={key} className="flex items-center gap-2 px-2 py-1.5 bg-white/95 border border-gray-200 rounded-md shadow-sm">
+                    <span className="text-[11px] font-medium text-gray-700 whitespace-nowrap">{LABELS[key] || key}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        title="Delete"
+                        className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
+                        aria-label={`Delete ${LABELS[key] || key}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title="Configure"
+                        className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
+                        aria-label={`Configure ${LABELS[key] || key}`}
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             );
           })()}

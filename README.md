@@ -121,6 +121,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - These actions are UI‑only for now (no functionality wired yet). They are hidden by default and only appear while hovering over the below‑chart area.
 - Implementation lives in `src/components/widget/components/KLineChartComponent.jsx` and auto‑positions over active pane(s) using the known pane height (120px).
 
+## On‑Chart Overlay Hover Actions
+
+- When you hover over the main price pane and any on‑chart overlay indicator is active (EMA Touch, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced), small action panels appear at the top‑right — one per active overlay — each labeled with the indicator name and showing Delete/Configure icons.
+- UI only for now; actions are intentionally not wired yet.
+- This mirrors the below‑chart behavior but targets the main pane area. It uses hover detection over the main pane (not line proximity) as a lightweight placeholder and distinguishes multiple overlays by showing separate labeled panels.
+
 ## Layout Fix: TradingChart Height
 
 - The `TradingChart` root container used `h-screen`, which caused the chart to exceed the grid cell height in the dashboard layout. This produced vertical overflow even when no indicators were enabled.
