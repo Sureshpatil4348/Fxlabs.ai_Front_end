@@ -762,7 +762,7 @@ export const TradingViewHeader = () => {
         document.body
       )}
 
-      {/* New minimal Indicators panel (RSI Enhanced + EMA Touch + ATR Enhanced) */}
+      {/* New minimal Indicators panel (RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro) */}
       {showIndicators && createPortal(
         <div 
           className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
@@ -807,6 +807,19 @@ export const TradingViewHeader = () => {
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-900">Bollinger Bands Pro</p>
+                    <p className="text-xs text-gray-500">On-chart BB with premium styling</p>
+                  </div>
+                </div>
+                <button onClick={() => toggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.bbPro ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center space-x-0.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-600"></div>
                   <div>
                     <p className="text-xs font-medium text-gray-900">ATR Enhanced</p>
@@ -825,7 +838,7 @@ export const TradingViewHeader = () => {
             <div className="mt-3 pt-3 border-t border-gray-200">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-gray-600">Active Indicators:</span>
-                <span className="font-bold text-blue-600">{Object.values(settings.indicators).filter(Boolean).length} / 3</span>
+                <span className="font-bold text-blue-600">{Object.values(settings.indicators).filter(Boolean).length} / 4</span>
               </div>
             </div>
           </div>

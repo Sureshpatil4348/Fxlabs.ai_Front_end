@@ -956,14 +956,49 @@ export const KLineChartComponent = ({
     try {
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
-      // Support RSI Enhanced (pane), EMA Touch (overlay via BOLL), and ATR Enhanced (pane)
+      // Support RSI Enhanced (pane) and ATR Enhanced (pane). BOLL overlays are handled separately below.
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
-        emaTouch: { name: 'BOLL', params: {}, newPane: false },
         atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [14] }, newPane: true },
       };
 
-      // Process each indicator
+      // First, handle Bollinger overlays (shared by 'emaTouch' and 'bbPro')
+      try {
+        const wantBoll = Boolean(settings.indicators?.emaTouch) || Boolean(settings.indicators?.bbPro);
+        const proStyles = settings.indicators?.bbPro
+          ? {
+              lines: [
+                { color: '#2962FF', size: 2 }, // Upper
+                { color: '#FF6D00', size: 1 }, // Middle
+                { color: '#2962FF', size: 2 }, // Lower
+              ],
+            }
+          : undefined;
+        const existingBoll = typeof chartRef.current.getIndicators === 'function'
+          ? chartRef.current.getIndicators({ name: 'BOLL' })
+          : [];
+        const hasBoll = Array.isArray(existingBoll) && existingBoll.length > 0;
+
+        if (wantBoll) {
+          // Always re-create on the candle pane to guarantee on-chart placement
+          if (hasBoll && typeof chartRef.current.removeIndicator === 'function') {
+            chartRef.current.removeIndicator({ name: 'BOLL' });
+          }
+          const indicatorArg = proStyles
+            ? { name: 'BOLL', calcParams: [20, 2], styles: proStyles }
+            : { name: 'BOLL', calcParams: [20, 2] };
+          // Overlay on main price pane by targeting the candle pane id
+          chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: BOLL overlay added to candle pane', { mode: settings.indicators?.bbPro ? 'pro' : 'default' });
+        } else if (hasBoll) {
+          chartRef.current.removeIndicator({ name: 'BOLL' });
+          console.log('📈 KLineChart: BOLL overlay removed');
+        }
+      } catch (e) {
+        console.warn('📈 KLineChart: Error handling BOLL overlay:', e);
+      }
+
+      // Process each indicator (pane indicators only)
       Object.entries(indicatorMap).forEach(([key, config]) => {
         if (!config.name) return; // Skip if not a KLineCharts indicator
 
