@@ -998,6 +998,39 @@ export const KLineChartComponent = ({
         console.warn('📈 KLineChart: Error handling BOLL overlay:', e);
       }
 
+      // MA Enhanced (on-chart EMA multi-lines)
+      try {
+        const wantMa = Boolean(settings.indicators?.maEnhanced);
+        const maParams = [9, 21, 50, 100, 200];
+        const maStyles = {
+          lines: [
+            { color: '#2962FF', size: 2 }, // MA1 / EMA9
+            { color: '#FF6D00', size: 2 }, // MA2 / EMA21
+            { color: '#26A69A', size: 2 }, // MA3 / EMA50
+            { color: '#9C27B0', size: 2 }, // MA4 / EMA100
+            { color: '#F44336', size: 3 }, // MA5 / EMA200
+          ],
+        };
+        const existingEma = typeof chartRef.current.getIndicators === 'function'
+          ? chartRef.current.getIndicators({ name: 'EMA' })
+          : [];
+        const hasEma = Array.isArray(existingEma) && existingEma.length > 0;
+        if (wantMa) {
+          // Recreate on candle pane to guarantee on-chart placement
+          if (hasEma && typeof chartRef.current.removeIndicator === 'function') {
+            chartRef.current.removeIndicator({ name: 'EMA' });
+          }
+          const indicatorArg = { name: 'EMA', calcParams: maParams, styles: maStyles };
+          chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: MA Enhanced (EMA multi) overlay added to candle pane');
+        } else if (hasEma) {
+          chartRef.current.removeIndicator({ name: 'EMA' });
+          console.log('📈 KLineChart: MA Enhanced (EMA) overlay removed');
+        }
+      } catch (e) {
+        console.warn('📈 KLineChart: Error handling MA Enhanced overlay:', e);
+      }
+
       // Process each indicator (pane indicators only)
       Object.entries(indicatorMap).forEach(([key, config]) => {
         if (!config.name) return; // Skip if not a KLineCharts indicator

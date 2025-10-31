@@ -13,11 +13,12 @@ const defaultSettings = {
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
   indicators: {
-    // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro
+    // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced
     rsiEnhanced: true,
     emaTouch: false,
     atrEnhanced: false,
     bbPro: false,
+    maEnhanced: false,
   }
 };
 
@@ -32,6 +33,7 @@ export const useChartStore = create(
         emaTouch: [],
         atrEnhanced: [],
         bbPro: [],
+        maEnhanced: [],
       },
       dailyChangeData: {
         symbol: null,
@@ -180,6 +182,7 @@ export const useChartStore = create(
           emaTouch: [],
           atrEnhanced: [],
           bbPro: [],
+          maEnhanced: [],
         },
         dailyChangeData: {
           symbol: null,

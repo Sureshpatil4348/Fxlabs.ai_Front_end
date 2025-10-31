@@ -63,13 +63,14 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Open the chart, click Indicators, toggle RSI. The switch updates, a log prints from the store toggle, and the UnifiedChart renders the RSI panel.
   - Toggling again hides the RSI panel.
 
-## Indicators: RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro
+## Indicators: RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro + MA Enhanced
 
-- Indicators are currently limited to four options:
+- Indicators are currently limited to five options:
   - RSI Enhanced: shows RSI(14) in a dedicated pane beneath the candles.
   - EMA Touch: overlay indicator mapped to Bollinger Bands (BB 20, 2.0) on the main pane. Phase 1 renders BB lines only; ATR-based targets and signal labels from the provided Pine will be added next.
   - ATR Enhanced: separate pane using ATR(14). Initial version plots the built-in ATR line; premium visuals (zones, dynamic color, dashboard, alerts) from the provided Pine will be added later.
   - Bollinger Bands Pro: on-chart BOLL overlay with premium line styling (upper/lower: #2962FF, width 2; middle: #FF6D00, width 1). Band fill and dashboard from Pine will be layered in a next phase as supported.
+  - MA Enhanced: on-chart multi-EMA overlay (9/21/50/100/200) with distinct colors and widths. Fill and dashboard from Pine can be added later.
 - Toggle path: Header → Indicators → RSI Enhanced / EMA Touch.
 
 ## KLineChart Indicator Display Fix
