@@ -59,7 +59,7 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
   };
 
   return (
-    <div className="w-12 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
+    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
       {/* Chart Type Button (Candlestick only) */}
       <div className="relative">
         <button
