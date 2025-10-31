@@ -269,11 +269,7 @@ export const TradingViewHeader = () => {
             <button 
               ref={indicatorsButtonRef}
               onClick={handleIndicatorsToggle}
-              className={`px-3 py-1.5 text-xs rounded flex items-center space-x-0.5 transition-colors ${
-                showIndicators 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className="px-3 py-1.5 bg-white border border-gray-300 rounded text-[10px] font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors flex items-center space-x-0.5"
             >
               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
