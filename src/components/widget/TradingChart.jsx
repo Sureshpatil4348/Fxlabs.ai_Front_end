@@ -111,8 +111,20 @@ function TradingChart() {
   }, [isFullscreen]);
 
   const handlePresetSelect = (preset) => {
-    setIndicatorsPreset(preset.indicators);
-    setActivePreset(preset.id);
+    // Toggle: if clicking the same preset, deselect it
+    if (activePreset === preset.id) {
+      // Reset all preset indicators to false
+      const resetIndicators = Object.keys(preset.indicators).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {});
+      setIndicatorsPreset(resetIndicators);
+      setActivePreset(null);
+    } else {
+      // Select new preset
+      setIndicatorsPreset(preset.indicators);
+      setActivePreset(preset.id);
+    }
   };
 
   // Render the main widget content
