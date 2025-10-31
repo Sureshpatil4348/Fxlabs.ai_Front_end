@@ -916,9 +916,10 @@ export const KLineChartComponent = ({
     try {
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
-      // Only support RSI Enhanced (RSI 14 in a separate pane)
+      // Support RSI Enhanced (pane) and EMA Touch (overlay via BOLL)
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
+        emaTouch: { name: 'BOLL', params: {}, newPane: false },
       };
 
       // Process each indicator
@@ -952,11 +953,14 @@ export const KLineChartComponent = ({
             console.warn(`⚠️ KLineChart: Error adding ${key}:`, error?.message);
           }
         } else {
-          // Remove indicator by explicit id
+          // Remove indicator by pane or by name
           try {
             if (typeof chartRef.current.removeIndicator === 'function') {
-              // RSI Enhanced is on its own pane
-              chartRef.current.removeIndicator({ paneId: `pane-${key}` });
+              if (config.newPane) {
+                chartRef.current.removeIndicator({ paneId: `pane-${key}` });
+              } else {
+                chartRef.current.removeIndicator({ name: indicatorName });
+              }
               console.log(`📈 KLineChart: ${key} indicator removed`);
             }
           } catch (_error) {

@@ -63,11 +63,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Open the chart, click Indicators, toggle RSI. The switch updates, a log prints from the store toggle, and the UnifiedChart renders the RSI panel.
   - Toggling again hides the RSI panel.
 
-## Indicators: RSI Enhanced only
+## Indicators: RSI Enhanced + EMA Touch
 
-- All previous indicator options are removed from the K-line chart UI. The only available indicator is “RSI Enhanced”, which displays RSI(14) in a dedicated pane beneath the candles.
-- Current implementation uses the built-in KLineCharts `RSI` with `calcParams: [14]`. Overbought/Oversold fills and status table from the provided Pine specification will be added later.
-- Toggle path: Header → Indicators → RSI Enhanced.
+- Indicators are currently limited to two options:
+  - RSI Enhanced: shows RSI(14) in a dedicated pane beneath the candles.
+  - EMA Touch: overlay indicator mapped to Bollinger Bands (BB 20, 2.0) on the main pane. Phase 1 renders BB lines only; ATR-based targets and signal labels from the provided Pine will be added next.
+- Toggle path: Header → Indicators → RSI Enhanced / EMA Touch.
 
 ## KLineChart Indicator Display Fix
 
@@ -83,7 +84,9 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Remove the previous logic that increased the DOM height by a fixed base plus per‑pane pixels. This prevented cases where the chart expanded vertically beyond its allocated space when RSI was enabled. File: `KLineChartComponent.jsx`.
 - Use the correct `removeIndicator({ ... })` filter form instead of passing a string id; remove by `paneId` for separate panes and by `name` for overlays. File: `KLineChartComponent.jsx`.
 
-**Result:** Toggling RSI Enhanced shows/hides a dedicated RSI pane under the candles in candlestick mode. Currently shows a single RSI(14) line.
+**Result:**
+- Toggling RSI Enhanced shows/hides a dedicated RSI pane under the candles in candlestick mode (single RSI(14) line).
+- Toggling EMA Touch overlays Bollinger Bands on the main pane.
 
 ## Layout Fix: TradingChart Height
 
