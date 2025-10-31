@@ -9,6 +9,8 @@ import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = () => {
   const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimerRef = useRef(null);
   const [_activeTimeframe, setActiveTimeframe] = useState('1m');
   const [showIndicators, setShowIndicators] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -22,6 +24,42 @@ export const TradingViewHeader = () => {
   const indicatorsButtonRef = useRef(null);
   const moreTimeframesDropdownRef = useRef(null);
   const indicatorsPanelRef = useRef(null);
+
+  // Indicator groups and limits
+  const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+  const BELOW_CHART_KEYS = ['rsiEnhanced','atrEnhanced','macdEnhanced'];
+  const ON_CHART_LIMIT = 3;
+  const BELOW_CHART_LIMIT = 2;
+
+  const showToast = (msg) => {
+    try { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); } catch (_) {}
+    setToastMessage(msg);
+    toastTimerRef.current = setTimeout(() => setToastMessage(''), 2000);
+  };
+
+  const countActive = (keys) => keys.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
+  const activeOnChart = countActive(ON_CHART_KEYS);
+  const activeBelowChart = countActive(BELOW_CHART_KEYS);
+
+  const handleToggleIndicator = (key) => {
+    const isOn = !!settings.indicators?.[key];
+    if (isOn) {
+      toggleIndicator(key);
+      return;
+    }
+    if (ON_CHART_KEYS.includes(key)) {
+      if (activeOnChart >= ON_CHART_LIMIT) {
+        showToast(`Limit reached: max ${ON_CHART_LIMIT} on-chart indicators`);
+        return;
+      }
+    } else if (BELOW_CHART_KEYS.includes(key)) {
+      if (activeBelowChart >= BELOW_CHART_LIMIT) {
+        showToast(`Limit reached: max ${BELOW_CHART_LIMIT} below-chart indicators`);
+        return;
+      }
+    }
+    toggleIndicator(key);
+  };
 
   // Quick-access timeframes are 1m, 5m, 15m; remaining in dropdown
   const _timeframes = ['1m', '5m', '15m'];
@@ -778,7 +816,7 @@ export const TradingViewHeader = () => {
                 </svg>
               </button>
             </div>
-            <div className="space-y-2 overflow-y-auto" style={{ maxHeight: '400px', scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6', scrollBehavior: 'smooth' }}>
+            <div className="space-y-2 overflow-y-auto relative" style={{ maxHeight: '400px', scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6', scrollBehavior: 'smooth' }}>
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-0.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-purple-600"></div>
@@ -787,7 +825,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">Clean RSI (14) — OB/OS panel</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -800,7 +838,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">BB overlay + signals (phase 1)</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.emaTouch ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -813,7 +851,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">On-chart BB with premium styling</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.bbPro ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -826,7 +864,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">ATR(14) pane — premium visuals later</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('atrEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                <button onClick={() => handleToggleIndicator('atrEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.atrEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -844,7 +882,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">Multi-EMA overlay (9/21/50/100/200)</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('maEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                <button onClick={() => handleToggleIndicator('maEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.maEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -862,7 +900,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">Opening Range Breakout overlay</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('orbEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                <button onClick={() => handleToggleIndicator('orbEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.orbEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -880,7 +918,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">On-chart SuperTrend overlay</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('stEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                <button onClick={() => handleToggleIndicator('stEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.stEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -898,7 +936,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">Support/Resistance overlay</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                <button onClick={() => handleToggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.srEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -916,7 +954,7 @@ export const TradingViewHeader = () => {
                     <p className="text-xs text-gray-500">MACD pane with premium styling</p>
                   </div>
                 </div>
-                <button onClick={() => toggleIndicator('macdEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                <button onClick={() => handleToggleIndicator('macdEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.macdEnhanced ? 'bg-blue-600' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -925,12 +963,22 @@ export const TradingViewHeader = () => {
                 </button>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="mt-3 pt-3 border-t border-gray-200 space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Active Indicators:</span>
-                <span className="font-bold text-blue-600">{Object.values(settings.indicators).filter(Boolean).length} / 9</span>
+                <span className="text-gray-600">Active On‑chart:</span>
+                <span className="font-bold text-blue-600">{`${activeOnChart} / ${ON_CHART_LIMIT}`}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-600">Active Below‑chart:</span>
+                <span className="font-bold text-blue-600">{`${activeBelowChart} / ${BELOW_CHART_LIMIT}`}</span>
               </div>
             </div>
+
+            {toastMessage && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-2 px-3 py-1.5 rounded-md bg-gray-900 text-white text-[11px] shadow-md">
+                {toastMessage}
+              </div>
+            )}
           </div>
         </div>,
         document.body
