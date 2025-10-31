@@ -2,17 +2,6 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Dependency Update: klinecharts 10.0.0-alpha9
-
-- Bumped `klinecharts` from `^10.0.0-alpha5` to `^10.0.0-alpha9` in `package.json`.
-- Code review shows our current API usage (`init`, `setStyles`, `setOptions`, `applyNewData`, `updateData`, `scrollToRealTime`, `subscribeAction`, `createIndicator/removeIndicator`, `createOverlay/removeOverlay`) remains compatible with v10 alpha9.
-- No code changes were necessary; existing functionality should remain intact.
-- After pulling, reinstall dependencies to update the lockfile and local modules:
-  - npm: `rm -rf node_modules package-lock.json && npm i`
-  - yarn: `rm -rf node_modules yarn.lock && yarn install`
-  - pnpm: `rm -rf node_modules pnpm-lock.yaml && pnpm install`
-
-
 ## Candlestick-Only Mode
 
 ## K-line Tooltip (Hide Time + Abbreviations)
