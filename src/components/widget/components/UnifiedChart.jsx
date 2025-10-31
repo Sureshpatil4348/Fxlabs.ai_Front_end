@@ -243,7 +243,7 @@ export const UnifiedChart = () => {
         // Only start after we have at least the first page
         if (currentPage >= 1 && hasMoreHistory && !backgroundPreloadStartedRef.current) {
             const sessionId = preloadSessionRef.current;
-            const MAX_TOTAL_PAGES = 30;
+            const MAX_TOTAL_PAGES = 4;
 
             const timer = setTimeout(() => {
                 // Mark started only when the timer actually fires to avoid premature cancellation on re-renders
