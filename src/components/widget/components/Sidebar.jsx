@@ -60,7 +60,7 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
   return (
     <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
       {/* Drawing Tools Button */}
-      <div className="relative">
+      <div className="relative group">
         <button
           onClick={() => toggleSection('drawing')}
           className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
@@ -73,8 +73,11 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
           </svg>
-          <span className="text-[13px] font-medium mt-1">Draw</span>
         </button>
+        {/* Tooltip */}
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Draw
+        </div>
 
         {/* Drawing Tools Dropdown */}
         {activeSection === 'drawing' && (
@@ -346,7 +349,7 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
       </div>
 
       {/* Cursor Selector Button */}
-      <div className="relative">
+      <div className="relative group">
         <button
           onClick={() => toggleSection('cursor')}
           className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
@@ -359,8 +362,11 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
           </svg>
-          <span className="text-[13px] font-medium mt-1">Cursor</span>
         </button>
+        {/* Tooltip */}
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Cursor
+        </div>
 
         {/* Cursor Selector Dropdown */}
         {activeSection === 'cursor' && (
@@ -456,22 +462,27 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
       <div className="w-8 h-px bg-gray-300 my-2"></div>
 
       {/* Fullscreen/Compact Button */}
-      <button
-        onClick={() => {
-          if (onFullscreenToggle) {
-            onFullscreenToggle();
-          }
-        }}
-        className="w-10 h-10 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
-        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-      >
-        {isFullscreen ? (
-          <Minimize2 className="w-5 h-5" />
-        ) : (
-          <Maximize2 className="w-5 h-5" />
-        )}
-        <span className="text-[13px] font-medium mt-1">{isFullscreen ? "Compact" : "Full"}</span>
-      </button>
+      <div className="relative group">
+        <button
+          onClick={() => {
+            if (onFullscreenToggle) {
+              onFullscreenToggle();
+            }
+          }}
+          className="w-10 h-10 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
+          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+        >
+          {isFullscreen ? (
+            <Minimize2 className="w-5 h-5" />
+          ) : (
+            <Maximize2 className="w-5 h-5" />
+          )}
+        </button>
+        {/* Tooltip */}
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          {isFullscreen ? "Compact" : "Full"}
+        </div>
+      </div>
     </div>
   );
 };
