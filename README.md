@@ -73,6 +73,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 - The built-in KLineCharts `fibonacciLine` extends levels to both left and right. We now register a custom overlay `fibonacciRightLine` (2 anchor points) that extends levels only to the right from the fib range.
 - The overlay uses `totalStep: 3` (matching KLineCharts’ 2-point tools) and renders the preview line while drawing, then fib levels after the second anchor.
+- Click-to-delete: clicking near any fib level will show the delete popup, same as vertical/horizontal lines.
 - The toolbar and sidebar map the Fib tool to this custom overlay, so plotted retracement “bars” no longer extend to the left edge.
 - File: `src/components/widget/components/KLineChartComponent.jsx:~640-940`
 - If you prefer the original behavior, change the overlay mapping from `fibonacciRightLine` back to `fibonacciLine` inside `handleDrawingToolChange`.
@@ -81,6 +82,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 - Added a new drawing tool that uses 3 anchors (A→B defines the trend; C is the pivot) and projects Fibonacci extension levels to the right only.
 - Overlay ID: `fibonacciTrendExtensionRight`, Tool ID: `fibExtension`. The overlay uses `totalStep: 4` to collect 3 anchors (A, B, C) and finalize on the 4th step, consistent with KLineCharts multi-anchor overlays.
+- Click-to-delete: clicking near any projected level will show the delete popup, same as other line tools.
 - Ratios used: 0.618, 1.0, 1.272, 1.618, 2.0, 2.618. Lines start at the rightmost of the three anchors and extend to the right edge.
 - Files:
   - `src/components/widget/components/KLineChartComponent.jsx:~640-980` (overlay registration + tool mapping)

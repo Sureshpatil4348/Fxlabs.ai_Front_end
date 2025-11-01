@@ -1993,11 +1993,12 @@ export const KLineChartComponent = ({
                 return;
               }
 
-              // Consider trend (segment/custom), horizontal, and vertical lines for selection
+              // Consider trend/horizontal/vertical and both Fibonacci tools
               const candidateOverlays = overlays.filter((ov) => ov && ov.visible !== false && (
                 ov.name === 'segment' || ov.name === 'trendLine' ||
                 ov.name === 'horizontalStraightLine' || ov.name === 'horizontalLine' ||
-                ov.name === 'verticalStraightLine' || ov.name === 'verticalLine'
+                ov.name === 'verticalStraightLine' || ov.name === 'verticalLine' ||
+                ov.name === 'fibonacciRightLine' || ov.name === 'fibonacciTrendExtensionRight'
               ));
               if (candidateOverlays.length === 0) {
                 setSelectedOverlayPanel(null);
@@ -2023,6 +2024,7 @@ export const KLineChartComponent = ({
                   const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
                   const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
                   const c2 = Array.isArray(pxPts) && pxPts[1] ? pxPts[1] : null;
+                  const c3 = Array.isArray(pxPts) && pxPts[2] ? pxPts[2] : null;
 
                   // Trend/segment: need two points
                   if ((name === 'segment' || name === 'trendLine') && c1 && c2 && typeof c1.x === 'number' && typeof c1.y === 'number' && typeof c2.x === 'number' && typeof c2.y === 'number') {
@@ -2046,6 +2048,37 @@ export const KLineChartComponent = ({
                     const dist = Math.abs(clickX - x);
                     const cy = Math.max(0, Math.min(clickY, (chartContainerRef.current?.clientHeight || 0)));
                     if (dist < best.dist) best = { dist, overlay: ov, cx: x, cy };
+                    return;
+                  }
+
+                  // Fibonacci Retracement (right-only): test distance to each horizontal level
+                  if (name === 'fibonacciRightLine' && c1 && c2 && Number.isFinite(pts?.[0]?.value) && Number.isFinite(pts?.[1]?.value)) {
+                    const containerW = (chartContainerRef.current?.clientWidth || 0);
+                    const startX = Math.min(c1.x, c2.x);
+                    const endX = containerW;
+                    const yDif = c1.y - c2.y;
+                    const percents = [1, 0.786, 0.618, 0.5, 0.382, 0.236, 0];
+                    percents.forEach((p) => {
+                      const y = c2.y + yDif * p;
+                      const res = distancePointToSegment(clickX, clickY, startX, y, endX, y);
+                      if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: Math.min(Math.max(clickX, startX), endX), cy: y };
+                    });
+                    return;
+                  }
+
+                  // Trend-based Fibonacci Extension (right-only): distance to each projected level
+                  if (name === 'fibonacciTrendExtensionRight' && c1 && c2 && c3 && Number.isFinite(pts?.[0]?.value) && Number.isFinite(pts?.[1]?.value) && Number.isFinite(pts?.[2]?.value)) {
+                    const containerW = (chartContainerRef.current?.clientWidth || 0);
+                    const startX = Math.max(c1.x, c2.x, c3.x);
+                    const endX = containerW;
+                    const deltaY = (c2.y - c1.y);
+                    const ratios = [0.618, 1.0, 1.272, 1.618, 2.0, 2.618];
+                    ratios.forEach((r) => {
+                      const y = c3.y + deltaY * r;
+                      const res = distancePointToSegment(clickX, clickY, startX, y, endX, y);
+                      if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: Math.min(Math.max(clickX, startX), endX), cy: y };
+                    });
+                    return;
                   }
                 } catch (_) { /* ignore overlay */ }
               });
