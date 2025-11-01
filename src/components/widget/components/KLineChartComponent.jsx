@@ -2733,11 +2733,11 @@ export const KLineChartComponent = ({
                   <Trash2 className="w-4 h-4" />
                 </button>
                 {selectedOverlayPanel?.name === 'rectangle' && (
-                  <div className="relative ml-1">
+                  <div className="relative ml-1 flex items-center">
                     <button
                       type="button"
                       title="Change color"
-                      className="w-3 h-3 rounded border border-gray-300"
+                      className="w-[18px] h-[18px] rounded border border-gray-300"
                       aria-label="Change rectangle color"
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
@@ -2776,7 +2776,7 @@ export const KLineChartComponent = ({
                           borderRadius: '6px',
                           padding: '6px',
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gridTemplateColumns: 'repeat(5, 18px)',
                           gap: '6px',
                           zIndex: 80,
                         });
@@ -2793,8 +2793,8 @@ export const KLineChartComponent = ({
                           sw.title = hex;
                           sw.setAttribute('aria-label', `Pick ${hex}`);
                           Object.assign(sw.style, {
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '3px',
                             border: '1px solid #D1D5DB',
                             background: hex,
@@ -2841,11 +2841,11 @@ export const KLineChartComponent = ({
                   </div>
                 )}
                 {(selectedOverlayPanel?.name === 'segment' || selectedOverlayPanel?.name === 'trendLine') && (
-                  <div className="relative ml-1">
+                  <div className="relative ml-1 flex items-center">
                     <button
                       type="button"
                       title="Change color"
-                      className="w-3 h-3 rounded border border-gray-300"
+                      className="w-[18px] h-[18px] rounded border border-gray-300"
                       aria-label="Change trend line color"
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
@@ -2884,7 +2884,7 @@ export const KLineChartComponent = ({
                           borderRadius: '6px',
                           padding: '6px',
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gridTemplateColumns: 'repeat(5, 18px)',
                           gap: '6px',
                           zIndex: 80,
                         });
@@ -2901,8 +2901,8 @@ export const KLineChartComponent = ({
                           sw.title = hex;
                           sw.setAttribute('aria-label', `Pick ${hex}`);
                           Object.assign(sw.style, {
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '3px',
                             border: '1px solid #D1D5DB',
                             background: hex,
@@ -2944,11 +2944,11 @@ export const KLineChartComponent = ({
                   </div>
                 )}
                 {(selectedOverlayPanel?.name === 'horizontalStraightLine' || selectedOverlayPanel?.name === 'horizontalLine') && (
-                  <div className="relative ml-1">
+                  <div className="relative ml-1 flex items-center">
                     <button
                       type="button"
                       title="Change color"
-                      className="w-3 h-3 rounded border border-gray-300"
+                      className="w-[18px] h-[18px] rounded border border-gray-300"
                       aria-label="Change horizontal line color"
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
@@ -2987,7 +2987,7 @@ export const KLineChartComponent = ({
                           borderRadius: '6px',
                           padding: '6px',
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gridTemplateColumns: 'repeat(5, 18px)',
                           gap: '6px',
                           zIndex: 80,
                         });
@@ -3004,8 +3004,8 @@ export const KLineChartComponent = ({
                           sw.title = hex;
                           sw.setAttribute('aria-label', `Pick ${hex}`);
                           Object.assign(sw.style, {
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '3px',
                             border: '1px solid #D1D5DB',
                             background: hex,
@@ -3047,11 +3047,11 @@ export const KLineChartComponent = ({
                   </div>
                 )}
                 {(selectedOverlayPanel?.name === 'verticalStraightLine' || selectedOverlayPanel?.name === 'verticalLine') && (
-                  <div className="relative ml-1">
+                  <div className="relative ml-1 flex items-center">
                     <button
                       type="button"
                       title="Change color"
-                      className="w-3 h-3 rounded border border-gray-300"
+                      className="w-[18px] h-[18px] rounded border border-gray-300"
                       aria-label="Change vertical line color"
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
@@ -3090,7 +3090,7 @@ export const KLineChartComponent = ({
                           borderRadius: '6px',
                           padding: '6px',
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gridTemplateColumns: 'repeat(5, 18px)',
                           gap: '6px',
                           zIndex: 80,
                         });
@@ -3107,8 +3107,8 @@ export const KLineChartComponent = ({
                           sw.title = hex;
                           sw.setAttribute('aria-label', `Pick ${hex}`);
                           Object.assign(sw.style, {
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '3px',
                             border: '1px solid #D1D5DB',
                             background: hex,
@@ -3150,11 +3150,11 @@ export const KLineChartComponent = ({
                   </div>
                 )}
                 {selectedOverlayPanel?.name === 'fibonacciRightLine' && (
-                  <div className="relative ml-1">
+                  <div className="relative ml-1 flex items-center">
                     <button
                       type="button"
                       title="Change color"
-                      className="w-3 h-3 rounded border border-gray-300"
+                      className="w-[18px] h-[18px] rounded border border-gray-300"
                       aria-label="Change Fibonacci retracement color"
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
@@ -3193,7 +3193,7 @@ export const KLineChartComponent = ({
                           borderRadius: '6px',
                           padding: '6px',
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gridTemplateColumns: 'repeat(5, 18px)',
                           gap: '6px',
                           zIndex: 80,
                         });
@@ -3210,8 +3210,8 @@ export const KLineChartComponent = ({
                           sw.title = hex;
                           sw.setAttribute('aria-label', `Pick ${hex}`);
                           Object.assign(sw.style, {
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '3px',
                             border: '1px solid #D1D5DB',
                             background: hex,
@@ -3253,11 +3253,11 @@ export const KLineChartComponent = ({
                   </div>
                 )}
                 {selectedOverlayPanel?.name === 'fibonacciTrendExtensionRight' && (
-                  <div className="relative ml-1">
+                  <div className="relative ml-1 flex items-center">
                     <button
                       type="button"
                       title="Change color"
-                      className="w-3 h-3 rounded border border-gray-300"
+                      className="w-[18px] h-[18px] rounded border border-gray-300"
                       aria-label="Change Fibonacci extension color"
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
@@ -3296,7 +3296,7 @@ export const KLineChartComponent = ({
                           borderRadius: '6px',
                           padding: '6px',
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gridTemplateColumns: 'repeat(5, 18px)',
                           gap: '6px',
                           zIndex: 80,
                         });
@@ -3313,8 +3313,8 @@ export const KLineChartComponent = ({
                           sw.title = hex;
                           sw.setAttribute('aria-label', `Pick ${hex}`);
                           Object.assign(sw.style, {
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '3px',
                             border: '1px solid #D1D5DB',
                             background: hex,
