@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useDrawingTools } from '../hooks/useDrawingTools';
 import { useChartStore } from '../stores/useChartStore';
@@ -201,57 +201,116 @@ export const Sidebar = () => {
       {/* Divider between tools and cursor types */}
       <div className="w-8 border-t border-gray-200 my-1" />
 
-      {/* Cursor Types: icon-only buttons */}
+      {/* Cursor Types: Combined menu button */}
+      <CursorMenu
+        current={settings.cursorType}
+        onSelect={(type) => setCursorType(type)}
+      />
+    </div>
+  );
+};
+
+// Local inline component to keep file cohesion and avoid broad changes
+const CursorMenu = ({ current, onSelect }) => {
+  const [open, setOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!open) return;
+      const b = btnRef.current;
+      const m = menuRef.current;
+      if (b && b.contains(e.target)) return;
+      if (m && m.contains(e.target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.top + rect.height / 2, left: rect.right + 8 });
+    }
+  }, [open]);
+
+  const iconClass = `w-5 h-5`;
+  const renderIcon = (type) => {
+    if (type === 'grab') {
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+        </svg>
+      );
+    }
+    // Use existing generic pointer-like icon for crosshair/pointer for visual consistency
+    return (
+      <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+      </svg>
+    );
+  };
+
+  const label = current === 'grab' ? 'Grab' : current === 'pointer' ? 'Pointer' : 'Crosshair';
+
+  return (
+    <div className="relative" ref={menuRef}>
       <div className="relative group">
         <button
-          onClick={() => setCursorType('crosshair')}
+          type="button"
+          ref={btnRef}
+          onClick={() => setOpen((v) => !v)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            settings.cursorType === 'crosshair' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            current ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
-          title="Crosshair"
+          title={`${label} (click to change)`}
+          aria-haspopup="menu"
+          aria-expanded={open}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-          </svg>
+          {renderIcon(current)}
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-          Crosshair
+          {label}
         </div>
       </div>
 
-      <div className="relative group">
-        <button
-          onClick={() => setCursorType('pointer')}
-          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            settings.cursorType === 'pointer' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-          }`}
-          title="Pointer"
+      {open && (
+        <div
+          role="menu"
+          ref={menuRef}
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1"
+          style={{ top: menuPos.top, left: menuPos.left, transform: 'translateY(-50%)', zIndex: 1000 }}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-          </svg>
-        </button>
-        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-          Pointer
+          {[
+            { id: 'crosshair', name: 'Crosshair' },
+            { id: 'pointer', name: 'Pointer' },
+            { id: 'grab', name: 'Grab' },
+          ].map((opt) => (
+            <button
+              key={opt.id}
+              role="menuitem"
+              type="button"
+              onClick={() => { onSelect(opt.id); setOpen(false); }}
+              className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm transition-colors ${
+                current === opt.id ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50 text-gray-700'
+              }`}
+            >
+              <span className={`inline-flex ${current === opt.id ? 'text-blue-600' : 'text-gray-500'}`}>
+                {renderIcon(opt.id)}
+              </span>
+              <span className="flex-1">{opt.name}</span>
+              {current === opt.id && (
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          ))}
         </div>
-      </div>
-
-      <div className="relative group">
-        <button
-          onClick={() => setCursorType('grab')}
-          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            settings.cursorType === 'grab' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-          }`}
-          title="Grab"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-          </svg>
-        </button>
-        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-          Grab
-        </div>
-      </div>
+      )}
     </div>
   );
 };

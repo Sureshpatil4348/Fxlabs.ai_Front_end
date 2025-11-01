@@ -122,3 +122,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - The K-line tools left panel is vertically scrollable when content exceeds available height.
 - Implementation: sidebar container uses `h-full min-h-0 overflow-y-auto`.
 - File: `src/components/widget/components/Sidebar.jsx`
+
+## Cursor Menu (Crosshair/Pointer/Grab)
+
+- The three separate cursor-type buttons (Crosshair, Pointer, Grab) in the left sidebar are now combined into a single button that shows the currently selected cursor. Clicking it opens a small menu to choose among the three.
+- Improves clarity and reduces visual clutter in the toolbar while preserving the same functionality.
+- File: `src/components/widget/components/Sidebar.jsx`
+- Behavior: the selected option is persisted in the chart settings store and used by `UnifiedChart.jsx` to apply the cursor style.
+- Implementation details: the menu opens as a fixed-position popover anchored to the button with a high z-index so it reliably appears above chart overlays. Outside-click closes it.
