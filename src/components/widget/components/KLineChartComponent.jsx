@@ -2812,6 +2812,97 @@ export const KLineChartComponent = ({
                     />
                   </div>
                 )}
+                {(selectedOverlayPanel?.name === 'segment' || selectedOverlayPanel?.name === 'trendLine') && (
+                  <div className="relative ml-1">
+                    <button
+                      type="button"
+                      title="Change color"
+                      className="w-3 h-3 rounded border border-gray-300"
+                      aria-label="Change trend line color"
+                      style={{ backgroundColor: (() => {
+                        try {
+                          const chart = chartRef.current;
+                          const id = selectedOverlayPanel?.id;
+                          if (chart && id) {
+                            let overlays = [];
+                            try {
+                              if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                              else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                            } catch (_) {}
+                            const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                            const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                            if (typeof hex === 'string') return hex;
+                          }
+                        } catch (_) { /* ignore */ }
+                        return '#2962FF';
+                      })() }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const triggerBtn = e.currentTarget;
+                        // toggle palette via simple DOM flag by injecting/removing a small panel
+                        const host = e.currentTarget.parentElement;
+                        if (!host) return;
+                        const existing = host.querySelector('.kv-trendline-color-palette');
+                        if (existing) { existing.remove(); return; }
+                        const palette = document.createElement('div');
+                        palette.className = 'kv-trendline-color-palette';
+                        Object.assign(palette.style, {
+                          position: 'absolute',
+                          top: '28px',
+                          left: '0',
+                          background: '#ffffff',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '6px',
+                          padding: '6px',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gap: '6px',
+                          zIndex: 80,
+                        });
+                        const COLORS = ['#4ECDC4','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#22C55E','#06B6D4','#A855F7'];
+                        COLORS.forEach((hex) => {
+                          const sw = document.createElement('button');
+                          sw.type = 'button';
+                          sw.title = hex;
+                          sw.setAttribute('aria-label', `Pick ${hex}`);
+                          Object.assign(sw.style, {
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '3px',
+                            border: '1px solid #D1D5DB',
+                            background: hex,
+                            cursor: 'pointer',
+                          });
+                          sw.addEventListener('click', (ev) => {
+                            ev.stopPropagation();
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (!chart || !id) return;
+                              // apply color to trend line/segment
+                              const rgba = hex.match(/^#([0-9a-f]{6})$/i) ? hex : '#2962FF';
+                              chart.overrideOverlay({ id, styles: { line: { color: rgba } } });
+                              // reflect change on the trigger button immediately
+                              try { triggerBtn.style.backgroundColor = rgba; } catch (_) {}
+                              // force a light re-render so other UI can pick up new color
+                              try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            } catch (_) { /* ignore */ }
+                            palette.remove();
+                          });
+                          palette.appendChild(sw);
+                        });
+                        host.appendChild(palette);
+                        const cleanup = (evt) => {
+                          if (!host.contains(evt.target)) {
+                            palette.remove();
+                            window.removeEventListener('mousedown', cleanup);
+                          }
+                        };
+                        setTimeout(() => window.addEventListener('mousedown', cleanup), 0);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
