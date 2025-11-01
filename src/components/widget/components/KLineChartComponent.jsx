@@ -512,10 +512,9 @@ export const KLineChartComponent = ({
       },
     });
 
-    // Register horizontal line overlay
+    // Register horizontal line overlay (custom; prefer built-in on create)
     registerOverlay({
       name: 'horizontalLine',
-      // Single click places a full-width horizontal line
       totalStep: 1,
       createPointFigures: ({ coordinates, bounding }) => {
         if (!Array.isArray(coordinates) || coordinates.length < 1 || !coordinates[0]) return [];
@@ -533,6 +532,29 @@ export const KLineChartComponent = ({
       },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Horizontal line drawn:', overlay);
+      },
+    });
+
+    // Register vertical line overlay (custom; prefer built-in on create)
+    registerOverlay({
+      name: 'verticalLine',
+      totalStep: 1,
+      createPointFigures: ({ coordinates, bounding }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 1 || !coordinates[0]) return [];
+        const x = coordinates[0].x;
+        const y1 = 0;
+        const y2 = (bounding && typeof bounding.height === 'number') ? bounding.height : 9999;
+        return [
+          {
+            type: 'line',
+            attrs: {
+              coordinates: [{ x, y: y1 }, { x, y: y2 }],
+            },
+          },
+        ];
+      },
+      onDrawEnd: ({ overlay }) => {
+        console.log('📈 Vertical line drawn:', overlay);
       },
     });
 
@@ -857,8 +879,9 @@ export const KLineChartComponent = ({
             const overlayMap = {
               trendLine: 'segment', // 2-point segment
               fibonacci: 'fibonacciLine',
-              // Keep our custom horizontalLine because it is tuned for full-width
-              // Optionally: horizontalLine: 'horizontalStraightLine',
+              // Prefer built-ins for robust multi-instance behavior
+              horizontalLine: 'horizontalStraightLine',
+              verticalLine: 'verticalStraightLine',
             };
             const name = overlayMap[toolType] || toolType;
             try {
@@ -1796,8 +1819,12 @@ export const KLineChartComponent = ({
                 return;
               }
 
-              // Consider only trend lines (built-in 'segment') and custom 'trendLine'
-              const candidateOverlays = overlays.filter((ov) => ov && ov.visible !== false && (ov.name === 'segment' || ov.name === 'trendLine'));
+              // Consider trend (segment/custom), horizontal, and vertical lines for selection
+              const candidateOverlays = overlays.filter((ov) => ov && ov.visible !== false && (
+                ov.name === 'segment' || ov.name === 'trendLine' ||
+                ov.name === 'horizontalStraightLine' || ov.name === 'horizontalLine' ||
+                ov.name === 'verticalStraightLine' || ov.name === 'verticalLine'
+              ));
               if (candidateOverlays.length === 0) {
                 setSelectedOverlayPanel(null);
                 return;
@@ -1817,21 +1844,48 @@ export const KLineChartComponent = ({
               let best = { dist: Infinity, overlay: null, cx: 0, cy: 0 };
               candidateOverlays.forEach((ov) => {
                 try {
-                  const pts = Array.isArray(ov.points) ? ov.points.slice(0, 2) : [];
-                  if (pts.length < 2) return;
-                  const coords = chart.convertToPixel(pts);
-                  const c1 = Array.isArray(coords) ? coords[0] : null;
-                  const c2 = Array.isArray(coords) ? coords[1] : null;
-                  if (!c1 || !c2 || typeof c1.x !== 'number' || typeof c1.y !== 'number' || typeof c2.x !== 'number' || typeof c2.y !== 'number') return;
-                  const res = distancePointToSegment(clickX, clickY, c1.x, c1.y, c2.x, c2.y);
-                  if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: res.cx, cy: res.cy };
+                  const name = ov.name;
+                  const pts = Array.isArray(ov.points) ? ov.points : [];
+                  const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                  const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
+                  const c2 = Array.isArray(pxPts) && pxPts[1] ? pxPts[1] : null;
+
+                  // Trend/segment: need two points
+                  if ((name === 'segment' || name === 'trendLine') && c1 && c2 && typeof c1.x === 'number' && typeof c1.y === 'number' && typeof c2.x === 'number' && typeof c2.y === 'number') {
+                    const res = distancePointToSegment(clickX, clickY, c1.x, c1.y, c2.x, c2.y);
+                    if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: res.cx, cy: res.cy };
+                    return;
+                  }
+
+                  // Horizontal: use y distance to infinite-width line
+                  if ((name === 'horizontalStraightLine' || name === 'horizontalLine') && c1 && typeof c1.y === 'number') {
+                    const y = c1.y;
+                    const dist = Math.abs(clickY - y);
+                    const cx = Math.max(0, Math.min(clickX, (chartContainerRef.current?.clientWidth || 0)));
+                    if (dist < best.dist) best = { dist, overlay: ov, cx, cy: y };
+                    return;
+                  }
+
+                  // Vertical: use x distance to infinite-height line
+                  if ((name === 'verticalStraightLine' || name === 'verticalLine') && c1 && typeof c1.x === 'number') {
+                    const x = c1.x;
+                    const dist = Math.abs(clickX - x);
+                    const cy = Math.max(0, Math.min(clickY, (chartContainerRef.current?.clientHeight || 0)));
+                    if (dist < best.dist) best = { dist, overlay: ov, cx: x, cy };
+                  }
                 } catch (_) { /* ignore overlay */ }
               });
 
               // Threshold in pixels to count as clicking on the line
               const THRESHOLD = 8;
               if (best.overlay && best.dist <= THRESHOLD) {
-                setSelectedOverlayPanel({ id: best.overlay.id, name: best.overlay.name, x: best.cx, y: best.cy });
+                setSelectedOverlayPanel({
+                  id: best.overlay.id,
+                  name: best.overlay.name,
+                  paneId: best.overlay.paneId || best.overlay.pane?.id,
+                  x: best.cx,
+                  y: best.cy
+                });
               } else {
                 setSelectedOverlayPanel(null);
               }
@@ -2074,20 +2128,45 @@ export const KLineChartComponent = ({
                 top: Math.max(4, Math.min(selectedOverlayPanel.y - 10, (chartContainerRef.current?.clientHeight || 0) - 30)),
                 zIndex: 70
               }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md shadow-sm">
+              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md shadow-sm" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
                   title="Delete"
                   className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
                   aria-label="Delete drawing"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     try {
                       const chart = chartRef.current;
-                      if (!chart) return;
-                      // Support both removeOverlay(id) and removeOverlay({ id }) depending on lib version
-                      try { chart.removeOverlay(selectedOverlayPanel.id); }
-                      catch (_) { try { chart.removeOverlay({ id: selectedOverlayPanel.id }); } catch (_) {} }
+                      const id = selectedOverlayPanel?.id;
+                      const paneId = selectedOverlayPanel?.paneId;
+                      if (!chart || !id) {
+                        setSelectedOverlayPanel(null);
+                        return;
+                      }
+
+                      // Only remove the exact overlay by id; do NOT pass name
+                      // Try object form with paneId first (most specific), then fallback to id string
+                      let removed = false;
+                      try {
+                        chart.removeOverlay({ id, paneId });
+                        removed = true;
+                      } catch (_) { /* ignore */ }
+                      if (!removed) {
+                        try {
+                          chart.removeOverlay({ id });
+                          removed = true;
+                        } catch (_) { /* ignore */ }
+                      }
+                      if (!removed) {
+                        try {
+                          chart.removeOverlay(id);
+                          removed = true;
+                        } catch (_) { /* ignore */ }
+                      }
                     } catch (_) { /* ignore */ }
                     setSelectedOverlayPanel(null);
                   }}

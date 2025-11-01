@@ -149,3 +149,16 @@ Additionally, several flex containers now include `min-h-0` to allow children to
 - All tools are displayed as icon‑only buttons directly in the panel, each with a hover tooltip.
 - A horizontal divider separates K‑Line tools from Cursor type controls.
 - File: `src/components/widget/components/Sidebar.jsx`
+
+## Drawing Tools: Multiple H/V Lines + Delete Panel
+
+- Horizontal and Vertical lines now support multiple instances. Internally, the chart uses KLineCharts built-ins for robust multi-instance behavior:
+  - `horizontalLine` maps to `horizontalStraightLine`
+  - `verticalLine` maps to `verticalStraightLine`
+- A new Vertical Line tool has been added to the toolbar and sidebar.
+- Clicking on plotted Trend, Horizontal, or Vertical lines opens a context delete panel at the click location; press the trash icon to remove that line.
+- Deletion is precise: only the clicked line is removed, not all overlays.
+- Files updated:
+  - `src/components/widget/components/KLineChartComponent.jsx` (tool mapping, selection logic for H/V lines)
+  - `src/components/widget/components/KLineDrawingToolbar.jsx` (Vertical Line tool)
+  - `src/components/widget/components/Sidebar.jsx` (Vertical Line tool)

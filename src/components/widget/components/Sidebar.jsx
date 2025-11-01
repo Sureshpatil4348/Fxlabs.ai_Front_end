@@ -88,6 +88,25 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          onClick={() => handleKLineToolSelect('verticalLine')}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'verticalLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Vertical Line"
+        >
+          <div className="w-6 h-6 bg-gradient-to-br from-sky-500 to-sky-700 rounded-md flex items-center justify-center shadow-sm">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16" />
+            </svg>
+          </div>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Vertical Line
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
           onClick={() => handleKLineToolSelect('fibonacci')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'fibonacci' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'

@@ -18,6 +18,12 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
       description: 'Draw horizontal support/resistance lines'
     },
     {
+      id: 'verticalLine',
+      name: 'Vertical Line',
+      icon: '⬆️',
+      description: 'Draw vertical time markers'
+    },
+    {
       id: 'fibonacci',
       name: 'Fibonacci',
       icon: '🌀',
