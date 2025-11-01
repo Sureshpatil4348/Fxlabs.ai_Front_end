@@ -22,6 +22,7 @@ export const KLineChartComponent = ({
   const [isHoveringOnChartOverlays, setIsHoveringOnChartOverlays] = useState(false);
   const [selectedOverlayPanel, setSelectedOverlayPanel] = useState(null);
   const inlineEditorActiveRef = useRef(false);
+  const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
   
   // Get the setter from store
   const { setKLineChartRef, toggleIndicator } = useChartStore();
@@ -1238,8 +1239,29 @@ export const KLineChartComponent = ({
         }
       };
 
-      // Store the handler for external use
+      // Store handlers for external use
       chart._handleDrawingToolChange = handleDrawingToolChange;
+      chart._dismissSelectedOverlayPanel = () => {
+        try { setSelectedOverlayPanel(null); } catch (_) { /* ignore */ }
+        try {
+          const container = chartContainerRef.current;
+          const prev = container?.querySelector('.kv-inline-rect-editor');
+          if (prev && prev.isConnected) prev.remove();
+        } catch (_) { /* ignore */ }
+      };
+      chart._openConfirmModal = (opts) => {
+        try {
+          const { title, message, confirmText, cancelText, onConfirm } = opts || {};
+          setConfirmModal({
+            title: title || 'Confirm',
+            message: message || 'Are you sure?',
+            confirmText: confirmText || 'Confirm',
+            cancelText: cancelText || 'Cancel',
+            onConfirm: typeof onConfirm === 'function' ? onConfirm : null,
+          });
+        } catch (_) { /* ignore */ }
+      };
+      chart._closeConfirmModal = () => setConfirmModal(null);
 
       // Configure chart options for better auto-scaling
       chart.setOptions({
@@ -1286,6 +1308,10 @@ export const KLineChartComponent = ({
             console.warn('📈 Error cleaning up K-line chart:', error);
           }
         }
+        try { if (chart && chart._dismissSelectedOverlayPanel) delete chart._dismissSelectedOverlayPanel; } catch (_) { /* ignore */ }
+        try { if (chart && chart._handleDrawingToolChange) delete chart._handleDrawingToolChange; } catch (_) { /* ignore */ }
+        try { if (chart && chart._openConfirmModal) delete chart._openConfirmModal; } catch (_) { /* ignore */ }
+        try { if (chart && chart._closeConfirmModal) delete chart._closeConfirmModal; } catch (_) { /* ignore */ }
         // No need to set isInitialized to false
       };
     } catch (error) {
@@ -2762,6 +2788,35 @@ export const KLineChartComponent = ({
             </div>
           )}
         </div>
+        {/* Custom center modal for confirmations */}
+        {confirmModal && (
+          <div className="absolute inset-0 z-[90] flex items-center justify-center" role="dialog" aria-modal="true">
+            <div className="absolute inset-0 bg-black bg-opacity-40" onClick={() => setConfirmModal(null)} />
+            <div className="relative bg-white rounded-lg shadow-xl border border-gray-200 w-[320px] max-w-[90%] p-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">{confirmModal.title}</h3>
+              <p className="text-xs text-gray-600 mb-4">{confirmModal.message}</p>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded"
+                  onClick={() => setConfirmModal(null)}
+                >
+                  {confirmModal.cancelText || 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded"
+                  onClick={() => {
+                    try { if (confirmModal.onConfirm) confirmModal.onConfirm(); } catch (_) { /* ignore */ }
+                    setConfirmModal(null);
+                  }}
+                >
+                  {confirmModal.confirmText || 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       </div>
     </div>

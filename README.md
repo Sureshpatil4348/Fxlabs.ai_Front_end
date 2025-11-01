@@ -58,8 +58,18 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Changes applied in `src/components/widget/components/KLineChartComponent.jsx` with a dedicated effect around `settings.cursorType` and a dynamic container class.
   - Uses `chart.setStyles({ crosshair: { show: <bool> } })` to toggle crosshair visibility.
   - Applies cursor via container style and forced CSS classes to override library defaults.
-  - CSS helpers in `src/index.css`:
+- CSS helpers in `src/index.css`:
     - `.kline-cursor-crosshair`, `.kline-cursor-pointer`, `.kline-cursor-grab`, `.kline-cursor-grabbing` (each enforces cursor on all children with `!important`).
+
+## Sidebar: Clear All Button Update
+
+- The left panel's “Clear All” button is now styled gray to match other icons instead of red.
+- Clicking it prompts a confirmation and then removes all drawings and indicators from both the KLine chart and the Universal (Recharts) drawing layer.
+- Implementation details:
+  - Component: `src/components/widget/components/Sidebar.jsx:~1-260`
+  - Behavior: On confirm, clears Universal drawings via `useDrawingTools().clearAllDrawings()`, removes KLine overlays via a robust multi-pass strategy (`getOverlays`/`getAllOverlays` + remove by `{id,paneId}`, `{id}`, `id`, and by `name` for known overlays), attempts immediate indicator removal when possible, and turns off all indicator toggles through the chart store `setIndicatorsPreset`. Also deactivates any active drawing tool in both systems and dismisses any on-chart overlay action panel/inline editor via `chart._dismissSelectedOverlayPanel()`.
+  - Confirmation UI: Uses a custom centered modal within the KLine widget via `chart._openConfirmModal({ title, message, confirmText, cancelText, onConfirm })`. Falls back to `window.confirm` only if the chart ref is unavailable.
+  - UX: Button classes changed to `text-gray-500 hover:text-gray-700` for a consistent look.
 
 ## Fix: K-line Text Tool Delete (inline editor blur)
 

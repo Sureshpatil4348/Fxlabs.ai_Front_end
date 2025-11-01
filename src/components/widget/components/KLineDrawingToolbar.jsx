@@ -87,11 +87,34 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
   const clearAllDrawings = useCallback(() => {
     if (chartRef.current) {
       try {
-        // Clear all overlays using the correct API
-        const overlays = chartRef.current.getAllOverlays();
-        overlays.forEach(overlay => {
-          chartRef.current.removeOverlay(overlay.id);
-        });
+        // Robustly clear overlays across APIs
+        const chart = chartRef.current;
+        const fetchOverlays = () => {
+          try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+          try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+          return [];
+        };
+        let safety = 0;
+        while (safety < 10) {
+          safety += 1;
+          const overlays = fetchOverlays();
+          if (!Array.isArray(overlays) || overlays.length === 0) break;
+          let removedAny = false;
+          overlays.forEach((ov) => {
+            try { chart.removeOverlay({ id: ov?.id, paneId: ov?.paneId || ov?.pane?.id }); removedAny = true; } catch (_) {}
+            try { chart.removeOverlay({ id: ov?.id }); removedAny = true; } catch (_) {}
+            try { chart.removeOverlay(ov?.id); removedAny = true; } catch (_) {}
+            try { if (ov?.name) { chart.removeOverlay({ name: ov.name }); removedAny = true; } } catch (_) {}
+          });
+          const known = ['segment','horizontalStraightLine','verticalStraightLine','fibonacciRightLine','fibonacciTrendExtensionRight','rectangle','text'];
+          known.forEach((name) => {
+            try { chart.removeOverlay({ name }); removedAny = true; } catch (_) {}
+            try { chart.removeOverlay(name); removedAny = true; } catch (_) {}
+          });
+          if (!removedAny) break;
+        }
+        // Clear any overlay UI remnants
+        try { if (typeof chart._dismissSelectedOverlayPanel === 'function') chart._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
         setActiveTool(null); // Clear active tool after removing all drawings
         console.log('📈 All drawings cleared');
       } catch (error) {

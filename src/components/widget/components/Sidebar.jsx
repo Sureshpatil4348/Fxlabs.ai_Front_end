@@ -7,12 +7,14 @@ export const Sidebar = () => {
   const { 
     settings, 
     setCursorType,
-    klineChartRef
+    klineChartRef,
+    setIndicatorsPreset
   } = useChartStore();
   
   const {
     activeTool,
-    setActiveTool
+    setActiveTool,
+    clearAllDrawings
   } = useDrawingTools();
 
   // KLine drawing tools handlers
@@ -29,19 +31,113 @@ export const Sidebar = () => {
   };
   
   const handleKLineClearAll = () => {
-    if (!window.confirm('Clear all drawings? This cannot be undone.')) {
+    const performClearAll = () => {
+      // 1) Clear custom (Recharts) drawings managed by UniversalDrawingTools
+      try { clearAllDrawings(); } catch (_) { /* ignore */ }
+
+      // 2) Clear KLine overlays if chart is available
+      if (klineChartRef) {
+        try {
+          // Robustly collect overlays (support both APIs)
+          const fetchOverlays = () => {
+            try {
+              if (typeof klineChartRef.getOverlays === 'function') return klineChartRef.getOverlays();
+              if (typeof klineChartRef.getAllOverlays === 'function') return klineChartRef.getAllOverlays();
+            } catch (_) {}
+            return [];
+          };
+
+          let safetyCounter = 0;
+          while (safetyCounter < 10) {
+            safetyCounter += 1;
+            const overlays = fetchOverlays();
+            if (!Array.isArray(overlays) || overlays.length === 0) break;
+
+            let removedAny = false;
+            overlays.forEach((ov) => {
+              try { klineChartRef.removeOverlay({ id: ov?.id, paneId: ov?.paneId || ov?.pane?.id }); removedAny = true; } catch (_) {}
+              try { klineChartRef.removeOverlay({ id: ov?.id }); removedAny = true; } catch (_) {}
+              try { klineChartRef.removeOverlay(ov?.id); removedAny = true; } catch (_) {}
+              // As last resort, attempt by common names (may remove all instances by name depending on lib)
+              try { if (ov?.name) { klineChartRef.removeOverlay({ name: ov.name }); removedAny = true; } } catch (_) {}
+            });
+
+            // Extra pass for known overlay names in case id-based removal fails
+            const knownNames = [
+              'segment',
+              'horizontalStraightLine',
+              'verticalStraightLine',
+              'fibonacciRightLine',
+              'fibonacciTrendExtensionRight',
+              'rectangle',
+              'text'
+            ];
+            knownNames.forEach((name) => {
+              try { klineChartRef.removeOverlay({ name }); removedAny = true; } catch (_) {}
+              try { klineChartRef.removeOverlay(name); removedAny = true; } catch (_) {}
+            });
+
+            if (!removedAny) break; // avoid infinite loop if API no-ops
+          }
+
+          console.log('📈 All KLine overlays cleared (robust)');
+          try { if (typeof klineChartRef._dismissSelectedOverlayPanel === 'function') klineChartRef._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
+
+          // Try to remove all indicators immediately (best-effort)
+          try {
+            const tryRemoveByList = (list) => {
+              if (!Array.isArray(list)) return;
+              list.forEach((ind) => {
+                try { klineChartRef.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+                try { klineChartRef.removeIndicator({ name: ind?.name }); } catch (_) {}
+                try { klineChartRef.removeIndicator(ind?.id); } catch (_) {}
+              });
+            };
+            let inds = [];
+            try { inds = klineChartRef.getIndicators?.() || []; } catch (_) { inds = []; }
+            if (!Array.isArray(inds) || inds.length === 0) {
+              const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2'];
+              panes.forEach((pid) => {
+                try { tryRemoveByList(klineChartRef.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+              });
+            } else {
+              tryRemoveByList(inds);
+            }
+          } catch (_) {}
+        } catch (error) {
+          console.warn('📈 Error clearing KLine overlays/indicators:', error);
+        }
+      }
+
+      // Turn off all indicator toggles via store so the effect cleans up consistently
+      try {
+        const cleared = Object.keys(settings?.indicators || {}).reduce((acc, key) => {
+          acc[key] = false;
+          return acc;
+        }, {});
+        setIndicatorsPreset(cleared);
+      } catch (_) { /* ignore */ }
+
+      // 3) Deactivate any active drawing tools (both KLine and Universal)
+      try { setActiveTool(null); } catch (_) { /* ignore */ }
+      try { if (klineChartRef && typeof klineChartRef._handleDrawingToolChange === 'function') klineChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+    };
+
+    // Prefer custom modal inside the KLine widget
+    if (klineChartRef && typeof klineChartRef._openConfirmModal === 'function') {
+      klineChartRef._openConfirmModal({
+        title: 'Clear Workspace',
+        message: 'Clear all indicators and drawings? This cannot be undone.',
+        confirmText: 'Clear',
+        cancelText: 'Cancel',
+        onConfirm: performClearAll,
+      });
       return;
     }
-    if (klineChartRef) {
-      try {
-        const overlays = klineChartRef.getAllOverlays();
-        overlays.forEach(overlay => {
-          klineChartRef.removeOverlay(overlay.id);
-        });
-        console.log('📈 All KLine drawings cleared');
-      } catch (error) {
-        console.warn('📈 Error clearing KLine drawings:', error);
-      }
+
+    // Fallback for environments without chart ref
+    if (window.confirm('Clear all indicators and drawings? This cannot be undone.')) {
+      performClearAll();
     }
   };
   
@@ -190,7 +286,7 @@ export const Sidebar = () => {
         <button
           type="button"
           onClick={handleKLineClearAll}
-          className="w-10 h-10 rounded-lg flex items-center justify-center transition-all text-red-500 hover:text-red-600"
+          className="w-10 h-10 rounded-lg flex items-center justify-center transition-all text-gray-500 hover:text-gray-700"
           title="Clear All"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
