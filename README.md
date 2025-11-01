@@ -46,3 +46,17 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 - `REACT_APP_API_BASE_URL` (optional): override API base (default: `https://api.fxlabsprime.com`).
 - `REACT_APP_API_TOKEN` (optional): if set, sent as `X-API-Key` header for `/api/ohlc` requests.
+
+## K-line Cursor Tools (Crosshair, Pointer, Grab)
+
+- The sidebar “Cursor” menu controls the KLine chart interaction cursor.
+- Modes and behavior:
+  - `Crosshair`: Crosshair is enabled in the chart and the DOM cursor shows `crosshair`.
+  - `Pointer`: Crosshair is disabled and the DOM cursor shows `pointer`.
+  - `Grab`: Crosshair is disabled and the DOM cursor shows `grab`, switching to `grabbing` while dragging for panning.
+- Implementation details:
+  - Changes applied in `src/components/widget/components/KLineChartComponent.jsx` with a dedicated effect around `settings.cursorType` and a dynamic container class.
+  - Uses `chart.setStyles({ crosshair: { show: <bool> } })` to toggle crosshair visibility.
+  - Applies cursor via container style and forced CSS classes to override library defaults.
+  - CSS helpers in `src/index.css`:
+    - `.kline-cursor-crosshair`, `.kline-cursor-pointer`, `.kline-cursor-grab`, `.kline-cursor-grabbing` (each enforces cursor on all children with `!important`).

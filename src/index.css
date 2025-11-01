@@ -215,9 +215,16 @@
   animation: pulseGreen 1s ease-in-out;
 }
 
-.pulse-red {
-  animation: pulseRed 1s ease-in-out;
-}
+  .pulse-red {
+    animation: pulseRed 1s ease-in-out;
+  }
+
+  /* KLine cursor mode enforcement: ensure cursor applies to all children
+     and overrides any library-provided defaults. */
+  .kline-cursor-crosshair, .kline-cursor-crosshair * { cursor: crosshair !important; }
+  .kline-cursor-pointer, .kline-cursor-pointer * { cursor: pointer !important; }
+  .kline-cursor-grab, .kline-cursor-grab * { cursor: grab !important; }
+  .kline-cursor-grabbing, .kline-cursor-grabbing * { cursor: grabbing !important; }
 
 @keyframes pulseGreen {
   0%, 100% { background-color: transparent; }

@@ -1294,6 +1294,50 @@ export const KLineChartComponent = ({
     }
   }, [settings.showGrid, setKLineChartRef, settings.timezone]); // Include timezone for initial setup
 
+  // Apply cursor mode (crosshair, pointer, grab) for KLine chart
+  // - Crosshair: enable chart crosshair and set cursor to crosshair
+  // - Pointer: disable crosshair and set cursor to pointer
+  // - Grab: disable crosshair and set cursor to grab/grabbing during drag
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    const chart = chartRef.current;
+    if (!container) return;
+
+    const mode = (settings && settings.cursorType) ? settings.cursorType : 'crosshair';
+    const baseCursor = mode === 'grab' ? 'grab' : mode; // 'crosshair' | 'pointer' | 'grab'
+
+    // Ensure base cursor via style (fallback) and via CSS class from JSX
+    try { container.style.cursor = baseCursor; } catch (_) { /* ignore style errors */ }
+    try { container.classList.remove('kline-cursor-grabbing'); } catch (_) { /* ignore */ }
+
+    try {
+      if (chart && typeof chart.setStyles === 'function') {
+        chart.setStyles({
+          crosshair: { show: mode === 'crosshair' }
+        });
+      }
+    } catch (_) { /* optional API differences */ }
+
+    // For grab mode, switch to 'grabbing' during mouse drag
+    const handleMouseDown = () => {
+      if (mode === 'grab') {
+        try { container.style.cursor = 'grabbing'; } catch (_) { /* ignore */ }
+        try { container.classList.add('kline-cursor-grabbing'); } catch (_) { /* ignore */ }
+      }
+    };
+    const handleMouseUp = () => {
+      try { container.style.cursor = baseCursor; } catch (_) { /* ignore */ }
+      try { container.classList.remove('kline-cursor-grabbing'); } catch (_) { /* ignore */ }
+    };
+
+    container.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      container.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [settings.cursorType]);
+
   // Apply timezone changes to the chart dynamically
   useEffect(() => {
     if (!chartRef.current) return;
@@ -2125,7 +2169,13 @@ export const KLineChartComponent = ({
         {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
           ref={chartContainerRef}
-          className="absolute inset-0"
+          className={`absolute inset-0 ${
+            settings?.cursorType === 'grab'
+              ? 'kline-cursor-grab'
+              : settings?.cursorType === 'pointer'
+              ? 'kline-cursor-pointer'
+              : 'kline-cursor-crosshair'
+          }`}
           style={{
             backgroundColor: '#ffffff',
             height: '100%',
