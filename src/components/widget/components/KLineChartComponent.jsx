@@ -563,9 +563,15 @@ export const KLineChartComponent = ({
       try {
         const container = chartContainerRef.current;
         if (!container) return;
-        // Remove any existing editor
+        // Remove any existing editor (guard against races)
         const prev = container.querySelector('.kv-inline-rect-editor');
-        if (prev) prev.remove();
+        try {
+          if (prev && prev.isConnected) prev.remove();
+        } catch (_) {
+          if (prev && prev.parentNode) {
+            try { prev.parentNode.removeChild(prev); } catch (_) { /* ignore */ }
+          }
+        }
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -575,7 +581,7 @@ export const KLineChartComponent = ({
           position: 'absolute',
           left: `${Math.max(0, Math.round(x - 80))}px`,
           top: `${Math.max(0, Math.round(y - 10))}px`,
-          width: '160px',
+          width: '200px',
           padding: '4px 6px',
           fontSize: '12px',
           lineHeight: '16px',
@@ -589,16 +595,32 @@ export const KLineChartComponent = ({
         input.focus();
         input.select();
 
+        let finalized = false;
+        const cleanup = () => {
+          if (finalized) return;
+          finalized = true;
+          try { input.removeEventListener('keydown', onKeyDown); } catch (_) { /* ignore */ }
+          try { input.removeEventListener('blur', onBlur); } catch (_) { /* ignore */ }
+          try {
+            if (input.isConnected) input.remove();
+            else if (input.parentNode) input.parentNode.removeChild(input);
+          } catch (_) { /* ignore */ }
+        };
+
         const finalize = (ok) => {
+          if (finalized) return;
           const val = input.value;
-          input.remove();
+          cleanup();
           if (ok && typeof onCommit === 'function') onCommit(val);
         };
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') finalize(true);
-          if (e.key === 'Escape') finalize(false);
-        });
-        input.addEventListener('blur', () => finalize(true));
+
+        const onKeyDown = (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); finalize(true); }
+          if (e.key === 'Escape') { e.preventDefault(); finalize(false); }
+        };
+        const onBlur = () => { finalize(true); };
+        input.addEventListener('keydown', onKeyDown);
+        input.addEventListener('blur', onBlur);
       } catch (_) { /* ignore */ }
     };
 
@@ -705,25 +727,52 @@ export const KLineChartComponent = ({
       },
     });
 
-    // Register text overlay
+    // Register text overlay (single click to place, click to edit)
     registerOverlay({
       name: 'text',
       totalStep: 1,
-      createPointFigures: ({ coordinates }) => {
-        if (!Array.isArray(coordinates) || coordinates.length < 1) return [];
+      createPointFigures: ({ coordinates, overlay }) => {
+        if (!Array.isArray(coordinates) || coordinates.length < 1 || !coordinates[0]) return [];
+        const c0 = coordinates[0];
+        const label = (overlay && typeof overlay.text === 'string' && overlay.text.trim().length > 0)
+          ? overlay.text
+          : 'Text Annotation';
         return [
           {
             type: 'text',
             attrs: {
-              coordinates: [coordinates[0]],
-              styles: {
-                color: '#333333',
-                size: 12,
-              },
-              text: 'Text Annotation',
+              x: c0.x,
+              y: c0.y,
+              text: label,
+              align: 'left',
+              baseline: 'bottom',
+            },
+            styles: {
+              backgroundColor: 'transparent',
+              borderSize: 0,
+              borderColor: 'transparent',
+              color: '#333333',
+              size: 12,
+              paddingLeft: 0,
+              paddingRight: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
             },
           },
         ];
+      },
+      onClick: ({ chart, overlay }) => {
+        try {
+          if (!chart || !overlay) return;
+          const pts = Array.isArray(overlay.points) ? overlay.points : [];
+          const px = (typeof chart.convertToPixel === 'function') ? (chart.convertToPixel(pts) || []) : [];
+          const c0 = px[0];
+          if (!c0) return;
+          const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
+          openInlineTextEditor(c0.x, c0.y, current, (val) => {
+            chart.overrideOverlay({ id: overlay.id, text: String(val || '') });
+          });
+        } catch (_) { /* ignore */ }
       },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Text annotation drawn:', overlay);

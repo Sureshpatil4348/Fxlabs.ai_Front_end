@@ -99,6 +99,18 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Inline label editing: the center shows “Add a text” as a placeholder when empty. Click it to edit inline (a small input appears); committing sets the label and it renders centered inside the rectangle.
 - File: `src/components/widget/components/KLineChartComponent.jsx:563` and `src/components/widget/components/KLineChartComponent.jsx:2000`
 
+### Text Tool (Fix)
+
+- Fixed text annotation overlay so it renders on first click and supports inline editing.
+- Implementation: corrected overlay figure to use `x/y/text` attributes with figure-level `styles`; added click-to-edit using the inline editor.
+- Files: `src/components/widget/components/KLineChartComponent.jsx:710-750` (registration and editing handler)
+
+#### Inline Editor Stability
+
+- Addressed a race where pressing Enter also triggered a blur, causing a double-remove NotFoundError.
+- The inline editor now guards removal with an idempotent finalize and checks `isConnected`/`parentNode` before removal.
+- File: `src/components/widget/components/KLineChartComponent.jsx` (`openInlineTextEditor`)
+
 ## Sidebar Scrolling (Many Tools)
 
 - The K-line tools left panel is vertically scrollable when content exceeds available height.
