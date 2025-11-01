@@ -164,7 +164,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
 
   return (
     <>
-    <div className="bg-white border-b border-gray-200 px-4 py-2 h-11 shadow-sm">
+    <div className="bg-white border-b border-gray-200 px-3 py-2 h-11 shadow-sm">
       <div className="flex items-center justify-between h-full">
         {/* Left Section - Symbol Selector */}
         <div className="flex items-center">
@@ -405,15 +405,12 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
             </div>
           </div>
 
-          {/* Vertical Separator */}
-          <div className="h-6 w-px bg-gray-300 mx-2"></div>
-
           {/* Fullscreen Button */}
           {onFullscreenToggle && (
             <button
               type="button"
               onClick={onFullscreenToggle}
-              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
+              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors ml-2"
               title="Fullscreen"
               aria-label="Toggle fullscreen"
             >
