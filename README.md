@@ -62,3 +62,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Implementation**: The error UI condition requires both `error` state AND `chartRef.current` to be truthy. This ensures errors from during initialization don't flash to the user—they'll only see the loading state.
 - **Related file**: `src/components/widget/components/KLineChartComponent.jsx` (lines 1092-1135)
 
+## Drawing Tools and A11y Updates
+
+- Multiple horizontal/vertical lines supported using KLineCharts built-ins; Vertical Line tool added in toolbar and sidebar.
+- Click-to-delete on Trend/Horizontal/Vertical lines shows a small delete panel; pressing the trash button removes only the selected line.
+- A11y/ESLint: Removed click/mouse handlers from non-interactive delete panel wrappers and used a native `button` for actions; wrapper uses `role="dialog"`.
+- Files: `src/components/widget/components/KLineChartComponent.jsx`, `src/components/widget/components/KLineDrawingToolbar.jsx`, `src/components/widget/components/Sidebar.jsx`.
+
+## Sidebar Scrolling (Many Tools)
+
+- The K-line tools left panel is vertically scrollable when content exceeds available height.
+- Implementation: sidebar container uses `h-full min-h-0 overflow-y-auto`.
+- File: `src/components/widget/components/Sidebar.jsx`

@@ -2128,10 +2128,10 @@ export const KLineChartComponent = ({
                 top: Math.max(4, Math.min(selectedOverlayPanel.y - 10, (chartContainerRef.current?.clientHeight || 0) - 30)),
                 zIndex: 70
               }}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-label="Drawing actions"
             >
-              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md shadow-sm" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md shadow-sm">
                 <button
                   type="button"
                   title="Delete"
