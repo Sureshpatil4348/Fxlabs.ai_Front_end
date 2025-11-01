@@ -252,23 +252,6 @@ export const Sidebar = () => {
           Grab
         </div>
       </div>
-
-      <div className="relative group">
-        <button
-          onClick={() => setCursorType('text')}
-          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            settings.cursorType === 'text' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-          }`}
-          title="Text"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-        </button>
-        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-          Text
-        </div>
-      </div>
     </div>
   );
 };
