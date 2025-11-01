@@ -636,13 +636,13 @@ export const KLineChartComponent = ({
     // (instead of both left and right like the built-in 'fibonacciLine')
     registerOverlay({
       name: 'fibonacciRightLine',
-      totalStep: 2,
+      totalStep: 3, // 2-point tool, finalize on 3rd step like built-in fibonacciLine
       needDefaultPointFigure: true,
       needDefaultXAxisFigure: true,
       needDefaultYAxisFigure: true,
       createPointFigures: ({ chart, coordinates, bounding, overlay, yAxis }) => {
         const points = overlay?.points || [];
-        if (!Array.isArray(coordinates) || coordinates.length === 0) return [];
+        if (!Array.isArray(points) || points.length === 0) return [];
 
         // Determine price precision (follow built-in behavior)
         let precision = 0;
@@ -661,26 +661,35 @@ export const KLineChartComponent = ({
           precision = 2;
         }
 
+        // Robustly get pixel coordinates from overlay points
+        let px = [];
+        try {
+          if (typeof chart.convertToPixel === 'function') {
+            px = chart.convertToPixel(points) || [];
+          }
+        } catch (_) { px = []; }
+        const c0 = px[0] || coordinates[0];
+        const c1 = px[1] || coordinates[1];
+        if (!c0) return [];
+
+        // Preview main line after 2nd step if c1 exists
+        const preview = [];
+        if (c0 && c1) {
+          preview.push({ coordinates: [c0, c1] });
+        }
+
+        // Only render fib levels when both point values are available
         const lines = [];
         const texts = [];
-
-        // Start X should be the LEFTMOST anchor; extend to the right edge only
-        const startX = coordinates.length > 1
-          ? Math.min(coordinates[0].x, coordinates[1].x)
-          : 0;
-        const endX = bounding?.width ?? 0;
-
-        if (
-          coordinates.length > 1 &&
-          typeof points?.[0]?.value === 'number' && Number.isFinite(points[0].value) &&
-          typeof points?.[1]?.value === 'number' && Number.isFinite(points[1].value)
-        ) {
+        if (c1 && Number.isFinite(points?.[0]?.value) && Number.isFinite(points?.[1]?.value)) {
           const percents = [1, 0.786, 0.618, 0.5, 0.382, 0.236, 0];
-          const yDif = coordinates[0].y - coordinates[1].y;
+          const endX = (bounding && typeof bounding.width === 'number') ? bounding.width : Math.max(c0.x || 0, c1.x || 0);
+          const startX = Math.min(c0.x || 0, c1.x || 0);
+          const yDif = c0.y - c1.y;
           const valueDif = (points[0].value ?? 0) - (points[1].value ?? 0);
 
           percents.forEach((percent) => {
-            const y = coordinates[1].y + yDif * percent;
+            const y = c1.y + yDif * percent;
             const rawValue = ((points[1].value ?? 0) + valueDif * percent);
             let displayValue = String(rawValue);
             try {
@@ -690,19 +699,14 @@ export const KLineChartComponent = ({
             } catch (_e) {
               displayValue = rawValue.toFixed(precision);
             }
-
             lines.push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
-            texts.push({
-              x: startX,
-              y,
-              text: `${displayValue} (${(percent * 100).toFixed(1)}%)`,
-              baseline: 'bottom',
-            });
+            texts.push({ x: startX, y, text: `${displayValue} (${(percent * 100).toFixed(1)}%)`, baseline: 'bottom' });
           });
         }
 
         return [
-          { type: 'line', attrs: lines },
+          { type: 'line', attrs: preview, styles: { size: 1, style: 'dash', color: '#9C27B0' } },
+          { type: 'line', attrs: lines, styles: { size: 1, color: '#9C27B0' } },
           { type: 'text', isCheckEvent: false, attrs: texts },
         ];
       },

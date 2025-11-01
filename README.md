@@ -72,6 +72,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ### Fibonacci Retracement (Right-Only, 2 points)
 
 - The built-in KLineCharts `fibonacciLine` extends levels to both left and right. We now register a custom overlay `fibonacciRightLine` (2 anchor points) that extends levels only to the right from the fib range.
+- The overlay uses `totalStep: 3` (matching KLineCharts’ 2-point tools) and renders the preview line while drawing, then fib levels after the second anchor.
 - The toolbar and sidebar map the Fib tool to this custom overlay, so plotted retracement “bars” no longer extend to the left edge.
 - File: `src/components/widget/components/KLineChartComponent.jsx:~640-940`
 - If you prefer the original behavior, change the overlay mapping from `fibonacciRightLine` back to `fibonacciLine` inside `handleDrawingToolChange`.
