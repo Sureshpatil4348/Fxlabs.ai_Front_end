@@ -2246,6 +2246,15 @@ export const KLineChartComponent = ({
               const chart = chartRef.current;
               const container = chartContainerRef.current;
               if (!chart || !container) return;
+              // Ignore clicks on overlay action panel or color palettes so chart doesn't handle them
+              const target = e.target;
+              if (target) {
+                const overlayPanel = target.closest('[role="dialog"][aria-label="Drawing actions"]');
+                const colorPalette = target.closest('.kv-rect-color-palette, .kv-trendline-color-palette');
+                if (overlayPanel || colorPalette) {
+                  return;
+                }
+              }
               // When workspace is hidden, suppress overlay selection UI entirely
               if (isWorkspaceHidden) { setSelectedOverlayPanel(null); return; }
               if (inlineEditorActiveRef.current) {
@@ -2636,6 +2645,9 @@ export const KLineChartComponent = ({
               }}
               role="dialog"
               aria-label="Drawing actions"
+              onMouseDown={(e) => { e.stopPropagation(); }}
+              onPointerDown={(e) => { e.stopPropagation(); }}
+              onTouchStart={(e) => { e.stopPropagation(); }}
             >
               <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md shadow-sm">
                 <button
@@ -2723,6 +2735,7 @@ export const KLineChartComponent = ({
                       title="Change color"
                       className="w-3 h-3 rounded border border-gray-300"
                       aria-label="Change rectangle color"
+                      onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
                         try {
                           const chart = chartRef.current;
@@ -2763,6 +2776,12 @@ export const KLineChartComponent = ({
                           gap: '6px',
                           zIndex: 80,
                         });
+                        // Prevent chart from entering grab-pan when interacting with palette
+                        try {
+                          palette.addEventListener('mousedown', (ev) => { ev.stopPropagation(); }, { capture: true });
+                          palette.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); }, { capture: true });
+                          palette.addEventListener('touchstart', (ev) => { ev.stopPropagation(); }, { capture: true, passive: true });
+                        } catch (_) { /* ignore */ }
                         const COLORS = ['#4ECDC4','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#22C55E','#06B6D4','#A855F7'];
                         COLORS.forEach((hex) => {
                           const sw = document.createElement('button');
@@ -2777,6 +2796,11 @@ export const KLineChartComponent = ({
                             background: hex,
                             cursor: 'pointer',
                           });
+                          try {
+                            sw.addEventListener('mousedown', (ev) => { ev.stopPropagation(); });
+                            sw.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); });
+                            sw.addEventListener('touchstart', (ev) => { ev.stopPropagation(); }, { passive: true });
+                          } catch (_) { /* ignore */ }
                           sw.addEventListener('click', (ev) => {
                             ev.stopPropagation();
                             try {
@@ -2819,6 +2843,7 @@ export const KLineChartComponent = ({
                       title="Change color"
                       className="w-3 h-3 rounded border border-gray-300"
                       aria-label="Change trend line color"
+                      onMouseDown={(e) => { e.stopPropagation(); }}
                       style={{ backgroundColor: (() => {
                         try {
                           const chart = chartRef.current;
@@ -2859,6 +2884,12 @@ export const KLineChartComponent = ({
                           gap: '6px',
                           zIndex: 80,
                         });
+                        // Prevent chart from entering grab-pan when interacting with palette
+                        try {
+                          palette.addEventListener('mousedown', (ev) => { ev.stopPropagation(); }, { capture: true });
+                          palette.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); }, { capture: true });
+                          palette.addEventListener('touchstart', (ev) => { ev.stopPropagation(); }, { capture: true, passive: true });
+                        } catch (_) { /* ignore */ }
                         const COLORS = ['#4ECDC4','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#22C55E','#06B6D4','#A855F7'];
                         COLORS.forEach((hex) => {
                           const sw = document.createElement('button');
@@ -2873,6 +2904,11 @@ export const KLineChartComponent = ({
                             background: hex,
                             cursor: 'pointer',
                           });
+                          try {
+                            sw.addEventListener('mousedown', (ev) => { ev.stopPropagation(); });
+                            sw.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); });
+                            sw.addEventListener('touchstart', (ev) => { ev.stopPropagation(); }, { passive: true });
+                          } catch (_) { /* ignore */ }
                           sw.addEventListener('click', (ev) => {
                             ev.stopPropagation();
                             try {
