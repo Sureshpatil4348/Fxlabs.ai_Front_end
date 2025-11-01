@@ -135,3 +135,10 @@ Additionally, several flex containers now include `min-h-0` to allow children to
 1. Open the Trading view with the candlestick chart.
 2. Click Indicators in the header and toggle RSI on/off.
 3. Observe: The chart container keeps its size; RSI appears in a sub‑pane within the chart without increasing total height; toggling off removes the pane without layout shifts.
+
+## Sidebar: Flattened K-Line Tools and Cursor Controls
+
+- The left sidebar no longer uses dropdown menus for K‑Line tools or Cursor type.
+- All tools are displayed as icon‑only buttons directly in the panel, each with a hover tooltip.
+- A horizontal divider separates K‑Line tools from Cursor type controls.
+- File: `src/components/widget/components/Sidebar.jsx`
