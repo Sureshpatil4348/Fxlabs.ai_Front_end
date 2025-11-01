@@ -229,7 +229,7 @@ export const Sidebar = () => {
   };
   
   return (
-    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2 h-full min-h-0 overflow-y-auto">
+    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-0.5 h-full min-h-0 overflow-y-auto">
       {/* Cursor Types: moved to top; outlined icons, active = blue */}
       <CursorMenu
         current={settings.cursorType}
