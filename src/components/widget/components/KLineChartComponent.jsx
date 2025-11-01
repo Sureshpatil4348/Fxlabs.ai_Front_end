@@ -632,28 +632,82 @@ export const KLineChartComponent = ({
       },
     });
 
-    // Register Fibonacci overlay
+    // Register a custom Fibonacci overlay that extends levels to the RIGHT only
+    // (instead of both left and right like the built-in 'fibonacciLine')
     registerOverlay({
-      name: 'fibonacci',
-      totalStep: 2,
-      createPointFigures: ({ coordinates }) => {
-        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+      name: 'fibonacciRightLine',
+      totalStep: 3,
+      needDefaultPointFigure: true,
+      needDefaultXAxisFigure: true,
+      needDefaultYAxisFigure: true,
+      createPointFigures: ({ chart, coordinates, bounding, overlay, yAxis }) => {
+        const points = overlay?.points || [];
+        if (!Array.isArray(coordinates) || coordinates.length === 0) return [];
+
+        // Determine price precision (follow built-in behavior)
+        let precision = 0;
+        try {
+          const inCandle = (yAxis?.isInCandle?.() ?? true);
+          if (inCandle) {
+            precision = chart.getPrecision().price;
+          } else {
+            const indicators = chart.getIndicators({ paneId: overlay.paneId }) || [];
+            indicators.forEach((ind) => {
+              const p = Number(ind?.precision) || 0;
+              precision = Math.max(precision, p);
+            });
+          }
+        } catch (_e) {
+          precision = 2;
+        }
+
+        const lines = [];
+        const texts = [];
+
+        // Start X should be the LEFTMOST anchor; extend to the right edge only
+        const startX = coordinates.length > 1
+          ? Math.min(coordinates[0].x, coordinates[1].x)
+          : 0;
+        const endX = bounding?.width ?? 0;
+
+        if (
+          coordinates.length > 1 &&
+          typeof points?.[0]?.value === 'number' && Number.isFinite(points[0].value) &&
+          typeof points?.[1]?.value === 'number' && Number.isFinite(points[1].value)
+        ) {
+          const percents = [1, 0.786, 0.618, 0.5, 0.382, 0.236, 0];
+          const yDif = coordinates[0].y - coordinates[1].y;
+          const valueDif = (points[0].value ?? 0) - (points[1].value ?? 0);
+
+          percents.forEach((percent) => {
+            const y = coordinates[1].y + yDif * percent;
+            const rawValue = ((points[1].value ?? 0) + valueDif * percent);
+            let displayValue = String(rawValue);
+            try {
+              displayValue = chart
+                .getDecimalFold()
+                .format(chart.getThousandsSeparator().format(rawValue.toFixed(precision)));
+            } catch (_e) {
+              displayValue = rawValue.toFixed(precision);
+            }
+
+            lines.push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
+            texts.push({
+              x: startX,
+              y,
+              text: `${displayValue} (${(percent * 100).toFixed(1)}%)`,
+              baseline: 'bottom',
+            });
+          });
+        }
+
         return [
-          {
-            type: 'line',
-            attrs: {
-              coordinates: [coordinates[0], coordinates[1]],
-              styles: {
-                color: '#9C27B0',
-                size: 2,
-                style: 'dash',
-              },
-            },
-          },
+          { type: 'line', attrs: lines },
+          { type: 'text', isCheckEvent: false, attrs: texts },
         ];
       },
       onDrawEnd: ({ overlay }) => {
-        console.log('📈 Fibonacci drawn:', overlay);
+        console.log('📈 Fibonacci (right-only) drawn:', overlay);
       },
     });
   }, []);
@@ -878,7 +932,8 @@ export const KLineChartComponent = ({
             // Prefer built-in, battle-tested overlays where available
             const overlayMap = {
               trendLine: 'segment', // 2-point segment
-              fibonacci: 'fibonacciLine',
+              // Use custom right-only fibonacci overlay
+              fibonacci: 'fibonacciRightLine',
               // Prefer built-ins for robust multi-instance behavior
               horizontalLine: 'horizontalStraightLine',
               verticalLine: 'verticalStraightLine',

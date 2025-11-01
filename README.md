@@ -69,6 +69,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - A11y/ESLint: Removed click/mouse handlers from non-interactive delete panel wrappers and used a native `button` for actions; wrapper uses `role="dialog"`.
 - Files: `src/components/widget/components/KLineChartComponent.jsx`, `src/components/widget/components/KLineDrawingToolbar.jsx`, `src/components/widget/components/Sidebar.jsx`.
 
+### Fibonacci Retracement (Right-Only Extension)
+
+- The built-in KLineCharts `fibonacciLine` extends levels to both left and right. We now register a custom overlay `fibonacciRightLine` that extends levels only to the right from the fib range.
+- The toolbar and sidebar map the Fib tool to this custom overlay, so plotted retracement “bars” no longer extend to the left edge.
+- File: `src/components/widget/components/KLineChartComponent.jsx:~640-940`
+- If you prefer the original behavior, change the overlay mapping from `fibonacciRightLine` back to `fibonacciLine` inside `handleDrawingToolChange`.
+
 ## Sidebar Scrolling (Many Tools)
 
 - The K-line tools left panel is vertically scrollable when content exceeds available height.
