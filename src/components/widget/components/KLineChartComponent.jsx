@@ -558,23 +558,41 @@ export const KLineChartComponent = ({
       },
     });
 
-    // Register rectangle overlay
+    // Register rectangle overlay (2 anchors, finalize on 3rd step)
     registerOverlay({
       name: 'rectangle',
-      totalStep: 2,
-      createPointFigures: ({ coordinates }) => {
-        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+      totalStep: 3,
+      needDefaultPointFigure: true,
+      needDefaultXAxisFigure: true,
+      needDefaultYAxisFigure: true,
+      createPointFigures: ({ chart, coordinates, overlay }) => {
+        const points = overlay?.points || [];
+        if (!Array.isArray(points) || points.length === 0) return [];
+
+        // Convert to pixels for robust rendering
+        let px = [];
+        try {
+          if (typeof chart.convertToPixel === 'function') {
+            px = chart.convertToPixel(points) || [];
+          }
+        } catch (_) { px = []; }
+        const c0 = px[0] || coordinates[0];
+        const c1 = px[1] || coordinates[1];
+        if (!c0) return [];
+
+        // If only one point, show a tiny preview dot/zero-size rect via default point figure
+        if (!c1) return [];
+
+        const x = Math.min(c0.x, c1.x);
+        const y = Math.min(c0.y, c1.y);
+        const width = Math.abs((c1.x || 0) - (c0.x || 0));
+        const height = Math.abs((c1.y || 0) - (c0.y || 0));
+
         return [
           {
             type: 'rect',
-            attrs: {
-              coordinates: [coordinates[0], coordinates[1]],
-              styles: {
-                color: '#4ECDC4',
-                size: 1,
-                style: 'solid',
-              },
-            },
+            attrs: { x, y, width, height },
+            styles: { color: '#4ECDC4', size: 1 }
           },
         ];
       },
@@ -1993,12 +2011,13 @@ export const KLineChartComponent = ({
                 return;
               }
 
-              // Consider trend/horizontal/vertical and both Fibonacci tools
+              // Consider trend/horizontal/vertical, both Fibonacci tools, and rectangle
               const candidateOverlays = overlays.filter((ov) => ov && ov.visible !== false && (
                 ov.name === 'segment' || ov.name === 'trendLine' ||
                 ov.name === 'horizontalStraightLine' || ov.name === 'horizontalLine' ||
                 ov.name === 'verticalStraightLine' || ov.name === 'verticalLine' ||
-                ov.name === 'fibonacciRightLine' || ov.name === 'fibonacciTrendExtensionRight'
+                ov.name === 'fibonacciRightLine' || ov.name === 'fibonacciTrendExtensionRight' ||
+                ov.name === 'rectangle'
               ));
               if (candidateOverlays.length === 0) {
                 setSelectedOverlayPanel(null);
@@ -2048,6 +2067,30 @@ export const KLineChartComponent = ({
                     const dist = Math.abs(clickX - x);
                     const cy = Math.max(0, Math.min(clickY, (chartContainerRef.current?.clientHeight || 0)));
                     if (dist < best.dist) best = { dist, overlay: ov, cx: x, cy };
+                    return;
+                  }
+
+                  // Rectangle: select if click is inside or near any edge
+                  if (name === 'rectangle' && c1 && c2) {
+                    const x1 = Math.min(c1.x, c2.x);
+                    const x2 = Math.max(c1.x, c2.x);
+                    const y1 = Math.min(c1.y, c2.y);
+                    const y2 = Math.max(c1.y, c2.y);
+
+                    const inside = clickX >= x1 && clickX <= x2 && clickY >= y1 && clickY <= y2;
+
+                    // Edge distances
+                    const resTop = distancePointToSegment(clickX, clickY, x1, y1, x2, y1);
+                    const resBottom = distancePointToSegment(clickX, clickY, x1, y2, x2, y2);
+                    const resLeft = distancePointToSegment(clickX, clickY, x1, y1, x1, y2);
+                    const resRight = distancePointToSegment(clickX, clickY, x2, y1, x2, y2);
+                    const bestEdge = [resTop, resBottom, resLeft, resRight].reduce((a, b) => (a.dist < b.dist ? a : b));
+
+                    // Prefer inside hits as strongest selection
+                    const dist = inside ? 0 : bestEdge.dist;
+                    const cx = inside ? Math.min(Math.max(clickX, x1), x2) : bestEdge.cx;
+                    const cy = inside ? Math.min(Math.max(clickY, y1), y2) : bestEdge.cy;
+                    if (dist < best.dist) best = { dist, overlay: ov, cx, cy };
                     return;
                   }
 

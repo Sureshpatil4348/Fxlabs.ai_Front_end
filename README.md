@@ -90,6 +90,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - `src/components/widget/components/Sidebar.jsx:~1-120` (sidebar button)
 - To disable right-only behavior, you can customize `startX` and `endX` inside the overlay’s `createPointFigures` implementation.
 
+### Rectangle (2 points)
+
+- Fixed the Rectangle tool to use a 2-anchor workflow (finalized on step 3, consistent with KLineCharts) and to render reliably using pixel conversion.
+- Click-to-delete support: clicking inside the rectangle or near any edge shows the delete popup; deleting removes only the selected rectangle.
+- File: `src/components/widget/components/KLineChartComponent.jsx:520` and `src/components/widget/components/KLineChartComponent.jsx:1950`
+
 ## Sidebar Scrolling (Many Tools)
 
 - The K-line tools left panel is vertically scrollable when content exceeds available height.
