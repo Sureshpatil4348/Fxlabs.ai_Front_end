@@ -25,7 +25,7 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
     },
     {
       id: 'fibonacci',
-      name: 'Fibonacci',
+      name: 'Fib Retracement',
       icon: '🌀',
       description: 'Draw Fibonacci retracement levels'
     },

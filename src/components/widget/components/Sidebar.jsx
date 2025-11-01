@@ -111,7 +111,7 @@ export const Sidebar = () => {
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'fibonacci' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
-          title="Fibonacci"
+          title="Fib Retracement"
         >
           <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-md flex items-center justify-center shadow-sm">
             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ export const Sidebar = () => {
           </div>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-          Fibonacci
+          Fib Retracement
         </div>
       </div>
 
