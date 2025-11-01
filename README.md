@@ -60,3 +60,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Applies cursor via container style and forced CSS classes to override library defaults.
   - CSS helpers in `src/index.css`:
     - `.kline-cursor-crosshair`, `.kline-cursor-pointer`, `.kline-cursor-grab`, `.kline-cursor-grabbing` (each enforces cursor on all children with `!important`).
+
+## Fix: K-line Text Tool Delete (inline editor blur)
+
+- Problem: Deleting a text annotation from the on-chart overlay action panel sometimes failed because clicking the delete button first blurred the inline text editor, which cleaned up the action panel before the click handler executed.
+- Change: Handle deletion on `onMouseDown` (with `preventDefault`/`stopPropagation`) so the removal runs before the input blur cleanup.
+- Location: `src/components/widget/components/KLineChartComponent.jsx:~2590-2635` (delete button in the selected drawing action panel).
+- Result: Clicking the delete overlay button reliably removes text annotations (and other overlays) without being interrupted by the inline editor blur.

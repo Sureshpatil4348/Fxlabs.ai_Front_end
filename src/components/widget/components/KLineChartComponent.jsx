@@ -2589,7 +2589,9 @@ export const KLineChartComponent = ({
                   title="Delete"
                   className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
                   aria-label="Delete drawing"
-                  onClick={(e) => {
+                  onMouseDown={(e) => {
+                    // Use mousedown so deletion occurs before input blur cleanup
+                    e.preventDefault();
                     e.stopPropagation();
                     try {
                       const chart = chartRef.current;
@@ -2621,6 +2623,32 @@ export const KLineChartComponent = ({
                       }
                     } catch (_) { /* ignore */ }
                     // Also remove any inline editor if open
+                    try {
+                      const container = chartContainerRef.current;
+                      if (container) {
+                        const editor = container.querySelector('.kv-inline-rect-editor');
+                        if (editor && editor.parentNode) editor.parentNode.removeChild(editor);
+                      }
+                    } catch (_) { /* ignore */ }
+                    inlineEditorActiveRef.current = false;
+                    setSelectedOverlayPanel(null);
+                  }}
+                  onClick={(e) => {
+                    // Fallback for keyboard users (Enter/Space)
+                    e.stopPropagation();
+                    try {
+                      const chart = chartRef.current;
+                      const id = selectedOverlayPanel?.id;
+                      const paneId = selectedOverlayPanel?.paneId;
+                      if (!chart || !id) {
+                        setSelectedOverlayPanel(null);
+                        return;
+                      }
+                      let removed = false;
+                      try { chart.removeOverlay({ id, paneId }); removed = true; } catch (_) {}
+                      if (!removed) { try { chart.removeOverlay({ id }); removed = true; } catch (_) {} }
+                      if (!removed) { try { chart.removeOverlay(id); removed = true; } catch (_) {} }
+                    } catch (_) { /* ignore */ }
                     try {
                       const container = chartContainerRef.current;
                       if (container) {
