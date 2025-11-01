@@ -46,12 +46,6 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
       name: 'Text',
       icon: '📝',
       description: 'Add text annotations'
-    },
-    {
-      id: 'arrow',
-      name: 'Arrow',
-      icon: '➡️',
-      description: 'Draw arrows for annotations'
     }
   ];
 

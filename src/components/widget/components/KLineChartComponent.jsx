@@ -798,30 +798,6 @@ export const KLineChartComponent = ({
       },
     });
 
-    // Register arrow overlay
-    registerOverlay({
-      name: 'arrow',
-      totalStep: 2,
-      createPointFigures: ({ coordinates }) => {
-        if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
-        return [
-          {
-            type: 'line',
-            attrs: {
-              coordinates: [coordinates[0], coordinates[1]],
-              styles: {
-                color: '#FFA726',
-                size: 3,
-              },
-            },
-          },
-        ];
-      },
-      onDrawEnd: ({ overlay }) => {
-        console.log('📈 Arrow drawn:', overlay);
-      },
-    });
-
     // Register a custom Fibonacci overlay that extends levels to the RIGHT only
     // (instead of both left and right like the built-in 'fibonacciLine')
     registerOverlay({
