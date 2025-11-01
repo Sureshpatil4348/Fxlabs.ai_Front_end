@@ -303,7 +303,7 @@ export const TradingViewHeader = () => {
                 onClick={() => setShowTimezoneDropdown(!showTimezoneDropdown)}
                 className="px-3 py-1.5 bg-white text-[13px] font-medium hover:bg-blue-50 transition-all duration-200 min-w-[120px] flex items-center gap-1"
               >
-                <span className="text-gray-700">{`${getCurrentTimezoneInfo().label} (GMT${getCurrentTimezoneInfo().gmt})`}</span>
+                <span className="text-gray-700">{`GMT${getCurrentTimezoneInfo().gmt}`}</span>
                 <svg className={`w-3 h-3 transition-transform ${showTimezoneDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
