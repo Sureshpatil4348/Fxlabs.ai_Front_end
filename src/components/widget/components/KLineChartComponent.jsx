@@ -632,6 +632,9 @@ export const KLineChartComponent = ({
         const width = Math.abs((c1.x || 0) - (c0.x || 0));
         const height = Math.abs((c1.y || 0) - (c0.y || 0));
 
+        const fillFromStyles = (overlay && overlay.styles && overlay.styles.rect && overlay.styles.rect.color) || overlay?.fillColor || 'rgba(78,205,196,0.3)';
+        const borderFromStyles = (overlay && overlay.styles && overlay.styles.rect && overlay.styles.rect.borderColor) || overlay?.borderColor || '#4ECDC4';
+
         const figures = [
           {
             type: 'rect',
@@ -639,8 +642,8 @@ export const KLineChartComponent = ({
             styles: {
               // 30% transparent fill with a border
               style: 'fill',
-              color: 'rgba(78,205,196,0.3)',
-              borderColor: '#4ECDC4',
+              color: fillFromStyles,
+              borderColor: borderFromStyles,
               borderSize: 1,
             },
           },
@@ -2513,6 +2516,102 @@ export const KLineChartComponent = ({
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+                {selectedOverlayPanel?.name === 'rectangle' && (
+                  <div className="relative ml-1">
+                    <button
+                      type="button"
+                      title="Change color"
+                      className="w-3 h-3 rounded border border-gray-300"
+                      aria-label="Change rectangle color"
+                      style={{ backgroundColor: (() => {
+                        try {
+                          const chart = chartRef.current;
+                          const id = selectedOverlayPanel?.id;
+                          if (chart && id) {
+                            let overlays = [];
+                            try {
+                              if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                              else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                            } catch (_) {}
+                            const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                            const hex = ov?.styles?.rect?.borderColor || ov?.borderColor;
+                            if (typeof hex === 'string') return hex;
+                          }
+                        } catch (_) { /* ignore */ }
+                        return '#4ECDC4';
+                      })() }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const triggerBtn = e.currentTarget;
+                        // toggle palette via simple DOM flag by injecting/removing a small panel
+                        const host = e.currentTarget.parentElement;
+                        if (!host) return;
+                        const existing = host.querySelector('.kv-rect-color-palette');
+                        if (existing) { existing.remove(); return; }
+                        const palette = document.createElement('div');
+                        palette.className = 'kv-rect-color-palette';
+                        Object.assign(palette.style, {
+                          position: 'absolute',
+                          top: '28px',
+                          left: '0',
+                          background: '#ffffff',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '6px',
+                          padding: '6px',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gap: '6px',
+                          zIndex: 80,
+                        });
+                        const COLORS = ['#4ECDC4','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#22C55E','#06B6D4','#A855F7'];
+                        COLORS.forEach((hex) => {
+                          const sw = document.createElement('button');
+                          sw.type = 'button';
+                          sw.title = hex;
+                          sw.setAttribute('aria-label', `Pick ${hex}`);
+                          Object.assign(sw.style, {
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '3px',
+                            border: '1px solid #D1D5DB',
+                            background: hex,
+                            cursor: 'pointer',
+                          });
+                          sw.addEventListener('click', (ev) => {
+                            ev.stopPropagation();
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (!chart || !id) return;
+                              // apply 30% alpha for fill; keep border as solid hex
+                              const rgba = hex.match(/^#([0-9a-f]{6})$/i) ? hex : '#4ECDC4';
+                              // convert hex to rgba with 0.3
+                              const r = parseInt(rgba.slice(1,3),16);
+                              const g = parseInt(rgba.slice(3,5),16);
+                              const b = parseInt(rgba.slice(5,7),16);
+                              const fill = `rgba(${r},${g},${b},0.3)`;
+                              chart.overrideOverlay({ id, styles: { rect: { color: fill, borderColor: hex } } });
+                              // reflect change on the trigger button immediately
+                              try { triggerBtn.style.backgroundColor = hex; } catch (_) {}
+                              // force a light re-render so other UI can pick up new color
+                              try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            } catch (_) { /* ignore */ }
+                            palette.remove();
+                          });
+                          palette.appendChild(sw);
+                        });
+                        host.appendChild(palette);
+                        const cleanup = (evt) => {
+                          if (!host.contains(evt.target)) {
+                            palette.remove();
+                            window.removeEventListener('mousedown', cleanup);
+                          }
+                        };
+                        setTimeout(() => window.addEventListener('mousedown', cleanup), 0);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

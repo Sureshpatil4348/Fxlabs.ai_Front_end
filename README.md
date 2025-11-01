@@ -94,6 +94,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 - Uses a 2-anchor workflow (finalized on step 3, consistent with KLineCharts) and renders reliably using pixel conversion.
 - 30% transparent fill with a visible border: fill color `rgba(78,205,196,0.3)` and border `#4ECDC4`.
+- Color picker: with the rectangle selected, click the color swatch in the popup to open a small palette and change the rectangle’s color. Fill uses 30% alpha of the chosen color; border uses the solid hex.
 - Click-to-delete support: clicking inside the rectangle or near any edge shows the delete popup; deleting removes only the selected rectangle.
 - Inline label editing: the center shows “Add a text” as a placeholder when empty. Click it to edit inline (a small input appears); committing sets the label and it renders centered inside the rectangle.
 - File: `src/components/widget/components/KLineChartComponent.jsx:563` and `src/components/widget/components/KLineChartComponent.jsx:2000`
