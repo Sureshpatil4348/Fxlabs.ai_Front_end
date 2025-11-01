@@ -119,6 +119,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - This mirrors the below‑chart behavior but targets the main pane area. It uses hover detection over the main pane (not line proximity) as a lightweight placeholder and distinguishes multiple overlays by showing separate labeled panels.
 - Panel cards use transparent backgrounds with only a subtle border (no fill).
 
+## Trend Line Click Actions (K‑Line Chart)
+
+- Clicking on a plotted Trend Line (KLineCharts overlay) now opens a small action panel near the click, styled the same as indicator panels, but with only a Delete icon.
+- Click the Delete icon to remove the selected trend line from the chart.
+- Works for built‑in `segment` overlays (trend lines) and the custom `trendLine` overlay type.
+- File: `src/components/widget/components/KLineChartComponent.jsx` (panel logic and overlay proximity detection using `convertToPixel`).
+
 ## Layout Fix: TradingChart Height
 
 - The `TradingChart` root container used `h-screen`, which caused the chart to exceed the grid cell height in the dashboard layout. This produced vertical overflow even when no indicators were enabled.
