@@ -558,6 +558,50 @@ export const KLineChartComponent = ({
       },
     });
 
+    // Helper: open inline text editor centered at (x,y) inside the chart container
+    const openInlineTextEditor = (x, y, initialText, onCommit) => {
+      try {
+        const container = chartContainerRef.current;
+        if (!container) return;
+        // Remove any existing editor
+        const prev = container.querySelector('.kv-inline-rect-editor');
+        if (prev) prev.remove();
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = initialText || '';
+        input.className = 'kv-inline-rect-editor';
+        Object.assign(input.style, {
+          position: 'absolute',
+          left: `${Math.max(0, Math.round(x - 80))}px`,
+          top: `${Math.max(0, Math.round(y - 10))}px`,
+          width: '160px',
+          padding: '4px 6px',
+          fontSize: '12px',
+          lineHeight: '16px',
+          border: '1px solid #9CA3AF',
+          borderRadius: '4px',
+          background: '#ffffff',
+          color: '#111827',
+          zIndex: 80,
+        });
+        container.appendChild(input);
+        input.focus();
+        input.select();
+
+        const finalize = (ok) => {
+          const val = input.value;
+          input.remove();
+          if (ok && typeof onCommit === 'function') onCommit(val);
+        };
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') finalize(true);
+          if (e.key === 'Escape') finalize(false);
+        });
+        input.addEventListener('blur', () => finalize(true));
+      } catch (_) { /* ignore */ }
+    };
+
     // Register rectangle overlay (2 anchors, finalize on 3rd step)
     registerOverlay({
       name: 'rectangle',
@@ -602,35 +646,48 @@ export const KLineChartComponent = ({
           },
         ];
 
-        // Optional centered label when overlay has a `text` property
-        if (overlay && typeof overlay.text === 'string' && overlay.text.trim().length > 0) {
-          figures.push({
-            type: 'text',
-            attrs: {
-              x: x + width / 2,
-              y: y + height / 2,
-              text: overlay.text,
-              align: 'center',
-              baseline: 'middle',
-            },
-            // Use default overlay text styles; override color if desired
-          });
-        }
+        // Centered label. If none set, show editable placeholder.
+        const labelText = (overlay && typeof overlay.text === 'string' && overlay.text.trim().length > 0)
+          ? overlay.text
+          : 'Add a text';
+        const isPlaceholder = !(overlay && typeof overlay.text === 'string' && overlay.text.trim().length > 0);
+        figures.push({
+          type: 'text',
+          attrs: {
+            x: x + width / 2,
+            y: y + height / 2,
+            text: labelText,
+            align: 'center',
+            baseline: 'middle',
+          },
+          styles: isPlaceholder ? { color: '#6B7280' } : undefined,
+        });
 
         return figures;
       },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Rectangle drawn:', overlay);
       },
-      onDoubleClick: ({ chart, overlay }) => {
+      onClick: ({ chart, overlay, figure }) => {
         try {
+          if (!overlay || !figure || figure.type !== 'text') return;
+          // Recompute center from current points in pixels
+          const pts = Array.isArray(overlay.points) ? overlay.points : [];
+          const px = (typeof chart.convertToPixel === 'function') ? (chart.convertToPixel(pts) || []) : [];
+          const c0 = px[0];
+          const c1 = px[1];
+          if (!c0 || !c1) return;
+          const x = Math.min(c0.x, c1.x);
+          const y = Math.min(c0.y, c1.y);
+          const width = Math.abs((c1.x || 0) - (c0.x || 0));
+          const height = Math.abs((c1.y || 0) - (c0.y || 0));
+          const cx = x + width / 2;
+          const cy = y + height / 2;
           const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
-          const next = window.prompt('Rectangle label (leave empty to clear):', current);
-          if (next !== null) {
-            // Update the overlay to store the label; createPointFigures will render it
-            chart.overrideOverlay({ id: overlay.id, text: String(next || '') });
-          }
-        } catch (_) { /* ignore prompt errors */ }
+          openInlineTextEditor(cx, cy, current, (val) => {
+            chart.overrideOverlay({ id: overlay.id, text: String(val || '') });
+          });
+        } catch (_) { /* ignore */ }
       },
     });
 
