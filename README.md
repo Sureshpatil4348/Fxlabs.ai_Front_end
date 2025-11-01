@@ -92,9 +92,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ### Rectangle (2 points)
 
-- Fixed the Rectangle tool to use a 2-anchor workflow (finalized on step 3, consistent with KLineCharts) and to render reliably using pixel conversion.
+- Uses a 2-anchor workflow (finalized on step 3, consistent with KLineCharts) and renders reliably using pixel conversion.
+- 30% transparent fill with a visible border: fill color `rgba(78,205,196,0.3)` and border `#4ECDC4`.
 - Click-to-delete support: clicking inside the rectangle or near any edge shows the delete popup; deleting removes only the selected rectangle.
-- File: `src/components/widget/components/KLineChartComponent.jsx:520` and `src/components/widget/components/KLineChartComponent.jsx:1950`
+- Optional center label: double-click a rectangle to set or clear its label; text is rendered centered inside the rectangle.
+- File: `src/components/widget/components/KLineChartComponent.jsx:563` and `src/components/widget/components/KLineChartComponent.jsx:2000`
 
 ## Sidebar Scrolling (Many Tools)
 

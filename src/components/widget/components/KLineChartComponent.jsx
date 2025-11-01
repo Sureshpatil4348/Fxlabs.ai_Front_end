@@ -588,16 +588,49 @@ export const KLineChartComponent = ({
         const width = Math.abs((c1.x || 0) - (c0.x || 0));
         const height = Math.abs((c1.y || 0) - (c0.y || 0));
 
-        return [
+        const figures = [
           {
             type: 'rect',
             attrs: { x, y, width, height },
-            styles: { color: '#4ECDC4', size: 1 }
+            styles: {
+              // 30% transparent fill with a border
+              style: 'fill',
+              color: 'rgba(78,205,196,0.3)',
+              borderColor: '#4ECDC4',
+              borderSize: 1,
+            },
           },
         ];
+
+        // Optional centered label when overlay has a `text` property
+        if (overlay && typeof overlay.text === 'string' && overlay.text.trim().length > 0) {
+          figures.push({
+            type: 'text',
+            attrs: {
+              x: x + width / 2,
+              y: y + height / 2,
+              text: overlay.text,
+              align: 'center',
+              baseline: 'middle',
+            },
+            // Use default overlay text styles; override color if desired
+          });
+        }
+
+        return figures;
       },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Rectangle drawn:', overlay);
+      },
+      onDoubleClick: ({ chart, overlay }) => {
+        try {
+          const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
+          const next = window.prompt('Rectangle label (leave empty to clear):', current);
+          if (next !== null) {
+            // Update the overlay to store the label; createPointFigures will render it
+            chart.overrideOverlay({ id: overlay.id, text: String(next || '') });
+          }
+        } catch (_) { /* ignore prompt errors */ }
       },
     });
 
