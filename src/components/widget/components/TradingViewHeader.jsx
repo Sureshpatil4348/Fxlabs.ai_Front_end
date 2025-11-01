@@ -1,3 +1,4 @@
+import { Maximize2 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -7,7 +8,7 @@ import { listTimezonesWithOffsets } from '../../../utils/marketHoursEngine';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
-export const TradingViewHeader = () => {
+export const TradingViewHeader = ({ onFullscreenToggle }) => {
   const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef(null);
@@ -403,6 +404,22 @@ export const TradingViewHeader = () => {
               )}
             </div>
           </div>
+
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
+          {/* Fullscreen Button */}
+          {onFullscreenToggle && (
+            <button
+              type="button"
+              onClick={onFullscreenToggle}
+              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
+              title="Fullscreen"
+              aria-label="Toggle fullscreen"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

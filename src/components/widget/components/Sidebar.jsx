@@ -1,10 +1,9 @@
-import { Maximize2, Minimize2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { useDrawingTools } from '../hooks/useDrawingTools';
 import { useChartStore } from '../stores/useChartStore';
 
-export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
+export const Sidebar = () => {
   const { 
     settings, 
     setCursorType,
@@ -456,32 +455,6 @@ export const Sidebar = ({ onFullscreenToggle, isFullscreen = false }) => {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Divider */}
-      <div className="w-8 h-px bg-gray-300 my-2"></div>
-
-      {/* Fullscreen/Compact Button */}
-      <div className="relative group">
-        <button
-          onClick={() => {
-            if (onFullscreenToggle) {
-              onFullscreenToggle();
-            }
-          }}
-          className="w-10 h-10 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
-          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        >
-          {isFullscreen ? (
-            <Minimize2 className="w-5 h-5" />
-          ) : (
-            <Maximize2 className="w-5 h-5" />
-          )}
-        </button>
-        {/* Tooltip */}
-        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-          {isFullscreen ? "Compact" : "Full"}
-        </div>
       </div>
     </div>
   );
