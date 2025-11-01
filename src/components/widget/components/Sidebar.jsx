@@ -513,15 +513,15 @@ const CursorMenu = ({ current, onSelect }) => {
               type="button"
               onClick={() => { onSelect(opt.id); setOpen(false); }}
               className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm transition-colors ${
-                current === opt.id ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50 text-gray-700'
+                current === opt.id ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-50 text-gray-700'
               }`}
             >
-              <span className={`inline-flex ${current === opt.id ? 'text-blue-600' : 'text-gray-500'}`}>
+              <span className={`inline-flex ${current === opt.id ? 'text-blue-500' : 'text-gray-500'}`}>
                 {renderIcon(opt.id)}
               </span>
               <span className="flex-1">{opt.name}</span>
               {current === opt.id && (
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}

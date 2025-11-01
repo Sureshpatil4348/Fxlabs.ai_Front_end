@@ -1329,7 +1329,7 @@ export const KLineChartComponent = ({
     const chart = chartRef.current;
     if (!container) return;
 
-    const mode = (settings && settings.cursorType) ? settings.cursorType : 'crosshair';
+    const mode = settings?.cursorType ?? 'crosshair';
     const baseCursor = mode === 'grab' ? 'grab' : mode; // 'crosshair' | 'pointer' | 'grab'
 
     // Ensure base cursor via style (fallback) and via CSS class from JSX
@@ -1362,7 +1362,7 @@ export const KLineChartComponent = ({
       container.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [settings.cursorType]);
+  }, [settings]);
 
   // Apply timezone changes to the chart dynamically
   useEffect(() => {
@@ -2045,7 +2045,7 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 KLineChart: Error handling indicator changes:', error);
     }
-  }, [settings.indicators]);
+  }, [settings.indicators, isWorkspaceHidden]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -2819,7 +2819,18 @@ export const KLineChartComponent = ({
         {/* Custom center modal for confirmations */}
         {confirmModal && (
           <div className="absolute inset-0 z-[90] flex items-center justify-center" role="dialog" aria-modal="true">
-            <div className="absolute inset-0 bg-black bg-opacity-40" onClick={() => setConfirmModal(null)} />
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-40" 
+              onClick={() => setConfirmModal(null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setConfirmModal(null);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Close modal"
+            />
             <div className="relative bg-white rounded-lg shadow-xl border border-gray-200 w-[320px] max-w-[90%] p-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-2">{confirmModal.title}</h3>
               <p className="text-xs text-gray-600 mb-4">{confirmModal.message}</p>
