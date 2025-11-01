@@ -663,7 +663,18 @@ export const KLineChartComponent = ({
             align: 'center',
             baseline: 'middle',
           },
-          styles: isPlaceholder ? { color: '#6B7280' } : undefined,
+          styles: {
+            // Remove default blue background/border from overlay text
+            backgroundColor: 'transparent',
+            borderSize: 0,
+            borderColor: 'transparent',
+            paddingLeft: 0,
+            paddingRight: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            // Text color: muted when placeholder, darker when set
+            color: isPlaceholder ? '#6B7280' : '#111827',
+          },
         });
 
         return figures;
