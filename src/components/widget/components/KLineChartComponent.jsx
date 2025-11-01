@@ -21,6 +21,7 @@ export const KLineChartComponent = ({
   const [isHoveringBelowPanes, setIsHoveringBelowPanes] = useState(false);
   const [isHoveringOnChartOverlays, setIsHoveringOnChartOverlays] = useState(false);
   const [selectedOverlayPanel, setSelectedOverlayPanel] = useState(null);
+  const inlineEditorActiveRef = useRef(false);
   
   // Get the setter from store
   const { setKLineChartRef, toggleIndicator } = useChartStore();
@@ -559,7 +560,7 @@ export const KLineChartComponent = ({
     });
 
     // Helper: open inline text editor centered at (x,y) inside the chart container
-    const openInlineTextEditor = (x, y, initialText, onCommit) => {
+    const openInlineTextEditor = (x, y, initialText, onCommit, overlayMeta) => {
       try {
         const container = chartContainerRef.current;
         if (!container) return;
@@ -577,10 +578,12 @@ export const KLineChartComponent = ({
         input.type = 'text';
         input.value = initialText || '';
         input.className = 'kv-inline-rect-editor';
+        const leftVal = Math.max(0, Math.round(x - 80));
+        const topVal = Math.max(0, Math.round(y - 10));
         Object.assign(input.style, {
           position: 'absolute',
-          left: `${Math.max(0, Math.round(x - 80))}px`,
-          top: `${Math.max(0, Math.round(y - 10))}px`,
+          left: `${leftVal}px`,
+          top: `${topVal}px`,
           width: '200px',
           padding: '4px 6px',
           fontSize: '12px',
@@ -592,8 +595,22 @@ export const KLineChartComponent = ({
           zIndex: 80,
         });
         container.appendChild(input);
+        inlineEditorActiveRef.current = true;
         input.focus();
         input.select();
+
+        // Show delete popup near the inline input (to the right side)
+        if (overlayMeta && overlayMeta.id) {
+          try {
+            setSelectedOverlayPanel({
+              id: overlayMeta.id,
+              name: overlayMeta.name,
+              paneId: overlayMeta.paneId,
+              x: leftVal + 200,
+              y: topVal + 10,
+            });
+          } catch (_) { /* ignore */ }
+        }
 
         let finalized = false;
         const cleanup = () => {
@@ -605,6 +622,8 @@ export const KLineChartComponent = ({
             if (input.isConnected) input.remove();
             else if (input.parentNode) input.parentNode.removeChild(input);
           } catch (_) { /* ignore */ }
+          inlineEditorActiveRef.current = false;
+          try { setSelectedOverlayPanel(null); } catch (_) { /* ignore */ }
         };
 
         const finalize = (ok) => {
@@ -722,7 +741,7 @@ export const KLineChartComponent = ({
           const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
           openInlineTextEditor(cx, cy, current, (val) => {
             chart.overrideOverlay({ id: overlay.id, text: String(val || '') });
-          });
+          }, { id: overlay.id, name: overlay.name, paneId: overlay.paneId || overlay.pane?.id });
         } catch (_) { /* ignore */ }
       },
     });
@@ -771,7 +790,7 @@ export const KLineChartComponent = ({
           const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
           openInlineTextEditor(c0.x, c0.y, current, (val) => {
             chart.overrideOverlay({ id: overlay.id, text: String(val || '') });
-          });
+          }, { id: overlay.id, name: overlay.name, paneId: overlay.paneId || overlay.pane?.id });
         } catch (_) { /* ignore */ }
       },
       onDrawEnd: ({ overlay }) => {
@@ -2149,6 +2168,10 @@ export const KLineChartComponent = ({
               const chart = chartRef.current;
               const container = chartContainerRef.current;
               if (!chart || !container) return;
+              if (inlineEditorActiveRef.current) {
+                // Do not alter selection while inline editor is open
+                return;
+              }
               const rect = container.getBoundingClientRect();
               const clickX = e.clientX - rect.left;
               const clickY = e.clientY - rect.top;
@@ -2164,13 +2187,13 @@ export const KLineChartComponent = ({
                 return;
               }
 
-              // Consider trend/horizontal/vertical, both Fibonacci tools, and rectangle
+              // Consider trend/horizontal/vertical, both Fibonacci tools, rectangle, and text
               const candidateOverlays = overlays.filter((ov) => ov && ov.visible !== false && (
                 ov.name === 'segment' || ov.name === 'trendLine' ||
                 ov.name === 'horizontalStraightLine' || ov.name === 'horizontalLine' ||
                 ov.name === 'verticalStraightLine' || ov.name === 'verticalLine' ||
                 ov.name === 'fibonacciRightLine' || ov.name === 'fibonacciTrendExtensionRight' ||
-                ov.name === 'rectangle'
+                ov.name === 'rectangle' || ov.name === 'text'
               ));
               if (candidateOverlays.length === 0) {
                 setSelectedOverlayPanel(null);
@@ -2571,6 +2594,15 @@ export const KLineChartComponent = ({
                         } catch (_) { /* ignore */ }
                       }
                     } catch (_) { /* ignore */ }
+                    // Also remove any inline editor if open
+                    try {
+                      const container = chartContainerRef.current;
+                      if (container) {
+                        const editor = container.querySelector('.kv-inline-rect-editor');
+                        if (editor && editor.parentNode) editor.parentNode.removeChild(editor);
+                      }
+                    } catch (_) { /* ignore */ }
+                    inlineEditorActiveRef.current = false;
                     setSelectedOverlayPanel(null);
                   }}
                 >

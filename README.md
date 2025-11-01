@@ -105,6 +105,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Implementation: corrected overlay figure to use `x/y/text` attributes with figure-level `styles`; added click-to-edit using the inline editor.
 - Files: `src/components/widget/components/KLineChartComponent.jsx:710-750` (registration and editing handler)
 
+- Delete popup while editing: when the inline text editor is open, a small delete popup now appears next to the input, allowing immediate removal of the text overlay.
+- Implementation details:
+  - `openInlineTextEditor` positions the popup near the input and clears it on finalize.
+  - The chart click handler is guarded to avoid overriding selection while the editor is open.
+  - Files: `src/components/widget/components/KLineChartComponent.jsx:~560-630, ~2127-2295, ~710-780`.
+
 #### Inline Editor Stability
 
 - Addressed a race where pressing Enter also triggered a blur, causing a double-remove NotFoundError.
