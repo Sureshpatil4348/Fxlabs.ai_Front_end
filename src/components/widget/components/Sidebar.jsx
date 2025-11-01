@@ -46,7 +46,7 @@ export const Sidebar = () => {
   };
   
   return (
-    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
+    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2 h-full min-h-0 overflow-y-auto">
       {/* K-Line Tools: icon-only buttons */}
       <div className="relative group">
         <button
