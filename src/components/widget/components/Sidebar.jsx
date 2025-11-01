@@ -47,20 +47,29 @@ export const Sidebar = () => {
   
   return (
     <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-2 h-full min-h-0 overflow-y-auto">
-      {/* K-Line Tools: icon-only buttons */}
+      {/* Cursor Types: moved to top; outlined icons, active = blue */}
+      <CursorMenu
+        current={settings.cursorType}
+        onSelect={(type) => setCursorType(type)}
+      />
+
+      {/* K-Line Tools: icon-only buttons with outlined grey icons; active = blue */}
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('trendLine')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'trendLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Trend Line"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20l8-8 4 4 4-4" />
+            <circle cx="4" cy="20" r="1.25" fill="currentColor" />
+            <circle cx="12" cy="12" r="1.25" fill="currentColor" />
+            <circle cx="16" cy="16" r="1.25" fill="currentColor" />
+            <circle cx="20" cy="12" r="1.25" fill="currentColor" />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Trend Line
@@ -69,17 +78,16 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('horizontalLine')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'horizontalLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Horizontal Line"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-700 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h16" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Horizontal Line
@@ -88,17 +96,16 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('verticalLine')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'verticalLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Vertical Line"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-sky-500 to-sky-700 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v18" />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Vertical Line
@@ -107,17 +114,17 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('fibonacci')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'fibonacci' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Fib Retracement"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 12l3-3 3 3 4-4M3 4h18" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 5h4M6 9h8M6 13h10M6 17h12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16m16-16v16" />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Fib Retracement
@@ -126,17 +133,16 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('fibExtension')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'fibExtension' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Fib Extension (3pt)"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h6m0 0l3-3m-3 3l3 3m4-9v18" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12h6m0 0l3-3m-3 3l3 3M18 5v14" />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Fib Extension (3pt)
@@ -145,17 +151,16 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('rectangle')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'rectangle' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Rectangle"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-teal-700 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4h16v16H4z" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="5" width="14" height="14" rx="1.5" ry="1.5" strokeWidth={2} />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Rectangle
@@ -164,17 +169,16 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          type="button"
           onClick={() => handleKLineToolSelect('text')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'text' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Text"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-pink-700 rounded-md flex items-center justify-center shadow-sm">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12M12 7v10m-5 0h10" />
+          </svg>
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Text
@@ -198,14 +202,7 @@ export const Sidebar = () => {
         </div>
       </div>
 
-      {/* Divider between tools and cursor types */}
-      <div className="w-8 border-t border-gray-200 my-1" />
-
-      {/* Cursor Types: Combined menu button */}
-      <CursorMenu
-        current={settings.cursorType}
-        onSelect={(type) => setCursorType(type)}
-      />
+      {/* pointer menu moved above; divider removed */}
     </div>
   );
 };
@@ -240,16 +237,27 @@ const CursorMenu = ({ current, onSelect }) => {
   const iconClass = `w-5 h-5`;
   const renderIcon = (type) => {
     if (type === 'grab') {
+      // Outlined hand/grab icon
       return (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11v2a5 5 0 0010 0V9a1.5 1.5 0 00-3 0v2M7 11V8a1.5 1.5 0 013 0v3M7 11a1.5 1.5 0 00-3 0v2a7 7 0 0014 0V8a1.5 1.5 0 00-3 0" />
         </svg>
       );
     }
-    // Use existing generic pointer-like icon for crosshair/pointer for visual consistency
+    if (type === 'pointer') {
+      // Outlined mouse pointer arrow
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3l10 5-6 2 4 8-3 1-4-8-4 2 3-10z" />
+        </svg>
+      );
+    }
+    // Crosshair: outlined cross with central mark
     return (
-      <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+      <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" strokeWidth={2} />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+        <circle cx="12" cy="12" r="1.25" fill="currentColor" />
       </svg>
     );
   };
