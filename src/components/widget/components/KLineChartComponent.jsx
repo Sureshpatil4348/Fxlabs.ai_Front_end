@@ -965,6 +965,8 @@ export const KLineChartComponent = ({
 
           const lines = [];
           const texts = [];
+          // Get color from overlay styles, fallback to default
+          const lineColor = overlay?.styles?.line?.color || overlay?.color || '#9C27B0';
 
           ratios.forEach((r) => {
             const rawValue = (Number.isFinite(v2) ? v2 : 0) + deltaPrice * r;
@@ -983,8 +985,8 @@ export const KLineChartComponent = ({
           });
 
           return [
-            { type: 'line', attrs: guideLines, styles: { size: 1, style: 'dash', color: '#9C27B0' } },
-            { type: 'line', attrs: lines, styles: { size: 1, color: '#9C27B0' } },
+            { type: 'line', attrs: guideLines, styles: { size: 1, style: 'dash', color: lineColor } },
+            { type: 'line', attrs: lines, styles: { size: 1, color: lineColor } },
             { type: 'text', isCheckEvent: false, attrs: texts },
           ];
         } catch (_err) {
@@ -2252,7 +2254,7 @@ export const KLineChartComponent = ({
               const target = e.target;
               if (target) {
                 const overlayPanel = target.closest('[role="dialog"][aria-label="Drawing actions"]');
-                const colorPalette = target.closest('.kv-rect-color-palette, .kv-trendline-color-palette, .kv-horizline-color-palette, .kv-vertline-color-palette, .kv-fib-color-palette');
+                const colorPalette = target.closest('.kv-rect-color-palette, .kv-trendline-color-palette, .kv-horizline-color-palette, .kv-vertline-color-palette, .kv-fib-color-palette, .kv-fibext-color-palette');
                 if (overlayPanel || colorPalette) {
                   return;
                 }
@@ -3227,6 +3229,109 @@ export const KLineChartComponent = ({
                               const id = selectedOverlayPanel?.id;
                               if (!chart || !id) return;
                               // apply color to Fibonacci retracement lines
+                              const rgba = hex.match(/^#([0-9a-f]{6})$/i) ? hex : '#9C27B0';
+                              chart.overrideOverlay({ id, styles: { line: { color: rgba } } });
+                              // reflect change on the trigger button immediately
+                              try { triggerBtn.style.backgroundColor = rgba; } catch (_) {}
+                              // force a light re-render so other UI can pick up new color
+                              try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            } catch (_) { /* ignore */ }
+                            palette.remove();
+                          });
+                          palette.appendChild(sw);
+                        });
+                        host.appendChild(palette);
+                        const cleanup = (evt) => {
+                          if (!host.contains(evt.target)) {
+                            palette.remove();
+                            window.removeEventListener('mousedown', cleanup);
+                          }
+                        };
+                        setTimeout(() => window.addEventListener('mousedown', cleanup), 0);
+                      }}
+                    />
+                  </div>
+                )}
+                {selectedOverlayPanel?.name === 'fibonacciTrendExtensionRight' && (
+                  <div className="relative ml-1">
+                    <button
+                      type="button"
+                      title="Change color"
+                      className="w-3 h-3 rounded border border-gray-300"
+                      aria-label="Change Fibonacci extension color"
+                      onMouseDown={(e) => { e.stopPropagation(); }}
+                      style={{ backgroundColor: (() => {
+                        try {
+                          const chart = chartRef.current;
+                          const id = selectedOverlayPanel?.id;
+                          if (chart && id) {
+                            let overlays = [];
+                            try {
+                              if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                              else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                            } catch (_) {}
+                            const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                            const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                            if (typeof hex === 'string') return hex;
+                          }
+                        } catch (_) { /* ignore */ }
+                        return '#9C27B0';
+                      })() }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const triggerBtn = e.currentTarget;
+                        // toggle palette via simple DOM flag by injecting/removing a small panel
+                        const host = e.currentTarget.parentElement;
+                        if (!host) return;
+                        const existing = host.querySelector('.kv-fibext-color-palette');
+                        if (existing) { existing.remove(); return; }
+                        const palette = document.createElement('div');
+                        palette.className = 'kv-fibext-color-palette';
+                        Object.assign(palette.style, {
+                          position: 'absolute',
+                          top: '28px',
+                          left: '0',
+                          background: '#ffffff',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '6px',
+                          padding: '6px',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, 16px)',
+                          gap: '6px',
+                          zIndex: 80,
+                        });
+                        // Prevent chart from entering grab-pan when interacting with palette
+                        try {
+                          palette.addEventListener('mousedown', (ev) => { ev.stopPropagation(); }, { capture: true });
+                          palette.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); }, { capture: true });
+                          palette.addEventListener('touchstart', (ev) => { ev.stopPropagation(); }, { capture: true, passive: true });
+                        } catch (_) { /* ignore */ }
+                        const COLORS = ['#4ECDC4','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#22C55E','#06B6D4','#A855F7'];
+                        COLORS.forEach((hex) => {
+                          const sw = document.createElement('button');
+                          sw.type = 'button';
+                          sw.title = hex;
+                          sw.setAttribute('aria-label', `Pick ${hex}`);
+                          Object.assign(sw.style, {
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '3px',
+                            border: '1px solid #D1D5DB',
+                            background: hex,
+                            cursor: 'pointer',
+                          });
+                          try {
+                            sw.addEventListener('mousedown', (ev) => { ev.stopPropagation(); });
+                            sw.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); });
+                            sw.addEventListener('touchstart', (ev) => { ev.stopPropagation(); }, { passive: true });
+                          } catch (_) { /* ignore */ }
+                          sw.addEventListener('click', (ev) => {
+                            ev.stopPropagation();
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (!chart || !id) return;
+                              // apply color to Fibonacci extension lines
                               const rgba = hex.match(/^#([0-9a-f]{6})$/i) ? hex : '#9C27B0';
                               chart.overrideOverlay({ id, styles: { line: { color: rgba } } });
                               // reflect change on the trigger button immediately
