@@ -12,6 +12,12 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
       description: 'Draw trend lines between two points'
     },
     {
+      id: 'fibExtension',
+      name: 'Fib Extension (3pt)',
+      icon: '🧮',
+      description: 'Trend-based Fibonacci extension using 3 points'
+    },
+    {
       id: 'horizontalLine',
       name: 'Horizontal Line',
       icon: '➖',

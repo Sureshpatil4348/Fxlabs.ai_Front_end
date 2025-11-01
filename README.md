@@ -69,12 +69,23 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - A11y/ESLint: Removed click/mouse handlers from non-interactive delete panel wrappers and used a native `button` for actions; wrapper uses `role="dialog"`.
 - Files: `src/components/widget/components/KLineChartComponent.jsx`, `src/components/widget/components/KLineDrawingToolbar.jsx`, `src/components/widget/components/Sidebar.jsx`.
 
-### Fibonacci Retracement (Right-Only Extension)
+### Fibonacci Retracement (Right-Only, 2 points)
 
-- The built-in KLineCharts `fibonacciLine` extends levels to both left and right. We now register a custom overlay `fibonacciRightLine` that extends levels only to the right from the fib range.
+- The built-in KLineCharts `fibonacciLine` extends levels to both left and right. We now register a custom overlay `fibonacciRightLine` (2 anchor points) that extends levels only to the right from the fib range.
 - The toolbar and sidebar map the Fib tool to this custom overlay, so plotted retracement “bars” no longer extend to the left edge.
 - File: `src/components/widget/components/KLineChartComponent.jsx:~640-940`
 - If you prefer the original behavior, change the overlay mapping from `fibonacciRightLine` back to `fibonacciLine` inside `handleDrawingToolChange`.
+
+### Trend-Based Fibonacci Extension (3 points, Right-Only)
+
+- Added a new drawing tool that uses 3 anchors (A→B defines the trend; C is the pivot) and projects Fibonacci extension levels to the right only.
+- Overlay ID: `fibonacciTrendExtensionRight`, Tool ID: `fibExtension`. The overlay uses `totalStep: 4` to collect 3 anchors (A, B, C) and finalize on the 4th step, consistent with KLineCharts multi-anchor overlays.
+- Ratios used: 0.618, 1.0, 1.272, 1.618, 2.0, 2.618. Lines start at the rightmost of the three anchors and extend to the right edge.
+- Files:
+  - `src/components/widget/components/KLineChartComponent.jsx:~640-980` (overlay registration + tool mapping)
+  - `src/components/widget/components/KLineDrawingToolbar.jsx:~1-160` (tool entry)
+  - `src/components/widget/components/Sidebar.jsx:~1-120` (sidebar button)
+- To disable right-only behavior, you can customize `startX` and `endX` inside the overlay’s `createPointFigures` implementation.
 
 ## Sidebar Scrolling (Many Tools)
 

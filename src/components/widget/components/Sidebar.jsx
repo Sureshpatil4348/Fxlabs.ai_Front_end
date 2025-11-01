@@ -126,6 +126,25 @@ export const Sidebar = () => {
 
       <div className="relative group">
         <button
+          onClick={() => handleKLineToolSelect('fibExtension')}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'fibExtension' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Fib Extension (3pt)"
+        >
+          <div className="w-6 h-6 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-md flex items-center justify-center shadow-sm">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h6m0 0l3-3m-3 3l3 3m4-9v18" />
+            </svg>
+          </div>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Fib Extension (3pt)
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
           onClick={() => handleKLineToolSelect('rectangle')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'rectangle' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'

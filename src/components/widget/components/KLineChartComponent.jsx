@@ -636,7 +636,7 @@ export const KLineChartComponent = ({
     // (instead of both left and right like the built-in 'fibonacciLine')
     registerOverlay({
       name: 'fibonacciRightLine',
-      totalStep: 3,
+      totalStep: 2,
       needDefaultPointFigure: true,
       needDefaultXAxisFigure: true,
       needDefaultYAxisFigure: true,
@@ -708,6 +708,119 @@ export const KLineChartComponent = ({
       },
       onDrawEnd: ({ overlay }) => {
         console.log('📈 Fibonacci (right-only) drawn:', overlay);
+      },
+    });
+
+    // Register Trend-based Fibonacci Extension (3 points), right-only projections
+    registerOverlay({
+      name: 'fibonacciTrendExtensionRight',
+      totalStep: 4, // Collect 3 anchors (A,B,C); 4th step finalizes, matching built-ins that use 3 anchors
+      needDefaultPointFigure: true,
+      needDefaultXAxisFigure: true,
+      needDefaultYAxisFigure: true,
+      createPointFigures: ({ chart, coordinates, bounding, overlay, yAxis }) => {
+        try {
+          const points = overlay?.points || [];
+          if (!Array.isArray(points) || points.length === 0) return [];
+
+          // Always derive pixel coordinates from points for reliability,
+          // then fall back to provided `coordinates` if needed.
+          let px = [];
+          try {
+            if (typeof chart.convertToPixel === 'function') {
+              px = chart.convertToPixel(points) || [];
+            }
+          } catch (_) {
+            px = [];
+          }
+          const c0 = px[0] || coordinates[0];
+          const c1 = px[1] || coordinates[1];
+          const c2 = px[2] || coordinates[2];
+          if (!c0 || !c1) return [];
+
+          // Determine price precision
+          let precision = 0;
+          try {
+            const inCandle = (yAxis?.isInCandle?.() ?? true);
+            if (inCandle) {
+              precision = chart.getPrecision().price;
+            } else {
+              const indicators = chart.getIndicators({ paneId: overlay.paneId }) || [];
+              indicators.forEach((ind) => {
+                const p = Number(ind?.precision) || 0;
+                precision = Math.max(precision, p);
+              });
+            }
+          } catch (_e) {
+            precision = 2;
+          }
+
+          const coordsForWidth = [c0, c1, c2].filter(Boolean);
+          const width = (bounding && typeof bounding.width === 'number')
+            ? bounding.width
+            : Math.max(0, Math.max(...coordsForWidth.map(c => c.x || 0)) + 1);
+
+          // Guide lines visible during drawing
+          const guideLines = [];
+          if (c0 && c1) {
+            guideLines.push({ coordinates: [c0, c1] });
+          }
+          if (c1 && c2) {
+            guideLines.push({ coordinates: [c1, c2] });
+          }
+
+          // With fewer than 3 points, only show guides and default points
+          if (!c2) {
+            return [
+              { type: 'line', attrs: guideLines },
+            ];
+          }
+
+          // Use common extension ratios
+          const ratios = [0.618, 1.0, 1.272, 1.618, 2.0, 2.618];
+
+          // Leg AB in price and pixels
+          const v0 = Number(points?.[0]?.value);
+          const v1 = Number(points?.[1]?.value);
+          const v2 = Number(points?.[2]?.value);
+          const deltaPrice = (Number.isFinite(v1) && Number.isFinite(v0)) ? (v1 - v0) : 0;
+          const deltaY = (c1.y - c0.y);
+
+          // Start drawing to the right of the rightmost anchor
+          const startX = Math.max(c0.x, c1.x, c2.x);
+          const endX = width;
+
+          const lines = [];
+          const texts = [];
+
+          ratios.forEach((r) => {
+            const rawValue = (Number.isFinite(v2) ? v2 : 0) + deltaPrice * r;
+            let displayValue = String(rawValue);
+            try {
+              displayValue = chart
+                .getDecimalFold()
+                .format(chart.getThousandsSeparator().format(rawValue.toFixed(precision)));
+            } catch (_e) {
+              displayValue = rawValue.toFixed(precision);
+            }
+
+            const y = c2.y + deltaY * r;
+            lines.push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
+            texts.push({ x: startX, y, text: `${displayValue} (${(r * 100).toFixed(1)}%)`, baseline: 'bottom' });
+          });
+
+          return [
+            { type: 'line', attrs: guideLines, styles: { size: 1, style: 'dash', color: '#9C27B0' } },
+            { type: 'line', attrs: lines, styles: { size: 1, color: '#9C27B0' } },
+            { type: 'text', isCheckEvent: false, attrs: texts },
+          ];
+        } catch (_err) {
+          // On any error, return at least the default points/empty figures to avoid overlay removal
+          return [];
+        }
+      },
+      onDrawEnd: ({ overlay }) => {
+        console.log('📈 Trend Fib Extension (right-only) drawn:', overlay);
       },
     });
   }, []);
@@ -934,6 +1047,8 @@ export const KLineChartComponent = ({
               trendLine: 'segment', // 2-point segment
               // Use custom right-only fibonacci overlay
               fibonacci: 'fibonacciRightLine',
+              // Trend-based Fibonacci Extension (3 points), right-only
+              fibExtension: 'fibonacciTrendExtensionRight',
               // Prefer built-ins for robust multi-instance behavior
               horizontalLine: 'horizontalStraightLine',
               verticalLine: 'verticalStraightLine',
