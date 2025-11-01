@@ -25,7 +25,7 @@ export const KLineChartComponent = ({
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
   
   // Get the setter from store
-  const { setKLineChartRef, toggleIndicator } = useChartStore();
+  const { setKLineChartRef, toggleIndicator, isWorkspaceHidden } = useChartStore();
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -1751,6 +1751,32 @@ export const KLineChartComponent = ({
     if (!chartRef.current) return;
 
     try {
+      // While workspace is hidden, ensure indicators are not drawn even if switches are on
+      if (isWorkspaceHidden) {
+        try {
+          const chart = chartRef.current;
+          const tryRemoveByList = (list) => {
+            if (!Array.isArray(list)) return;
+            list.forEach((ind) => {
+              try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+              try { chart.removeIndicator({ name: ind?.name }); } catch (_) {}
+              try { chart.removeIndicator(ind?.id); } catch (_) {}
+            });
+          };
+          let inds = [];
+          try { inds = chart.getIndicators?.() || []; } catch (_) { inds = []; }
+          if (!Array.isArray(inds) || inds.length === 0) {
+            const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2', 'pane-rsiEnhanced', 'pane-atrEnhanced', 'pane-macdEnhanced'];
+            panes.forEach((pid) => {
+              try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+            });
+          } else {
+            tryRemoveByList(inds);
+          }
+        } catch (_) { /* ignore */ }
+        return; // Skip creating indicators while hidden
+      }
+
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
       // Support RSI Enhanced (pane), ATR Enhanced (pane), MACD Enhanced (pane). BOLL overlays are handled separately below.
@@ -2220,6 +2246,8 @@ export const KLineChartComponent = ({
               const chart = chartRef.current;
               const container = chartContainerRef.current;
               if (!chart || !container) return;
+              // When workspace is hidden, suppress overlay selection UI entirely
+              if (isWorkspaceHidden) { setSelectedOverlayPanel(null); return; }
               if (inlineEditorActiveRef.current) {
                 // Do not alter selection while inline editor is open
                 return;
@@ -2511,7 +2539,7 @@ export const KLineChartComponent = ({
           {(() => {
             const BELOW_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
             const activeBelow = BELOW_KEYS.filter((k) => settings?.indicators?.[k]);
-            if (activeBelow.length === 0) return null;
+            if (activeBelow.length === 0 || isWorkspaceHidden) return null;
             return (
               <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 60 }}>
                 {activeBelow.map((key, idx) => {
@@ -2566,7 +2594,7 @@ export const KLineChartComponent = ({
               srEnhanced: 'S/R Enhanced'
             };
             const activeOnChart = ON_CHART_KEYS.filter((k) => settings?.indicators?.[k]);
-            if (activeOnChart.length === 0) return null;
+            if (activeOnChart.length === 0 || isWorkspaceHidden) return null;
             return (
               <div className="absolute top-2 right-2 space-y-1 transition-opacity duration-150" style={{ zIndex: 60, pointerEvents: isHoveringOnChartOverlays ? 'auto' : 'none', opacity: isHoveringOnChartOverlays ? 1 : 0 }}>
                 {activeOnChart.map((key) => (
@@ -2598,7 +2626,7 @@ export const KLineChartComponent = ({
           })()}
 
           {/* Selected drawing action panel (trend line delete) */}
-          {selectedOverlayPanel && (
+          {selectedOverlayPanel && !isWorkspaceHidden && (
             <div
               className="absolute"
               style={{

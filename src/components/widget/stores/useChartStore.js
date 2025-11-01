@@ -59,6 +59,9 @@ export const useChartStore = create(
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
+      // Workspace visibility state
+      isWorkspaceHidden: false,
+      hiddenIndicatorsSnapshot: null,
       // KLine chart ref (not persisted)
       klineChartRef: null,
       // Pagination state
@@ -253,6 +256,18 @@ export const useChartStore = create(
       setKLineChartRef: (ref) => {
         console.log('📊 ChartStore: Setting KLine chart ref');
         set({ klineChartRef: ref });
+      },
+
+      // Workspace visibility actions
+      setWorkspaceHidden: (hidden) => {
+        console.log('📊 ChartStore: Setting workspace hidden =', hidden);
+        set({ isWorkspaceHidden: Boolean(hidden) });
+      },
+      setHiddenIndicatorsSnapshot: (snapshot) => {
+        // Shallow clone only expected; keys are booleans
+        const snap = snapshot && typeof snapshot === 'object' ? { ...snapshot } : null;
+        console.log('📊 ChartStore: Updating hidden indicators snapshot', snap);
+        set({ hiddenIndicatorsSnapshot: snap });
       },
       
       // Daily change data actions

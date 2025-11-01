@@ -69,7 +69,19 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Component: `src/components/widget/components/Sidebar.jsx:~1-260`
   - Behavior: On confirm, clears Universal drawings via `useDrawingTools().clearAllDrawings()`, removes KLine overlays via a robust multi-pass strategy (`getOverlays`/`getAllOverlays` + remove by `{id,paneId}`, `{id}`, `id`, and by `name` for known overlays), attempts immediate indicator removal when possible, and turns off all indicator toggles through the chart store `setIndicatorsPreset`. Also deactivates any active drawing tool in both systems and dismisses any on-chart overlay action panel/inline editor via `chart._dismissSelectedOverlayPanel()`.
   - Confirmation UI: Uses a custom centered modal within the KLine widget via `chart._openConfirmModal({ title, message, confirmText, cancelText, onConfirm })`. Falls back to `window.confirm` only if the chart ref is unavailable.
-  - UX: Button classes changed to `text-gray-500 hover:text-gray-700` for a consistent look.
+- UX: Button classes changed to `text-gray-500 hover:text-gray-700` for a consistent look.
+
+## Sidebar: Hide/Unhide All
+
+- A new button above “Clear All” toggles visibility of every on-chart drawing (KLine overlays) and all indicators without deleting anything or prompting a confirmation.
+- Behavior:
+  - When toggled to “Hide All”, does NOT change the indicator switches in the dropdown; it temporarily removes indicator instances from the chart and hides all KLine overlays using `overrideOverlay({ id, visible: false })`.
+  - Also hides overlay popups/toolpanels (delete/config, inline text editor, rectangle color palette) and suppresses selection while hidden.
+  - When toggled to “Unhide All”, it makes overlays visible again and re-applies indicator instances based on the current switch states (switches remain unchanged).
+- Implementation details:
+  - Store: `src/components/widget/stores/useChartStore.js` adds `isWorkspaceHidden` and action `setWorkspaceHidden` (not persisted).
+  - Sidebar UI/logic: `src/components/widget/components/Sidebar.jsx` adds the new button and `handleKLineToggleVisibility` to apply the toggle, removing indicators at hide time and re-applying them at unhide time via a no-op `setIndicatorsPreset` with current values.
+  - No confirmation dialog is shown; this is a non-destructive visibility toggle.
 
 ## Fix: K-line Text Tool Delete (inline editor blur)
 

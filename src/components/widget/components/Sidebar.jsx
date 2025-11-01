@@ -8,7 +8,9 @@ export const Sidebar = () => {
     settings, 
     setCursorType,
     klineChartRef,
-    setIndicatorsPreset
+    setIndicatorsPreset,
+    isWorkspaceHidden,
+    setWorkspaceHidden
   } = useChartStore();
   
   const {
@@ -27,6 +29,91 @@ export const Sidebar = () => {
       } catch (error) {
         console.warn('📈 Error activating KLine drawing tool:', error);
       }
+    }
+  };
+
+  // Toggle visibility for all KLine overlays and indicators (no confirmation)
+  const handleKLineToggleVisibility = () => {
+    try {
+      const chart = klineChartRef;
+      if (!isWorkspaceHidden) {
+        // 1) Hide all KLine overlays (best-effort via overrideOverlay visible: false)
+        if (chart) {
+          try {
+            const fetchOverlays = () => {
+              try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+              try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+              return [];
+            };
+            const overlays = fetchOverlays();
+            if (Array.isArray(overlays)) {
+              overlays.forEach((ov) => {
+                try { chart.overrideOverlay({ id: ov?.id, visible: false }); } catch (_) { /* ignore */ }
+              });
+            }
+            // Dismiss any custom inline UI/panels
+            try { if (typeof chart._dismissSelectedOverlayPanel === 'function') chart._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
+          } catch (_) { /* ignore */ }
+        }
+        // Also remove any stray inline editors or palettes injected in DOM
+        try {
+          document.querySelectorAll('.kv-inline-rect-editor,.kv-rect-color-palette').forEach((el) => {
+            try { el.remove(); } catch (_) { /* ignore */ }
+          });
+        } catch (_) { /* ignore */ }
+
+        // 2) Temporarily remove all indicators from the chart (without changing switches)
+        if (chart) {
+          try {
+            const tryRemoveByList = (list) => {
+              if (!Array.isArray(list)) return;
+              list.forEach((ind) => {
+                try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+                try { chart.removeIndicator({ name: ind?.name }); } catch (_) {}
+                try { chart.removeIndicator(ind?.id); } catch (_) {}
+              });
+            };
+            let inds = [];
+            try { inds = chart.getIndicators?.() || []; } catch (_) { inds = []; }
+            if (!Array.isArray(inds) || inds.length === 0) {
+              const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2', 'pane-rsiEnhanced', 'pane-atrEnhanced', 'pane-macdEnhanced'];
+              panes.forEach((pid) => {
+                try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+              });
+            } else {
+              tryRemoveByList(inds);
+            }
+          } catch (_) { /* ignore */ }
+        }
+
+        setWorkspaceHidden(true);
+        console.log('📈 Workspace hidden: overlays hidden, indicators temporarily removed (switches unchanged)');
+      } else {
+        // 1) Unhide all overlays
+        if (chart) {
+          try {
+            const fetchOverlays = () => {
+              try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+              try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+              return [];
+            };
+            const overlays = fetchOverlays();
+            if (Array.isArray(overlays)) {
+              overlays.forEach((ov) => {
+                try { chart.overrideOverlay({ id: ov?.id, visible: true }); } catch (_) { /* ignore */ }
+              });
+            }
+          } catch (_) { /* ignore */ }
+        }
+
+        // 2) Re-apply indicator instances by emitting a no-op preset (same switches) to trigger chart effect
+        try { setIndicatorsPreset({ ...(settings?.indicators || {}) }); } catch (_) { /* ignore */ }
+
+        setWorkspaceHidden(false);
+        console.log('📈 Workspace unhidden: overlays shown, indicators re-applied from switches');
+      }
+    } catch (e) {
+      console.warn('📈 Error toggling workspace visibility:', e);
     }
   };
   
@@ -278,6 +365,33 @@ export const Sidebar = () => {
         </button>
         <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
           Text
+        </div>
+      </div>
+
+      {/* Hide/Unhide all overlays & indicators */}
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={handleKLineToggleVisibility}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isWorkspaceHidden ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          title={isWorkspaceHidden ? 'Unhide All' : 'Hide All'}
+          aria-pressed={isWorkspaceHidden}
+        >
+          {isWorkspaceHidden ? (
+            // Eye with slash off -> show eye (unhide)
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+              <circle cx="12" cy="12" r="3" fill="currentColor" />
+            </svg>
+          ) : (
+            // Eye -> hide
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19C5 19 1 12 1 12s1.386-2.432 3.868-4.5M9.88 4.24A9.99 9.99 0 0112 5c7 0 11 7 11 7a19.741 19.741 0 01-3.256 3.977M1 1l22 22" />
+            </svg>
+          )}
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          {isWorkspaceHidden ? 'Unhide All' : 'Hide All'}
         </div>
       </div>
 
