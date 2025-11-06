@@ -83,6 +83,21 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Sidebar UI/logic: `src/components/widget/components/Sidebar.jsx` adds the new button and `handleKLineToggleVisibility` to apply the toggle, removing indicators at hide time and re-applying them at unhide time via a no-op `setIndicatorsPreset` with current values.
   - No confirmation dialog is shown; this is a non-destructive visibility toggle.
 
+## K-line RSI Enhanced
+
+- Added configurable RSI pane to mirror common Pine features:
+  - Inputs: Length, Source (Close/Open/High/Low/HL2/HLC3/OHLC4), Overbought/Oversold levels.
+  - Styling: RSI line color via pane color button (width fixed at 1).
+  - Status: Live "RSI Zone" badge (Overbought/Oversold/Neutral) with colors.
+  - Alerts: Lightweight on-chart chips when RSI crosses into OB/OS zones.
+- How to use:
+  - Toggle RSI from the indicators switch (enabled by default).
+  - Hover the RSI pane; use the small color swatch to change RSI line color; use the gear icon to open settings for length/source/levels.
+  - Changes apply immediately and persist via `localStorage`.
+- Implementation:
+  - Store: `settings.indicatorSettings.rsiEnhanced` in `useChartStore`.
+  - Chart: `KLineChartComponent.jsx` wires settings to KLineCharts `RSI` indicator styles and computes RSI locally for status/alerts.
+
 ## Fix: K-line Text Tool Delete (inline editor blur)
 
 - Problem: Deleting a text annotation from the on-chart overlay action panel sometimes failed because clicking the delete button first blurred the inline text editor, which cleaned up the action panel before the click handler executed.

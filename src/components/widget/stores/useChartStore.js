@@ -12,6 +12,22 @@ const defaultSettings = {
   // Auto-detect system timezone by default
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
+  // Per-indicator configuration
+  indicatorSettings: {
+    rsiEnhanced: {
+      length: 14,
+      source: 'close', // one of: close, open, high, low, hl2, hlc3, ohlc4
+      overbought: 70,
+      oversold: 30,
+      rsiLineColor: '#2962FF',
+      showMidline: true,
+      midlineColor: 'rgba(128,128,128,0.5)',
+      obLineColor: 'rgba(242,54,69,0.6)',
+      osLineColor: 'rgba(8,153,129,0.6)',
+      obFillColor: 'rgba(242,54,69,0.1)',
+      osFillColor: 'rgba(8,153,129,0.1)'
+    }
+  },
   indicators: {
     // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
     rsiEnhanced: true,
@@ -108,6 +124,23 @@ export const useChartStore = create(
             indicators: {
               ...state.settings.indicators,
               [indicator]: !state.settings.indicators[indicator]
+            }
+          }
+        }));
+      },
+
+      // Update per-indicator settings (partial patch)
+      updateIndicatorSettings: (key, partial) => {
+        console.log('💾 ChartStore: Updating indicator settings', key, partial);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            indicatorSettings: {
+              ...state.settings.indicatorSettings,
+              [key]: {
+                ...(state.settings.indicatorSettings?.[key] || {}),
+                ...(partial || {})
+              }
             }
           }
         }));

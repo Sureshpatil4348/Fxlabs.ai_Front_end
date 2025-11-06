@@ -3,6 +3,7 @@ import { Trash2, Settings } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 import { useChartStore } from '../stores/useChartStore';
+import { calculateRSI } from '../utils/indicators';
 
 export const KLineChartComponent = ({
   candles = [],
@@ -23,9 +24,34 @@ export const KLineChartComponent = ({
   const [selectedOverlayPanel, setSelectedOverlayPanel] = useState(null);
   const inlineEditorActiveRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
+  // RSI enhanced UI state
+  const [rsiValue, setRsiValue] = useState(null);
+  const [rsiStatus, setRsiStatus] = useState('NEUTRAL');
+  const [rsiAlert, setRsiAlert] = useState(null); // { type: 'overbought'|'oversold', ts }
+  const [showRsiSettings, setShowRsiSettings] = useState(false);
+  const rsiPrevRef = useRef(null);
+  const [localRsiSettings, setLocalRsiSettings] = useState(() => ({
+    length: 14,
+    source: 'close',
+    overbought: 70,
+    oversold: 30,
+    rsiLineColor: '#2962FF',
+  }));
+
+  useEffect(() => {
+    if (!showRsiSettings) return;
+    const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
+    setLocalRsiSettings({
+      length: Number(cfg.length) || 14,
+      source: cfg.source || 'close',
+      overbought: Number(cfg.overbought ?? 70),
+      oversold: Number(cfg.oversold ?? 30),
+      rsiLineColor: cfg.rsiLineColor || '#2962FF',
+    });
+  }, [showRsiSettings, settings?.indicatorSettings?.rsiEnhanced]);
   
   // Get the setter from store
-  const { setKLineChartRef, toggleIndicator, isWorkspaceHidden } = useChartStore();
+  const { setKLineChartRef, toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = useChartStore();
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -98,6 +124,55 @@ export const KLineChartComponent = ({
       });
     }
   }, [candles]);
+
+  // Compute RSI (enhanced) for status/alerts from selected source
+  useEffect(() => {
+    try {
+      const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
+      const len = Math.max(1, Number(cfg.length) || 14);
+      const src = (cfg.source || 'close').toLowerCase();
+      if (!Array.isArray(candles) || candles.length < len + 2) {
+        setRsiValue(null);
+        setRsiStatus('NEUTRAL');
+        return;
+      }
+      const mapped = candles.map((c) => {
+        const o = Number(c.open), h = Number(c.high), l = Number(c.low), cl = Number(c.close);
+        let v = cl;
+        if (src === 'open') v = o;
+        else if (src === 'high') v = h;
+        else if (src === 'low') v = l;
+        else if (src === 'hl2') v = (h + l) / 2;
+        else if (src === 'hlc3') v = (h + l + cl) / 3;
+        else if (src === 'ohlc4') v = (o + h + l + cl) / 4;
+        return { ...c, close: v };
+      });
+      const rsiSeries = calculateRSI(mapped, len);
+      if (!Array.isArray(rsiSeries) || rsiSeries.length < 2) return;
+      const last = Number(rsiSeries[rsiSeries.length - 1]?.value);
+      const prev = Number(rsiSeries[rsiSeries.length - 2]?.value);
+      if (!Number.isFinite(last) || !Number.isFinite(prev)) return;
+      setRsiValue(last);
+      const ob = Number(cfg.overbought ?? 70);
+      const os = Number(cfg.oversold ?? 30);
+      const status = last >= ob ? 'OVERBOUGHT' : last <= os ? 'OVERSOLD' : 'NEUTRAL';
+      setRsiStatus(status);
+      const p = rsiPrevRef.current;
+      rsiPrevRef.current = last;
+      if (Number.isFinite(p)) {
+        if (p < ob && last >= ob) setRsiAlert({ type: 'overbought', ts: Date.now() });
+        if (p > os && last <= os) setRsiAlert({ type: 'oversold', ts: Date.now() });
+      }
+    } catch (_e) {
+      // silent
+    }
+  }, [candles, settings?.indicatorSettings?.rsiEnhanced]);
+
+  useEffect(() => {
+    if (!rsiAlert) return;
+    const t = setTimeout(() => setRsiAlert(null), 3000);
+    return () => clearTimeout(t);
+  }, [rsiAlert]);
 
   // Register drawing tools overlays
   useEffect(() => {
@@ -1784,8 +1859,9 @@ export const KLineChartComponent = ({
       console.log('📈 KLineChart: Indicator settings changed', settings.indicators);
 
       // Support RSI Enhanced (pane), ATR Enhanced (pane), MACD Enhanced (pane). BOLL overlays are handled separately below.
+      const rsiCfg = settings?.indicatorSettings?.rsiEnhanced || {};
       const indicatorMap = {
-        rsiEnhanced: { name: 'RSI', params: { calcParams: [14] }, newPane: true },
+        rsiEnhanced: { name: 'RSI', params: { calcParams: [Math.max(1, Number(rsiCfg.length) || 14)] }, newPane: true },
         atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [14] }, newPane: true },
         macdEnhanced: { name: 'MACD_ENH', params: { calcParams: [12, 26, 9] }, newPane: true },
       };
@@ -2004,6 +2080,21 @@ export const KLineChartComponent = ({
               if (config.params?.calcParams) {
                 indicatorArg = { name: indicatorName, calcParams: config.params.calcParams };
               }
+              if (key === 'rsiEnhanced') {
+                // Remove any existing RSI pane before re-adding to avoid duplicates on settings change
+                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) {}
+                const lineColor = rsiCfg.rsiLineColor || '#2962FF';
+                indicatorArg = {
+                  name: indicatorName,
+                  calcParams: config.params.calcParams,
+                  styles: {
+                    lines: [
+                      { color: lineColor, size: 1 }
+                    ]
+                  }
+                };
+              }
               if (key === 'macdEnhanced') {
                 indicatorArg = {
                   name: indicatorName,
@@ -2049,7 +2140,7 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 KLineChart: Error handling indicator changes:', error);
     }
-  }, [settings.indicators, isWorkspaceHidden]);
+  }, [settings.indicators, settings?.indicatorSettings?.rsiEnhanced, isWorkspaceHidden]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -2488,6 +2579,38 @@ export const KLineChartComponent = ({
             </div>
           )}
           
+          {/* RSI Enhanced status & alerts (top-right) */}
+          {settings?.indicators?.rsiEnhanced && (
+            <div className="absolute top-2 right-2 z-50 space-y-1 pointer-events-none">
+              {/* Status badge */}
+              <div
+                className="rounded-md shadow text-xs font-semibold px-2 py-1 text-white inline-block pointer-events-auto"
+                style={{
+                  backgroundColor:
+                    rsiStatus === 'OVERBOUGHT'
+                      ? (settings?.indicatorSettings?.rsiEnhanced?.obLineColor || '#f23645')
+                      : rsiStatus === 'OVERSOLD'
+                        ? (settings?.indicatorSettings?.rsiEnhanced?.osLineColor || '#089981')
+                        : 'rgba(128,128,128,0.5)'
+                }}
+                title={rsiValue != null ? `RSI ${rsiValue.toFixed(2)}` : 'RSI'}
+              >
+                RSI Zone: {rsiStatus}
+              </div>
+              {/* Transient alert chip */}
+              {rsiAlert && (
+                <div
+                  className="rounded-md shadow text-[11px] font-medium px-2 py-1 text-white inline-block pointer-events-auto"
+                  style={{
+                    backgroundColor: rsiAlert.type === 'overbought' ? '#f23645' : '#089981'
+                  }}
+                >
+                  {rsiAlert.type === 'overbought' ? 'RSI Overbought' : 'RSI Oversold'}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Overlay Controls - centered above bottom panel */}
           <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '32px', zIndex: 50, pointerEvents: 'none' }}>
             <div className="flex items-center gap-3" style={{ pointerEvents: 'auto' }}>
@@ -2568,7 +2691,25 @@ export const KLineChartComponent = ({
                         className={`absolute top-2 left-2 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
                         style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none' }}
                       >
-                        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
+            <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
+              {key === 'rsiEnhanced' && (
+                <label
+                  className="w-5 h-5 rounded border border-gray-200 overflow-hidden cursor-pointer"
+                  title="RSI Line Color"
+                >
+                  <input
+                    type="color"
+                    value={settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF'}
+                    onChange={(e) => { try { updateIndicatorSettings('rsiEnhanced', { rsiLineColor: e.target.value }); } catch (_) {} }}
+                    className="w-0 h-0 opacity-0 absolute"
+                    aria-label="RSI Line Color"
+                  />
+                  <span
+                    className="block w-5 h-5"
+                    style={{ backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF' }}
+                  />
+                </label>
+              )}
                           <button
                             type="button"
                             title="Delete"
@@ -2583,17 +2724,120 @@ export const KLineChartComponent = ({
                             title="Configure"
                             className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                             aria-label="Configure indicator"
+                            onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); }}
                           >
                             <Settings className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                    </div>
+    </div>
+    
                   );
                 })}
               </div>
             );
           })()}
+
+          {/* RSI Enhanced Settings Modal (moved outside of below-panes map) */}
+          {showRsiSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">RSI Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowRsiSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">RSI Length</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={localRsiSettings.length}
+                      onChange={(e) => setLocalRsiSettings((p) => ({ ...p, length: Math.max(1, parseInt(e.target.value || '14', 10)) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Source</label>
+                    <select
+                      value={localRsiSettings.source}
+                      onChange={(e) => setLocalRsiSettings((p) => ({ ...p, source: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="close">Close</option>
+                      <option value="open">Open</option>
+                      <option value="high">High</option>
+                      <option value="low">Low</option>
+                      <option value="hl2">HL2 (avg high/low)</option>
+                      <option value="hlc3">HLC3 (avg high/low/close)</option>
+                      <option value="ohlc4">OHLC4 (avg open/high/low/close)</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Overbought</label>
+                      <input
+                        type="number"
+                        min={50}
+                        max={100}
+                        value={localRsiSettings.overbought}
+                        onChange={(e) => setLocalRsiSettings((p) => ({ ...p, overbought: parseInt(e.target.value || '70', 10) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Oversold</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={50}
+                        value={localRsiSettings.oversold}
+                        onChange={(e) => setLocalRsiSettings((p) => ({ ...p, oversold: parseInt(e.target.value || '30', 10) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+              {/* Line color moved to pane color picker; width setting removed */}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowRsiSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        length: Math.max(1, Number(localRsiSettings.length) || 14),
+                        source: String(localRsiSettings.source || 'close'),
+                        overbought: Math.min(100, Math.max(50, Number(localRsiSettings.overbought) || 70)),
+                        oversold: Math.max(0, Math.min(50, Number(localRsiSettings.oversold) || 30)),
+                        rsiLineColor: localRsiSettings.rsiLineColor || '#2962FF',
+                        rsiLineWidth: Math.max(1, Number(localRsiSettings.rsiLineWidth) || 2),
+                      };
+                      try { updateIndicatorSettings('rsiEnhanced', payload); } catch (_) {}
+                      setShowRsiSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Hover actions for on-chart overlay indicators (main price pane) */}
           {(() => {
