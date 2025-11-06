@@ -2579,24 +2579,9 @@ export const KLineChartComponent = ({
             </div>
           )}
           
-          {/* RSI Enhanced status & alerts (top-right) */}
+          {/* RSI Enhanced alerts (top-right) */}
           {settings?.indicators?.rsiEnhanced && (
             <div className="absolute top-2 right-2 z-50 space-y-1 pointer-events-none">
-              {/* Status badge */}
-              <div
-                className="rounded-md shadow text-xs font-semibold px-2 py-1 text-white inline-block pointer-events-auto"
-                style={{
-                  backgroundColor:
-                    rsiStatus === 'OVERBOUGHT'
-                      ? (settings?.indicatorSettings?.rsiEnhanced?.obLineColor || '#f23645')
-                      : rsiStatus === 'OVERSOLD'
-                        ? (settings?.indicatorSettings?.rsiEnhanced?.osLineColor || '#089981')
-                        : 'rgba(128,128,128,0.5)'
-                }}
-                title={rsiValue != null ? `RSI ${rsiValue.toFixed(2)}` : 'RSI'}
-              >
-                RSI Zone: {rsiStatus}
-              </div>
               {/* Transient alert chip */}
               {rsiAlert && (
                 <div
@@ -2686,6 +2671,28 @@ export const KLineChartComponent = ({
                       className="absolute left-0 right-0"
                       style={{ height: 120, bottom: bottomOffset }}
                     >
+                      {/* RSI zone header/footer fills */}
+                      {key === 'rsiEnhanced' && (
+                        <>
+                          <div
+                            className="absolute left-0 right-0 pointer-events-none"
+                            style={{
+                              top: 0,
+                              height: `${Math.max(0, Math.min(120, Math.round(((100 - (Number(settings?.indicatorSettings?.rsiEnhanced?.overbought ?? 70))) / 100) * 120)))}px`,
+                              backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.obFillColor || 'rgba(242,54,69,0.1)'
+                            }}
+                          />
+                          <div
+                            className="absolute left-0 right-0 pointer-events-none"
+                            style={{
+                              bottom: 0,
+                              height: `${Math.max(0, Math.min(120, Math.round(((Number(settings?.indicatorSettings?.rsiEnhanced?.oversold ?? 30)) / 100) * 120)))}px`,
+                              backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.osFillColor || 'rgba(8,153,129,0.1)'
+                            }}
+                          />
+                        </>
+                      )}
+
                       {/* Action panel */}
                       <div
                         className={`absolute top-2 left-2 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
@@ -2694,7 +2701,7 @@ export const KLineChartComponent = ({
             <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
               {key === 'rsiEnhanced' && (
                 <label
-                  className="w-5 h-5 rounded border border-gray-200 overflow-hidden cursor-pointer"
+                  className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"
                   title="RSI Line Color"
                 >
                   <input
@@ -2705,7 +2712,7 @@ export const KLineChartComponent = ({
                     aria-label="RSI Line Color"
                   />
                   <span
-                    className="block w-5 h-5"
+                    className="block w-4 h-4"
                     style={{ backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF' }}
                   />
                 </label>
