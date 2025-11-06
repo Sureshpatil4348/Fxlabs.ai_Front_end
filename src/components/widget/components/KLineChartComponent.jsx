@@ -874,6 +874,63 @@ export const KLineChartComponent = ({
       },
     });
 
+    // Register RSI zone fill overlay (pane-aware; aligns to indicator y-axis)
+    registerOverlay({
+      name: 'rsiBands',
+      // No interactive drawing required
+      totalStep: 0,
+      needDefaultPointFigure: false,
+      needDefaultXAxisFigure: false,
+      needDefaultYAxisFigure: false,
+      createPointFigures: ({ bounding, overlay, yAxis }) => {
+        if (!bounding) return [];
+        const left = Number(bounding.left) || 0;
+        const top = Number(bounding.top) || 0;
+        const width = Number(bounding.width) || 0;
+        const height = Number(bounding.height) || 0;
+
+        const ob = Number(overlay?.overbought ?? overlay?.ob ?? 70);
+        const os = Number(overlay?.oversold ?? overlay?.os ?? 30);
+        const obFill = overlay?.obFillColor || 'rgba(242,54,69,0.10)';
+        const osFill = overlay?.osFillColor || 'rgba(8,153,129,0.10)';
+
+        const toY = (val) => {
+          try {
+            if (yAxis && typeof yAxis.convertToPixel === 'function') {
+              // Library-aware conversion within the RSI pane
+              return yAxis.convertToPixel(val);
+            }
+          } catch (_) { /* ignore */ }
+          // Fallback to simple linear mapping assuming 0..100 range
+          const v = Math.max(0, Math.min(100, Number(val)));
+          return top + (1 - v / 100) * height;
+        };
+
+        const yTop = toY(100);
+        const yOb = toY(ob);
+        const yOs = toY(os);
+        const yBottom = toY(0);
+
+        const topY = Math.min(yTop, yOb);
+        const topH = Math.max(0, Math.abs(yOb - yTop));
+        const botY = Math.min(yOs, yBottom);
+        const botH = Math.max(0, Math.abs(yBottom - yOs));
+
+        return [
+          {
+            type: 'rect',
+            attrs: { x: left, y: topY, width, height: topH },
+            styles: { style: 'fill', color: obFill },
+          },
+          {
+            type: 'rect',
+            attrs: { x: left, y: botY, width, height: botH },
+            styles: { style: 'fill', color: osFill },
+          },
+        ];
+      },
+    });
+
     // Register a custom Fibonacci overlay that extends levels to the RIGHT only
     // (instead of both left and right like the built-in 'fibonacciLine')
     registerOverlay({
@@ -2114,6 +2171,21 @@ export const KLineChartComponent = ({
                 };
               }
               chartRef.current.createIndicator(indicatorArg, isOverlayOnMain, paneOptions);
+              // Ensure RSI zone fill overlay is present and synced
+              if (key === 'rsiEnhanced') {
+                try { chartRef.current.removeOverlay({ name: 'rsiBands', paneId: `pane-${key}` }); } catch (_) {}
+                try { chartRef.current.removeOverlay({ name: 'rsiBands' }); } catch (_) {}
+                try {
+                  chartRef.current.createOverlay({
+                    name: 'rsiBands',
+                    paneId: `pane-${key}`,
+                    overbought: Number(rsiCfg.overbought ?? 70),
+                    oversold: Number(rsiCfg.oversold ?? 30),
+                    obFillColor: rsiCfg.obFillColor || 'rgba(242,54,69,0.10)',
+                    osFillColor: rsiCfg.osFillColor || 'rgba(8,153,129,0.10)'
+                  });
+                } catch (_) { /* ignore */ }
+              }
               console.log(`✅ KLineChart: ${key} indicator added`);
             } else {
               console.warn('📈 KLineChart: createIndicator method not available');
@@ -2131,6 +2203,10 @@ export const KLineChartComponent = ({
                 chartRef.current.removeIndicator({ name: indicatorName });
               }
               console.log(`📈 KLineChart: ${key} indicator removed`);
+            }
+            if (key === 'rsiEnhanced') {
+              try { chartRef.current.removeOverlay({ name: 'rsiBands', paneId: `pane-${key}` }); } catch (_) {}
+              try { chartRef.current.removeOverlay({ name: 'rsiBands' }); } catch (_) {}
             }
           } catch (_error) {
             // Silently ignore if indicator doesn't exist
@@ -2671,27 +2747,7 @@ export const KLineChartComponent = ({
                       className="absolute left-0 right-0"
                       style={{ height: 120, bottom: bottomOffset }}
                     >
-                      {/* RSI zone header/footer fills */}
-                      {key === 'rsiEnhanced' && (
-                        <>
-                          <div
-                            className="absolute left-0 right-0 pointer-events-none"
-                            style={{
-                              top: 0,
-                              height: `${Math.max(0, Math.min(120, Math.round(((100 - (Number(settings?.indicatorSettings?.rsiEnhanced?.overbought ?? 70))) / 100) * 120)))}px`,
-                              backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.obFillColor || 'rgba(242,54,69,0.1)'
-                            }}
-                          />
-                          <div
-                            className="absolute left-0 right-0 pointer-events-none"
-                            style={{
-                              bottom: 0,
-                              height: `${Math.max(0, Math.min(120, Math.round(((Number(settings?.indicatorSettings?.rsiEnhanced?.oversold ?? 30)) / 100) * 120)))}px`,
-                              backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.osFillColor || 'rgba(8,153,129,0.1)'
-                            }}
-                          />
-                        </>
-                      )}
+                      {/* RSI zone fills are drawn by overlay 'rsiBands' on the RSI pane */}
 
                       {/* Action panel */}
                       <div

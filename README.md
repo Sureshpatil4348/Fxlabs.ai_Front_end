@@ -98,6 +98,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Store: `settings.indicatorSettings.rsiEnhanced` in `useChartStore`.
   - Chart: `KLineChartComponent.jsx` wires settings to KLineCharts `RSI` indicator styles and computes RSI locally for status/alerts.
 
+### Fix: RSI overbought/oversold zone alignment
+
+- Problem: The colored bands for overbought/oversold were drawn as DOM blocks with a naive 0–100 mapping, causing visual misalignment (e.g., OB appearing near 53–73 instead of 70–100) due to pane paddings/scales.
+- Change: Implemented a pane-aware `rsiBands` overlay that uses the indicator y-axis conversion to compute exact pixel positions for 100/70 and 30/0 within the RSI pane.
+- Location: `src/components/widget/components/KLineChartComponent.jsx`
+  - Overlay registration near other custom overlays.
+  - Creation/removal wired to the RSI indicator toggle and settings changes.
+- Result: The OB/OS fills now align precisely with the RSI scale; changing levels updates in real time.
+
 ## Fix: K-line Text Tool Delete (inline editor blur)
 
 - Problem: Deleting a text annotation from the on-chart overlay action panel sometimes failed because clicking the delete button first blurred the inline text editor, which cleaned up the action panel before the click handler executed.
