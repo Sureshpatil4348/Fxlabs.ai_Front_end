@@ -128,6 +128,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Hover on chart overlays and click the gear next to "Trend Strategy" to open settings.
   - Changes apply immediately and persist via local storage.
 - Notes:
+  - Trend Strategy draws targets only; it does NOT display Bollinger Bands. To show Bollinger Bands, enable "Bollinger Bands - Pro".
   - The on-chart BOLL overlay (if enabled) uses the same BB Period/StdDev from Trend Strategy settings for consistency.
 
 ## Fix: K-line Text Tool Delete (inline editor blur)

@@ -1980,9 +1980,9 @@ export const KLineChartComponent = ({
         macdEnhanced: { name: 'MACD_ENH', params: { calcParams: [12, 26, 9] }, newPane: true },
       };
 
-      // First, handle Bollinger overlays (shared by 'emaTouch' and 'bbPro')
+      // First, handle Bollinger overlays (bbPro only; emaTouch does NOT draw BB)
       try {
-        const wantBoll = Boolean(settings.indicators?.emaTouch) || Boolean(settings.indicators?.bbPro);
+        const wantBoll = Boolean(settings.indicators?.bbPro);
         const proStyles = settings.indicators?.bbPro
           ? {
               lines: [
@@ -2015,44 +2015,51 @@ export const KLineChartComponent = ({
           // Overlay on main price pane by targeting the candle pane id
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: BOLL overlay added to candle pane', { mode: settings.indicators?.bbPro ? 'pro' : 'default' });
-
-          // If EMA Touch is enabled, add ATR targets + signals lines
-          const existingTouch = typeof chartRef.current.getIndicators === 'function'
-            ? chartRef.current.getIndicators({ name: 'EMA_TOUCH_ENH' })
-            : [];
-          const hasTouch = Array.isArray(existingTouch) && existingTouch.length > 0;
-          if (settings.indicators?.emaTouch) {
-            if (hasTouch && typeof chartRef.current.removeIndicator === 'function') {
-              chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
-            }
-            chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [bbLen, bbMult, atrLen, tp1, tp2, tp3, 1.5, 25], styles: {
-              lines: [
-                { color: '#EF4444', size: 2 }, // buy SL
-                { color: '#22C55E', size: 1 }, // buy TP1
-                { color: '#22C55E', size: 1 }, // buy TP2
-                { color: '#22C55E', size: 1 }, // buy TP3
-                { color: '#EF4444', size: 2 }, // sell SL
-                { color: '#22C55E', size: 1 }, // sell TP1
-                { color: '#22C55E', size: 1 }, // sell TP2
-                { color: '#22C55E', size: 1 }, // sell TP3
-              ]
-            } }, true, { id: 'candle_pane' });
-            console.log('✅ KLineChart: EMA Touch targets overlay added');
-          } else if (hasTouch) {
-            chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
-          }
         } else {
           if (hasBoll) {
             chartRef.current.removeIndicator({ name: 'BOLL' });
             console.log('📈 KLineChart: BOLL overlay removed');
           }
-          // Remove EMA_TOUCH_ENH if present
-          try {
-            chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
-          } catch (_) {}
         }
       } catch (e) {
         console.warn('📈 KLineChart: Error handling BOLL overlay:', e);
+      }
+      
+      // Trend Strategy (EMA Touch) — targets only; no Bollinger lines drawn here
+      try {
+        const existingTouch = typeof chartRef.current.getIndicators === 'function'
+          ? chartRef.current.getIndicators({ name: 'EMA_TOUCH_ENH' })
+          : [];
+        const hasTouch = Array.isArray(existingTouch) && existingTouch.length > 0;
+        const etCfg = settings?.indicatorSettings?.emaTouch || {};
+        const bbLen = Math.max(1, Number(etCfg.bbLength) || 20);
+        const bbMult = Number(etCfg.bbStdDev ?? 2.0);
+        const atrLen = Math.max(1, Number(etCfg.atrLength) || 14);
+        const tp1 = Number(etCfg.tp1Multiplier ?? 1.0);
+        const tp2 = Number(etCfg.tp2Multiplier ?? 2.5);
+        const tp3 = Number(etCfg.tp3Multiplier ?? 4.0);
+        if (settings.indicators?.emaTouch) {
+          if (hasTouch && typeof chartRef.current.removeIndicator === 'function') {
+            chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
+          }
+          chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [bbLen, bbMult, atrLen, tp1, tp2, tp3, 1.5, 25], styles: {
+            lines: [
+              { color: '#EF4444', size: 2 }, // buy SL
+              { color: '#22C55E', size: 1 }, // buy TP1
+              { color: '#22C55E', size: 1 }, // buy TP2
+              { color: '#22C55E', size: 1 }, // buy TP3
+              { color: '#EF4444', size: 2 }, // sell SL
+              { color: '#22C55E', size: 1 }, // sell TP1
+              { color: '#22C55E', size: 1 }, // sell TP2
+              { color: '#22C55E', size: 1 }, // sell TP3
+            ]
+          } }, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: EMA Touch targets overlay added');
+        } else if (hasTouch) {
+          chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
+        }
+      } catch (e) {
+        console.warn('📈 KLineChart: Error handling EMA Touch overlay:', e);
       }
 
       // MA Enhanced (on-chart EMA multi-lines)
