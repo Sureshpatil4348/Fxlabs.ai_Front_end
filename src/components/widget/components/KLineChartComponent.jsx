@@ -88,6 +88,15 @@ export const KLineChartComponent = ({
     stdDev: 2.0,
   }));
 
+  // Opening Range Breakout (ORB) UI state
+  const [showOrbSettings, setShowOrbSettings] = useState(false);
+  const [localOrbSettings, setLocalOrbSettings] = useState(() => ({
+    startHour: 9,
+    startMinute: 15,
+    orPeriod: 1,
+    targetRR: 4.0,
+  }));
+
   useEffect(() => {
     if (!showRsiSettings) return;
     const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
@@ -153,6 +162,18 @@ export const KLineChartComponent = ({
       stdDev: Math.max(0.1, Number(cfg.stdDev) || 2.0),
     });
   }, [showBbSettings, settings?.indicatorSettings?.bbPro]);
+
+  // Sync local ORB settings when opening the modal
+  useEffect(() => {
+    if (!showOrbSettings) return;
+    const cfg = settings?.indicatorSettings?.orbEnhanced || {};
+    setLocalOrbSettings({
+      startHour: Math.max(0, Math.min(23, Number(cfg.startHour) || 9)),
+      startMinute: Math.max(0, Math.min(59, Number(cfg.startMinute) || 15)),
+      orPeriod: Math.max(1, Number(cfg.orPeriod) || 1),
+      targetRR: Math.max(0.5, Number(cfg.targetRR) || 4.0),
+    });
+  }, [showOrbSettings, settings?.indicatorSettings?.orbEnhanced]);
 
   // MA values table (top-right) computed values for current dataset and settings
   const maTableData = useMemo(() => {
@@ -224,6 +245,111 @@ export const KLineChartComponent = ({
       return null;
     }
   }, [candles, settings?.indicatorSettings?.bbPro]);
+  
+  // ORB (Opening Range Breakout) computed stats for top-right table and badges
+  const orbStats = useMemo(() => {
+    try {
+      if (!Array.isArray(candles) || candles.length === 0) return null;
+      const cfg = settings?.indicatorSettings?.orbEnhanced || {};
+      const h = Math.max(0, Math.min(23, Number(cfg.startHour) || 9));
+      const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 15));
+      const orPeriod = Math.max(1, Number(cfg.orPeriod) || 1);
+      const rr = Math.max(0.5, Number(cfg.targetRR) || 4.0);
+      // timeframe suitability (<= 60 minutes)
+      const tf = String(settings?.timeframe || '1h');
+      const toMinutes = (tfStr) => {
+        const match = /^([0-9]+)([mhdw])$/i.exec(tfStr.trim());
+        if (!match) return 60; // default 60m
+        const n = parseInt(match[1], 10);
+        const u = match[2].toLowerCase();
+        if (u === 'm') return n;
+        if (u === 'h') return n * 60;
+        if (u === 'd') return n * 60 * 24;
+        if (u === 'w') return n * 60 * 24 * 7;
+        return 60;
+      };
+      const isSuitableTimeframe = toMinutes(tf) <= 60;
+      // Iterate and build state for the most recent bar
+      let lastDay = null;
+      let openingHigh = NaN;
+      let openingLow = NaN;
+      let orStartIdx = -1;
+      let captured = false;
+      let buyTaken = false;
+      let sellTaken = false;
+      let buyEntry = NaN;
+      let sellEntry = NaN;
+      let buyTP = NaN;
+      let sellTP = NaN;
+      let buySL = NaN;
+      let sellSL = NaN;
+      for (let i = 0; i < candles.length; i++) {
+        const k = candles[i];
+        const rawTime = (k.timestamp ?? k.time ?? 0);
+        const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime;
+        const d = new Date(tsMs);
+        const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (dayKey !== lastDay) {
+          lastDay = dayKey;
+          openingHigh = NaN;
+          openingLow = NaN;
+          orStartIdx = -1;
+          captured = false;
+          buyTaken = false;
+          sellTaken = false;
+          buyEntry = NaN;
+          sellEntry = NaN;
+          buyTP = NaN;
+          sellTP = NaN;
+          buySL = NaN;
+          sellSL = NaN;
+        }
+        const isOpening = d.getHours() === h && d.getMinutes() === m && !captured;
+        if (isOpening) {
+          openingHigh = Number(k.high);
+          openingLow = Number(k.low);
+          orStartIdx = i;
+          captured = true;
+        }
+        if (captured && orStartIdx >= 0 && (i - orStartIdx) < orPeriod) {
+          openingHigh = Math.max(openingHigh, Number(k.high));
+          openingLow = Math.min(openingLow, Number(k.low));
+        }
+        const range = (isFinite(openingHigh) && isFinite(openingLow)) ? (openingHigh - openingLow) : NaN;
+        const prev = candles[i - 1] || k;
+        if (captured && isFinite(range) && !buyTaken && Number(k.close) > openingHigh && Number(prev.close) <= openingHigh) {
+          buyTaken = true;
+          buyEntry = Number(k.close);
+          buyTP = openingHigh + range * rr;
+          buySL = openingLow;
+        }
+        if (captured && isFinite(range) && !sellTaken && Number(k.close) < openingLow && Number(prev.close) >= openingLow) {
+          sellTaken = true;
+          sellEntry = Number(k.close);
+          sellTP = openingLow - range * rr;
+          sellSL = openingHigh;
+        }
+      }
+      const rangeSize = (isFinite(openingHigh) && isFinite(openingLow)) ? (openingHigh - openingLow) : NaN;
+      return {
+        isSuitableTimeframe,
+        openingHigh: isFinite(openingHigh) ? openingHigh : null,
+        openingLow: isFinite(openingLow) ? openingLow : null,
+        rangeSize: isFinite(rangeSize) ? rangeSize : null,
+        buyTaken,
+        sellTaken,
+        buyEntry: isFinite(buyEntry) ? buyEntry : null,
+        sellEntry: isFinite(sellEntry) ? sellEntry : null,
+        buyTP: isFinite(buyTP) ? buyTP : null,
+        sellTP: isFinite(sellTP) ? sellTP : null,
+        buySL: isFinite(buySL) ? buySL : null,
+        sellSL: isFinite(sellSL) ? sellSL : null,
+        targetRR: rr,
+      };
+    } catch (_e) {
+      return null;
+    }
+  }, [candles, settings?.indicatorSettings?.orbEnhanced, settings?.timeframe]);
   
   // ATR Pro stats (Current ATR, Volatility classification, Trend)
   const atrProStats = useMemo(() => {
@@ -2415,12 +2541,12 @@ export const KLineChartComponent = ({
         const wantOrb = Boolean(settings.indicators?.orbEnhanced);
         const orbStyles = {
           lines: [
-            { color: '#26a69a', size: 3 }, // OR High
-            { color: '#ef5350', size: 3 }, // OR Low
-            { color: '#26a69a', size: 2, dashedValue: [4, 4] }, // Buy TP
-            { color: '#ef5350', size: 2, dashedValue: [4, 4] }, // Sell TP
-            { color: '#ef5350', size: 2, dashedValue: [2, 2] }, // Buy SL
-            { color: '#26a69a', size: 2, dashedValue: [2, 2] }, // Sell SL
+            { color: '#26a69a', size: 1 }, // OR High
+            { color: '#ef5350', size: 1 }, // OR Low
+            { color: '#26a69a', size: 1, dashedValue: [4, 4] }, // Buy TP
+            { color: '#ef5350', size: 1, dashedValue: [4, 4] }, // Sell TP
+            { color: '#ef5350', size: 1, dashedValue: [2, 2] }, // Buy SL
+            { color: '#26a69a', size: 1, dashedValue: [2, 2] }, // Sell SL
           ],
         };
         const existingOrb = typeof chartRef.current.getIndicators === 'function'
@@ -2431,7 +2557,12 @@ export const KLineChartComponent = ({
           if (hasOrb && typeof chartRef.current.removeIndicator === 'function') {
             chartRef.current.removeIndicator({ name: 'ORB_ENH' });
           }
-          const indicatorArg = { name: 'ORB_ENH', calcParams: [9, 15, 1, 4.0], styles: orbStyles };
+          const orbCfg = settings?.indicatorSettings?.orbEnhanced || {};
+          const startHour = Math.max(0, Math.min(23, Number(orbCfg.startHour) || 9));
+          const startMinute = Math.max(0, Math.min(59, Number(orbCfg.startMinute) || 15));
+          const orPeriod = Math.max(1, Number(orbCfg.orPeriod) || 1);
+          const targetRR = Math.max(0.5, Number(orbCfg.targetRR) || 4.0);
+          const indicatorArg = { name: 'ORB_ENH', calcParams: [startHour, startMinute, orPeriod, targetRR], styles: orbStyles };
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane');
         } else if (hasOrb) {
@@ -2638,6 +2769,7 @@ export const KLineChartComponent = ({
     settings?.indicatorSettings?.emaTouch,
     settings?.indicatorSettings?.bbPro,
     settings?.indicatorSettings?.maEnhanced,
+    settings?.indicatorSettings?.orbEnhanced,
     isWorkspaceHidden
   ]);
 
@@ -3045,6 +3177,103 @@ export const KLineChartComponent = ({
             </div>
           )}
           
+          {/* Breakout Strategy (ORB) Settings Modal */}
+          {showOrbSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">Breakout Strategy Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowOrbSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="orb-hour" className="block text-sm text-gray-700 mb-1">Opening Candle Hour</label>
+                      <input
+                        id="orb-hour"
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={localOrbSettings.startHour}
+                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, startHour: Math.max(0, Math.min(23, parseInt(e.target.value || '9', 10))) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="orb-minute" className="block text-sm text-gray-700 mb-1">Opening Candle Minute</label>
+                      <input
+                        id="orb-minute"
+                        type="number"
+                        min={0}
+                        max={59}
+                        value={localOrbSettings.startMinute}
+                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, startMinute: Math.max(0, Math.min(59, parseInt(e.target.value || '15', 10))) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="orb-period" className="block text-sm text-gray-700 mb-1">Opening Range Period (bars)</label>
+                      <input
+                        id="orb-period"
+                        type="number"
+                        min={1}
+                        value={localOrbSettings.orPeriod}
+                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, orPeriod: Math.max(1, parseInt(e.target.value || '1', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="orb-rr" className="block text-sm text-gray-700 mb-1">Risk:Reward Ratio</label>
+                      <input
+                        id="orb-rr"
+                        type="number"
+                        min={0.5}
+                        max={10}
+                        step={0.5}
+                        value={localOrbSettings.targetRR}
+                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, targetRR: Math.max(0.5, Math.min(10, parseFloat(e.target.value || '4.0'))) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowOrbSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        startHour: Math.max(0, Math.min(23, Number(localOrbSettings.startHour) || 9)),
+                        startMinute: Math.max(0, Math.min(59, Number(localOrbSettings.startMinute) || 15)),
+                        orPeriod: Math.max(1, Number(localOrbSettings.orPeriod) || 1),
+                        targetRR: Math.max(0.5, Number(localOrbSettings.targetRR) || 4.0),
+                      };
+                      try { updateIndicatorSettings('orbEnhanced', payload); } catch (_) {}
+                      setShowOrbSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bollinger Bands - Pro Settings Modal */}
           {showBbSettings && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
@@ -3412,6 +3641,69 @@ export const KLineChartComponent = ({
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* ORB Enhanced: Opening Range Breakout table (top-right) */}
+          {settings?.indicators?.orbEnhanced && !isWorkspaceHidden && orbStats && (
+            <div
+              className="absolute right-2 z-40 pointer-events-none"
+              style={{
+                right: '80px',
+                top: (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
+                  ? '158px'
+                  : (settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? '80px' : '2px'
+              }}
+            >
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+                <table className="text-[11px] text-gray-700">
+                  <tbody>
+                    {(() => {
+                      const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+                      const rows = [
+                        { label: 'Range High', value: orbStats.openingHigh != null ? formatPrice(orbStats.openingHigh, pricePrecision) : '--' },
+                        { label: 'Range Low', value: orbStats.openingLow != null ? formatPrice(orbStats.openingLow, pricePrecision) : '--' },
+                        { label: 'Range Size', value: orbStats.rangeSize != null ? formatPrice(orbStats.rangeSize, pricePrecision) : '--' },
+                        { label: 'Trade Status', value: orbStats.buyTaken ? 'BUY ACTIVE' : (orbStats.sellTaken ? 'SELL ACTIVE' : 'Waiting'), cellBg: orbStats.buyTaken ? 'rgba(38,166,154,0.20)' : (orbStats.sellTaken ? 'rgba(239,83,80,0.20)' : undefined) },
+                        { label: 'Entry', value: (orbStats.buyTaken && orbStats.buyEntry != null) ? formatPrice(orbStats.buyEntry, pricePrecision) : (orbStats.sellTaken && orbStats.sellEntry != null) ? formatPrice(orbStats.sellEntry, pricePrecision) : '--' },
+                        { label: 'Target', value: (orbStats.buyTaken && orbStats.buyTP != null) ? formatPrice(orbStats.buyTP, pricePrecision) : (orbStats.sellTaken && orbStats.sellTP != null) ? formatPrice(orbStats.sellTP, pricePrecision) : '--' },
+                        { label: 'Stop Loss', value: (orbStats.buyTaken && orbStats.buySL != null) ? formatPrice(orbStats.buySL, pricePrecision) : (orbStats.sellTaken && orbStats.sellSL != null) ? formatPrice(orbStats.sellSL, pricePrecision) : '--' },
+                        { label: 'Risk:Reward', value: `1:${(Number(orbStats.targetRR) || 0).toFixed(1)}` },
+                      ];
+                      return rows.map((r) => (
+                        <tr key={r.label}>
+                          <td className="px-2 py-1 whitespace-nowrap">{r.label}</td>
+                          <td className="px-2 py-1 text-right whitespace-nowrap" style={r.cellBg ? { backgroundColor: r.cellBg } : undefined}>{r.value}</td>
+                        </tr>
+                      ));
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+              {(orbStats.buyTaken || orbStats.sellTaken) && (
+                <div className="mt-1 flex gap-1 pointer-events-none">
+                  {orbStats.buyTaken && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#0b5f56', backgroundColor: 'rgba(38,166,154,0.20)' }}>
+                      TP: {orbStats.buyTP != null ? formatPrice(orbStats.buyTP, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
+                    </span>
+                  )}
+                  {orbStats.buyTaken && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#7a1f1f', backgroundColor: 'rgba(239,83,80,0.20)' }}>
+                      SL: {orbStats.buySL != null ? formatPrice(orbStats.buySL, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
+                    </span>
+                  )}
+                  {orbStats.sellTaken && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#7a1f1f', backgroundColor: 'rgba(239,83,80,0.20)' }}>
+                      TP: {orbStats.sellTP != null ? formatPrice(orbStats.sellTP, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
+                    </span>
+                  )}
+                  {orbStats.sellTaken && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#0b5f56', backgroundColor: 'rgba(38,166,154,0.20)' }}>
+                      SL: {orbStats.sellSL != null ? formatPrice(orbStats.sellSL, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -3920,7 +4212,7 @@ export const KLineChartComponent = ({
                         title="Configure"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                         aria-label={`Configure ${LABELS[key] || key}`}
-                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); if (key === 'bbPro') setShowBbSettings(true); }}
+                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); if (key === 'bbPro') setShowBbSettings(true); if (key === 'orbEnhanced') setShowOrbSettings(true); }}
                       >
                         <Settings className="w-4 h-4" />
                       </button>

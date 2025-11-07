@@ -65,6 +65,14 @@ const defaultSettings = {
       ma4Enabled: false,
       ma4Length: 100,
     }
+    ,
+    orbEnhanced: {
+      // Opening Range Breakout - Enhanced settings
+      startHour: 9,
+      startMinute: 15,
+      orPeriod: 1, // number of bars to form opening range
+      targetRR: 4.0, // Risk:Reward ratio
+    }
   },
   indicators: {
     // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
