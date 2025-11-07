@@ -2486,7 +2486,14 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 KLineChart: Error handling indicator changes:', error);
     }
-  }, [settings.indicators, settings?.indicatorSettings?.rsiEnhanced, settings?.indicatorSettings?.emaTouch, settings?.indicatorSettings?.bbPro, isWorkspaceHidden]);
+  }, [
+    settings.indicators,
+    settings?.indicatorSettings?.rsiEnhanced,
+    settings?.indicatorSettings?.emaTouch,
+    settings?.indicatorSettings?.bbPro,
+    settings?.indicatorSettings?.maEnhanced,
+    isWorkspaceHidden
+  ]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
