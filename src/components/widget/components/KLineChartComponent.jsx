@@ -2,9 +2,19 @@ import { init, registerOverlay, registerIndicator, getSupportedIndicators } from
 import { Trash2, Settings } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
+import { formatPrice } from '../../../utils/formatters';
 import { useChartStore } from '../stores/useChartStore';
 import { calculateRSI, calculateEMA } from '../utils/indicators';
-import { formatPrice } from '../../../utils/formatters';
+
+// EMA table constants (stable references for hook dependencies)
+const EMA_TABLE_PERIODS = [9, 21, 50, 100, 200];
+const EMA_COLORS_BY_PERIOD = {
+  9: '#2962FF',
+  21: '#FF6D00',
+  50: '#26A69A',
+  100: '#9C27B0',
+  200: '#F44336'
+};
 
 export const KLineChartComponent = ({
   candles = [],
@@ -55,21 +65,13 @@ export const KLineChartComponent = ({
   const { setKLineChartRef, toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = useChartStore();
   
   // EMA table (Moving Average - Pro) computed values for current dataset
-  const emaTablePeriods = [9, 21, 50, 100, 200];
-  const emaColorsByPeriod = {
-    9: '#2962FF',
-    21: '#FF6D00',
-    50: '#26A69A',
-    100: '#9C27B0',
-    200: '#F44336'
-  };
   const emaTableData = useMemo(() => {
     try {
       if (!Array.isArray(candles) || candles.length === 0) return [];
-      return emaTablePeriods.map((period) => {
+      return EMA_TABLE_PERIODS.map((period) => {
         const series = calculateEMA(candles, period) || [];
         const last = series.length > 0 ? series[series.length - 1]?.value : null;
-        return { period, color: emaColorsByPeriod[period], value: typeof last === 'number' ? last : null };
+        return { period, color: EMA_COLORS_BY_PERIOD[period], value: typeof last === 'number' ? last : null };
       });
     } catch (_e) {
       return [];
