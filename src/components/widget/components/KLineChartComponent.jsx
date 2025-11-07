@@ -54,6 +54,15 @@ export const KLineChartComponent = ({
     smoothingMethod: 'RMA',
   }));
 
+  // MACD - Pro (MACD Enhanced) UI state
+  const [showMacdSettings, setShowMacdSettings] = useState(false);
+  const [localMacdSettings, setLocalMacdSettings] = useState(() => ({
+    fastLength: 12,
+    slowLength: 26,
+    signalLength: 9,
+    source: 'close',
+  }));
+
   // Trend Strategy (EMA Touch) UI state
   const [showEmaTouchSettings, setShowEmaTouchSettings] = useState(false);
   const [localEmaTouchSettings, setLocalEmaTouchSettings] = useState(() => ({
@@ -110,6 +119,8 @@ export const KLineChartComponent = ({
   const orbLabelOverlayIdsRef = useRef([]);
   // Keep track of programmatically-created S/R break label overlays (for cleanup)
   const srLabelOverlayIdsRef = useRef([]);
+  // Keep track of programmatically-created MACD crossover overlays (for cleanup)
+  const macdLabelOverlayIdsRef = useRef([]);
 
   useEffect(() => {
     if (!showRsiSettings) return;
@@ -122,6 +133,26 @@ export const KLineChartComponent = ({
       rsiLineColor: cfg.rsiLineColor || '#2962FF',
     });
   }, [showRsiSettings, settings?.indicatorSettings?.rsiEnhanced]);
+
+  useEffect(() => {
+    if (!showAtrSettings) return;
+    const cfg = settings?.indicatorSettings?.atrEnhanced || {};
+    setLocalAtrSettings({
+      length: Number(cfg.length) || 14,
+      smoothingMethod: String(cfg.smoothingMethod || 'RMA'),
+    });
+  }, [showAtrSettings, settings?.indicatorSettings?.atrEnhanced]);
+
+  useEffect(() => {
+    if (!showMacdSettings) return;
+    const cfg = settings?.indicatorSettings?.macdEnhanced || {};
+    setLocalMacdSettings({
+      fastLength: Number(cfg.fastLength) || 12,
+      slowLength: Number(cfg.slowLength) || 26,
+      signalLength: Number(cfg.signalLength) || 9,
+      source: String(cfg.source || 'close').toLowerCase(),
+    });
+  }, [showMacdSettings, settings?.indicatorSettings?.macdEnhanced]);
 
   useEffect(() => {
     if (!showAtrSettings) return;
@@ -595,6 +626,73 @@ export const KLineChartComponent = ({
       return null;
     }
   }, [candles, settings?.indicatorSettings?.atrEnhanced]);
+
+  // MACD Pro stats (Trend + Momentum)
+  const macdProStats = useMemo(() => {
+    try {
+      if (!Array.isArray(candles) || candles.length < 2) return null;
+      const cfg = settings?.indicatorSettings?.macdEnhanced || {};
+      const fastLen = Math.max(1, Number(cfg.fastLength) || 12);
+      const slowLen = Math.max(1, Number(cfg.slowLength) || 26);
+      const sigLen = Math.max(1, Number(cfg.signalLength) || 9);
+      const source = String(cfg.source || 'close').toLowerCase();
+
+      const n = candles.length;
+      const kf = 2 / (fastLen + 1);
+      const ks = 2 / (slowLen + 1);
+      const ks2 = 2 / (sigLen + 1);
+      let emaFast = null;
+      let emaSlow = null;
+      let emaSignal = null;
+      let lastMacd = null;
+      let lastSignal = null;
+      let lastHist = null;
+      let prevHist = null;
+
+      for (let i = 0; i < n; i++) {
+        const k = candles[i];
+        const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
+        let price = c;
+        if (source === 'open') price = o;
+        else if (source === 'high') price = h;
+        else if (source === 'low') price = l;
+        else if (source === 'hl2') price = (h + l) / 2;
+        else if (source === 'hlc3') price = (h + l + c) / 3;
+        else if (source === 'ohlc4') price = (o + h + l + c) / 4;
+
+        emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
+        emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
+        const macd = (emaFast - emaSlow);
+        emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
+        const hist = macd - emaSignal;
+
+        prevHist = lastHist;
+        lastHist = hist;
+        lastMacd = macd;
+        lastSignal = emaSignal;
+      }
+
+      if (!Number.isFinite(lastMacd) || !Number.isFinite(lastSignal) || !Number.isFinite(lastHist)) return null;
+
+      const histogramGrowing = Number.isFinite(prevHist) ? (lastHist > prevHist) : false;
+      const macdAboveSignal = lastMacd > lastSignal;
+
+      let momentumStatus = 'Recovering';
+      let momentumBg = 'rgba(38,166,154,0.4)';
+      if (lastHist > 0 && histogramGrowing) { momentumStatus = 'Strong Bullish'; momentumBg = '#26A69A'; }
+      else if (lastHist > 0 && !histogramGrowing) { momentumStatus = 'Weakening'; momentumBg = 'rgba(38,166,154,0.4)'; }
+      else if (lastHist < 0 && !histogramGrowing) { momentumStatus = 'Strong Bearish'; momentumBg = '#EF5350'; }
+      else { momentumStatus = 'Recovering'; momentumBg = 'rgba(239,83,80,0.4)'; }
+
+      return {
+        macdAboveSignal,
+        momentumStatus,
+        momentumBg,
+      };
+    } catch (_e) {
+      return null;
+    }
+  }, [candles, settings?.indicatorSettings?.macdEnhanced]);
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -1169,20 +1267,22 @@ export const KLineChartComponent = ({
           name: 'MACD_ENH',
           shortName: 'MACD',
           precision: 4,
-          calcParams: [12, 26, 9], // fast, slow, signal
+          calcParams: [12, 26, 9, 'close'], // fast, slow, signal, source
           figures: [
             { key: 'macd', title: 'MACD: ', type: 'line' },
             { key: 'signal', title: 'SIGNAL: ', type: 'line' },
+            { key: 'zero', title: '', type: 'line' }, // zero line for reference
             { key: 'histPS', title: 'HPS: ', type: 'bar' }, // pos strong
             { key: 'histPW', title: 'HPW: ', type: 'bar' }, // pos weak
             { key: 'histNW', title: 'HNW: ', type: 'bar' }, // neg weak
             { key: 'histNS', title: 'HNS: ', type: 'bar' }, // neg strong
           ],
           calc: (dataList, indicator) => {
-            const [fastLen, slowLen, sigLen] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [12, 26, 9];
+            const [fastLen, slowLen, sigLen, src] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [12, 26, 9, 'close'];
             const fl = Math.max(1, Number(fastLen) || 12);
             const sl = Math.max(1, Number(slowLen) || 26);
             const sg = Math.max(1, Number(sigLen) || 9);
+            const source = String(src || 'close').toLowerCase();
             let emaFast = null;
             let emaSlow = null;
             let emaSignal = null;
@@ -1190,7 +1290,14 @@ export const KLineChartComponent = ({
             const ks = 2 / (sl + 1);
             const ks2 = 2 / (sg + 1);
             return dataList.map((k, i, arr) => {
-              const price = k.close; // source close
+              const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
+              let price = c;
+              if (source === 'open') price = o;
+              else if (source === 'high') price = h;
+              else if (source === 'low') price = l;
+              else if (source === 'hl2') price = (h + l) / 2;
+              else if (source === 'hlc3') price = (h + l + c) / 3;
+              else if (source === 'ohlc4') price = (o + h + l + c) / 4;
               emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
               emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
               const macd = (emaFast - emaSlow);
@@ -1207,6 +1314,7 @@ export const KLineChartComponent = ({
               return {
                 macd,
                 signal: emaSignal,
+                zero: 0,
                 histPS: posStrong,
                 histPW: posWeak,
                 histNW: negWeak,
@@ -2553,12 +2661,24 @@ export const KLineChartComponent = ({
       // Support RSI Enhanced (pane), ATR Enhanced (pane), MACD Enhanced (pane). BOLL overlays are handled separately below.
       const rsiCfg = settings?.indicatorSettings?.rsiEnhanced || {};
       const atrCfg = settings?.indicatorSettings?.atrEnhanced || {};
+      const macdCfg = settings?.indicatorSettings?.macdEnhanced || {};
       const methodMap = { RMA: 0, SMA: 1, EMA: 2, WMA: 3 };
       const methodCode = methodMap[String(atrCfg.smoothingMethod || 'RMA').toUpperCase()] ?? 0;
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [Math.max(1, Number(rsiCfg.length) || 14)] }, newPane: true },
         atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [Math.max(1, Number(atrCfg.length) || 14), methodCode] }, newPane: true },
-        macdEnhanced: { name: 'MACD_ENH', params: { calcParams: [12, 26, 9] }, newPane: true },
+        macdEnhanced: {
+          name: 'MACD_ENH',
+          params: {
+            calcParams: [
+              Math.max(1, Number(macdCfg.fastLength) || 12),
+              Math.max(1, Number(macdCfg.slowLength) || 26),
+              Math.max(1, Number(macdCfg.signalLength) || 9),
+              String(macdCfg.source || 'close').toLowerCase(),
+            ]
+          },
+          newPane: true
+        },
       };
 
       // First, handle Bollinger overlays (bbPro only; emaTouch does NOT draw BB)
@@ -2850,6 +2970,7 @@ export const KLineChartComponent = ({
                     lines: [
                       { color: '#2962FF', size: 2 }, // MACD
                       { color: '#FF6D00', size: 2 }, // SIGNAL
+                      { color: 'rgba(107,114,128,0.5)', size: 1 }, // ZERO
                     ],
                     bars: [
                       { upColor: '#26A69A', downColor: '#26A69A' }, // strong bull
@@ -3137,6 +3258,96 @@ export const KLineChartComponent = ({
       });
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.srEnhanced, candles, isWorkspaceHidden]);
+
+  // Programmatic MACD Buy/Sell arrows on MACD pane (using 'text' overlay with ▲ / ▼)
+  useEffect(() => {
+    try {
+      const chart = chartRef.current;
+      if (!chart) return;
+
+      // Clear previous MACD labels
+      try {
+        const ids = Array.isArray(macdLabelOverlayIdsRef.current) ? macdLabelOverlayIdsRef.current : [];
+        ids.forEach((id) => {
+          try { chart.removeOverlay({ id }); } catch (_) {}
+          try { chart.removeOverlay(id); } catch (_) {}
+        });
+      } catch (_) { /* ignore */ }
+      macdLabelOverlayIdsRef.current = [];
+
+      if (!settings?.indicators?.macdEnhanced) return;
+
+      // Build MACD series from candles and current settings
+      const cfg = settings?.indicatorSettings?.macdEnhanced || {};
+      const fastLen = Math.max(1, Number(cfg.fastLength) || 12);
+      const slowLen = Math.max(1, Number(cfg.slowLength) || 26);
+      const sigLen = Math.max(1, Number(cfg.signalLength) || 9);
+      const source = String(cfg.source || 'close').toLowerCase();
+      const n = candles?.length || 0;
+      if (!Array.isArray(candles) || n < 3) return;
+      const kf = 2 / (fastLen + 1);
+      const ks = 2 / (slowLen + 1);
+      const ks2 = 2 / (sigLen + 1);
+      let emaFast = null;
+      let emaSlow = null;
+      let emaSignal = null;
+      const macdArr = new Array(n).fill(NaN);
+      const sigArr = new Array(n).fill(NaN);
+      for (let i = 0; i < n; i++) {
+        const k = candles[i];
+        const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
+        let price = c;
+        if (source === 'open') price = o;
+        else if (source === 'high') price = h;
+        else if (source === 'low') price = l;
+        else if (source === 'hl2') price = (h + l) / 2;
+        else if (source === 'hlc3') price = (h + l + c) / 3;
+        else if (source === 'ohlc4') price = (o + h + l + c) / 4;
+        emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
+        emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
+        const macd = (emaFast - emaSlow);
+        emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
+        macdArr[i] = macd;
+        sigArr[i] = emaSignal;
+      }
+
+      const maxSignals = 60;
+      const signals = [];
+      for (let i = 1; i < n; i++) {
+        const m = macdArr[i], s = sigArr[i];
+        const pm = macdArr[i - 1], ps = sigArr[i - 1];
+        if (!Number.isFinite(m) || !Number.isFinite(s) || !Number.isFinite(pm) || !Number.isFinite(ps)) continue;
+        const bull = m > s && pm <= ps;
+        const bear = m < s && pm >= ps;
+        if (bull) signals.push({ ts: candles[i].timestamp, val: m, type: 'bull' });
+        if (bear) signals.push({ ts: candles[i].timestamp, val: m, type: 'bear' });
+      }
+      const recent = signals.slice(-maxSignals);
+
+      recent.forEach((ev) => {
+        if (!Number.isFinite(ev.ts) || !Number.isFinite(ev.val)) return;
+        const spec = {
+          name: 'text',
+          text: ev.type === 'bull' ? '▲' : '▼',
+          points: [{ timestamp: ev.ts, value: ev.val }],
+          paneId: 'pane-macdEnhanced',
+          styles: {
+            text: {
+              backgroundColor: ev.type === 'bull' ? 'rgba(38,166,154,0.15)' : 'rgba(239,83,80,0.15)',
+              color: ev.type === 'bull' ? '#0b5f56' : '#7a1f1f',
+              padding: 2,
+              borderSize: 0,
+            }
+          }
+        };
+        try {
+          const ov = chart.createOverlay(spec);
+          const id = (ov && (ov.id || ov)) || null;
+          if (id) macdLabelOverlayIdsRef.current.push(id);
+        } catch (_) { /* ignore */ }
+      });
+    } catch (_) { /* ignore */ }
+  }, [settings?.indicators?.macdEnhanced, settings?.indicatorSettings?.macdEnhanced, candles]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -3542,6 +3753,103 @@ export const KLineChartComponent = ({
             </div>
           )}
           
+        {/* MACD - Pro Settings Modal */}
+        {showMacdSettings && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+            <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-[#19235d]">MACD Settings</h3>
+                <button
+                  type="button"
+                  className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                  onClick={() => setShowMacdSettings(false)}
+                >
+                  Close
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label htmlFor="macd-fast" className="block text-sm text-gray-700 mb-1">Fast Length</label>
+                    <input
+                      id="macd-fast"
+                      type="number"
+                      min={1}
+                      value={localMacdSettings.fastLength}
+                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, fastLength: Math.max(1, parseInt(e.target.value || '12', 10)) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="macd-slow" className="block text-sm text-gray-700 mb-1">Slow Length</label>
+                    <input
+                      id="macd-slow"
+                      type="number"
+                      min={1}
+                      value={localMacdSettings.slowLength}
+                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, slowLength: Math.max(1, parseInt(e.target.value || '26', 10)) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="macd-signal" className="block text-sm text-gray-700 mb-1">Signal Length</label>
+                    <input
+                      id="macd-signal"
+                      type="number"
+                      min={1}
+                      value={localMacdSettings.signalLength}
+                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, signalLength: Math.max(1, parseInt(e.target.value || '9', 10)) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="macd-source" className="block text-sm text-gray-700 mb-1">Source</label>
+                  <select
+                    id="macd-source"
+                    value={localMacdSettings.source}
+                    onChange={(e) => setLocalMacdSettings((p) => ({ ...p, source: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="close">Close</option>
+                    <option value="open">Open</option>
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                    <option value="hl2">HL2 (H+L)/2</option>
+                    <option value="hlc3">HLC3 (H+L+C)/3</option>
+                    <option value="ohlc4">OHLC4 (O+H+L+C)/4</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                  onClick={() => setShowMacdSettings(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                  onClick={() => {
+                    const payload = {
+                      fastLength: Math.max(1, Number(localMacdSettings.fastLength) || 12),
+                      slowLength: Math.max(1, Number(localMacdSettings.slowLength) || 26),
+                      signalLength: Math.max(1, Number(localMacdSettings.signalLength) || 9),
+                      source: String(localMacdSettings.source || 'close'),
+                    };
+                    try { updateIndicatorSettings('macdEnhanced', payload); } catch (_) {}
+                    setShowMacdSettings(false);
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
           {/* SuperTrend - Pro Settings Modal */}
           {showStSettings && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
@@ -4280,7 +4588,7 @@ export const KLineChartComponent = ({
                             title="Configure"
                             className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                             aria-label="Configure indicator"
-                            onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'atrEnhanced') setShowAtrSettings(true); }}
+                            onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'atrEnhanced') setShowAtrSettings(true); if (key === 'macdEnhanced') setShowMacdSettings(true); }}
                           >
                             <Settings className="w-4 h-4" />
                           </button>
@@ -4311,6 +4619,30 @@ export const KLineChartComponent = ({
                                     </tr>
                                   ));
                                 })()}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* MACD - Pro: Trend & Momentum table (top-right of MACD pane) */}
+                      {key === 'macdEnhanced' && macdProStats && (
+                        <div className="absolute pointer-events-none" style={{ right: '80px', top: '2px' }}>
+                          <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                            <table className="text-[11px] text-gray-700">
+                              <tbody>
+                                <tr>
+                                  <td className="px-2 py-1 whitespace-nowrap">Trend</td>
+                                  <td className="px-2 py-1 text-right whitespace-nowrap" style={{ backgroundColor: macdProStats.macdAboveSignal ? 'rgba(38,166,154,0.20)' : 'rgba(239,83,80,0.20)' }}>
+                                    {macdProStats.macdAboveSignal ? 'BULLISH ▲' : 'BEARISH ▼'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="px-2 py-1 whitespace-nowrap">Momentum</td>
+                                  <td className="px-2 py-1 text-right whitespace-nowrap" style={{ backgroundColor: macdProStats.momentumBg }}>
+                                    {macdProStats.momentumStatus}
+                                  </td>
+                                </tr>
                               </tbody>
                             </table>
                           </div>

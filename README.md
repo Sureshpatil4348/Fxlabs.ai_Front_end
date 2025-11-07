@@ -32,6 +32,20 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Configuration: No popup configure button (removed by design). Uses sensible defaults (Left/Right Bars = 15).
 - Visuals:
   - Dynamic Support/Resistance levels (solid lines) with subtle zone boundaries (dashed).
+
+## MACD – Pro (KLineChart)
+
+- Location: `Trading` → KLineChart. Toggle "MACD - Pro" in the indicator list, then click the gear icon on the MACD pane to configure.
+- Configurations:
+  - Fast Length
+  - Slow Length
+  - Signal Length
+  - Source (Close/Open/High/Low/HL2/HLC3/OHLC4)
+- Visuals:
+  - MACD and Signal lines with a zero reference line.
+  - 4-tone histogram coloring (Strong Bullish/Weak Bullish/Weak Bearish/Strong Bearish).
+  - Buy/Sell arrows on MACD crossovers.
+  - Compact table (upper-right of the MACD pane) with Trend (Bullish/Bearish) and Momentum state (Strong Bullish/Weakening/Strong Bearish/Recovering).
   - On-chart badges for BREAK events:
     - BREAK (green) when resistance is broken with high volume.
     - BREAK (red) when support is broken with high volume.
