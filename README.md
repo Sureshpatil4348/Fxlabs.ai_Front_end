@@ -26,6 +26,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Location: `src/components/widget/components/KLineChartComponent.jsx`
 - The built-in indicator legend/values are hidden to avoid duplication; only the table is shown.
 
+- ## K-line BB Pro (Bollinger Bands - Pro)
+
+- When the Bollinger Bands - Pro indicator is enabled, a compact table in the chart’s upper-right shows: Upper Band, Middle (SMA), Lower Band, %B Position, and Bandwidth.
+- Line width is standardized to 1 for Upper/Middle/Lower bands for a clean, premium look.
+- Configuration: open the on-chart tile “Bollinger Bands - Pro” (hover main pane) and click the gear icon. Options: BB Length, Source (close/open/high/low/hl2/hlc3/ohlc4), Standard Deviation.
+- Location: `src/components/widget/components/KLineChartComponent.jsx`
+
 - The TradingView widget now supports only the K-line candlestick chart. The separate Line Chart page (with volume, 24h change, and multiple indicator panels) has been removed from the UI.
 - Any attempts to switch to a line chart are ignored; the store enforces `candlestick` mode on set and on state rehydrate.
 - Sidebar > Chart Type menu shows only Candlestick.
@@ -130,7 +137,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Changes apply immediately and persist via local storage.
 - Notes:
   - Trend Strategy draws targets only; it does NOT display Bollinger Bands. To show Bollinger Bands, enable "Bollinger Bands - Pro".
-  - The on-chart BOLL overlay (if enabled) uses the same BB Period/StdDev from Trend Strategy settings for consistency.
+  - The on-chart BOLL overlay (if enabled) uses its own BB Pro settings (Length/StdDev/Source). Trend Strategy and BB Pro are independent.
 
 ## Fix: K-line Text Tool Delete (inline editor blur)
 

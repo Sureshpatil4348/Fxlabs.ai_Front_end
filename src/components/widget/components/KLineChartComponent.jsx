@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import { formatPrice } from '../../../utils/formatters';
 import { useChartStore } from '../stores/useChartStore';
-import { calculateRSI, calculateEMA, calculateSMA } from '../utils/indicators';
+import { calculateRSI, calculateEMA, calculateSMA, calculateBollingerBands } from '../utils/indicators';
 
 // MA colors by index (stable references for hook dependencies)
 const MA_COLORS_BY_INDEX = {
@@ -73,6 +73,14 @@ export const KLineChartComponent = ({
     ma4Length: 100,
   }));
 
+  // Bollinger Bands - Pro (BB Pro) UI state
+  const [showBbSettings, setShowBbSettings] = useState(false);
+  const [localBbSettings, setLocalBbSettings] = useState(() => ({
+    length: 20,
+    source: 'close',
+    stdDev: 2.0,
+  }));
+
   useEffect(() => {
     if (!showRsiSettings) return;
     const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
@@ -119,6 +127,17 @@ export const KLineChartComponent = ({
     });
   }, [showMaSettings, settings?.indicatorSettings?.maEnhanced]);
 
+  // Sync local BB settings when opening the modal
+  useEffect(() => {
+    if (!showBbSettings) return;
+    const cfg = settings?.indicatorSettings?.bbPro || {};
+    setLocalBbSettings({
+      length: Math.max(1, Number(cfg.length) || 20),
+      source: cfg.source || 'close',
+      stdDev: Math.max(0.1, Number(cfg.stdDev) || 2.0),
+    });
+  }, [showBbSettings, settings?.indicatorSettings?.bbPro]);
+
   // MA values table (top-right) computed values for current dataset and settings
   const maTableData = useMemo(() => {
     try {
@@ -151,6 +170,44 @@ export const KLineChartComponent = ({
       return [];
     }
   }, [candles, settings?.indicatorSettings?.maEnhanced]);
+
+  // BB Pro table stats (Upper, Middle, Lower, %B, Bandwidth)
+  const bbProStats = useMemo(() => {
+    try {
+      if (!Array.isArray(candles) || candles.length === 0) return null;
+      const cfg = settings?.indicatorSettings?.bbPro || {};
+      const len = Math.max(1, Number(cfg.length) || 20);
+      const mult = Math.max(0.1, Number(cfg.stdDev) || 2.0);
+      const src = (cfg.source || 'close').toLowerCase();
+      if (candles.length < len) return null;
+      const mapped = candles.map((c) => {
+        const o = Number(c.open), h = Number(c.high), l = Number(c.low), cl = Number(c.close);
+        let v = cl;
+        if (src === 'open') v = o;
+        else if (src === 'high') v = h;
+        else if (src === 'low') v = l;
+        else if (src === 'hl2') v = (h + l) / 2;
+        else if (src === 'hlc3') v = (h + l + cl) / 3;
+        else if (src === 'ohlc4') v = (o + h + l + cl) / 4;
+        return { ...c, close: v };
+      });
+      const series = calculateBollingerBands(mapped, len, mult) || [];
+      if (series.length === 0) return null;
+      const last = series[series.length - 1];
+      if (!last) return null;
+      const currentSource = Number(mapped[mapped.length - 1]?.close);
+      const upper = Number(last.upper);
+      const middle = Number(last.middle);
+      const lower = Number(last.lower);
+      if (!Number.isFinite(upper) || !Number.isFinite(middle) || !Number.isFinite(lower)) return null;
+      const range = upper - lower;
+      const percentB = Number.isFinite(range) && range !== 0 ? ((currentSource - lower) / range) * 100 : null;
+      const bandwidth = Number.isFinite(middle) && middle !== 0 ? (range / middle) * 100 : null;
+      return { upper, middle, lower, percentB, bandwidth };
+    } catch (_e) {
+      return null;
+    }
+  }, [candles, settings?.indicatorSettings?.bbPro]);
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -2113,19 +2170,15 @@ export const KLineChartComponent = ({
         const proStyles = settings.indicators?.bbPro
           ? {
               lines: [
-                { color: '#2962FF', size: 2 }, // Upper
+                { color: '#2962FF', size: 1 }, // Upper
                 { color: '#FF6D00', size: 1 }, // Middle
-                { color: '#2962FF', size: 2 }, // Lower
+                { color: '#2962FF', size: 1 }, // Lower
               ],
             }
           : undefined;
-        const etCfg = settings?.indicatorSettings?.emaTouch || {};
-        const bbLen = Math.max(1, Number(etCfg.bbLength) || 20);
-        const bbMult = Number(etCfg.bbStdDev ?? 2.0);
-        const atrLen = Math.max(1, Number(etCfg.atrLength) || 14);
-        const tp1 = Number(etCfg.tp1Multiplier ?? 1.0);
-        const tp2 = Number(etCfg.tp2Multiplier ?? 2.5);
-        const tp3 = Number(etCfg.tp3Multiplier ?? 4.0);
+        const bbCfg = settings?.indicatorSettings?.bbPro || {};
+        const bbLen = Math.max(1, Number(bbCfg.length) || 20);
+        const bbMult = Number(bbCfg.stdDev ?? 2.0);
         const existingBoll = typeof chartRef.current.getIndicators === 'function'
           ? chartRef.current.getIndicators({ name: 'BOLL' })
           : [];
@@ -2433,7 +2486,7 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 KLineChart: Error handling indicator changes:', error);
     }
-  }, [settings.indicators, settings?.indicatorSettings?.rsiEnhanced, settings?.indicatorSettings?.emaTouch, isWorkspaceHidden]);
+  }, [settings.indicators, settings?.indicatorSettings?.rsiEnhanced, settings?.indicatorSettings?.emaTouch, settings?.indicatorSettings?.bbPro, isWorkspaceHidden]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -2838,6 +2891,92 @@ export const KLineChartComponent = ({
               </div>
             </div>
           )}
+          
+          {/* Bollinger Bands - Pro Settings Modal */}
+          {showBbSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">Bollinger Bands Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowBbSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="bb-length" className="block text-sm text-gray-700 mb-1">BB Length</label>
+                      <input
+                        id="bb-length"
+                        type="number"
+                        min={1}
+                        value={localBbSettings.length}
+                        onChange={(e) => setLocalBbSettings((p) => ({ ...p, length: Math.max(1, parseInt(e.target.value || '20', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="bb-source" className="block text-sm text-gray-700 mb-1">Source</label>
+                      <select
+                        id="bb-source"
+                        value={localBbSettings.source}
+                        onChange={(e) => setLocalBbSettings((p) => ({ ...p, source: e.target.value }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="close">Close</option>
+                        <option value="open">Open</option>
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                        <option value="hl2">HL2 (avg high/low)</option>
+                        <option value="hlc3">HLC3 (avg high/low/close)</option>
+                        <option value="ohlc4">OHLC4 (avg open/high/low/close)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="bb-stddev" className="block text-sm text-gray-700 mb-1">Standard Deviation</label>
+                    <input
+                      id="bb-stddev"
+                      type="number"
+                      min={0.1}
+                      step={0.1}
+                      value={localBbSettings.stdDev}
+                      onChange={(e) => setLocalBbSettings((p) => ({ ...p, stdDev: Math.max(0.1, parseFloat(e.target.value || '2.0')) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowBbSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        length: Math.max(1, Number(localBbSettings.length) || 20),
+                        source: String(localBbSettings.source || 'close'),
+                        stdDev: Math.max(0.1, Number(localBbSettings.stdDev) || 2.0),
+                      };
+                      try { updateIndicatorSettings('bbPro', payload); } catch (_) {}
+                      setShowBbSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Moving Average - Pro Settings Modal */}
           {showMaSettings && (
@@ -3086,6 +3225,37 @@ export const KLineChartComponent = ({
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* BB Pro: Bollinger Bands table (top-right, no header) */}
+          {settings?.indicators?.bbPro && !isWorkspaceHidden && bbProStats && (
+            <div
+              className="absolute right-2 z-40 pointer-events-none"
+              style={{ right: '80px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
+            >
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+                <table className="text-[11px] text-gray-700">
+                  <tbody>
+                    {(() => {
+                      const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+                      const rows = [
+                        { label: 'Upper Band', value: bbProStats.upper != null ? formatPrice(bbProStats.upper, pricePrecision) : '--' },
+                        { label: 'Middle (SMA)', value: bbProStats.middle != null ? formatPrice(bbProStats.middle, pricePrecision) : '--' },
+                        { label: 'Lower Band', value: bbProStats.lower != null ? formatPrice(bbProStats.lower, pricePrecision) : '--' },
+                        { label: '%B Position', value: bbProStats.percentB != null ? `${bbProStats.percentB.toFixed(2)}%` : '--' },
+                        { label: 'Bandwidth', value: bbProStats.bandwidth != null ? `${bbProStats.bandwidth.toFixed(2)}%` : '--' },
+                      ];
+                      return rows.map((r) => (
+                        <tr key={r.label}>
+                          <td className="px-2 py-1 whitespace-nowrap">{r.label}</td>
+                          <td className="px-2 py-1 text-right whitespace-nowrap">{r.value}</td>
+                        </tr>
+                      ));
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -3482,7 +3652,7 @@ export const KLineChartComponent = ({
                         title="Configure"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                         aria-label={`Configure ${LABELS[key] || key}`}
-                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); }}
+                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); if (key === 'bbPro') setShowBbSettings(true); }}
                       >
                         <Settings className="w-4 h-4" />
                       </button>

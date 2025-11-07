@@ -38,6 +38,13 @@ const defaultSettings = {
       tp3Multiplier: 4.0,
     }
     ,
+    bbPro: {
+      // Bollinger Bands - Pro settings
+      length: 20,
+      source: 'close', // close|open|high|low|hl2|hlc3|ohlc4
+      stdDev: 2.0,
+    }
+    ,
     maEnhanced: {
       // Moving Average - Pro settings
       maType: 'EMA', // 'EMA' | 'SMA'
