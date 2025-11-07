@@ -900,7 +900,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
               {/* Support/Resistance Enhanced */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">S/R Enhanced</p>
+                  <p className="text-xs font-medium text-gray-900">Support Resitance - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.srEnhanced ? 'bg-blue-400' : 'bg-gray-300'

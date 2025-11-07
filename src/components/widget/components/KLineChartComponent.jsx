@@ -2915,7 +2915,7 @@ export const KLineChartComponent = ({
               maEnhanced: 'Moving Average - Pro',
               orbEnhanced: 'Breakout Strategy',
               stEnhanced: 'Super Trend - Pro',
-              srEnhanced: 'S/R Enhanced'
+              srEnhanced: 'Support Resitance - Pro'
             };
             const activeOnChart = ON_CHART_KEYS.filter((k) => settings?.indicators?.[k]);
             if (activeOnChart.length === 0 || isWorkspaceHidden) return null;
