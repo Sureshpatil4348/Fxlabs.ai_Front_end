@@ -111,6 +111,9 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Styling: RSI line color via pane color button (width fixed at 1).
   - Status: Live "RSI Zone" badge (Overbought/Oversold/Neutral) with colors.
   - Alerts: Lightweight on-chart chips when RSI crosses into OB/OS zones.
+  - OB/OS Lines: Always-visible dashed horizontal lines at configured Overbought/Oversold levels within the RSI pane.
+    - Colors can be tuned via `settings.indicatorSettings.rsiEnhanced.obLineColor` / `osLineColor`.
+    - Lines update immediately when OB/OS settings change.
 - How to use:
   - Toggle RSI from the indicators switch (enabled by default).
   - Hover the RSI pane; use the small color swatch to change RSI line color; use the gear icon to open settings for length/source/levels.

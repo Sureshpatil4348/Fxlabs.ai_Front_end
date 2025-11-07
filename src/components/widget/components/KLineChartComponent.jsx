@@ -942,6 +942,26 @@ export const KLineChartComponent = ({
           },
         });
       }
+      // Register RSI_BOUNDS (Overbought/Oversold constant lines) for RSI pane
+      if (Array.isArray(supported) && !supported.includes('RSI_BOUNDS')) {
+        registerIndicator({
+          name: 'RSI_BOUNDS',
+          shortName: 'RSI Bnds',
+          precision: 2,
+          // calcParams: [overboughtLevel, oversoldLevel]
+          calcParams: [70, 30],
+          figures: [
+            { key: 'ob', title: 'OB: ', type: 'line' },
+            { key: 'os', title: 'OS: ', type: 'line' },
+          ],
+          calc: (dataList, indicator) => {
+            const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [70, 30];
+            const ob = Math.max(0, Math.min(100, Number(p[0]) || 70));
+            const os = Math.max(0, Math.min(100, Number(p[1]) || 30));
+            return dataList.map(() => ({ ob, os }));
+          }
+        });
+      }
     } catch (e) {
       console.warn('📈 Failed to register custom indicators:', e);
     }
@@ -2553,6 +2573,34 @@ export const KLineChartComponent = ({
               }
               chartRef.current.createIndicator(indicatorArg, isOverlayOnMain, paneOptions);
               console.log(`✅ KLineChart: ${key} indicator added`);
+
+              // If RSI Enhanced is enabled, overlay persistent OB/OS lines on the same pane
+              if (key === 'rsiEnhanced') {
+                try {
+                  const paneId = `pane-${key}`;
+                  // Remove previous bounds lines if any
+                  try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId }); } catch (_) {}
+                  const ob = Math.max(0, Math.min(100, Number(rsiCfg.overbought ?? 70)));
+                  const os = Math.max(0, Math.min(100, Number(rsiCfg.oversold ?? 30)));
+                  const obColor = rsiCfg.obLineColor || 'rgba(242,54,69,0.6)';
+                  const osColor = rsiCfg.osLineColor || 'rgba(8,153,129,0.6)';
+                  const boundsArg = {
+                    name: 'RSI_BOUNDS',
+                    calcParams: [ob, os],
+                      styles: {
+                        lines: [
+                         { color: obColor, size: 1, style: 'dashed', dashedValue: [4, 12], dashValue: [4, 12] },
+                         { color: osColor, size: 1, style: 'dashed', dashedValue: [4, 12], dashValue: [4, 12] },
+                        ]
+                      }
+                  };
+                  // Stack within the RSI pane
+                  chartRef.current.createIndicator(boundsArg, true, { id: paneId });
+                  console.log('✅ KLineChart: RSI_BOUNDS overlay added to RSI pane');
+                } catch (e) {
+                  console.warn('📈 KLineChart: Error adding RSI_BOUNDS:', e);
+                }
+              }
             } else {
               console.warn('📈 KLineChart: createIndicator method not available');
             }
@@ -2569,6 +2617,10 @@ export const KLineChartComponent = ({
                 chartRef.current.removeIndicator({ name: indicatorName });
               }
               console.log(`📈 KLineChart: ${key} indicator removed`);
+              // Also remove RSI_BOUNDS when RSI is disabled
+              if (key === 'rsiEnhanced') {
+                try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId: `pane-${key}` }); } catch (_) {}
+              }
             }
             
           } catch (_error) {
