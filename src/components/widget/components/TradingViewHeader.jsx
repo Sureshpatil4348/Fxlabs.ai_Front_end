@@ -869,10 +869,10 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 </button>
               </div>
 
-              {/* ORB Enhanced */}
+              {/* Breakout Strategy */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">ORB Enhanced</p>
+                  <p className="text-xs font-medium text-gray-900">Breakout Strategy</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('orbEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.orbEnhanced ? 'bg-blue-400' : 'bg-gray-300'
