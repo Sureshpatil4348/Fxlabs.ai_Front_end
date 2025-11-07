@@ -49,6 +49,17 @@ export const KLineChartComponent = ({
     rsiLineColor: '#2962FF',
   }));
 
+  // Trend Strategy (EMA Touch) UI state
+  const [showEmaTouchSettings, setShowEmaTouchSettings] = useState(false);
+  const [localEmaTouchSettings, setLocalEmaTouchSettings] = useState(() => ({
+    bbLength: 20,
+    bbStdDev: 2.0,
+    atrLength: 14,
+    tp1Multiplier: 1.0,
+    tp2Multiplier: 2.5,
+    tp3Multiplier: 4.0,
+  }));
+
   useEffect(() => {
     if (!showRsiSettings) return;
     const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
@@ -60,6 +71,19 @@ export const KLineChartComponent = ({
       rsiLineColor: cfg.rsiLineColor || '#2962FF',
     });
   }, [showRsiSettings, settings?.indicatorSettings?.rsiEnhanced]);
+
+  useEffect(() => {
+    if (!showEmaTouchSettings) return;
+    const cfg = settings?.indicatorSettings?.emaTouch || {};
+    setLocalEmaTouchSettings({
+      bbLength: Math.max(1, Number(cfg.bbLength) || 20),
+      bbStdDev: Number(cfg.bbStdDev ?? 2.0),
+      atrLength: Math.max(1, Number(cfg.atrLength) || 14),
+      tp1Multiplier: Number(cfg.tp1Multiplier ?? 1.0),
+      tp2Multiplier: Number(cfg.tp2Multiplier ?? 2.5),
+      tp3Multiplier: Number(cfg.tp3Multiplier ?? 4.0),
+    });
+  }, [showEmaTouchSettings, settings?.indicatorSettings?.emaTouch]);
   
   // Get the setter from store
   const { setKLineChartRef, toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = useChartStore();
@@ -1968,6 +1992,13 @@ export const KLineChartComponent = ({
               ],
             }
           : undefined;
+        const etCfg = settings?.indicatorSettings?.emaTouch || {};
+        const bbLen = Math.max(1, Number(etCfg.bbLength) || 20);
+        const bbMult = Number(etCfg.bbStdDev ?? 2.0);
+        const atrLen = Math.max(1, Number(etCfg.atrLength) || 14);
+        const tp1 = Number(etCfg.tp1Multiplier ?? 1.0);
+        const tp2 = Number(etCfg.tp2Multiplier ?? 2.5);
+        const tp3 = Number(etCfg.tp3Multiplier ?? 4.0);
         const existingBoll = typeof chartRef.current.getIndicators === 'function'
           ? chartRef.current.getIndicators({ name: 'BOLL' })
           : [];
@@ -1979,8 +2010,8 @@ export const KLineChartComponent = ({
             chartRef.current.removeIndicator({ name: 'BOLL' });
           }
           const indicatorArg = proStyles
-            ? { name: 'BOLL', calcParams: [20, 2], styles: proStyles }
-            : { name: 'BOLL', calcParams: [20, 2] };
+            ? { name: 'BOLL', calcParams: [bbLen, bbMult], styles: proStyles }
+            : { name: 'BOLL', calcParams: [bbLen, bbMult] };
           // Overlay on main price pane by targeting the candle pane id
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: BOLL overlay added to candle pane', { mode: settings.indicators?.bbPro ? 'pro' : 'default' });
@@ -1994,7 +2025,7 @@ export const KLineChartComponent = ({
             if (hasTouch && typeof chartRef.current.removeIndicator === 'function') {
               chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
             }
-            chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25], styles: {
+            chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [bbLen, bbMult, atrLen, tp1, tp2, tp3, 1.5, 25], styles: {
               lines: [
                 { color: '#EF4444', size: 2 }, // buy SL
                 { color: '#22C55E', size: 1 }, // buy TP1
@@ -2249,7 +2280,7 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 KLineChart: Error handling indicator changes:', error);
     }
-  }, [settings.indicators, settings?.indicatorSettings?.rsiEnhanced, isWorkspaceHidden]);
+  }, [settings.indicators, settings?.indicatorSettings?.rsiEnhanced, settings?.indicatorSettings?.emaTouch, isWorkspaceHidden]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -2968,6 +2999,129 @@ export const KLineChartComponent = ({
             </div>
           )}
 
+          {/* Trend Strategy (EMA Touch) Settings Modal */}
+          {showEmaTouchSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">Trend Strategy Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowEmaTouchSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="ts-bb-length" className="block text-sm text-gray-700 mb-1">BB Period</label>
+                      <input
+                        id="ts-bb-length"
+                        type="number"
+                        min={1}
+                        value={localEmaTouchSettings.bbLength}
+                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, bbLength: Math.max(1, parseInt(e.target.value || '20', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="ts-bb-std" className="block text-sm text-gray-700 mb-1">BB StdDev</label>
+                      <input
+                        id="ts-bb-std"
+                        type="number"
+                        step="0.1"
+                        min={0.1}
+                        value={localEmaTouchSettings.bbStdDev}
+                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, bbStdDev: Math.max(0.1, Number(e.target.value || '2.0')) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="ts-atr-length" className="block text-sm text-gray-700 mb-1">ATR Period</label>
+                      <input
+                        id="ts-atr-length"
+                        type="number"
+                        min={1}
+                        value={localEmaTouchSettings.atrLength}
+                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, atrLength: Math.max(1, parseInt(e.target.value || '14', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label htmlFor="ts-tp1" className="block text-sm text-gray-700 mb-1">TP1 ATR Multiplier</label>
+                      <input
+                        id="ts-tp1"
+                        type="number"
+                        step="0.1"
+                        min={0.1}
+                        value={localEmaTouchSettings.tp1Multiplier}
+                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, tp1Multiplier: Math.max(0.1, Number(e.target.value || '1.0')) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="ts-tp2" className="block text-sm text-gray-700 mb-1">TP2 ATR Multiplier</label>
+                      <input
+                        id="ts-tp2"
+                        type="number"
+                        step="0.1"
+                        min={0.1}
+                        value={localEmaTouchSettings.tp2Multiplier}
+                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, tp2Multiplier: Math.max(0.1, Number(e.target.value || '2.5')) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="ts-tp3" className="block text-sm text-gray-700 mb-1">TP3 ATR Multiplier</label>
+                      <input
+                        id="ts-tp3"
+                        type="number"
+                        step="0.1"
+                        min={0.1}
+                        value={localEmaTouchSettings.tp3Multiplier}
+                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, tp3Multiplier: Math.max(0.1, Number(e.target.value || '4.0')) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowEmaTouchSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        bbLength: Math.max(1, Number(localEmaTouchSettings.bbLength) || 20),
+                        bbStdDev: Math.max(0.1, Number(localEmaTouchSettings.bbStdDev) || 2.0),
+                        atrLength: Math.max(1, Number(localEmaTouchSettings.atrLength) || 14),
+                        tp1Multiplier: Math.max(0.1, Number(localEmaTouchSettings.tp1Multiplier) || 1.0),
+                        tp2Multiplier: Math.max(0.1, Number(localEmaTouchSettings.tp2Multiplier) || 2.5),
+                        tp3Multiplier: Math.max(0.1, Number(localEmaTouchSettings.tp3Multiplier) || 4.0),
+                      };
+                      try { updateIndicatorSettings('emaTouch', payload); } catch (_) {}
+                      setShowEmaTouchSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Hover actions for on-chart overlay indicators (main price pane) */}
           {(() => {
             const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
@@ -3001,6 +3155,7 @@ export const KLineChartComponent = ({
                         title="Configure"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                         aria-label={`Configure ${LABELS[key] || key}`}
+                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); }}
                       >
                         <Settings className="w-4 h-4" />
                       </button>

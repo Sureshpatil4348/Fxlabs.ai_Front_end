@@ -120,6 +120,16 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Creation/removal wired to the RSI indicator toggle and settings changes.
 - Result: The OB/OS fills now align precisely with the RSI scale; changing levels updates in real time.
 
+## K-line Trend Strategy (BB + ATR Targets)
+
+- Inputs (configurable): BB Period, BB StdDev, ATR Period, TP1/TP2/TP3 ATR Multipliers.
+- How to use:
+  - Toggle "Trend Strategy" from the indicators switch (shows Buy/Sell, SL, TGT1–TGT3 lines on the price pane).
+  - Hover on chart overlays and click the gear next to "Trend Strategy" to open settings.
+  - Changes apply immediately and persist via local storage.
+- Notes:
+  - The on-chart BOLL overlay (if enabled) uses the same BB Period/StdDev from Trend Strategy settings for consistency.
+
 ## Fix: K-line Text Tool Delete (inline editor blur)
 
 - Problem: Deleting a text annotation from the on-chart overlay action panel sometimes failed because clicking the delete button first blurred the inline text editor, which cleaned up the action panel before the click handler executed.

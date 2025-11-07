@@ -27,6 +27,16 @@ const defaultSettings = {
       obFillColor: 'rgba(242,54,69,0.1)',
       osFillColor: 'rgba(8,153,129,0.1)'
     }
+    ,
+    emaTouch: {
+      // Trend Strategy (BB + ATR Targets) configurable params
+      bbLength: 20,
+      bbStdDev: 2.0,
+      atrLength: 14,
+      tp1Multiplier: 1.0,
+      tp2Multiplier: 2.5,
+      tp3Multiplier: 4.0,
+    }
   },
   indicators: {
     // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
