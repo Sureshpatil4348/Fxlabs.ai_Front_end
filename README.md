@@ -138,3 +138,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Change: Handle deletion on `onMouseDown` (with `preventDefault`/`stopPropagation`) so the removal runs before the input blur cleanup.
 - Location: `src/components/widget/components/KLineChartComponent.jsx:~2590-2635` (delete button in the selected drawing action panel).
 - Result: Clicking the delete overlay button reliably removes text annotations (and other overlays) without being interrupted by the inline editor blur.
+
+## K-line Drawing Tools: Full Color Selector
+
+- Drawing tool color pickers now use a full native color selector (same UX as RSI color), replacing the old fixed swatch palette.
+- Affects: Trend Line, Horizontal/Vertical Lines, Fibonacci (Retracement/Extension), and Rectangle.
+- Rectangle behavior: selected color applies to the border; fill uses 30% alpha of the chosen color.
+- Location: `src/components/widget/components/KLineChartComponent.jsx` (on-chart overlay action panel)
