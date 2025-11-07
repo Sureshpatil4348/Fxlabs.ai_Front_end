@@ -855,10 +855,10 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 </button>
               </div>
 
-              {/* MA Enhanced */}
+              {/* Moving Average - Pro */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">MA Enhanced</p>
+                  <p className="text-xs font-medium text-gray-900">Moving Average - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('maEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.maEnhanced ? 'bg-blue-400' : 'bg-gray-300'

@@ -2912,7 +2912,7 @@ export const KLineChartComponent = ({
             const LABELS = {
               emaTouch: 'Trend Strategy',
               bbPro: 'Bollinger Bands - Pro',
-              maEnhanced: 'MA Enhanced',
+              maEnhanced: 'Moving Average - Pro',
               orbEnhanced: 'ORB Enhanced',
               stEnhanced: 'SuperTrend Enhanced',
               srEnhanced: 'S/R Enhanced'
