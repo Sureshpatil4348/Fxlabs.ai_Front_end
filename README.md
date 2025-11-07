@@ -132,6 +132,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 - New: ATR line supports a color picker (same UX as RSI). Hover the ATR pane to reveal the small color swatch on the left; click to choose a color. The ATR line updates immediately and persists.
 - New: Compact stats table in the upper-right of the ATR pane shows: Current ATR, Volatility (HIGH/LOW/NORMAL), and Trend (RISING/FALLING).
+- New: Configurable ATR Period and Smoothing Method (RMA/SMA/EMA/WMA). Open the ATR settings from the gear icon on the ATR pane.
 - Location: `src/components/widget/components/KLineChartComponent.jsx` and defaults in `src/components/widget/stores/useChartStore.js` (`settings.indicatorSettings.atrEnhanced`).
 
 ## K-line Trend Strategy (BB + ATR Targets)

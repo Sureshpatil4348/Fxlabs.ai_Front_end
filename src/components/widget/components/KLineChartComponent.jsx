@@ -47,6 +47,13 @@ export const KLineChartComponent = ({
     rsiLineColor: '#2962FF',
   }));
 
+  // ATR enhanced UI state
+  const [showAtrSettings, setShowAtrSettings] = useState(false);
+  const [localAtrSettings, setLocalAtrSettings] = useState(() => ({
+    length: 14,
+    smoothingMethod: 'RMA',
+  }));
+
   // Trend Strategy (EMA Touch) UI state
   const [showEmaTouchSettings, setShowEmaTouchSettings] = useState(false);
   const [localEmaTouchSettings, setLocalEmaTouchSettings] = useState(() => ({
@@ -92,6 +99,15 @@ export const KLineChartComponent = ({
       rsiLineColor: cfg.rsiLineColor || '#2962FF',
     });
   }, [showRsiSettings, settings?.indicatorSettings?.rsiEnhanced]);
+
+  useEffect(() => {
+    if (!showAtrSettings) return;
+    const cfg = settings?.indicatorSettings?.atrEnhanced || {};
+    setLocalAtrSettings({
+      length: Math.max(1, Number(cfg.length) || 14),
+      smoothingMethod: String(cfg.smoothingMethod || 'RMA'),
+    });
+  }, [showAtrSettings, settings?.indicatorSettings?.atrEnhanced]);
 
   useEffect(() => {
     if (!showEmaTouchSettings) return;
@@ -215,6 +231,7 @@ export const KLineChartComponent = ({
       if (!Array.isArray(candles) || candles.length === 0) return null;
       const cfg = settings?.indicatorSettings?.atrEnhanced || {};
       const len = Math.max(1, Number(cfg.length) || 14);
+      const method = String(cfg.smoothingMethod || 'RMA').toUpperCase();
       const n = candles.length;
       if (n < 2) return null;
       // Compute True Range (TR)
@@ -227,18 +244,53 @@ export const KLineChartComponent = ({
         const prevClose = Number(prev.close);
         trSeries[i] = Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose));
       }
-      // Wilder's RMA for ATR
+      // ATR via selected method
       const atrSeries = new Array(n);
-      let prevAtr = null;
-      for (let i = 0; i < n; i++) {
-        const tr = trSeries[i];
-        if (i === 0) {
-          atrSeries[i] = tr;
-          prevAtr = tr;
-        } else {
-          const atr = ((prevAtr * (len - 1)) + tr) / len;
-          atrSeries[i] = atr;
-          prevAtr = atr;
+      if (method === 'SMA') {
+        let sum = 0;
+        const buf = [];
+        for (let i = 0; i < n; i++) {
+          const tr = trSeries[i];
+          buf.push(tr);
+          sum += tr;
+          if (buf.length > len) sum -= buf.shift() || 0;
+          atrSeries[i] = buf.length >= len ? (sum / len) : (sum / buf.length);
+        }
+      } else if (method === 'EMA') {
+        const alpha = 2 / (len + 1);
+        let ema = null;
+        for (let i = 0; i < n; i++) {
+          const tr = trSeries[i];
+          if (ema == null) ema = tr; else ema = (tr - ema) * alpha + ema;
+          atrSeries[i] = ema;
+        }
+      } else if (method === 'WMA') {
+        const buf = [];
+        for (let i = 0; i < n; i++) {
+          const tr = trSeries[i];
+          buf.push(tr);
+          if (buf.length > len) buf.shift();
+          let denom = 0, num = 0;
+          for (let w = 1; w <= buf.length; w++) {
+            const v = buf[buf.length - w];
+            num += v * w;
+            denom += w;
+          }
+          atrSeries[i] = denom > 0 ? num / denom : tr;
+        }
+      } else {
+        // RMA (Wilder)
+        let prevAtr = null;
+        for (let i = 0; i < n; i++) {
+          const tr = trSeries[i];
+          if (i === 0 || prevAtr == null) {
+            atrSeries[i] = tr;
+            prevAtr = tr;
+          } else {
+            const atr = ((prevAtr * (len - 1)) + tr) / len;
+            atrSeries[i] = atr;
+            prevAtr = atr;
+          }
         }
       }
       const lastAtr = atrSeries[n - 1];
@@ -400,31 +452,66 @@ export const KLineChartComponent = ({
         registerIndicator({
           name: 'ATR_ENH',
           shortName: 'ATR',
-          calcParams: [14],
+          calcParams: [14, 0], // [length, methodCode] method: 0=RMA,1=SMA,2=EMA,3=WMA
           precision: 4,
           figures: [
             { key: 'atr', title: 'ATR: ', type: 'line' }
           ],
           calc: (dataList, indicator) => {
-            const len = Array.isArray(indicator.calcParams) && indicator.calcParams.length > 0 ? Math.max(1, Number(indicator.calcParams[0]) || 14) : 14;
+            const params = Array.isArray(indicator.calcParams) ? indicator.calcParams : [14, 0];
+            const len = Math.max(1, Number(params[0]) || 14);
+            const method = Number(params[1]) || 0; // 0 RMA, 1 SMA, 2 EMA, 3 WMA
             let prevAtr = null;
+            let emaPrev = null;
+            let sum = 0;
+            const trBuf = [];
+            const maxBuf = len;
+            const alpha = 2 / (len + 1);
             return dataList.map((k, i) => {
               const prev = dataList[i - 1] || k;
               const high = Number(k.high);
               const low = Number(k.low);
               const closePrev = Number(prev.close);
               const tr = Math.max(high - low, Math.abs(high - closePrev), Math.abs(low - closePrev));
-              const out = {};
-              if (i === 0) {
-                prevAtr = tr;
-                out.atr = tr;
-              } else {
-                // Wilder's RMA
-                const atr = ((prevAtr * (len - 1)) + tr) / len;
-                out.atr = atr;
-                prevAtr = atr;
+              // Maintain buffer for SMA/WMA
+              trBuf.push(tr);
+              sum += tr;
+              if (trBuf.length > maxBuf) {
+                const removed = trBuf.shift();
+                sum -= (removed || 0);
               }
-              return out;
+              let atrVal;
+              if (method === 1) {
+                // SMA
+                atrVal = trBuf.length === maxBuf ? (sum / maxBuf) : (sum / trBuf.length);
+              } else if (method === 2) {
+                // EMA
+                if (emaPrev == null) {
+                  emaPrev = tr;
+                } else {
+                  emaPrev = (tr - emaPrev) * alpha + emaPrev;
+                }
+                atrVal = emaPrev;
+              } else if (method === 3) {
+                // WMA
+                let denom = 0;
+                let num = 0;
+                for (let w = 1; w <= trBuf.length; w++) {
+                  const v = trBuf[trBuf.length - w];
+                  num += v * w;
+                  denom += w;
+                }
+                atrVal = denom > 0 ? num / denom : tr;
+              } else {
+                // RMA (Wilder)
+                if (i === 0 || prevAtr == null) {
+                  prevAtr = tr;
+                } else {
+                  prevAtr = ((prevAtr * (len - 1)) + tr) / len;
+                }
+                atrVal = prevAtr;
+              }
+              return { atr: atrVal };
             });
           }
         });
@@ -2220,9 +2307,11 @@ export const KLineChartComponent = ({
       // Support RSI Enhanced (pane), ATR Enhanced (pane), MACD Enhanced (pane). BOLL overlays are handled separately below.
       const rsiCfg = settings?.indicatorSettings?.rsiEnhanced || {};
       const atrCfg = settings?.indicatorSettings?.atrEnhanced || {};
+      const methodMap = { RMA: 0, SMA: 1, EMA: 2, WMA: 3 };
+      const methodCode = methodMap[String(atrCfg.smoothingMethod || 'RMA').toUpperCase()] ?? 0;
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [Math.max(1, Number(rsiCfg.length) || 14)] }, newPane: true },
-        atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [Math.max(1, Number(atrCfg.length) || 14)] }, newPane: true },
+        atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [Math.max(1, Number(atrCfg.length) || 14), methodCode] }, newPane: true },
         macdEnhanced: { name: 'MACD_ENH', params: { calcParams: [12, 26, 9] }, newPane: true },
       };
 
@@ -3480,7 +3569,7 @@ export const KLineChartComponent = ({
                             title="Configure"
                             className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                             aria-label="Configure indicator"
-                            onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); }}
+                            onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'atrEnhanced') setShowAtrSettings(true); }}
                           >
                             <Settings className="w-4 h-4" />
                           </button>
@@ -3620,6 +3709,74 @@ export const KLineChartComponent = ({
                       };
                       try { updateIndicatorSettings('rsiEnhanced', payload); } catch (_) {}
                       setShowRsiSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ATR Enhanced Settings Modal */}
+          {showAtrSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">ATR Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowAtrSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="atr-length" className="block text-sm text-gray-700 mb-1">ATR Period</label>
+                    <input
+                      id="atr-length"
+                      type="number"
+                      min={1}
+                      value={localAtrSettings.length}
+                      onChange={(e) => setLocalAtrSettings((p) => ({ ...p, length: Math.max(1, parseInt(e.target.value || '14', 10)) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="atr-method" className="block text-sm text-gray-700 mb-1">Smoothing Method</label>
+                    <select
+                      id="atr-method"
+                      value={localAtrSettings.smoothingMethod}
+                      onChange={(e) => setLocalAtrSettings((p) => ({ ...p, smoothingMethod: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="RMA">RMA (Wilder)</option>
+                      <option value="SMA">SMA</option>
+                      <option value="EMA">EMA</option>
+                      <option value="WMA">WMA</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowAtrSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        length: Math.max(1, Number(localAtrSettings.length) || 14),
+                        smoothingMethod: String(localAtrSettings.smoothingMethod || 'RMA'),
+                      };
+                      try { updateIndicatorSettings('atrEnhanced', payload); } catch (_) {}
+                      setShowAtrSettings(false);
                     }}
                   >
                     Save

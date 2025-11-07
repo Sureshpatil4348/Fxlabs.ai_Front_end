@@ -31,6 +31,7 @@ const defaultSettings = {
     atrEnhanced: {
       // ATR - Pro settings
       length: 14,
+      smoothingMethod: 'RMA', // 'RMA' | 'SMA' | 'EMA' | 'WMA'
       atrLineColor: '#2962FF',
     }
     ,
