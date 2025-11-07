@@ -2914,7 +2914,7 @@ export const KLineChartComponent = ({
               bbPro: 'Bollinger Bands - Pro',
               maEnhanced: 'Moving Average - Pro',
               orbEnhanced: 'Breakout Strategy',
-              stEnhanced: 'SuperTrend Enhanced',
+              stEnhanced: 'Super Trend - Pro',
               srEnhanced: 'S/R Enhanced'
             };
             const activeOnChart = ON_CHART_KEYS.filter((k) => settings?.indicators?.[k]);

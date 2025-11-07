@@ -883,10 +883,10 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 </button>
               </div>
 
-              {/* SuperTrend Enhanced */}
+              {/* Super Trend - Pro */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">SuperTrend Enhanced</p>
+                  <p className="text-xs font-medium text-gray-900">Super Trend - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('stEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.stEnhanced ? 'bg-blue-400' : 'bg-gray-300'
