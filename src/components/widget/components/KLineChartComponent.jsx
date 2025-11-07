@@ -3483,7 +3483,7 @@ export const KLineChartComponent = ({
             return (
               <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 60 }}>
                 {activeBelow.map((key, idx) => {
-                  const bottomOffset = idx * 120;
+                  const bottomOffset = (activeBelow.length - 1 - idx) * 120;
                   return (
                     <div
                       key={key}
