@@ -96,6 +96,16 @@ export const KLineChartComponent = ({
     orPeriod: 1,
     targetRR: 4.0,
   }));
+
+  // SuperTrend - Pro (ST Enhanced) UI state
+  const [showStSettings, setShowStSettings] = useState(false);
+  const [localStSettings, setLocalStSettings] = useState(() => ({
+    atrPeriod: 10,
+    atrMultiplier: 3.0,
+  }));
+
+  // Keep track of programmatically-created ST label overlays (for cleanup)
+  const stLabelOverlayIdsRef = useRef([]);
   // Keep track of programmatically-created ORB label overlays (for cleanup)
   const orbLabelOverlayIdsRef = useRef([]);
 
@@ -176,6 +186,134 @@ export const KLineChartComponent = ({
       targetRR: Math.max(0.5, Number(cfg.targetRR) || 4.0),
     });
   }, [showOrbSettings, settings?.indicatorSettings?.orbEnhanced]);
+
+  // Sync local ST settings when opening the modal
+  useEffect(() => {
+    if (!showStSettings) return;
+    const cfg = settings?.indicatorSettings?.stEnhanced || {};
+    setLocalStSettings({
+      atrPeriod: Math.max(1, Number(cfg.atrPeriod) || 10),
+      atrMultiplier: Math.max(0.5, Number(cfg.atrMultiplier) || 3.0),
+    });
+  }, [showStSettings, settings?.indicatorSettings?.stEnhanced]);
+
+  // SuperTrend computed stats for Trend/Trend Bars and Buy/Sell signals
+  const stStats = useMemo(() => {
+    try {
+      if (!Array.isArray(candles) || candles.length === 0) return null;
+      const cfg = settings?.indicatorSettings?.stEnhanced || {};
+      const l = Math.max(1, Number(cfg.atrPeriod) || 10);
+      const m = Math.max(0.5, Number(cfg.atrMultiplier) || 3.0);
+      let prevAtr = null;
+      let prevFinalUpper = NaN;
+      let prevFinalLower = NaN;
+      let prevTrend = 1;
+      let trendBars = 0;
+      const buySignals = [];
+      const sellSignals = [];
+      let lastSupertrend = NaN;
+      for (let i = 0; i < candles.length; i++) {
+        const k = candles[i];
+        const prev = candles[i - 1] || k;
+        const hl2 = (Number(k.high) + Number(k.low)) / 2;
+        const tr = Math.max(
+          Number(k.high) - Number(k.low),
+          Math.abs(Number(k.high) - Number(prev.close)),
+          Math.abs(Number(k.low) - Number(prev.close))
+        );
+        let atr = tr;
+        if (i > 0 && prevAtr != null) atr = ((prevAtr * (l - 1)) + tr) / l; // Wilder's RMA
+        prevAtr = atr;
+        const basicUpper = hl2 + m * atr;
+        const basicLower = hl2 - m * atr;
+        let finalUpper;
+        if (!Number.isFinite(prevFinalUpper) || Number(prev.close) > prevFinalUpper) finalUpper = basicUpper; else finalUpper = Math.min(basicUpper, prevFinalUpper);
+        let finalLower;
+        if (!Number.isFinite(prevFinalLower) || Number(prev.close) < prevFinalLower) finalLower = basicLower; else finalLower = Math.max(basicLower, prevFinalLower);
+        let trend = prevTrend;
+        if (i > 0) {
+          if (Number(k.close) > prevFinalUpper) trend = 1; else if (Number(k.close) < prevFinalLower) trend = -1;
+        }
+        const supertrend = trend === 1 ? finalLower : finalUpper;
+        const rawTime = (k.timestamp ?? k.time ?? 0);
+        const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime;
+        if (i > 0) {
+          const prevTrendVal = prevTrend;
+          if (trend === 1 && prevTrendVal === -1) {
+            buySignals.push({ ts: tsMs, price: supertrend });
+            trendBars = 1;
+          } else if (trend === -1 && prevTrendVal === 1) {
+            sellSignals.push({ ts: tsMs, price: supertrend });
+            trendBars = 1;
+          } else {
+            trendBars += 1;
+          }
+        } else {
+          trendBars = 1;
+        }
+        lastSupertrend = supertrend;
+        prevFinalUpper = finalUpper;
+        prevFinalLower = finalLower;
+        prevTrend = trend;
+      }
+      return {
+        lastTrendUp: prevTrend === 1,
+        trendBars,
+        lastSupertrend: Number.isFinite(lastSupertrend) ? lastSupertrend : null,
+        buySignals,
+        sellSignals,
+      };
+    } catch (_e) {
+      return null;
+    }
+  }, [candles, settings?.indicatorSettings?.stEnhanced]);
+
+  // Render BUY/SELL badges for SuperTrend signals
+  useEffect(() => {
+    try {
+      const chart = chartRef.current;
+      if (!chart) return;
+      // Remove previously created ST badges
+      try {
+        const ids = Array.isArray(stLabelOverlayIdsRef.current) ? stLabelOverlayIdsRef.current : [];
+        ids.forEach((id) => {
+          try { chart.removeOverlay({ id }); } catch (_) {}
+          try { chart.removeOverlay(id); } catch (_) {}
+        });
+      } catch (_) { /* ignore */ }
+      stLabelOverlayIdsRef.current = [];
+
+      if (!settings?.indicators?.stEnhanced || !stStats) return;
+
+      const addBadge = (ts, price, label, style) => {
+        if (!Number.isFinite(ts) || !Number.isFinite(price)) return;
+        const overlaySpec = {
+          name: 'text',
+          text: label,
+          points: [{ timestamp: ts, value: price }],
+          styles: {
+            text: {
+              backgroundColor: style.bg,
+              color: style.color,
+              padding: 4,
+              borderSize: 0,
+            }
+          }
+        };
+        try {
+          const ov = chart.createOverlay(overlaySpec);
+          const id = (ov && (ov.id || ov)) || null;
+          if (id) stLabelOverlayIdsRef.current.push(id);
+        } catch (_) { /* ignore */ }
+      };
+
+      const maxSignals = 50;
+      const buy = Array.isArray(stStats.buySignals) ? stStats.buySignals.slice(-maxSignals) : [];
+      const sell = Array.isArray(stStats.sellSignals) ? stStats.sellSignals.slice(-maxSignals) : [];
+      buy.forEach((s) => addBadge(s.ts, s.price, 'BUY', { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' }));
+      sell.forEach((s) => addBadge(s.ts, s.price, 'SELL', { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' }));
+    } catch (_) { /* ignore */ }
+  }, [settings?.indicators?.stEnhanced, stStats]);
 
   // MA values table (top-right) computed values for current dataset and settings
   const maTableData = useMemo(() => {
@@ -2604,7 +2742,10 @@ export const KLineChartComponent = ({
           if (hasSt && typeof chartRef.current.removeIndicator === 'function') {
             chartRef.current.removeIndicator({ name: 'ST_ENH' });
           }
-          const indicatorArg = { name: 'ST_ENH', calcParams: [10, 3.0], styles: stStyles };
+          const stCfg = settings?.indicatorSettings?.stEnhanced || {};
+          const atrLen = Math.max(1, Number(stCfg.atrPeriod) || 10);
+          const atrMult = Math.max(0.5, Number(stCfg.atrMultiplier) || 3.0);
+          const indicatorArg = { name: 'ST_ENH', calcParams: [atrLen, atrMult], styles: stStyles };
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: SuperTrend Enhanced overlay added to candle pane');
         } else if (hasSt) {
@@ -2784,6 +2925,7 @@ export const KLineChartComponent = ({
     settings?.indicatorSettings?.emaTouch,
     settings?.indicatorSettings?.bbPro,
     settings?.indicatorSettings?.maEnhanced,
+    settings?.indicatorSettings?.stEnhanced,
     settings?.indicatorSettings?.orbEnhanced,
     isWorkspaceHidden
   ]);
@@ -3242,6 +3384,72 @@ export const KLineChartComponent = ({
                   <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
                 <p className="text-gray-700 mt-3 text-sm font-medium">Loading K-line Chart...</p>
+              </div>
+            </div>
+          )}
+          
+          {/* SuperTrend - Pro Settings Modal */}
+          {showStSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">SuperTrend Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowStSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="st-atr-period" className="block text-sm text-gray-700 mb-1">ATR Period</label>
+                    <input
+                      id="st-atr-period"
+                      type="number"
+                      min={1}
+                      value={localStSettings.atrPeriod}
+                      onChange={(e) => setLocalStSettings((s) => ({ ...s, atrPeriod: Math.max(1, Number(e.target.value) || 10) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="st-atr-multiplier" className="block text-sm text-gray-700 mb-1">ATR Multiplier</label>
+                    <input
+                      id="st-atr-multiplier"
+                      type="number"
+                      step="0.1"
+                      min={0.5}
+                      value={localStSettings.atrMultiplier}
+                      onChange={(e) => setLocalStSettings((s) => ({ ...s, atrMultiplier: Math.max(0.5, Number(e.target.value) || 3.0) }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowStSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        atrPeriod: Math.max(1, Number(localStSettings.atrPeriod) || 10),
+                        atrMultiplier: Math.max(0.5, Number(localStSettings.atrMultiplier) || 3.0),
+                      };
+                      try { updateIndicatorSettings('stEnhanced', payload); } catch (_) {}
+                      setShowStSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -3713,8 +3921,8 @@ export const KLineChartComponent = ({
             </div>
           )}
 
-          {/* ORB Enhanced: Opening Range Breakout table (top-right) */}
-          {settings?.indicators?.orbEnhanced && !isWorkspaceHidden && orbStats && (
+          {/* SuperTrend - Pro: Trend & Trend Bars table (top-right) */}
+          {settings?.indicators?.stEnhanced && !isWorkspaceHidden && stStats && (
             <div
               className="absolute right-2 z-40 pointer-events-none"
               style={{
@@ -3722,6 +3930,40 @@ export const KLineChartComponent = ({
                 top: (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
                   ? '158px'
                   : (settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? '80px' : '2px'
+              }}
+            >
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+                <table className="text-[11px] text-gray-700">
+                  <tbody>
+                    <tr>
+                      <td className="px-2 py-1 whitespace-nowrap">Trend</td>
+                      <td className="px-2 py-1 text-right whitespace-nowrap" style={{ backgroundColor: stStats.lastTrendUp ? 'rgba(38,166,154,0.20)' : 'rgba(239,83,80,0.20)' }}>
+                        {stStats.lastTrendUp ? 'BULLISH ▲' : 'BEARISH ▼'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 whitespace-nowrap">Trend Bars</td>
+                      <td className="px-2 py-1 text-right whitespace-nowrap">{stStats.trendBars} bars</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ORB Enhanced: Opening Range Breakout table (top-right) */}
+          {settings?.indicators?.orbEnhanced && !isWorkspaceHidden && orbStats && (
+            <div
+              className="absolute right-2 z-40 pointer-events-none"
+              style={{
+                right: '80px',
+                top: (() => {
+                  const base = (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
+                    ? 158
+                    : ((settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? 80 : 2);
+                  const stOffset = settings?.indicators?.stEnhanced ? 78 : 0;
+                  return `${base + stOffset}px`;
+                })()
               }}
             >
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
@@ -4257,7 +4499,7 @@ export const KLineChartComponent = ({
                         title="Configure"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                         aria-label={`Configure ${LABELS[key] || key}`}
-                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); if (key === 'bbPro') setShowBbSettings(true); if (key === 'orbEnhanced') setShowOrbSettings(true); }}
+                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); if (key === 'bbPro') setShowBbSettings(true); if (key === 'orbEnhanced') setShowOrbSettings(true); if (key === 'stEnhanced') setShowStSettings(true); }}
                       >
                         <Settings className="w-4 h-4" />
                       </button>

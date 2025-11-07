@@ -73,6 +73,12 @@ const defaultSettings = {
       orPeriod: 1, // number of bars to form opening range
       targetRR: 4.0, // Risk:Reward ratio
     }
+    ,
+    stEnhanced: {
+      // SuperTrend - Pro settings
+      atrPeriod: 10,
+      atrMultiplier: 3.0,
+    }
   },
   indicators: {
     // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
