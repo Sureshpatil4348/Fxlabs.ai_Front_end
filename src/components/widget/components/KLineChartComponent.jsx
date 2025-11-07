@@ -2968,8 +2968,8 @@ export const KLineChartComponent = ({
                   calcParams: config.params.calcParams,
                   styles: {
                     lines: [
-                      { color: '#2962FF', size: 2 }, // MACD
-                      { color: '#FF6D00', size: 2 }, // SIGNAL
+                      { color: '#2962FF', size: 1 }, // MACD
+                      { color: '#FF6D00', size: 1 }, // SIGNAL
                       { color: 'rgba(107,114,128,0.5)', size: 1 }, // ZERO
                     ],
                     bars: [
@@ -3277,6 +3277,18 @@ export const KLineChartComponent = ({
 
       if (!settings?.indicators?.macdEnhanced) return;
 
+      // Resolve actual MACD pane id from chart (fallback to expected id)
+      let macdPaneId = 'pane-macdEnhanced';
+      try {
+        const macdInds = typeof chart.getIndicators === 'function'
+          ? (chart.getIndicators({ name: 'MACD_ENH' }) || [])
+          : [];
+        if (Array.isArray(macdInds) && macdInds.length > 0) {
+          const pid = macdInds[0]?.paneId;
+          if (pid) macdPaneId = pid;
+        }
+      } catch (_) { /* ignore */ }
+
       // Build MACD series from candles and current settings
       const cfg = settings?.indicatorSettings?.macdEnhanced || {};
       const fastLen = Math.max(1, Number(cfg.fastLength) || 12);
@@ -3330,7 +3342,7 @@ export const KLineChartComponent = ({
           name: 'text',
           text: ev.type === 'bull' ? '▲' : '▼',
           points: [{ timestamp: ev.ts, value: ev.val }],
-          paneId: 'pane-macdEnhanced',
+          paneId: macdPaneId,
           styles: {
             text: {
               backgroundColor: ev.type === 'bull' ? 'rgba(38,166,154,0.15)' : 'rgba(239,83,80,0.15)',
