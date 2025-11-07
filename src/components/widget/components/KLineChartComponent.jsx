@@ -96,6 +96,8 @@ export const KLineChartComponent = ({
     orPeriod: 1,
     targetRR: 4.0,
   }));
+  // Keep track of programmatically-created ORB label overlays (for cleanup)
+  const orbLabelOverlayIdsRef = useRef([]);
 
   useEffect(() => {
     if (!showRsiSettings) return;
@@ -279,6 +281,8 @@ export const KLineChartComponent = ({
       let sellTaken = false;
       let buyEntry = NaN;
       let sellEntry = NaN;
+      let buyTs = NaN;
+      let sellTs = NaN;
       let buyTP = NaN;
       let sellTP = NaN;
       let buySL = NaN;
@@ -322,12 +326,14 @@ export const KLineChartComponent = ({
           buyEntry = Number(k.close);
           buyTP = openingHigh + range * rr;
           buySL = openingLow;
+          buyTs = tsMs;
         }
         if (captured && isFinite(range) && !sellTaken && Number(k.close) < openingLow && Number(prev.close) >= openingLow) {
           sellTaken = true;
           sellEntry = Number(k.close);
           sellTP = openingLow - range * rr;
           sellSL = openingHigh;
+          sellTs = tsMs;
         }
       }
       const rangeSize = (isFinite(openingHigh) && isFinite(openingLow)) ? (openingHigh - openingLow) : NaN;
@@ -344,6 +350,8 @@ export const KLineChartComponent = ({
         sellTP: isFinite(sellTP) ? sellTP : null,
         buySL: isFinite(buySL) ? buySL : null,
         sellSL: isFinite(sellSL) ? sellSL : null,
+        buyTs: Number.isFinite(buyTs) ? buyTs : null,
+        sellTs: Number.isFinite(sellTs) ? sellTs : null,
         targetRR: rr,
       };
     } catch (_e) {
@@ -1359,6 +1367,13 @@ export const KLineChartComponent = ({
         const label = (overlay && typeof overlay.text === 'string' && overlay.text.trim().length > 0)
           ? overlay.text
           : 'Text Annotation';
+        const custom = (overlay && overlay.styles && overlay.styles.text) ? overlay.styles.text : {};
+        const bg = custom.backgroundColor != null ? custom.backgroundColor : 'transparent';
+        const color = custom.color != null ? custom.color : '#333333';
+        const size = custom.size != null ? custom.size : 12;
+        const borderColor = custom.borderColor != null ? custom.borderColor : 'transparent';
+        const borderSize = custom.borderSize != null ? custom.borderSize : 0;
+        const pad = custom.padding != null ? custom.padding : 0;
         return [
           {
             type: 'text',
@@ -1370,15 +1385,15 @@ export const KLineChartComponent = ({
               baseline: 'bottom',
             },
             styles: {
-              backgroundColor: 'transparent',
-              borderSize: 0,
-              borderColor: 'transparent',
-              color: '#333333',
-              size: 12,
-              paddingLeft: 0,
-              paddingRight: 0,
-              paddingTop: 0,
-              paddingBottom: 0,
+              backgroundColor: bg,
+              borderSize: borderSize,
+              borderColor: borderColor,
+              color: color,
+              size: size,
+              paddingLeft: pad,
+              paddingRight: pad,
+              paddingTop: pad,
+              paddingBottom: pad,
             },
           },
         ];
@@ -2539,7 +2554,7 @@ export const KLineChartComponent = ({
       // ORB Enhanced (on-chart Opening Range Breakout)
       try {
         const wantOrb = Boolean(settings.indicators?.orbEnhanced);
-        const orbStyles = {
+      const orbStyles = {
           lines: [
             { color: '#26a69a', size: 1 }, // OR High
             { color: '#ef5350', size: 1 }, // OR Low
@@ -2772,6 +2787,60 @@ export const KLineChartComponent = ({
     settings?.indicatorSettings?.orbEnhanced,
     isWorkspaceHidden
   ]);
+
+  // Programmatic ORB TP/SL badges on chart (using 'text' overlay)
+  useEffect(() => {
+    try {
+      const chart = chartRef.current;
+      if (!chart) return;
+
+      // Remove previously created badges
+      try {
+        const ids = Array.isArray(orbLabelOverlayIdsRef.current) ? orbLabelOverlayIdsRef.current : [];
+        ids.forEach((id) => {
+          try { chart.removeOverlay({ id }); } catch (_) {}
+          try { chart.removeOverlay(id); } catch (_) {}
+        });
+      } catch (_) { /* ignore */ }
+      orbLabelOverlayIdsRef.current = [];
+
+      if (!settings?.indicators?.orbEnhanced || !orbStats) return;
+
+      const precision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+      const addBadge = (ts, price, label, style) => {
+        if (!Number.isFinite(ts) || !Number.isFinite(price)) return;
+        const overlaySpec = {
+          name: 'text',
+          text: label,
+          points: [{ timestamp: ts, value: price }],
+          styles: {
+            text: {
+              backgroundColor: style.bg,
+              color: style.color,
+              padding: 4,
+              borderSize: 0,
+            }
+          }
+        };
+        try {
+          const ov = chart.createOverlay(overlaySpec);
+          const id = (ov && (ov.id || ov)) || null;
+          if (id) orbLabelOverlayIdsRef.current.push(id);
+        } catch (_) { /* ignore */ }
+      };
+
+      // BUY badges
+      if (orbStats.buyTaken && orbStats.buyTs != null) {
+        if (orbStats.buyTP != null) addBadge(orbStats.buyTs, orbStats.buyTP, `TP: ${formatPrice(orbStats.buyTP, precision)}`, { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' });
+        if (orbStats.buySL != null) addBadge(orbStats.buyTs, orbStats.buySL, `SL: ${formatPrice(orbStats.buySL, precision)}`, { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' });
+      }
+      // SELL badges
+      if (orbStats.sellTaken && orbStats.sellTs != null) {
+        if (orbStats.sellTP != null) addBadge(orbStats.sellTs, orbStats.sellTP, `TP: ${formatPrice(orbStats.sellTP, precision)}`, { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' });
+        if (orbStats.sellSL != null) addBadge(orbStats.sellTs, orbStats.sellSL, `SL: ${formatPrice(orbStats.sellSL, precision)}`, { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' });
+      }
+    } catch (_) { /* ignore */ }
+  }, [settings?.indicators?.orbEnhanced, orbStats, settings?.symbol]);
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -3680,30 +3749,6 @@ export const KLineChartComponent = ({
                   </tbody>
                 </table>
               </div>
-              {(orbStats.buyTaken || orbStats.sellTaken) && (
-                <div className="mt-1 flex gap-1 pointer-events-none">
-                  {orbStats.buyTaken && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#0b5f56', backgroundColor: 'rgba(38,166,154,0.20)' }}>
-                      TP: {orbStats.buyTP != null ? formatPrice(orbStats.buyTP, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
-                    </span>
-                  )}
-                  {orbStats.buyTaken && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#7a1f1f', backgroundColor: 'rgba(239,83,80,0.20)' }}>
-                      SL: {orbStats.buySL != null ? formatPrice(orbStats.buySL, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
-                    </span>
-                  )}
-                  {orbStats.sellTaken && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#7a1f1f', backgroundColor: 'rgba(239,83,80,0.20)' }}>
-                      TP: {orbStats.sellTP != null ? formatPrice(orbStats.sellTP, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
-                    </span>
-                  )}
-                  {orbStats.sellTaken && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ color: '#0b5f56', backgroundColor: 'rgba(38,166,154,0.20)' }}>
-                      SL: {orbStats.sellSL != null ? formatPrice(orbStats.sellSL, String(settings?.symbol || '').includes('JPY') ? 3 : 5) : '--'}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
           )}
 
