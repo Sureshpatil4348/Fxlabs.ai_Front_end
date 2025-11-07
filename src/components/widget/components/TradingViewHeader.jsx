@@ -507,12 +507,12 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 </button>
               </div>
 
-              {/* RSI Enhanced */}
+              {/* RSI - Pro */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-0.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
                   <div>
-                    <p className="text-xs font-medium text-gray-900">RSI Enhanced</p>
+                    <p className="text-xs font-medium text-gray-900">RSI - Pro</p>
                     <p className="text-xs text-gray-500">Clean RSI (14) — OB/OS panel</p>
                   </div>
                 </div>
@@ -817,7 +817,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
             <div className="space-y-2 overflow-y-auto relative" style={{ maxHeight: '400px', scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6', scrollBehavior: 'smooth' }}>
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">RSI Enhanced</p>
+                  <p className="text-xs font-medium text-gray-900">RSI - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
