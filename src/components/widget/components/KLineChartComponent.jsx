@@ -2980,7 +2980,7 @@ export const KLineChartComponent = ({
             const activeOnChart = ON_CHART_KEYS.filter((k) => settings?.indicators?.[k]);
             if (activeOnChart.length === 0 || isWorkspaceHidden) return null;
             return (
-              <div className="absolute top-2 left-2 space-y-1 transition-opacity duration-150" style={{ zIndex: 60, pointerEvents: isHoveringOnChartOverlays ? 'auto' : 'none', opacity: isHoveringOnChartOverlays ? 1 : 0 }}>
+              <div className="absolute top-8 left-2 space-y-1 transition-opacity duration-150" style={{ zIndex: 60, pointerEvents: isHoveringOnChartOverlays ? 'auto' : 'none', opacity: isHoveringOnChartOverlays ? 1 : 0 }}>
                 {activeOnChart.map((key) => (
                   <div key={key} className="flex items-center gap-2 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
                     <span className="text-[11px] font-medium text-gray-700 whitespace-nowrap">{LABELS[key] || key}</span>
