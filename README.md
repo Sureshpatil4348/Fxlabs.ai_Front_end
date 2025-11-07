@@ -18,6 +18,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Implementation: set `candle.tooltip.custom` to an array without `{time}` and with abbreviated titles:
   - `{ title: 'O:', value: '{open}' }`, `{ title: 'H:', value: '{high}' }`, `{ title: 'L:', value: '{low}' }`, `{ title: 'C:', value: '{close}' }`, `{ title: 'V:', value: '{volume}' }`
 
+## K-line MA Enhanced (EMA Table)
+
+- When the Moving Average - Pro indicator is enabled, EMA 9/21/50/100/200 values are shown as a compact table in the chart’s upper-right.
+- Values are computed from visible candle data and formatted with instrument-aware precision (e.g., JPY pairs use 3 decimals, others use 5).
+- Location: `src/components/widget/components/KLineChartComponent.jsx`
+- The built-in indicator legend/values are hidden to avoid duplication; only the table is shown.
+
 - The TradingView widget now supports only the K-line candlestick chart. The separate Line Chart page (with volume, 24h change, and multiple indicator panels) has been removed from the UI.
 - Any attempts to switch to a line chart are ignored; the store enforces `candlestick` mode on set and on state rehydrate.
 - Sidebar > Chart Type menu shows only Candlestick.

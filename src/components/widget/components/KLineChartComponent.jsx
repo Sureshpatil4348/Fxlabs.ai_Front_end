@@ -1,9 +1,10 @@
 import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
 import { Trash2, Settings } from 'lucide-react';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 import { useChartStore } from '../stores/useChartStore';
-import { calculateRSI } from '../utils/indicators';
+import { calculateRSI, calculateEMA } from '../utils/indicators';
+import { formatPrice } from '../../../utils/formatters';
 
 export const KLineChartComponent = ({
   candles = [],
@@ -52,6 +53,28 @@ export const KLineChartComponent = ({
   
   // Get the setter from store
   const { setKLineChartRef, toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = useChartStore();
+  
+  // EMA table (Moving Average - Pro) computed values for current dataset
+  const emaTablePeriods = [9, 21, 50, 100, 200];
+  const emaColorsByPeriod = {
+    9: '#2962FF',
+    21: '#FF6D00',
+    50: '#26A69A',
+    100: '#9C27B0',
+    200: '#F44336'
+  };
+  const emaTableData = useMemo(() => {
+    try {
+      if (!Array.isArray(candles) || candles.length === 0) return [];
+      return emaTablePeriods.map((period) => {
+        const series = calculateEMA(candles, period) || [];
+        const last = series.length > 0 ? series[series.length - 1]?.value : null;
+        return { period, color: emaColorsByPeriod[period], value: typeof last === 'number' ? last : null };
+      });
+    } catch (_e) {
+      return [];
+    }
+  }, [candles]);
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -1313,6 +1336,14 @@ export const KLineChartComponent = ({
       });
 
       chartRef.current = chart;
+      // Hide indicator legends/values on the pane (EMA details on upper side)
+      try {
+        chart.setStyles({
+          indicator: {
+            tooltip: { showRule: 'none' }
+          }
+        });
+      } catch (_) { /* optional API */ }
       // Capture initial bar space for reset/reload behavior
       try {
         if (typeof chart.getBarSpace === 'function') {
@@ -2669,6 +2700,35 @@ export const KLineChartComponent = ({
                   {rsiAlert.type === 'overbought' ? 'RSI Overbought' : 'RSI Oversold'}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* MA Enhanced: EMA values table (top-right, no header) */}
+          {settings?.indicators?.maEnhanced && !isWorkspaceHidden && emaTableData.length > 0 && (
+            <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '80px' }}>
+              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+                <table className="text-[11px] text-gray-700">
+                  <tbody>
+                    {emaTableData.map((row) => {
+                      const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+                      return (
+                        <tr key={row.period}>
+                          <td className="px-2 py-1 whitespace-nowrap">
+                            <span
+                              className="inline-block w-2 h-2 rounded-full mr-1 align-middle"
+                              style={{ backgroundColor: row.color }}
+                            />
+                            <span className="align-middle">EMA {row.period}</span>
+                          </td>
+                          <td className="px-2 py-1 text-right whitespace-nowrap">
+                            {row.value != null ? formatPrice(row.value, pricePrecision) : '--'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
