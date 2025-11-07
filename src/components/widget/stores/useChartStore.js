@@ -28,6 +28,12 @@ const defaultSettings = {
       osFillColor: 'rgba(8,153,129,0.1)'
     }
     ,
+    atrEnhanced: {
+      // ATR - Pro settings
+      length: 14,
+      atrLineColor: '#2962FF',
+    }
+    ,
     emaTouch: {
       // Trend Strategy (BB + ATR Targets) configurable params
       bbLength: 20,

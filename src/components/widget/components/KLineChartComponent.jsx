@@ -209,6 +209,67 @@ export const KLineChartComponent = ({
     }
   }, [candles, settings?.indicatorSettings?.bbPro]);
   
+  // ATR Pro stats (Current ATR, Volatility classification, Trend)
+  const atrProStats = useMemo(() => {
+    try {
+      if (!Array.isArray(candles) || candles.length === 0) return null;
+      const cfg = settings?.indicatorSettings?.atrEnhanced || {};
+      const len = Math.max(1, Number(cfg.length) || 14);
+      const n = candles.length;
+      if (n < 2) return null;
+      // Compute True Range (TR)
+      const trSeries = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const k = candles[i];
+        const prev = candles[i - 1] || k;
+        const high = Number(k.high);
+        const low = Number(k.low);
+        const prevClose = Number(prev.close);
+        trSeries[i] = Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose));
+      }
+      // Wilder's RMA for ATR
+      const atrSeries = new Array(n);
+      let prevAtr = null;
+      for (let i = 0; i < n; i++) {
+        const tr = trSeries[i];
+        if (i === 0) {
+          atrSeries[i] = tr;
+          prevAtr = tr;
+        } else {
+          const atr = ((prevAtr * (len - 1)) + tr) / len;
+          atrSeries[i] = atr;
+          prevAtr = atr;
+        }
+      }
+      const lastAtr = atrSeries[n - 1];
+      if (!Number.isFinite(lastAtr)) return null;
+      // ATR moving average for trend (SMA of 20)
+      const maLen = 20;
+      let atrMa = null;
+      if (n >= maLen) {
+        let sum = 0;
+        for (let i = n - maLen; i < n; i++) sum += atrSeries[i];
+        atrMa = sum / maLen;
+      }
+      const trendUp = Number.isFinite(atrMa) ? lastAtr > atrMa : (n > 1 ? lastAtr > atrSeries[n - 2] : true);
+      // Volatility classification using 100-period average
+      const avgLen = 100;
+      let atrAvg = null;
+      if (n >= avgLen) {
+        let sum = 0;
+        for (let i = n - avgLen; i < n; i++) sum += atrSeries[i];
+        atrAvg = sum / avgLen;
+      }
+      const relative = Number.isFinite(atrAvg) && atrAvg !== 0 ? lastAtr / atrAvg : null;
+      const isHighVol = Number.isFinite(relative) ? relative >= 1.5 : false;
+      const isLowVol = Number.isFinite(relative) ? relative <= 0.5 : false;
+      const isNormalVol = !isHighVol && !isLowVol;
+      return { currentAtr: lastAtr, trendUp, isHighVol, isLowVol, isNormalVol };
+    } catch (_e) {
+      return null;
+    }
+  }, [candles, settings?.indicatorSettings?.atrEnhanced]);
+  
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
   const currentScrollIndexRef = useRef(null);
@@ -2158,9 +2219,10 @@ export const KLineChartComponent = ({
 
       // Support RSI Enhanced (pane), ATR Enhanced (pane), MACD Enhanced (pane). BOLL overlays are handled separately below.
       const rsiCfg = settings?.indicatorSettings?.rsiEnhanced || {};
+      const atrCfg = settings?.indicatorSettings?.atrEnhanced || {};
       const indicatorMap = {
         rsiEnhanced: { name: 'RSI', params: { calcParams: [Math.max(1, Number(rsiCfg.length) || 14)] }, newPane: true },
-        atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [14] }, newPane: true },
+        atrEnhanced: { name: 'ATR_ENH', params: { calcParams: [Math.max(1, Number(atrCfg.length) || 14)] }, newPane: true },
         macdEnhanced: { name: 'MACD_ENH', params: { calcParams: [12, 26, 9] }, newPane: true },
       };
 
@@ -2422,6 +2484,21 @@ export const KLineChartComponent = ({
                   }
                 };
               }
+              if (key === 'atrEnhanced') {
+                // Remove any existing ATR pane before re-adding to avoid duplicates on settings change
+                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) {}
+                const lineColor = atrCfg.atrLineColor || '#2962FF';
+                indicatorArg = {
+                  name: indicatorName,
+                  calcParams: config.params.calcParams,
+                  styles: {
+                    lines: [
+                      { color: lineColor, size: 1 }
+                    ]
+                  }
+                };
+              }
               if (key === 'macdEnhanced') {
                 indicatorArg = {
                   name: indicatorName,
@@ -2489,6 +2566,7 @@ export const KLineChartComponent = ({
   }, [
     settings.indicators,
     settings?.indicatorSettings?.rsiEnhanced,
+    settings?.indicatorSettings?.atrEnhanced,
     settings?.indicatorSettings?.emaTouch,
     settings?.indicatorSettings?.bbPro,
     settings?.indicatorSettings?.maEnhanced,
@@ -3370,6 +3448,24 @@ export const KLineChartComponent = ({
                   />
                 </label>
               )}
+              {key === 'atrEnhanced' && (
+                <label
+                  className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"
+                  title="ATR Line Color"
+                >
+                  <input
+                    type="color"
+                    value={settings?.indicatorSettings?.atrEnhanced?.atrLineColor || '#2962FF'}
+                    onChange={(e) => { try { updateIndicatorSettings('atrEnhanced', { atrLineColor: e.target.value }); } catch (_) {} }}
+                    className="w-0 h-0 opacity-0 absolute"
+                    aria-label="ATR Line Color"
+                  />
+                  <span
+                    className="block w-4 h-4"
+                    style={{ backgroundColor: settings?.indicatorSettings?.atrEnhanced?.atrLineColor || '#2962FF' }}
+                  />
+                </label>
+              )}
                           <button
                             type="button"
                             title="Delete"
@@ -3390,6 +3486,36 @@ export const KLineChartComponent = ({
                           </button>
                         </div>
                       </div>
+                      {/* ATR - Pro: stats table (top-right of ATR pane) */}
+                      {key === 'atrEnhanced' && atrProStats && (
+                        <div className="absolute pointer-events-none" style={{ right: '80px', top: '2px' }}>
+                          <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                            <table className="text-[11px] text-gray-700">
+                              <tbody>
+                                {(() => {
+                                  const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+                                  const currentAtr = atrProStats.currentAtr != null ? formatPrice(atrProStats.currentAtr, pricePrecision) : '--';
+                                  const volText = atrProStats.isHighVol ? 'HIGH ⚠' : atrProStats.isLowVol ? 'LOW ⚡' : 'NORMAL ●';
+                                  const volBg = atrProStats.isHighVol ? 'rgba(239,83,80,0.35)' : atrProStats.isLowVol ? 'rgba(255,167,38,0.35)' : 'rgba(38,166,154,0.35)';
+                                  const trendText = atrProStats.trendUp ? 'RISING ▲' : 'FALLING ▼';
+                                  const trendBg = atrProStats.trendUp ? 'rgba(239,83,80,0.25)' : 'rgba(38,166,154,0.25)';
+                                  const rows = [
+                                    { label: 'Current ATR', value: currentAtr, cellBg: undefined },
+                                    { label: 'Volatility', value: volText, cellBg: volBg },
+                                    { label: 'Trend', value: trendText, cellBg: trendBg },
+                                  ];
+                                  return rows.map((r) => (
+                                    <tr key={r.label}>
+                                      <td className="px-2 py-1 whitespace-nowrap">{r.label}</td>
+                                      <td className="px-2 py-1 text-right whitespace-nowrap" style={r.cellBg ? { backgroundColor: r.cellBg } : undefined}>{r.value}</td>
+                                    </tr>
+                                  ));
+                                })()}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
     </div>
     
                   );

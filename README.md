@@ -128,6 +128,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Creation/removal wired to the RSI indicator toggle and settings changes.
 - Result: The OB/OS fills now align precisely with the RSI scale; changing levels updates in real time.
 
+## K-line ATR - Pro
+
+- New: ATR line supports a color picker (same UX as RSI). Hover the ATR pane to reveal the small color swatch on the left; click to choose a color. The ATR line updates immediately and persists.
+- New: Compact stats table in the upper-right of the ATR pane shows: Current ATR, Volatility (HIGH/LOW/NORMAL), and Trend (RISING/FALLING).
+- Location: `src/components/widget/components/KLineChartComponent.jsx` and defaults in `src/components/widget/stores/useChartStore.js` (`settings.indicatorSettings.atrEnhanced`).
+
 ## K-line Trend Strategy (BB + ATR Targets)
 
 - Inputs (configurable): BB Period, BB StdDev, ATR Period, TP1/TP2/TP3 ATR Multipliers.
