@@ -18,10 +18,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Implementation: set `candle.tooltip.custom` to an array without `{time}` and with abbreviated titles:
   - `{ title: 'O:', value: '{open}' }`, `{ title: 'H:', value: '{high}' }`, `{ title: 'L:', value: '{low}' }`, `{ title: 'C:', value: '{close}' }`, `{ title: 'V:', value: '{volume}' }`
 
-## K-line MA Enhanced (EMA Table)
+## K-line MA Enhanced (Moving Average - Pro)
 
-- When the Moving Average - Pro indicator is enabled, EMA 9/21/50/100/200 values are shown as a compact table in the chart’s upper-right.
-- Values are computed from visible candle data and formatted with instrument-aware precision (e.g., JPY pairs use 3 decimals, others use 5).
+- When the Moving Average - Pro indicator is enabled, a compact table in the chart’s upper-right shows the configured MA values for enabled lines (MA 1–4), using your selected MA Type (EMA/SMA) and Source (close/open/high/low/hl2/hlc3/ohlc4).
+- Line width is standardized to 1 for all MA lines on the chart for a clean, premium look.
+- Configuration: open the on-chart tile “Moving Average - Pro” (hover main pane) and click the gear icon.
 - Location: `src/components/widget/components/KLineChartComponent.jsx`
 - The built-in indicator legend/values are hidden to avoid duplication; only the table is shown.
 

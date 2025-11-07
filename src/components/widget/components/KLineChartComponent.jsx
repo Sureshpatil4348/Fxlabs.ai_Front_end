@@ -4,16 +4,14 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import { formatPrice } from '../../../utils/formatters';
 import { useChartStore } from '../stores/useChartStore';
-import { calculateRSI, calculateEMA } from '../utils/indicators';
+import { calculateRSI, calculateEMA, calculateSMA } from '../utils/indicators';
 
-// EMA table constants (stable references for hook dependencies)
-const EMA_TABLE_PERIODS = [9, 21, 50, 100, 200];
-const EMA_COLORS_BY_PERIOD = {
-  9: '#2962FF',
-  21: '#FF6D00',
-  50: '#26A69A',
-  100: '#9C27B0',
-  200: '#F44336'
+// MA colors by index (stable references for hook dependencies)
+const MA_COLORS_BY_INDEX = {
+  1: '#2962FF',
+  2: '#FF6D00',
+  3: '#26A69A',
+  4: '#9C27B0',
 };
 
 export const KLineChartComponent = ({
@@ -60,6 +58,21 @@ export const KLineChartComponent = ({
     tp3Multiplier: 4.0,
   }));
 
+  // Moving Average - Pro (MA Enhanced) UI state
+  const [showMaSettings, setShowMaSettings] = useState(false);
+  const [localMaSettings, setLocalMaSettings] = useState(() => ({
+    maType: 'EMA',
+    source: 'close',
+    ma1Enabled: true,
+    ma1Length: 9,
+    ma2Enabled: true,
+    ma2Length: 21,
+    ma3Enabled: true,
+    ma3Length: 50,
+    ma4Enabled: false,
+    ma4Length: 100,
+  }));
+
   useEffect(() => {
     if (!showRsiSettings) return;
     const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
@@ -88,19 +101,56 @@ export const KLineChartComponent = ({
   // Get the setter from store
   const { setKLineChartRef, toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = useChartStore();
   
-  // EMA table (Moving Average - Pro) computed values for current dataset
-  const emaTableData = useMemo(() => {
+  // Sync local MA settings when opening the modal
+  useEffect(() => {
+    if (!showMaSettings) return;
+    const cfg = settings?.indicatorSettings?.maEnhanced || {};
+    setLocalMaSettings({
+      maType: cfg.maType === 'SMA' ? 'SMA' : 'EMA',
+      source: cfg.source || 'close',
+      ma1Enabled: cfg.ma1Enabled !== false,
+      ma1Length: Math.max(1, Number(cfg.ma1Length) || 9),
+      ma2Enabled: cfg.ma2Enabled !== false,
+      ma2Length: Math.max(1, Number(cfg.ma2Length) || 21),
+      ma3Enabled: cfg.ma3Enabled !== false,
+      ma3Length: Math.max(1, Number(cfg.ma3Length) || 50),
+      ma4Enabled: Boolean(cfg.ma4Enabled),
+      ma4Length: Math.max(1, Number(cfg.ma4Length) || 100),
+    });
+  }, [showMaSettings, settings?.indicatorSettings?.maEnhanced]);
+
+  // MA values table (top-right) computed values for current dataset and settings
+  const maTableData = useMemo(() => {
     try {
       if (!Array.isArray(candles) || candles.length === 0) return [];
-      return EMA_TABLE_PERIODS.map((period) => {
-        const series = calculateEMA(candles, period) || [];
+      const cfg = settings?.indicatorSettings?.maEnhanced || {};
+      const type = cfg.maType === 'SMA' ? 'SMA' : 'EMA';
+      const src = (cfg.source || 'close').toLowerCase();
+      // Build selected MA set (index 1..4)
+      const selected = [
+        { idx: 1, enabled: cfg.ma1Enabled !== false, len: Math.max(1, Number(cfg.ma1Length) || 9) },
+        { idx: 2, enabled: cfg.ma2Enabled !== false, len: Math.max(1, Number(cfg.ma2Length) || 21) },
+        { idx: 3, enabled: cfg.ma3Enabled !== false, len: Math.max(1, Number(cfg.ma3Length) || 50) },
+        { idx: 4, enabled: Boolean(cfg.ma4Enabled), len: Math.max(1, Number(cfg.ma4Length) || 100) },
+      ].filter((d) => d.enabled);
+      if (selected.length === 0) return [];
+      // Map candles to chosen source (reuse RSI mapping approach)
+      const mapped = candles.map((c) => {
+        const o = Number(c.open), h = Number(c.high), l = Number(c.low), cl = Number(c.close);
+        let v = cl;
+        if (src === 'open') v = o; else if (src === 'high') v = h; else if (src === 'low') v = l;
+        else if (src === 'hl2') v = (h + l) / 2; else if (src === 'hlc3') v = (h + l + cl) / 3; else if (src === 'ohlc4') v = (o + h + l + cl) / 4;
+        return { ...c, close: v };
+      });
+      return selected.map(({ idx, len }) => {
+        const series = type === 'SMA' ? (calculateSMA(mapped, len) || []) : (calculateEMA(mapped, len) || []);
         const last = series.length > 0 ? series[series.length - 1]?.value : null;
-        return { period, color: EMA_COLORS_BY_PERIOD[period], value: typeof last === 'number' ? last : null };
+        return { index: idx, period: len, color: MA_COLORS_BY_INDEX[idx], value: typeof last === 'number' ? last : null, type };
       });
     } catch (_e) {
       return [];
     }
-  }, [candles]);
+  }, [candles, settings?.indicatorSettings?.maEnhanced]);
   
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
@@ -501,6 +551,83 @@ export const KLineChartComponent = ({
               return { st };
             });
           },
+        });
+      }
+      // Register MA_ENH (Moving Average - Pro, multi-line, supports type & source)
+      if (Array.isArray(supported) && !supported.includes('MA_ENH')) {
+        registerIndicator({
+          name: 'MA_ENH',
+          shortName: 'MA',
+          series: 'price',
+          precision: 4,
+          // calcParams: [typeCode, sourceCode, len1, len2, len3, len4]
+          // typeCode: 0=EMA, 1=SMA; sourceCode: 0=close,1=open,2=high,3=low,4=hl2,5=hlc3,6=ohlc4
+          calcParams: [0, 0, 9, 21, 50, 100],
+          figures: [
+            { key: 'ma1', title: 'MA1: ', type: 'line' },
+            { key: 'ma2', title: 'MA2: ', type: 'line' },
+            { key: 'ma3', title: 'MA3: ', type: 'line' },
+            { key: 'ma4', title: 'MA4: ', type: 'line' },
+          ],
+          calc: (dataList, indicator) => {
+            const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [0, 0, 9, 21, 50, 100];
+            const typeCode = Math.max(0, Math.min(1, Number(p[0]) || 0));
+            const srcCode = Math.max(0, Math.min(6, Number(p[1]) || 0));
+            const l1 = Math.max(0, Number(p[2]) || 0);
+            const l2 = Math.max(0, Number(p[3]) || 0);
+            const l3 = Math.max(0, Number(p[4]) || 0);
+            const l4 = Math.max(0, Number(p[5]) || 0);
+
+            // Helpers to pick source
+            const pick = (k) => {
+              const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
+              switch (srcCode) {
+                case 1: return o;
+                case 2: return h;
+                case 3: return l;
+                case 4: return (h + l) / 2;
+                case 5: return (h + l + c) / 3;
+                case 6: return (o + h + l + c) / 4;
+                default: return c;
+              }
+            };
+
+            // EMA state
+            let ema1 = null, ema2 = null, ema3 = null, ema4 = null;
+            const k1 = l1 > 0 ? 2 / (l1 + 1) : 0;
+            const k2 = l2 > 0 ? 2 / (l2 + 1) : 0;
+            const k3 = l3 > 0 ? 2 / (l3 + 1) : 0;
+            const k4 = l4 > 0 ? 2 / (l4 + 1) : 0;
+
+            // SMA state
+            let q1 = [], s1 = 0;
+            let q2 = [], s2 = 0;
+            let q3 = [], s3 = 0;
+            let q4 = [], s4 = 0;
+
+            const out = new Array(dataList.length);
+            for (let i = 0; i < dataList.length; i++) {
+              const px = pick(dataList[i]);
+
+              let v1 = NaN, v2 = NaN, v3 = NaN, v4 = NaN;
+              if (typeCode === 0) {
+                // EMA
+                if (l1 > 0) { ema1 = ema1 == null ? px : (px - ema1) * k1 + ema1; v1 = ema1; }
+                if (l2 > 0) { ema2 = ema2 == null ? px : (px - ema2) * k2 + ema2; v2 = ema2; }
+                if (l3 > 0) { ema3 = ema3 == null ? px : (px - ema3) * k3 + ema3; v3 = ema3; }
+                if (l4 > 0) { ema4 = ema4 == null ? px : (px - ema4) * k4 + ema4; v4 = ema4; }
+              } else {
+                // SMA
+                if (l1 > 0) { q1.push(px); s1 += px; if (q1.length > l1) s1 -= q1.shift(); if (q1.length >= l1) v1 = s1 / l1; }
+                if (l2 > 0) { q2.push(px); s2 += px; if (q2.length > l2) s2 -= q2.shift(); if (q2.length >= l2) v2 = s2 / l2; }
+                if (l3 > 0) { q3.push(px); s3 += px; if (q3.length > l3) s3 -= q3.shift(); if (q3.length >= l3) v3 = s3 / l3; }
+                if (l4 > 0) { q4.push(px); s4 += px; if (q4.length > l4) s4 -= q4.shift(); if (q4.length >= l4) v4 = s4 / l4; }
+              }
+
+              out[i] = { ma1: v1, ma2: v2, ma3: v3, ma4: v4 };
+            }
+            return out;
+          }
         });
       }
       // Register SR_ENH (Support/Resistance - on chart)
@@ -2062,34 +2189,53 @@ export const KLineChartComponent = ({
         console.warn('📈 KLineChart: Error handling EMA Touch overlay:', e);
       }
 
-      // MA Enhanced (on-chart EMA multi-lines)
+      // MA Enhanced (on-chart multi-line MA with Type & Source) using custom indicator
       try {
         const wantMa = Boolean(settings.indicators?.maEnhanced);
-        const maParams = [9, 21, 50, 100, 200];
-        const maStyles = {
-          lines: [
-            { color: '#2962FF', size: 2 }, // MA1 / EMA9
-            { color: '#FF6D00', size: 2 }, // MA2 / EMA21
-            { color: '#26A69A', size: 2 }, // MA3 / EMA50
-            { color: '#9C27B0', size: 2 }, // MA4 / EMA100
-            { color: '#F44336', size: 3 }, // MA5 / EMA200
-          ],
+        const maCfg = settings?.indicatorSettings?.maEnhanced || {};
+        const typeCode = (maCfg.maType === 'SMA') ? 1 : 0; // 0=EMA,1=SMA
+        const srcMap = { close: 0, open: 1, high: 2, low: 3, hl2: 4, hlc3: 5, ohlc4: 6 };
+        const sourceCode = srcMap[(maCfg.source || 'close').toLowerCase()] ?? 0;
+        const l1 = Math.max(1, Number(maCfg.ma1Length) || 9);
+        const l2 = Math.max(1, Number(maCfg.ma2Length) || 21);
+        const l3 = Math.max(1, Number(maCfg.ma3Length) || 50);
+        const l4 = Math.max(1, Number(maCfg.ma4Length) || 100);
+        const e1 = maCfg.ma1Enabled !== false;
+        const e2 = maCfg.ma2Enabled !== false;
+        const e3 = maCfg.ma3Enabled !== false;
+        const e4 = Boolean(maCfg.ma4Enabled);
+        const hasAny = e1 || e2 || e3 || e4;
+        const existingCustom = typeof chartRef.current.getIndicators === 'function' ? chartRef.current.getIndicators({ name: 'MA_ENH' }) : [];
+        const hasCustom = Array.isArray(existingCustom) && existingCustom.length > 0;
+        const removeIfExists = () => {
+          try { chartRef.current.removeIndicator({ name: 'MA_ENH' }); } catch (_) {}
+          try { chartRef.current.removeIndicator({ name: 'EMA' }); } catch (_) {}
+          try { chartRef.current.removeIndicator({ name: 'MA' }); } catch (_) {}
         };
-        const existingEma = typeof chartRef.current.getIndicators === 'function'
-          ? chartRef.current.getIndicators({ name: 'EMA' })
-          : [];
-        const hasEma = Array.isArray(existingEma) && existingEma.length > 0;
-        if (wantMa) {
-          // Recreate on candle pane to guarantee on-chart placement
-          if (hasEma && typeof chartRef.current.removeIndicator === 'function') {
-            chartRef.current.removeIndicator({ name: 'EMA' });
-          }
-          const indicatorArg = { name: 'EMA', calcParams: maParams, styles: maStyles };
-          chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
-          console.log('✅ KLineChart: MA Enhanced (EMA multi) overlay added to candle pane');
-        } else if (hasEma) {
-          chartRef.current.removeIndicator({ name: 'EMA' });
-          console.log('📈 KLineChart: MA Enhanced (EMA) overlay removed');
+        if (wantMa && hasAny) {
+          removeIfExists();
+          // Disabled lines pass length 0 to calc for NaN outputs
+          const calcParams = [
+            typeCode,
+            sourceCode,
+            e1 ? l1 : 0,
+            e2 ? l2 : 0,
+            e3 ? l3 : 0,
+            e4 ? l4 : 0,
+          ];
+          const styles = {
+            lines: [
+              { color: '#2962FF', size: 1 },
+              { color: '#FF6D00', size: 1 },
+              { color: '#26A69A', size: 1 },
+              { color: '#9C27B0', size: 1 },
+            ],
+          };
+          chartRef.current.createIndicator({ name: 'MA_ENH', calcParams, styles }, true, { id: 'candle_pane' });
+          console.log('✅ KLineChart: MA Enhanced (custom) overlay added to candle pane');
+        } else if (hasCustom) {
+          removeIfExists();
+          console.log('📈 KLineChart: MA Enhanced overlay removed');
         }
       } catch (e) {
         console.warn('📈 KLineChart: Error handling MA Enhanced overlay:', e);
@@ -2692,6 +2838,180 @@ export const KLineChartComponent = ({
               </div>
             </div>
           )}
+
+          {/* Moving Average - Pro Settings Modal */}
+          {showMaSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">Moving Average Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowMaSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="ma-type" className="block text-sm text-gray-700 mb-1">MA Type</label>
+                      <select
+                        id="ma-type"
+                        value={localMaSettings.maType}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, maType: e.target.value }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="EMA">EMA</option>
+                        <option value="SMA">SMA</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="ma-source" className="block text-sm text-gray-700 mb-1">Source</label>
+                      <select
+                        id="ma-source"
+                        value={localMaSettings.source}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, source: e.target.value }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="close">Close</option>
+                        <option value="open">Open</option>
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                        <option value="hl2">HL2 (avg high/low)</option>
+                        <option value="hlc3">HLC3 (avg high/low/close)</option>
+                        <option value="ohlc4">OHLC4 (avg open/high/low/close)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* MA 1 */}
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={localMaSettings.ma1Enabled}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma1Enabled: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Enable MA 1</span>
+                    </label>
+                    <div>
+                      <label htmlFor="ma1-length" className="block text-sm text-gray-700 mb-1">MA 1 Length</label>
+                      <input
+                        id="ma1-length"
+                        type="number"
+                        min={1}
+                        value={localMaSettings.ma1Length}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma1Length: Math.max(1, parseInt(e.target.value || '9', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+
+                  {/* MA 2 */}
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={localMaSettings.ma2Enabled}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma2Enabled: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Enable MA 2</span>
+                    </label>
+                    <div>
+                      <label htmlFor="ma2-length" className="block text-sm text-gray-700 mb-1">MA 2 Length</label>
+                      <input
+                        id="ma2-length"
+                        type="number"
+                        min={1}
+                        value={localMaSettings.ma2Length}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma2Length: Math.max(1, parseInt(e.target.value || '21', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+
+                  {/* MA 3 */}
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={localMaSettings.ma3Enabled}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma3Enabled: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Enable MA 3</span>
+                    </label>
+                    <div>
+                      <label htmlFor="ma3-length" className="block text-sm text-gray-700 mb-1">MA 3 Length</label>
+                      <input
+                        id="ma3-length"
+                        type="number"
+                        min={1}
+                        value={localMaSettings.ma3Length}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma3Length: Math.max(1, parseInt(e.target.value || '50', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+
+                  {/* MA 4 */}
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={localMaSettings.ma4Enabled}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma4Enabled: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Enable MA 4</span>
+                    </label>
+                    <div>
+                      <label htmlFor="ma4-length" className="block text-sm text-gray-700 mb-1">MA 4 Length</label>
+                      <input
+                        id="ma4-length"
+                        type="number"
+                        min={1}
+                        value={localMaSettings.ma4Length}
+                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma4Length: Math.max(1, parseInt(e.target.value || '100', 10)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowMaSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        maType: localMaSettings.maType === 'SMA' ? 'SMA' : 'EMA',
+                        source: String(localMaSettings.source || 'close'),
+                        ma1Enabled: Boolean(localMaSettings.ma1Enabled),
+                        ma1Length: Math.max(1, Number(localMaSettings.ma1Length) || 9),
+                        ma2Enabled: Boolean(localMaSettings.ma2Enabled),
+                        ma2Length: Math.max(1, Number(localMaSettings.ma2Length) || 21),
+                        ma3Enabled: Boolean(localMaSettings.ma3Enabled),
+                        ma3Length: Math.max(1, Number(localMaSettings.ma3Length) || 50),
+                        ma4Enabled: Boolean(localMaSettings.ma4Enabled),
+                        ma4Length: Math.max(1, Number(localMaSettings.ma4Length) || 100),
+                      };
+                      try { updateIndicatorSettings('maEnhanced', payload); } catch (_) {}
+                      setShowMaSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           
           {error && chartRef.current && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4 z-10">
@@ -2743,22 +3063,22 @@ export const KLineChartComponent = ({
             </div>
           )}
 
-          {/* MA Enhanced: EMA values table (top-right, no header) */}
-          {settings?.indicators?.maEnhanced && !isWorkspaceHidden && emaTableData.length > 0 && (
+          {/* MA Enhanced: MA values table (top-right, no header) */}
+          {settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
             <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '80px' }}>
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
-                    {emaTableData.map((row) => {
+                    {maTableData.map((row) => {
                       const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
                       return (
-                        <tr key={row.period}>
+                        <tr key={`${row.index}-${row.period}`}>
                           <td className="px-2 py-1 whitespace-nowrap">
                             <span
                               className="inline-block w-2 h-2 rounded-full mr-1 align-middle"
                               style={{ backgroundColor: row.color }}
                             />
-                            <span className="align-middle">EMA {row.period}</span>
+                            <span className="align-middle">{row.type} {row.period}</span>
                           </td>
                           <td className="px-2 py-1 text-right whitespace-nowrap">
                             {row.value != null ? formatPrice(row.value, pricePrecision) : '--'}
@@ -3162,7 +3482,7 @@ export const KLineChartComponent = ({
                         title="Configure"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
                         aria-label={`Configure ${LABELS[key] || key}`}
-                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); }}
+                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); }}
                       >
                         <Settings className="w-4 h-4" />
                       </button>

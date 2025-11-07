@@ -37,6 +37,20 @@ const defaultSettings = {
       tp2Multiplier: 2.5,
       tp3Multiplier: 4.0,
     }
+    ,
+    maEnhanced: {
+      // Moving Average - Pro settings
+      maType: 'EMA', // 'EMA' | 'SMA'
+      source: 'close', // close|open|high|low|hl2|hlc3|ohlc4
+      ma1Enabled: true,
+      ma1Length: 9,
+      ma2Enabled: true,
+      ma2Length: 21,
+      ma3Enabled: true,
+      ma3Length: 50,
+      ma4Enabled: false,
+      ma4Length: 100,
+    }
   },
   indicators: {
     // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
