@@ -25,8 +25,8 @@ export const KLineChartComponent = ({
   const inlineEditorActiveRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
   // RSI enhanced UI state
-  const [rsiValue, setRsiValue] = useState(null);
-  const [rsiStatus, setRsiStatus] = useState('NEUTRAL');
+  const [_rsiValue, setRsiValue] = useState(null);
+  const [_rsiStatus, setRsiStatus] = useState('NEUTRAL');
   const [rsiAlert, setRsiAlert] = useState(null); // { type: 'overbought'|'oversold', ts }
   const [showRsiSettings, setShowRsiSettings] = useState(false);
   const rsiPrevRef = useRef(null);
@@ -2817,8 +2817,9 @@ export const KLineChartComponent = ({
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">RSI Length</label>
+                    <label htmlFor="rsi-length" className="block text-sm text-gray-700 mb-1">RSI Length</label>
                     <input
+                      id="rsi-length"
                       type="number"
                       min={1}
                       max={100}
@@ -2828,8 +2829,9 @@ export const KLineChartComponent = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-1">Source</label>
+                    <label htmlFor="rsi-source" className="block text-sm text-gray-700 mb-1">Source</label>
                     <select
+                      id="rsi-source"
                       value={localRsiSettings.source}
                       onChange={(e) => setLocalRsiSettings((p) => ({ ...p, source: e.target.value }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
@@ -2845,8 +2847,9 @@ export const KLineChartComponent = ({
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Overbought</label>
+                      <label htmlFor="rsi-overbought" className="block text-sm text-gray-700 mb-1">Overbought</label>
                       <input
+                        id="rsi-overbought"
                         type="number"
                         min={50}
                         max={100}
@@ -2856,8 +2859,9 @@ export const KLineChartComponent = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-700 mb-1">Oversold</label>
+                      <label htmlFor="rsi-oversold" className="block text-sm text-gray-700 mb-1">Oversold</label>
                       <input
+                        id="rsi-oversold"
                         type="number"
                         min={0}
                         max={50}
@@ -2907,7 +2911,7 @@ export const KLineChartComponent = ({
             const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
             const LABELS = {
               emaTouch: 'Trend Strategy',
-              bbPro: 'Bollinger Bands Pro',
+              bbPro: 'Bollinger Bands - Pro',
               maEnhanced: 'MA Enhanced',
               orbEnhanced: 'ORB Enhanced',
               stEnhanced: 'SuperTrend Enhanced',

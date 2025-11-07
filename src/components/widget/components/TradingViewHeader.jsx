@@ -835,7 +835,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">Bollinger Bands Pro</p>
+                  <p className="text-xs font-medium text-gray-900">Bollinger Bands - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-blue-400' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.bbPro ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -844,7 +844,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">ATR Enhanced</p>
+                  <p className="text-xs font-medium text-gray-900">ATR - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('atrEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.indicators.atrEnhanced ? 'bg-blue-400' : 'bg-gray-300'
