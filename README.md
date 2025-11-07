@@ -2,6 +2,12 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Google Analytics (GA4)
+
+- GA4 is integrated via `public/index.html` using the gtag snippet.
+- Current Measurement ID: `G-CZPDKHB1WE`.
+- To change it, edit `public/index.html` and replace the ID in both the script `src` URL and `gtag('config', ...)`.
+
 ## Candlestick-Only Mode
 
 ## K-line Tooltip (Hide Time + Abbreviations)
