@@ -216,7 +216,7 @@ export const KLineChartComponent = ({
       if (Array.isArray(supported) && !supported.includes('EMA_TOUCH_ENH')) {
         registerIndicator({
           name: 'EMA_TOUCH_ENH',
-          shortName: 'EMA Touch',
+          shortName: 'Trend Strategy',
           series: 'price',
           precision: 4,
           // bbLen, bbMult, atrLen, tp1, tp2, tp3, slMult, horizonBars
@@ -2906,7 +2906,7 @@ export const KLineChartComponent = ({
           {(() => {
             const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
             const LABELS = {
-              emaTouch: 'EMA Touch',
+              emaTouch: 'Trend Strategy',
               bbPro: 'Bollinger Bands Pro',
               maEnhanced: 'MA Enhanced',
               orbEnhanced: 'ORB Enhanced',

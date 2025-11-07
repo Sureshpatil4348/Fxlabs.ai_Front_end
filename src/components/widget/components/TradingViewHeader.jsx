@@ -826,7 +826,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
 
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">EMA Touch</p>
+                  <p className="text-xs font-medium text-gray-900">Trend Strategy</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-blue-400' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.emaTouch ? 'translate-x-6' : 'translate-x-1'}`} />
