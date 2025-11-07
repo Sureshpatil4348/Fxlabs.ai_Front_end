@@ -128,6 +128,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Creation/removal wired to the RSI indicator toggle and settings changes.
 - Result: The OB/OS fills now align precisely with the RSI scale; changing levels updates in real time.
 
+### Change: Removed RSI overbought/oversold zone panels
+
+- Reason: The colored top/bottom panels in the RSI pane were visually unstable and cluttered the UI.
+- Change: Removed the `rsiBands` overlay registration and its creation/removal calls.
+- Location: `src/components/widget/components/KLineChartComponent.jsx`.
+
 ## K-line ATR - Pro
 
 - New: ATR line supports a color picker (same UX as RSI). Hover the ATR pane to reveal the small color swatch on the left; click to choose a color. The ATR line updates immediately and persists.
