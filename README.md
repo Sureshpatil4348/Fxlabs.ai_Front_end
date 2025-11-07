@@ -26,3 +26,15 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - On-chart badges for BUY/SELL at trend flips.
   - Compact table (upper-right) with Trend (Bullish/Bearish) and Trend Bars (bars since last flip). Stacks below MA/BB tables when enabled.
 
+## Support/Resistance – Pro (KLineChart)
+
+- Location: `Trading` → KLineChart. Toggle "Support Resitance - Pro" in the indicator list.
+- Configuration: No popup configure button (removed by design). Uses sensible defaults (Left/Right Bars = 15).
+- Visuals:
+  - Dynamic Support/Resistance levels (solid lines) with subtle zone boundaries (dashed).
+  - On-chart badges for BREAK events:
+    - BREAK (green) when resistance is broken with high volume.
+    - BREAK (red) when support is broken with high volume.
+    - Bull Wick / Bear Wick labels for wick-based break detections.
+  - Badges are limited to the most recent signals for clarity.
+

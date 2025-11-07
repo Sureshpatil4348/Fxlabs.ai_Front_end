@@ -108,6 +108,8 @@ export const KLineChartComponent = ({
   const stLabelOverlayIdsRef = useRef([]);
   // Keep track of programmatically-created ORB label overlays (for cleanup)
   const orbLabelOverlayIdsRef = useRef([]);
+  // Keep track of programmatically-created S/R break label overlays (for cleanup)
+  const srLabelOverlayIdsRef = useRef([]);
 
   useEffect(() => {
     if (!showRsiSettings) return;
@@ -2984,6 +2986,158 @@ export const KLineChartComponent = ({
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.orbEnhanced, orbStats, settings?.symbol]);
 
+  // Programmatic S/R BREAK and Wick badges on chart (using 'text' overlay)
+  useEffect(() => {
+    try {
+      const chart = chartRef.current;
+      if (!chart) return;
+
+      // Remove previously created S/R badges
+      try {
+        const ids = Array.isArray(srLabelOverlayIdsRef.current) ? srLabelOverlayIdsRef.current : [];
+        ids.forEach((id) => {
+          try { chart.removeOverlay({ id }); } catch (_) {}
+          try { chart.removeOverlay(id); } catch (_) {}
+        });
+      } catch (_) { /* ignore */ }
+      srLabelOverlayIdsRef.current = [];
+
+      if (!settings?.indicators?.srEnhanced || isWorkspaceHidden) return;
+
+      const dataList = typeof chart.getDataList === 'function' ? chart.getDataList() : [];
+      if (!Array.isArray(dataList) || dataList.length < 5) return;
+
+      // Pivot-based support/resistance lines
+      const leftBars = 15;
+      const rightBars = 15;
+      const len = dataList.length;
+      const resAt = new Array(len).fill(NaN);
+      const supAt = new Array(len).fill(NaN);
+      for (let i = 0; i < len; i++) {
+        const c = i - rightBars;
+        if (c >= leftBars && i >= rightBars && c >= 0 && c < len) {
+          const start = Math.max(0, c - leftBars);
+          const end = Math.min(len - 1, c + rightBars);
+          let isHighPivot = true;
+          let isLowPivot = true;
+          const ch = dataList[c].high;
+          const cl = dataList[c].low;
+          for (let j = start; j <= end; j++) {
+            if (j === c) continue;
+            if (dataList[j].high > ch) isHighPivot = false;
+            if (dataList[j].low < cl) isLowPivot = false;
+            if (!isHighPivot && !isLowPivot) break;
+          }
+          if (isHighPivot) resAt[c] = ch;
+          if (isLowPivot) supAt[c] = cl;
+        }
+      }
+      const resLine = new Array(len).fill(NaN);
+      const supLine = new Array(len).fill(NaN);
+      let lastRes = NaN;
+      let lastSup = NaN;
+      for (let i = 0; i < len; i++) {
+        if (Number.isFinite(resAt[i])) lastRes = resAt[i];
+        if (Number.isFinite(supAt[i])) lastSup = supAt[i];
+        resLine[i] = Number.isFinite(lastRes) ? lastRes : NaN;
+        supLine[i] = Number.isFinite(lastSup) ? lastSup : NaN;
+      }
+
+      // Volume oscillator (EMA 5 vs EMA 10)
+      const vols = dataList.map(d => Number(d.volume) || 0);
+      const ema = (arr, period) => {
+        const k = 2 / (period + 1);
+        let prev = null;
+        const out = new Array(arr.length).fill(0);
+        for (let i = 0; i < arr.length; i++) {
+          const v = arr[i];
+          prev = prev == null ? v : prev + k * (v - prev);
+          out[i] = prev;
+        }
+        return out;
+      };
+      const shortE = ema(vols, 5);
+      const longE = ema(vols, 10);
+      const osc = vols.map((_, i) => {
+        const le = longE[i];
+        return le ? (100 * (shortE[i] - le) / le) : 0;
+      });
+      const volumeThresh = 20;
+
+      // Collect break/wick events
+      const events = [];
+      for (let i = 1; i < len; i++) {
+        const d = dataList[i];
+        const p = dataList[i - 1];
+        const res = resLine[i];
+        const resPrev = resLine[i - 1];
+        const sup = supLine[i];
+        const supPrev = supLine[i - 1];
+        if (!Number.isFinite(res) && !Number.isFinite(sup)) continue;
+
+        const close = d.close;
+        const open = d.open;
+        const high = d.high;
+        const low = d.low;
+        const bearWickCond = (open - close) < (high - open);
+        const bullWickCond = (open - low) > (close - open);
+
+        if (Number.isFinite(res) && Number.isFinite(resPrev)) {
+          const crossedUp = close > res && p.close <= resPrev;
+          if (crossedUp) {
+            if (bullWickCond) {
+              events.push({ ts: d.timestamp, price: low, type: 'resWick' });
+            } else if (osc[i] > volumeThresh) {
+              events.push({ ts: d.timestamp, price: high, type: 'resVol' });
+            }
+          }
+        }
+
+        if (Number.isFinite(sup) && Number.isFinite(supPrev)) {
+          const crossedDown = close < sup && p.close >= supPrev;
+          if (crossedDown) {
+            if (bearWickCond) {
+              events.push({ ts: d.timestamp, price: high, type: 'supWick' });
+            } else if (osc[i] > volumeThresh) {
+              events.push({ ts: d.timestamp, price: low, type: 'supVol' });
+            }
+          }
+        }
+      }
+
+      const maxSignals = 50;
+      const recent = events.slice(-maxSignals);
+      const addBadge = (ts, price, label, style) => {
+        if (!Number.isFinite(ts) || !Number.isFinite(price)) return;
+        const spec = {
+          name: 'text',
+          text: label,
+          points: [{ timestamp: ts, value: price }],
+          styles: {
+            text: {
+              backgroundColor: style.bg,
+              color: style.color,
+              padding: 4,
+              borderSize: 0,
+            }
+          }
+        };
+        try {
+          const ov = chart.createOverlay(spec);
+          const id = (ov && (ov.id || ov)) || null;
+          if (id) srLabelOverlayIdsRef.current.push(id);
+        } catch (_) { /* ignore */ }
+      };
+
+      recent.forEach((e) => {
+        if (e.type === 'resVol') addBadge(e.ts, e.price, 'BREAK', { bg: 'rgba(27,94,32,0.95)', color: '#ffffff' });
+        if (e.type === 'supVol') addBadge(e.ts, e.price, 'BREAK', { bg: 'rgba(183,28,28,0.95)', color: '#ffffff' });
+        if (e.type === 'resWick') addBadge(e.ts, e.price, 'Bull Wick', { bg: 'rgba(27,94,32,0.75)', color: '#ffffff' });
+        if (e.type === 'supWick') addBadge(e.ts, e.price, 'Bear Wick', { bg: 'rgba(183,28,28,0.75)', color: '#ffffff' });
+      });
+    } catch (_) { /* ignore */ }
+  }, [settings?.indicators?.srEnhanced, candles, isWorkspaceHidden]);
+
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
     if (chartRef.current) {
@@ -4493,15 +4647,6 @@ export const KLineChartComponent = ({
                         onClick={() => toggleIndicator(key)}
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="Configure"
-                        className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
-                        aria-label={`Configure ${LABELS[key] || key}`}
-                        onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'emaTouch') setShowEmaTouchSettings(true); if (key === 'maEnhanced') setShowMaSettings(true); if (key === 'bbPro') setShowBbSettings(true); if (key === 'orbEnhanced') setShowOrbSettings(true); if (key === 'stEnhanced') setShowStSettings(true); }}
-                      >
-                        <Settings className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
