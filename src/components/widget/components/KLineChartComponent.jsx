@@ -120,6 +120,16 @@ export const KLineChartComponent = ({
   // Keep track of programmatically-created S/R break label overlays (for cleanup)
   const srLabelOverlayIdsRef = useRef([]);
 
+  // Track below-pane order (actual stacking order by enable sequence)
+  const [belowPaneOrder, setBelowPaneOrder] = useState(() => {
+    try {
+      const keys = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+      return keys.filter((k) => settings?.indicators?.[k]);
+    } catch (_) {
+      return [];
+    }
+  });
+
   useEffect(() => {
     if (!showRsiSettings) return;
     const cfg = settings?.indicatorSettings?.rsiEnhanced || {};
@@ -151,6 +161,25 @@ export const KLineChartComponent = ({
       source: String(cfg.source || 'close').toLowerCase(),
     });
   }, [showMacdSettings, settings?.indicatorSettings?.macdEnhanced]);
+
+  // Maintain dynamic order of below panes based on enable sequence
+  useEffect(() => {
+    try {
+      const keys = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+      const enabledNow = keys.filter((k) => Boolean(settings?.indicators?.[k]));
+      setBelowPaneOrder((prev) => {
+        // Keep existing order for still-enabled items
+        const next = prev.filter((k) => enabledNow.includes(k));
+        // Append newly enabled items at the end (bottom-most pane)
+        enabledNow.forEach((k) => {
+          if (!next.includes(k)) next.push(k);
+        });
+        return next;
+      });
+    } catch (_) {
+      // ignore
+    }
+  }, [settings?.indicators?.rsiEnhanced, settings?.indicators?.atrEnhanced, settings?.indicators?.macdEnhanced]);
 
   useEffect(() => {
     if (!showAtrSettings) return;
@@ -4428,8 +4457,10 @@ export const KLineChartComponent = ({
 
           {/* Hover actions for below-chart indicator panes */}
           {(() => {
-            const BELOW_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
-            const activeBelow = BELOW_KEYS.filter((k) => settings?.indicators?.[k]);
+            const fallbackKeys = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+            const activeBelow = (Array.isArray(belowPaneOrder) && belowPaneOrder.length > 0
+              ? belowPaneOrder.filter((k) => settings?.indicators?.[k])
+              : fallbackKeys.filter((k) => settings?.indicators?.[k]));
             if (activeBelow.length === 0 || isWorkspaceHidden) return null;
             return (
               <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 60 }}>
