@@ -1618,6 +1618,61 @@ export const KLineChartComponent = ({
             },
           });
           
+          // Risk-side badges (above red rectangle)
+          const entryVal = Number(pts?.[0]?.value);
+          const stopVal = Number(pts?.[1]?.value);
+          const qty = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
+          if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
+            const priceDeltaRisk = Math.abs(stopVal - entryVal);
+            const percentRisk = entryVal !== 0 ? ((stopVal - entryVal) / Math.abs(entryVal)) * 100 : 0;
+            const riskAmount = priceDeltaRisk * qty;
+            const rrRatio = 1.0;
+            const closedPnL = (typeof overlay?.closedPnL === 'number') ? overlay.closedPnL : 0;
+            const bh = (bounding && typeof bounding.height === 'number') ? bounding.height : null;
+            const badgeTopY1 = Math.max(0, (riskTop - 18));
+            const badgeTopY0 = Math.max(0, (badgeTopY1 - 18));
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: badgeTopY0,
+                text: `Stop: ${formatPrice(stopVal)} (${percentRisk.toFixed(2)}%) ${formatPrice(priceDeltaRisk)}, Amount: ${formatPrice(riskAmount)}`,
+                align: 'left',
+                baseline: 'bottom',
+              },
+              styles: {
+              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
+              borderSize: 1,
+              borderColor: '#991b1b',
+              text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: badgeTopY1,
+                text: `Closed P&L: ${formatPrice(closedPnL)}, Qty: ${qty}, RR Ratio: ${rrRatio.toFixed(2)}`,
+                align: 'left',
+                baseline: 'bottom',
+              },
+              styles: {
+              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
+              borderSize: 1,
+              borderColor: '#991b1b',
+              text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+          }
+          
           // Auto TP (RR = 1) for SHORT: TP symmetric below entry by same distance as risk
           const deltaY = c0.y - c1.y;
           const yTP = c0.y + Math.abs(deltaY); // ensure TP is below entry (higher y)
@@ -1668,25 +1723,38 @@ export const KLineChartComponent = ({
               text: { color: '#047857', size: 11, weight: '600' },
             },
           });
+          // Reward-side badge (under green rectangle)
+          const entryVal2 = Number(pts?.[0]?.value);
+          const stopVal2 = Number(pts?.[1]?.value);
+          if (Number.isFinite(entryVal2) && Number.isFinite(stopVal2)) {
+            const tpVal = (2 * entryVal2) - stopVal2;
+            const priceDeltaReward = Math.abs(entryVal2 - tpVal);
+            const percentReward = entryVal2 !== 0 ? ((entryVal2 - tpVal) / Math.abs(entryVal2)) * 100 : 0;
+            const qty2 = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
+            const rewardAmount = priceDeltaReward * qty2;
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: rewardBottom + 14,
+                text: `Target: ${formatPrice(tpVal)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
+                align: 'left',
+                baseline: 'top',
+              },
+              styles: {
+              backgroundColor: 'rgba(16,185,129,0.92)', // dark green (matches candle green)
+              borderSize: 1,
+              borderColor: '#065f46',
+              text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+          }
 
-          // RR label (reward/risk)
-          const centerX = chartWidth ? Math.min(xRight, Math.max(xLeft, xLeft + width / 2)) : (xLeft + width / 2);
-          const centerY = (Math.min(c1.y, c0.y) + Math.max(yTP, c0.y)) / 2;
-          figures.push({
-            type: 'text',
-            attrs: {
-              x: centerX,
-              y: centerY,
-              text: 'RR 1.00',
-              align: 'center',
-              baseline: 'middle',
-            },
-            styles: {
-              backgroundColor: 'rgba(255,255,255,0.6)',
-              borderSize: 0,
-              text: { color: '#111827', size: 12, weight: '700' },
-            },
-          });
+          // No RR label rendered (per requirement)
         }
 
         return figures;
