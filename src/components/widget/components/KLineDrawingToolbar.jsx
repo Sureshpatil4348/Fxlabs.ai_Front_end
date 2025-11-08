@@ -48,12 +48,6 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
       description: 'Plan a short trade: Entry + SL (TP auto, RR=1)'
     },
     {
-      id: 'longPosition',
-      name: 'Long Position',
-      icon: '📈',
-      description: 'Plan a long trade: Entry + SL (TP auto, RR=1)'
-    },
-    {
       id: 'text',
       name: 'Text',
       icon: '📝',
@@ -119,8 +113,6 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
             try { if (ov?.name) { chart.removeOverlay({ name: ov.name }); removedAny = true; } } catch (_) {}
           });
           const known = ['segment','horizontalStraightLine','verticalStraightLine','fibonacciRightLine','fibonacciTrendExtensionRight','rectangle','text'];
-          // Also include position tools by name
-          known.push('shortPosition','longPosition');
           known.forEach((name) => {
             try { chart.removeOverlay({ name }); removedAny = true; } catch (_) {}
             try { chart.removeOverlay(name); removedAny = true; } catch (_) {}
