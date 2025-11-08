@@ -73,6 +73,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Default KLine legends are suppressed to keep panes clean and readable.
   - On-chart indicator labels and drawing tool panels follow the same no‑card style (no border/background); only text and icons overlay the chart.
 
+## On‑Chart Overlay Actions
+
+- Overlays on the main price pane (Trend Strategy, Bollinger Bands – Pro, Moving Average – Pro, Breakout Strategy, Super Trend – Pro) now display both a gear (Configure) and a trash (Delete) icon when you hover the chart.
+- Clicking the gear opens the corresponding settings modal. Support Resitance - Pro intentionally has no configuration and thus only shows Delete.
+
 ## KLineChart Action Panel Order
 
 - All drawing tool and indicator action panels now strictly follow: Color, Configure, Delete.

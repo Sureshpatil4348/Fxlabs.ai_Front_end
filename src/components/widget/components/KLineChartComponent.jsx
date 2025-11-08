@@ -4948,6 +4948,23 @@ export const KLineChartComponent = ({
                   <div key={key} className="flex items-center gap-2 text-gray-700">
                     <span className="text-[11px] font-medium text-gray-700 whitespace-nowrap">{LABELS[key] || key}</span>
                     <div className="flex items-center gap-1.5">
+                      {key !== 'srEnhanced' && (
+                        <button
+                          type="button"
+                          title="Configure"
+                          className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
+                          aria-label={`Configure ${LABELS[key] || key}`}
+                          onClick={() => {
+                            if (key === 'emaTouch') setShowEmaTouchSettings(true);
+                            if (key === 'bbPro') setShowBbSettings(true);
+                            if (key === 'maEnhanced') setShowMaSettings(true);
+                            if (key === 'orbEnhanced') setShowOrbSettings(true);
+                            if (key === 'stEnhanced') setShowStSettings(true);
+                          }}
+                        >
+                          <Settings className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         title="Delete"
