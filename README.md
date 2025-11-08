@@ -14,6 +14,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - All OR/TP/SL lines render with width 1 for clarity.
   - TP/SL badges show live target values when a trade is active.
   - A compact table appears in the upper-right (like Bollinger Bands – Pro) with Range High/Low, Range Size, Trade Status, Entry, Target, Stop Loss, and Risk:Reward.
+  - Indicator tables render only in fullscreen to reduce clutter in normal view.
 
 ## SuperTrend – Pro (KLineChart)
 
@@ -24,7 +25,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Visuals:
   - SuperTrend line plotted on the price pane (uses configured ATR settings).
   - On-chart badges for BUY/SELL at trend flips.
-  - Compact table (upper-right) with Trend (Bullish/Bearish) and Trend Bars (bars since last flip). Stacks below MA/BB tables when enabled.
+  - Compact table (upper-right) with Trend (Bullish/Bearish) and Trend Bars (bars since last flip). Stacks below MA/BB tables when enabled. Visible only in fullscreen.
 
 ## Support/Resistance – Pro (KLineChart)
 
@@ -45,7 +46,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - MACD and Signal lines with a zero reference line.
   - 4-tone histogram coloring (Strong Bullish/Weak Bullish/Weak Bearish/Strong Bearish).
   - Buy/Sell arrows on MACD crossovers.
-  - Compact table (upper-right of the MACD pane) with Trend (Bullish/Bearish) and Momentum state (Strong Bullish/Weakening/Strong Bearish/Recovering).
+  - Compact table (upper-right of the MACD pane) with Trend (Bullish/Bearish) and Momentum state (Strong Bullish/Weakening/Strong Bearish/Recovering). Visible only in fullscreen.
   - On-chart badges for BREAK events:
     - BREAK (green) when resistance is broken with high volume.
     - BREAK (red) when support is broken with high volume.
@@ -58,4 +59,3 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - The advanced KLine chart enforces 5-decimal price precision internally; tooltips, price marks, and overlays follow this.
 - Utility `formatPrice(value, precision = 5)` is used app‑wide for price display; prefer it over manual `toFixed`.
 - Special cases (e.g., metals or JPY pairs) can still override precision where explicitly configured.
-

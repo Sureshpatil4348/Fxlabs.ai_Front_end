@@ -21,7 +21,7 @@ import { realMarketService } from "../services/realMarketService";
 import { useChartStore } from "../stores/useChartStore";
 import { calculateAllIndicators } from "../utils/indicators";
 
-export const UnifiedChart = () => {
+export const UnifiedChart = ({ isFullscreen = false }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [lineChartKey, setLineChartKey] = useState(0); // Key to force re-render
 
@@ -735,6 +735,7 @@ export const UnifiedChart = () => {
                             settings={settings}
                             isLoadingHistory={isLoadingHistory}
                             hasMoreHistory={hasMoreHistory}
+                            isFullscreen={isFullscreen}
                         />
                     </div>
                 ) : (

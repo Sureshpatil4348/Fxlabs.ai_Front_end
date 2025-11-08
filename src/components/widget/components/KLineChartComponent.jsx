@@ -20,7 +20,8 @@ export const KLineChartComponent = ({
   onLoadMoreHistory,
   isLoadingHistory = false,
   hasMoreHistory = true,
-  panelSettings: _panelSettings = {}
+  panelSettings: _panelSettings = {},
+  isFullscreen = false,
 }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
@@ -4274,7 +4275,7 @@ export const KLineChartComponent = ({
           )}
 
           {/* MA Enhanced: MA values table (top-right, no header) */}
-          {settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
+          {isFullscreen && settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
             <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '80px' }}>
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
                 <table className="text-[11px] text-gray-700">
@@ -4303,7 +4304,7 @@ export const KLineChartComponent = ({
           )}
 
           {/* BB Pro: Bollinger Bands table (top-right, no header) */}
-          {settings?.indicators?.bbPro && !isWorkspaceHidden && bbProStats && (
+          {isFullscreen && settings?.indicators?.bbPro && !isWorkspaceHidden && bbProStats && (
             <div
               className="absolute right-2 z-40 pointer-events-none"
               style={{ right: '80px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
@@ -4334,7 +4335,7 @@ export const KLineChartComponent = ({
           )}
 
           {/* SuperTrend - Pro: Trend & Trend Bars table (top-right) */}
-          {settings?.indicators?.stEnhanced && !isWorkspaceHidden && stStats && (
+          {isFullscreen && settings?.indicators?.stEnhanced && !isWorkspaceHidden && stStats && (
             <div
               className="absolute right-2 z-40 pointer-events-none"
               style={{
@@ -4364,7 +4365,7 @@ export const KLineChartComponent = ({
           )}
 
           {/* ORB Enhanced: Opening Range Breakout table (top-right) */}
-          {settings?.indicators?.orbEnhanced && !isWorkspaceHidden && orbStats && (
+          {isFullscreen && settings?.indicators?.orbEnhanced && !isWorkspaceHidden && orbStats && (
             <div
               className="absolute right-2 z-40 pointer-events-none"
               style={{
@@ -4547,7 +4548,7 @@ export const KLineChartComponent = ({
                         </div>
                       </div>
                       {/* ATR - Pro: stats table (top-right of ATR pane) */}
-                      {key === 'atrEnhanced' && atrProStats && (
+                      {isFullscreen && key === 'atrEnhanced' && atrProStats && (
                         <div className="absolute pointer-events-none" style={{ right: '80px', top: '2px' }}>
                           <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                             <table className="text-[11px] text-gray-700">
@@ -4578,7 +4579,7 @@ export const KLineChartComponent = ({
                       )}
 
                       {/* MACD - Pro: Trend & Momentum table (top-right of MACD pane) */}
-                      {key === 'macdEnhanced' && macdProStats && (
+                      {isFullscreen && key === 'macdEnhanced' && macdProStats && (
                         <div className="absolute pointer-events-none" style={{ right: '80px', top: '2px' }}>
                           <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                             <table className="text-[11px] text-gray-700">
