@@ -4490,9 +4490,9 @@ export const KLineChartComponent = ({
                       {/* Action panel */}
                       <div
                         className={`absolute top-0 left-0 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
-                        style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none' }}
+                        style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none', top: '-28px', left: '0px' }}
                       >
-            <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
+            <div className="flex items-center gap-1.5 px-2 py-0 bg-transparent border border-gray-200 rounded-none">
               {/* Indicator name (plain text, no extra badge/dot) */}
               <span className="text-[11px] text-gray-700 whitespace-nowrap">{label}</span>
               {key === 'rsiEnhanced' && (
