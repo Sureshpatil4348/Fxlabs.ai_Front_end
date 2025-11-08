@@ -819,7 +819,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 <div className="flex items-center">
                   <p className="text-xs font-medium text-gray-900">RSI - Pro</p>
                 </div>
-                <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-400' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
