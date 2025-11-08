@@ -1546,7 +1546,6 @@ export const KLineChartComponent = ({
         const rawWidth = (Number.isFinite(maxX - minX) ? (maxX - minX) : 0);
         const width = Math.max(minWidth, rawWidth);
         const xLeft = Number.isFinite(minX) ? minX : (c0?.x || 0);
-        const chartWidth = (bounding && typeof bounding.width === 'number') ? bounding.width : null;
         const xRight = xLeft + width;
 
         // Entry line + label
@@ -1630,7 +1629,6 @@ export const KLineChartComponent = ({
             const riskAmount = priceDeltaRisk * qty;
             const rrRatio = 1.0;
             const closedPnL = (typeof overlay?.closedPnL === 'number') ? overlay.closedPnL : 0;
-            const bh = (bounding && typeof bounding.height === 'number') ? bounding.height : null;
             const badgeTopY1 = Math.max(0, (riskTop - 18));
             const badgeTopY0 = Math.max(0, (badgeTopY1 - 18));
             figures.push({
