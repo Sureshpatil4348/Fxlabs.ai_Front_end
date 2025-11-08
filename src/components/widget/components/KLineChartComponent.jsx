@@ -3680,7 +3680,10 @@ export const KLineChartComponent = ({
                 ? BELOW_KEYS.reduce((acc, k) => acc + (settings?.indicators?.[k] ? 1 : 0), 0)
                 : 0;
               const belowHeight = activeBelowCount * 120;
-              const hovering = belowHeight > 0 && y >= Math.max(0, totalHeight - belowHeight);
+              // Extend hover region slightly above the top of below panes so a
+              // negatively offset action panel (e.g., top:-20px) remains interactive.
+              const HOVER_EXTEND_TOP = 32;
+              const hovering = belowHeight > 0 && y >= Math.max(0, totalHeight - belowHeight - HOVER_EXTEND_TOP);
               if (hovering !== isHoveringBelowPanes) setIsHoveringBelowPanes(hovering);
               // On-chart overlay hover detection (approximate: any hover in main pane and any on-chart overlay active)
               const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
