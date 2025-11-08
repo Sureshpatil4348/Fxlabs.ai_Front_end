@@ -2,6 +2,10 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## UI Fixes
+
+- KLineChart Fullscreen: Fixed the Indicators dropdown not opening/clicking in fullscreen by raising its portal z-index above the fullscreen overlay. The dropdown is now always visible and interactive when fullscreen is enabled.
+
 ## Trend Strategy (EMA Touch) – Entry Line
 
 - Location: `Trading` → KLineChart (advanced widget). Toggle "Trend Strategy" in the indicator list.

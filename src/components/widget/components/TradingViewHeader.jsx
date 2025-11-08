@@ -801,7 +801,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
       {/* New minimal Indicators panel (RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro + MA Enhanced + ORB Enhanced + ST Enhanced + SR Enhanced + MACD Enhanced) */}
       {showIndicators && createPortal(
         <div 
-          className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
+          className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[15000]"
           style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
           ref={indicatorsPanelRef}
         >
