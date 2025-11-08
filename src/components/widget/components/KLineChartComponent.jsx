@@ -122,7 +122,7 @@ export const KLineChartComponent = ({
   const srLabelOverlayIdsRef = useRef([]);
 
   // Track below-pane order (actual stacking order by enable sequence)
-  const [belowPaneOrder, setBelowPaneOrder] = useState(() => {
+  const [_belowPaneOrder, setBelowPaneOrder] = useState(() => {
     try {
       const keys = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
       return keys.filter((k) => settings?.indicators?.[k]);

@@ -114,3 +114,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - The advanced KLine chart enforces 5-decimal price precision internally; tooltips, price marks, and overlays follow this.
 - Utility `formatPrice(value, precision = 5)` is used app‑wide for price display; prefer it over manual `toFixed`.
 - Special cases (e.g., metals or JPY pairs) can still override precision where explicitly configured.
+
+## Code Quality
+
+- ESLint: Resolved an unused state variable in `src/components/widget/components/KLineChartComponent.jsx` by renaming `belowPaneOrder` to `_belowPaneOrder` to comply with the configured `no-unused-vars` rule allowing unused variables matching `/^_/`.
