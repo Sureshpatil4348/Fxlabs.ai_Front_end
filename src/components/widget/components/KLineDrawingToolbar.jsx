@@ -42,6 +42,12 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
       description: 'Draw rectangular zones'
     },
     {
+      id: 'shortPosition',
+      name: 'Short Position',
+      icon: '📉',
+      description: 'Plan a short trade: Entry + SL (TP auto, RR=1)'
+    },
+    {
       id: 'text',
       name: 'Text',
       icon: '📝',

@@ -353,6 +353,25 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
+          onClick={() => handleKLineToolSelect('shortPosition')}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'shortPosition' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Short Position"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8 8-4-4-4 4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 11V7h-4" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Short Position
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
+          type="button"
           onClick={() => handleKLineToolSelect('text')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'text' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
