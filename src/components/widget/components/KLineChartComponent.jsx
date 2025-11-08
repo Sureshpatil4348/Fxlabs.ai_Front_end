@@ -179,7 +179,7 @@ export const KLineChartComponent = ({
     } catch (_) {
       // ignore
     }
-  }, [settings?.indicators?.rsiEnhanced, settings?.indicators?.atrEnhanced, settings?.indicators?.macdEnhanced]);
+  }, [settings?.indicators]);
 
   useEffect(() => {
     if (!showAtrSettings) return;
@@ -3072,6 +3072,7 @@ export const KLineChartComponent = ({
     settings.indicators,
     settings?.indicatorSettings?.rsiEnhanced,
     settings?.indicatorSettings?.atrEnhanced,
+    settings?.indicatorSettings?.macdEnhanced,
     settings?.indicatorSettings?.emaTouch,
     settings?.indicatorSettings?.bbPro,
     settings?.indicatorSettings?.maEnhanced,
