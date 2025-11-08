@@ -486,6 +486,14 @@ export const KLineChartComponent = ({
       let sellTP = NaN;
       let buySL = NaN;
       let sellSL = NaN;
+      let buyTPHit = false;
+      let sellTPHit = false;
+      let buySLHit = false;
+      let sellSLHit = false;
+      let buyTPHitTs = null;
+      let sellTPHitTs = null;
+      let buySLHitTs = null;
+      let sellSLHitTs = null;
       for (let i = 0; i < candles.length; i++) {
         const k = candles[i];
         const rawTime = (k.timestamp ?? k.time ?? 0);
@@ -506,6 +514,14 @@ export const KLineChartComponent = ({
           sellTP = NaN;
           buySL = NaN;
           sellSL = NaN;
+          buyTPHit = false;
+          sellTPHit = false;
+          buySLHit = false;
+          sellSLHit = false;
+          buyTPHitTs = null;
+          sellTPHitTs = null;
+          buySLHitTs = null;
+          sellSLHitTs = null;
         }
         const isOpening = d.getHours() === h && d.getMinutes() === m && !captured;
         if (isOpening) {
@@ -534,6 +550,28 @@ export const KLineChartComponent = ({
           sellSL = openingHigh;
           sellTs = tsMs;
         }
+
+        // After entries, track TP/SL hits akin to Pine implementation
+        if (buyTaken && !buyTPHit && !buySLHit) {
+          if (Number.isFinite(buyTP) && Number(k.high) >= buyTP && !buyTPHit) {
+            buyTPHit = true;
+            buyTPHitTs = tsMs;
+          }
+          if (Number.isFinite(buySL) && Number(k.low) <= buySL && !buySLHit) {
+            buySLHit = true;
+            buySLHitTs = tsMs;
+          }
+        }
+        if (sellTaken && !sellTPHit && !sellSLHit) {
+          if (Number.isFinite(sellTP) && Number(k.low) <= sellTP && !sellTPHit) {
+            sellTPHit = true;
+            sellTPHitTs = tsMs;
+          }
+          if (Number.isFinite(sellSL) && Number(k.high) >= sellSL && !sellSLHit) {
+            sellSLHit = true;
+            sellSLHitTs = tsMs;
+          }
+        }
       }
       const rangeSize = (isFinite(openingHigh) && isFinite(openingLow)) ? (openingHigh - openingLow) : NaN;
       return {
@@ -551,6 +589,14 @@ export const KLineChartComponent = ({
         sellSL: isFinite(sellSL) ? sellSL : null,
         buyTs: Number.isFinite(buyTs) ? buyTs : null,
         sellTs: Number.isFinite(sellTs) ? sellTs : null,
+        buyTPHit,
+        sellTPHit,
+        buySLHit,
+        sellSLHit,
+        buyTPHitTs,
+        sellTPHitTs,
+        buySLHitTs,
+        sellSLHitTs,
         targetRR: rr,
       };
     } catch (_e) {
@@ -1070,7 +1116,10 @@ export const KLineChartComponent = ({
             let buySL = NaN;
             let sellSL = NaN;
             return dataList.map((k, i) => {
-              const d = new Date(k.timestamp);
+              // Robust timestamp handling: accept seconds or milliseconds; fallback to k.time
+              const rawTime = (k.timestamp ?? k.time ?? 0);
+              const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime; // if < year 2000 in ms, treat as seconds
+              const d = new Date(tsMs);
               const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
               if (dayKey !== lastDay) {
                 // reset for new day
@@ -3152,14 +3201,49 @@ export const KLineChartComponent = ({
 
       // BUY badges
       if (orbStats.buyTaken && orbStats.buyTs != null) {
+        // Entry arrow/label
+        if (orbStats.buyEntry != null) {
+          addBadge(orbStats.buyTs, orbStats.buyEntry, `BUY ▲ ${formatPrice(orbStats.buyEntry, precision)}`, { bg: 'rgba(38,166,154,0.15)', color: '#0b5f56' });
+        }
         if (orbStats.buyTP != null) addBadge(orbStats.buyTs, orbStats.buyTP, `TP: ${formatPrice(orbStats.buyTP, precision)}`, { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' });
         if (orbStats.buySL != null) addBadge(orbStats.buyTs, orbStats.buySL, `SL: ${formatPrice(orbStats.buySL, precision)}`, { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' });
       }
       // SELL badges
       if (orbStats.sellTaken && orbStats.sellTs != null) {
+        if (orbStats.sellEntry != null) {
+          addBadge(orbStats.sellTs, orbStats.sellEntry, `SELL ▼ ${formatPrice(orbStats.sellEntry, precision)}`, { bg: 'rgba(239,83,80,0.15)', color: '#7a1f1f' });
+        }
         if (orbStats.sellTP != null) addBadge(orbStats.sellTs, orbStats.sellTP, `TP: ${formatPrice(orbStats.sellTP, precision)}`, { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' });
         if (orbStats.sellSL != null) addBadge(orbStats.sellTs, orbStats.sellSL, `SL: ${formatPrice(orbStats.sellSL, precision)}`, { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' });
       }
+
+      // TP/SL hit markers
+      if (orbStats.buyTPHit && orbStats.buyTPHitTs && orbStats.buyTP != null) {
+        addBadge(orbStats.buyTPHitTs, orbStats.buyTP, `BUY TP HIT ★`, { bg: 'rgba(38,166,154,0.25)', color: '#0b5f56' });
+      }
+      if (orbStats.buySLHit && orbStats.buySLHitTs && orbStats.buySL != null) {
+        addBadge(orbStats.buySLHitTs, orbStats.buySL, `BUY SL HIT ✖`, { bg: 'rgba(239,83,80,0.25)', color: '#7a1f1f' });
+      }
+      if (orbStats.sellTPHit && orbStats.sellTPHitTs && orbStats.sellTP != null) {
+        addBadge(orbStats.sellTPHitTs, orbStats.sellTP, `SELL TP HIT ★`, { bg: 'rgba(239,83,80,0.25)', color: '#7a1f1f' });
+      }
+      if (orbStats.sellSLHit && orbStats.sellSLHitTs && orbStats.sellSL != null) {
+        addBadge(orbStats.sellSLHitTs, orbStats.sellSL, `SELL SL HIT ✖`, { bg: 'rgba(38,166,154,0.25)', color: '#0b5f56' });
+      }
+
+      // Timeframe suitability warning near last bar
+      try {
+        if (orbStats && !orbStats.isSuitableTimeframe && typeof chart.getDataList === 'function') {
+          const dl = chart.getDataList() || [];
+          const last = dl[dl.length - 1];
+          const ts = last ? (last.timestamp ?? last.time ?? null) : null;
+          const tsMs = ts != null ? (ts < 946684800000 ? ts * 1000 : ts) : null;
+          const val = last ? Number(last.high ?? last.close ?? last.low) : null;
+          if (tsMs && Number.isFinite(val)) {
+            addBadge(tsMs, val, 'Use timeframe ≤ 60m for accurate signals', { bg: 'rgba(255,165,0,0.20)', color: '#6b3f00' });
+          }
+        }
+      } catch (_) { /* ignore */ }
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.orbEnhanced, orbStats, settings?.symbol]);
 
@@ -4404,11 +4488,38 @@ export const KLineChartComponent = ({
                   <tbody>
                     {(() => {
                       const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+                      const tfIcon = orbStats.isSuitableTimeframe ? '✓' : '⚠';
+                      const tfText = `${tfIcon} ${String(settings?.timeframe || '').toUpperCase()}`;
                       const rows = [
+                        { label: 'Timeframe', value: tfText, cellBg: orbStats.isSuitableTimeframe ? 'rgba(38,166,154,0.20)' : 'rgba(255,165,0,0.20)' },
                         { label: 'Range High', value: orbStats.openingHigh != null ? formatPrice(orbStats.openingHigh, pricePrecision) : '--' },
                         { label: 'Range Low', value: orbStats.openingLow != null ? formatPrice(orbStats.openingLow, pricePrecision) : '--' },
                         { label: 'Range Size', value: orbStats.rangeSize != null ? formatPrice(orbStats.rangeSize, pricePrecision) : '--' },
-                        { label: 'Trade Status', value: orbStats.buyTaken ? 'BUY ACTIVE' : (orbStats.sellTaken ? 'SELL ACTIVE' : 'Waiting'), cellBg: orbStats.buyTaken ? 'rgba(38,166,154,0.20)' : (orbStats.sellTaken ? 'rgba(239,83,80,0.20)' : undefined) },
+                        { label: 'Trade Status', value: (() => {
+                          if (orbStats.buyTaken) {
+                            if (orbStats.buyTPHit) return 'BUY TP HIT';
+                            if (orbStats.buySLHit) return 'BUY SL HIT';
+                            return 'BUY ACTIVE';
+                          }
+                          if (orbStats.sellTaken) {
+                            if (orbStats.sellTPHit) return 'SELL TP HIT';
+                            if (orbStats.sellSLHit) return 'SELL SL HIT';
+                            return 'SELL ACTIVE';
+                          }
+                          return 'Waiting';
+                        })(), cellBg: (() => {
+                          if (orbStats.buyTaken) {
+                            if (orbStats.buyTPHit) return 'rgba(38,166,154,0.30)';
+                            if (orbStats.buySLHit) return 'rgba(239,83,80,0.30)';
+                            return 'rgba(38,166,154,0.20)';
+                          }
+                          if (orbStats.sellTaken) {
+                            if (orbStats.sellTPHit) return 'rgba(239,83,80,0.30)';
+                            if (orbStats.sellSLHit) return 'rgba(38,166,154,0.30)';
+                            return 'rgba(239,83,80,0.20)';
+                          }
+                          return undefined;
+                        })() },
                         { label: 'Entry', value: (orbStats.buyTaken && orbStats.buyEntry != null) ? formatPrice(orbStats.buyEntry, pricePrecision) : (orbStats.sellTaken && orbStats.sellEntry != null) ? formatPrice(orbStats.sellEntry, pricePrecision) : '--' },
                         { label: 'Target', value: (orbStats.buyTaken && orbStats.buyTP != null) ? formatPrice(orbStats.buyTP, pricePrecision) : (orbStats.sellTaken && orbStats.sellTP != null) ? formatPrice(orbStats.sellTP, pricePrecision) : '--' },
                         { label: 'Stop Loss', value: (orbStats.buyTaken && orbStats.buySL != null) ? formatPrice(orbStats.buySL, pricePrecision) : (orbStats.sellTaken && orbStats.sellSL != null) ? formatPrice(orbStats.sellSL, pricePrecision) : '--' },

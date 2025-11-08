@@ -18,11 +18,31 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Opening Candle Minute (0–59)
   - Opening Range Period (bars)
   - Risk:Reward Ratio
+- Logic (aligned with Pine v6):
+  - Detect new trading day and reset state.
+  - Opening range starts at `Opening Candle` time (hour/minute). Range is captured across `Opening Range Period (bars)` starting at the first opening candle.
+  - Breakout entries:
+    - BUY when `close > Opening High` and previous close `<= Opening High` (one buy trade per day).
+    - SELL when `close < Opening Low` and previous close `>= Opening Low` (one sell trade per day).
+  - Targets & risk:
+    - Range size = `Opening High - Opening Low`.
+    - BUY: `TP = Opening High + Range * RR`, `SL = Opening Low`.
+    - SELL: `TP = Opening Low - Range * RR`, `SL = Opening High`.
+  - TP/SL hit tracking (post‑entry):
+    - BUY: TP if `high >= TP`, SL if `low <= SL` (both can register on same bar).
+    - SELL: TP if `low <= TP`, SL if `high >= SL`.
+    - Hit markers are plotted on‑chart as text badges (★ for TP, ✖ for SL).
+  - Timeframe advisory: Warns when timeframe > 60 minutes.
+
+- Implementation details:
+  - Fixed timestamp handling to correctly parse both seconds and milliseconds across data feeds, ensuring opening time detection matches the Pine behavior.
+  - Added entry badges (BUY ▲ / SELL ▼), TP/SL level badges at entry, and distinct TP/SL HIT markers when reached.
+  - Top‑right table now includes a timeframe row (✓/⚠), enhanced trade status (ACTIVE / TP HIT / SL HIT), and shows Entry/TP/SL/Range consistently.
+
 - Visuals:
-  - All OR/TP/SL lines render with width 1 for clarity.
-  - TP/SL badges show live target values when a trade is active.
-  - A compact table appears in the upper-right (like Bollinger Bands – Pro) with Range High/Low, Range Size, Trade Status, Entry, Target, Stop Loss, and Risk:Reward.
-  - Indicator tables render only in fullscreen to reduce clutter in normal view.
+  - OR High/Low, TP, SL plotted as lines on the price pane.
+  - Entry/TP/SL/HIT markers are minimal text overlays for clarity.
+  - The compact ORB table appears at top‑right (fullscreen only) and stacks below other tables if enabled.
 
 ## SuperTrend – Pro (KLineChart)
 
