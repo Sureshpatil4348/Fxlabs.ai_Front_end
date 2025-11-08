@@ -9,7 +9,9 @@ import {
   Maximize2,
   Eye
 } from 'lucide-react'
+
 import React, { useState, useEffect, useRef } from 'react'
+
 import { formatPrice } from '../utils/formatters'
 
 const TradingCarousel = () => {

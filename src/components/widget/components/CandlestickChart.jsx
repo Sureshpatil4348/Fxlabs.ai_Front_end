@@ -1,6 +1,8 @@
-import { createChart } from 'lightweight-charts';
-import { formatPrice as formatPriceUtil } from '../../../utils/formatters';
 import React, { useEffect, useRef, useState } from 'react';
+
+import { createChart } from 'lightweight-charts';
+
+import { formatPrice as formatPriceUtil } from '../../../utils/formatters';
 
 export const CandlestickChart = ({
   candles,
