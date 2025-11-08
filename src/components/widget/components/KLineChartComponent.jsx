@@ -4454,13 +4454,15 @@ export const KLineChartComponent = ({
                 return;
               }
 
-              // Consider trend/horizontal/vertical, both Fibonacci tools, rectangle, and text
+              // Consider trend/horizontal/vertical, both Fibonacci tools, rectangle, text,
+              // and position tools (long/short)
               const candidateOverlays = overlays.filter((ov) => ov && ov.visible !== false && (
                 ov.name === 'segment' || ov.name === 'trendLine' ||
                 ov.name === 'horizontalStraightLine' || ov.name === 'horizontalLine' ||
                 ov.name === 'verticalStraightLine' || ov.name === 'verticalLine' ||
                 ov.name === 'fibonacciRightLine' || ov.name === 'fibonacciTrendExtensionRight' ||
-                ov.name === 'rectangle' || ov.name === 'text'
+                ov.name === 'rectangle' || ov.name === 'text' ||
+                ov.name === 'longPosition' || ov.name === 'shortPosition'
               ));
               if (candidateOverlays.length === 0) {
                 setSelectedOverlayPanel(null);
@@ -4565,6 +4567,49 @@ export const KLineChartComponent = ({
                       if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: Math.min(Math.max(clickX, startX), endX), cy: y };
                     });
                     return;
+                  }
+
+                  // Long/Short position: treat as selectable within risk/reward area
+                  if ((name === 'longPosition' || name === 'shortPosition') && c1) {
+                    // Compute horizontal extent similar to overlay rendering logic
+                    const minWidth = 80;
+                    const minX = Math.min(c1.x, c2?.x ?? c1.x);
+                    const maxX = Math.max(c1.x, c2?.x ?? c1.x);
+                    const rawWidth = Number.isFinite(maxX - minX) ? (maxX - minX) : 0;
+                    const xLeft = Number.isFinite(minX) ? minX : (c1?.x || 0);
+                    const width = Math.max(minWidth, rawWidth);
+                    const xRight = xLeft + width;
+
+                    // Three key horizontal lines: entry (c0.y), stop (c1.y), tp (symmetric)
+                    const entryY = c1?.y;
+                    const stopY = c2?.y;
+                    const yTP = (typeof entryY === 'number' && typeof stopY === 'number')
+                      ? (2 * entryY - stopY)
+                      : undefined;
+
+                    // Bounding box covering risk + reward rectangles
+                    const ys = [entryY, stopY, yTP].filter((v) => typeof v === 'number');
+                    if (ys.length > 0) {
+                      const yTop = Math.min(...ys);
+                      const yBottom = Math.max(...ys);
+                      const inside = (clickX >= xLeft && clickX <= xRight && clickY >= yTop && clickY <= yBottom);
+                      if (inside) {
+                        const cx = Math.min(Math.max(clickX, xLeft), xRight);
+                        const cy = Math.min(Math.max(clickY, yTop), yBottom);
+                        best = { dist: 0, overlay: ov, cx, cy };
+                        return;
+                      }
+
+                      // Otherwise, use min distance to any of the three horizontal lines
+                      const lines = [entryY, stopY];
+                      if (typeof yTP === 'number') lines.push(yTP);
+                      lines.forEach((ly) => {
+                        if (typeof ly !== 'number') return;
+                        const res = distancePointToSegment(clickX, clickY, xLeft, ly, xRight, ly);
+                        if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: res.cx, cy: res.cy };
+                      });
+                      return;
+                    }
                   }
                 } catch (_) { /* ignore overlay */ }
               });
