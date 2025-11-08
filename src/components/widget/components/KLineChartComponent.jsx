@@ -4489,7 +4489,7 @@ export const KLineChartComponent = ({
 
                       {/* Action panel */}
                       <div
-                        className={`absolute top-2 left-2 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
+                        className={`absolute top-0 left-0 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
                         style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none' }}
                       >
             <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
