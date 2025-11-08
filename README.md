@@ -63,6 +63,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Notes:
   - Color pickers remain for RSI and ATR; MACD uses a default palette.
   - Default KLine legends are suppressed to keep panes clean and readable.
+  - On-chart indicator labels and drawing tool panels follow the same no‑card style (no border/background); only text and icons overlay the chart.
 
 ## Price Precision (5 Decimals)
 

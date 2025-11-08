@@ -4280,7 +4280,7 @@ export const KLineChartComponent = ({
           {/* MA Enhanced: MA values table (top-right, no header) */}
           {isFullscreen && settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
             <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '80px' }}>
-              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+              <div className="pointer-events-none">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     {maTableData.map((row) => {
@@ -4312,7 +4312,7 @@ export const KLineChartComponent = ({
               className="absolute right-2 z-40 pointer-events-none"
               style={{ right: '80px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
             >
-              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+              <div className="pointer-events-none">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     {(() => {
@@ -4348,7 +4348,7 @@ export const KLineChartComponent = ({
                   : (settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? '80px' : '2px'
               }}
             >
-              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+              <div className="pointer-events-none">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     <tr>
@@ -4382,7 +4382,7 @@ export const KLineChartComponent = ({
                 })()
               }}
             >
-              <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden pointer-events-none">
+              <div className="pointer-events-none">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     {(() => {
@@ -4928,7 +4928,7 @@ export const KLineChartComponent = ({
             return (
               <div className="absolute top-8 left-2 space-y-1 transition-opacity duration-150" style={{ zIndex: 60, pointerEvents: isHoveringOnChartOverlays ? 'auto' : 'none', opacity: isHoveringOnChartOverlays ? 1 : 0 }}>
                 {activeOnChart.map((key) => (
-                  <div key={key} className="flex items-center gap-2 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
+                  <div key={key} className="flex items-center gap-2 text-gray-700">
                     <span className="text-[11px] font-medium text-gray-700 whitespace-nowrap">{LABELS[key] || key}</span>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -4962,7 +4962,7 @@ export const KLineChartComponent = ({
               onPointerDown={(e) => { e.stopPropagation(); }}
               onTouchStart={(e) => { e.stopPropagation(); }}
             >
-              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md shadow-sm">
+              <div className="flex items-center gap-1.5 text-gray-700">
                 <button
                   type="button"
                   title="Delete"
