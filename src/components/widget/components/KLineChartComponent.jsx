@@ -1459,7 +1459,30 @@ export const KLineChartComponent = ({
           },
         ];
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Trend line drawn:', overlay);
       },
     });
@@ -1482,7 +1505,30 @@ export const KLineChartComponent = ({
           },
         ];
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Horizontal line drawn:', overlay);
       },
     });
@@ -1505,7 +1551,30 @@ export const KLineChartComponent = ({
           },
         ];
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Vertical line drawn:', overlay);
       },
     });
@@ -1786,11 +1855,42 @@ export const KLineChartComponent = ({
 
         return figures;
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawing: ({ overlay, step }) => {
+        // Additional check during drawing
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
         console.log('📉 Short Position drawing step:', step, 'points:', overlay?.points);
       },
       onDrawEnd: ({ overlay }) => {
         try {
+          // Safety check: Remove overlay if it's not on the candle pane
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+          
           if (overlay && overlay.__invalidDirection) {
             const chart = chartRef.current;
             const id = overlay?.id;
@@ -2082,11 +2182,42 @@ export const KLineChartComponent = ({
 
         return figures;
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawing: ({ overlay, step }) => {
+        // Additional check during drawing
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Long Position drawing step:', step, 'points:', overlay?.points);
       },
       onDrawEnd: ({ overlay }) => {
         try {
+          // Safety check: Remove overlay if it's not on the candle pane
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+          
           if (overlay && overlay.__invalidDirection) {
             const chart = chartRef.current;
             const id = overlay?.id;
@@ -2262,7 +2393,31 @@ export const KLineChartComponent = ({
 
         return figures;
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Rectangle drawn:', overlay);
       },
       onClick: ({ chart, overlay, figure }) => {
@@ -2342,7 +2497,31 @@ export const KLineChartComponent = ({
           }, { id: overlay.id, name: overlay.name, paneId: overlay.paneId || overlay.pane?.id });
         } catch (_) { /* ignore */ }
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Text annotation drawn:', overlay);
       },
     });
@@ -2429,7 +2608,31 @@ export const KLineChartComponent = ({
           { type: 'text', isCheckEvent: false, attrs: texts },
         ];
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Fibonacci (right-only) drawn:', overlay);
       },
     });
@@ -2544,7 +2747,31 @@ export const KLineChartComponent = ({
           return [];
         }
       },
+      onDrawStart: ({ overlay }) => {
+        // Block drawing on indicator panes immediately
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+            return false; // Cancel drawing
+          }
+        } catch (_) { /* ignore */ }
+      },
       onDrawEnd: ({ overlay }) => {
+        // Safety check: Remove overlay if it's not on the candle pane
+        try {
+          const paneId = overlay?.paneId || overlay?.pane?.id;
+          if (paneId && paneId !== 'candle_pane') {
+            const chart = chartRef.current;
+            if (chart && overlay?.id) {
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              }
+              console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Trend Fib Extension (right-only) drawn:', overlay);
       },
     });
@@ -2781,6 +3008,7 @@ export const KLineChartComponent = ({
       });
 
       // Drawing tool handler: start interactive overlay creation
+      // Drawing tools should ONLY work on the main candle pane, not on indicator panes below
       const handleDrawingToolChange = (toolType) => {
         try {
           if (!toolType) return; // deactivated
@@ -2798,13 +3026,18 @@ export const KLineChartComponent = ({
             };
             const name = overlayMap[toolType] || toolType;
             try {
-              // Preferred signature (v10+)
-              chart.createOverlay({ name });
+              // Preferred signature (v10+) - ALWAYS restrict to candle_pane only
+              chart.createOverlay({ name, paneId: 'candle_pane' });
             } catch (_e) {
-              // Fallback
-              chart.createOverlay(name);
+              // Fallback with paneId restriction
+              try {
+                chart.createOverlay({ name, paneId: 'candle_pane' });
+              } catch (_e2) {
+                // Last resort fallback (older API versions)
+                chart.createOverlay(name);
+              }
             }
-            console.log('📈 Overlay creation started for tool:', name);
+            console.log('📈 Overlay creation started for tool:', name, '(restricted to candle_pane)');
           }
         } catch (err) {
           console.warn('📈 Error activating drawing tool:', err);
