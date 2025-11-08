@@ -56,7 +56,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ## Indicator Labels (Below Panes)
 
 - Location: Below-chart indicator panes (RSI, ATR, MACD) in the KLine chart widget.
-- Behavior: On hover, a small text label appears at the upper-left of the indicator pane with quick actions. Positioned at top: -28px and left: 0 for exact alignment with KLine pane boundaries. The panel has square corners (no border radius).
+- Behavior: On hover, a small text label appears at the upper-left of the indicator pane with quick actions. Positioned at top: -20px and left: 8px for a precise, readable placement. The panel has no card/border/background; only text and icons are shown directly over the chart.
 - Contents:
   - Indicator name (RSI, ATR, or MACD)
   - Quick actions: Delete and Settings
