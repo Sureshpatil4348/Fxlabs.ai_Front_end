@@ -916,7 +916,7 @@ export const KLineChartComponent = ({
           }
         });
       }
-      // Register EMA_TOUCH_ENH (BB signals + ATR targets) — on chart
+      // Register EMA_TOUCH_ENH (BB signals + ATR targets + Entry) — on chart
       if (Array.isArray(supported) && !supported.includes('EMA_TOUCH_ENH')) {
         registerIndicator({
           name: 'EMA_TOUCH_ENH',
@@ -927,10 +927,12 @@ export const KLineChartComponent = ({
           calcParams: [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25],
           figures: [
             { key: 'buySL', title: 'BUY SL: ', type: 'line' },
+            { key: 'buyEntry', title: 'BUY ENTRY: ', type: 'line' },
             { key: 'buyTP1', title: 'BUY TP1: ', type: 'line' },
             { key: 'buyTP2', title: 'BUY TP2: ', type: 'line' },
             { key: 'buyTP3', title: 'BUY TP3: ', type: 'line' },
             { key: 'sellSL', title: 'SELL SL: ', type: 'line' },
+            { key: 'sellEntry', title: 'SELL ENTRY: ', type: 'line' },
             { key: 'sellTP1', title: 'SELL TP1: ', type: 'line' },
             { key: 'sellTP2', title: 'SELL TP2: ', type: 'line' },
             { key: 'sellTP3', title: 'SELL TP3: ', type: 'line' },
@@ -954,8 +956,19 @@ export const KLineChartComponent = ({
             // Wilder ATR
             let prevAtr = null;
 
-            // Output arrays initialized NaN
-            const out = new Array(len).fill(null).map(() => ({ buySL: NaN, buyTP1: NaN, buyTP2: NaN, buyTP3: NaN, sellSL: NaN, sellTP1: NaN, sellTP2: NaN, sellTP3: NaN }));
+            // Output arrays initialized NaN (include entry lines)
+            const out = new Array(len).fill(null).map(() => ({
+              buySL: NaN,
+              buyEntry: NaN,
+              buyTP1: NaN,
+              buyTP2: NaN,
+              buyTP3: NaN,
+              sellSL: NaN,
+              sellEntry: NaN,
+              sellTP1: NaN,
+              sellTP2: NaN,
+              sellTP3: NaN,
+            }));
 
             let lastSignal = '';
 
@@ -998,6 +1011,7 @@ export const KLineChartComponent = ({
                   const end = Math.min(len - 1, i + horizon);
                   for (let j = i; j <= end; j++) {
                     out[j].sellSL = sellSL;
+                    out[j].sellEntry = close;
                     out[j].sellTP1 = sellTP1;
                     out[j].sellTP2 = sellTP2;
                     out[j].sellTP3 = sellTP3;
@@ -1012,6 +1026,7 @@ export const KLineChartComponent = ({
                   const end = Math.min(len - 1, i + horizon);
                   for (let j = i; j <= end; j++) {
                     out[j].buySL = buySL;
+                    out[j].buyEntry = close;
                     out[j].buyTP1 = buyTP1;
                     out[j].buyTP2 = buyTP2;
                     out[j].buyTP3 = buyTP3;
@@ -2779,14 +2794,16 @@ export const KLineChartComponent = ({
           }
           chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [bbLen, bbMult, atrLen, tp1, tp2, tp3, 1.5, 25], styles: {
             lines: [
-              { color: '#EF4444', size: 2 }, // buy SL
-              { color: '#22C55E', size: 1 }, // buy TP1
-              { color: '#22C55E', size: 1 }, // buy TP2
-              { color: '#22C55E', size: 1 }, // buy TP3
-              { color: '#EF4444', size: 2 }, // sell SL
-              { color: '#22C55E', size: 1 }, // sell TP1
-              { color: '#22C55E', size: 1 }, // sell TP2
-              { color: '#22C55E', size: 1 }, // sell TP3
+              { color: '#EF4444', size: 2 }, // buy SL (red)
+              { color: '#3B82F6', size: 1 }, // buy ENTRY (blue)
+              { color: '#22C55E', size: 1 }, // buy TP1 (green)
+              { color: '#22C55E', size: 1 }, // buy TP2 (green)
+              { color: '#22C55E', size: 1 }, // buy TP3 (green)
+              { color: '#EF4444', size: 2 }, // sell SL (red)
+              { color: '#3B82F6', size: 1 }, // sell ENTRY (blue)
+              { color: '#22C55E', size: 1 }, // sell TP1 (green)
+              { color: '#22C55E', size: 1 }, // sell TP2 (green)
+              { color: '#22C55E', size: 1 }, // sell TP3 (green)
             ]
           } }, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: EMA Touch targets overlay added');

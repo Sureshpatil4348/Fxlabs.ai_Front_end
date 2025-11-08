@@ -2,6 +2,14 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Trend Strategy (EMA Touch) – Entry Line
+
+- Location: `Trading` → KLineChart (advanced widget). Toggle "Trend Strategy" in the indicator list.
+- Visuals:
+  - Now shows a blue Entry line in addition to existing green Take Profit lines (TP1–TP3) and red Stop Loss line.
+  - Entry line reflects the signal bar close and extends forward for the configured horizon.
+  - Mirrors the reference Pine behavior: entry (blue), SL (red), targets (green).
+
 ## Breakout Strategy (Opening Range) – KLineChart
 
 - Location: `Trading` → KLineChart (advanced widget). Toggle "Breakout Strategy" in the indicator list, then click the gear icon near on-chart overlays to configure.
