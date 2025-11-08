@@ -119,8 +119,6 @@ export const KLineChartComponent = ({
   const orbLabelOverlayIdsRef = useRef([]);
   // Keep track of programmatically-created S/R break label overlays (for cleanup)
   const srLabelOverlayIdsRef = useRef([]);
-  // Keep track of programmatically-created MACD crossover overlays (for cleanup)
-  const macdLabelOverlayIdsRef = useRef([]);
 
   useEffect(() => {
     if (!showRsiSettings) return;
@@ -3259,107 +3257,7 @@ export const KLineChartComponent = ({
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.srEnhanced, candles, isWorkspaceHidden]);
 
-  // Programmatic MACD Buy/Sell arrows on MACD pane (using 'text' overlay with ▲ / ▼)
-  useEffect(() => {
-    try {
-      const chart = chartRef.current;
-      if (!chart) return;
-
-      // Clear previous MACD labels
-      try {
-        const ids = Array.isArray(macdLabelOverlayIdsRef.current) ? macdLabelOverlayIdsRef.current : [];
-        ids.forEach((id) => {
-          try { chart.removeOverlay({ id }); } catch (_) {}
-          try { chart.removeOverlay(id); } catch (_) {}
-        });
-      } catch (_) { /* ignore */ }
-      macdLabelOverlayIdsRef.current = [];
-
-      if (!settings?.indicators?.macdEnhanced) return;
-
-      // Resolve actual MACD pane id from chart (fallback to expected id)
-      let macdPaneId = 'pane-macdEnhanced';
-      try {
-        const macdInds = typeof chart.getIndicators === 'function'
-          ? (chart.getIndicators({ name: 'MACD_ENH' }) || [])
-          : [];
-        if (Array.isArray(macdInds) && macdInds.length > 0) {
-          const pid = macdInds[0]?.paneId;
-          if (pid) macdPaneId = pid;
-        }
-      } catch (_) { /* ignore */ }
-
-      // Build MACD series from candles and current settings
-      const cfg = settings?.indicatorSettings?.macdEnhanced || {};
-      const fastLen = Math.max(1, Number(cfg.fastLength) || 12);
-      const slowLen = Math.max(1, Number(cfg.slowLength) || 26);
-      const sigLen = Math.max(1, Number(cfg.signalLength) || 9);
-      const source = String(cfg.source || 'close').toLowerCase();
-      const n = candles?.length || 0;
-      if (!Array.isArray(candles) || n < 3) return;
-      const kf = 2 / (fastLen + 1);
-      const ks = 2 / (slowLen + 1);
-      const ks2 = 2 / (sigLen + 1);
-      let emaFast = null;
-      let emaSlow = null;
-      let emaSignal = null;
-      const macdArr = new Array(n).fill(NaN);
-      const sigArr = new Array(n).fill(NaN);
-      for (let i = 0; i < n; i++) {
-        const k = candles[i];
-        const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
-        let price = c;
-        if (source === 'open') price = o;
-        else if (source === 'high') price = h;
-        else if (source === 'low') price = l;
-        else if (source === 'hl2') price = (h + l) / 2;
-        else if (source === 'hlc3') price = (h + l + c) / 3;
-        else if (source === 'ohlc4') price = (o + h + l + c) / 4;
-        emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
-        emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
-        const macd = (emaFast - emaSlow);
-        emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
-        macdArr[i] = macd;
-        sigArr[i] = emaSignal;
-      }
-
-      const maxSignals = 60;
-      const signals = [];
-      for (let i = 1; i < n; i++) {
-        const m = macdArr[i], s = sigArr[i];
-        const pm = macdArr[i - 1], ps = sigArr[i - 1];
-        if (!Number.isFinite(m) || !Number.isFinite(s) || !Number.isFinite(pm) || !Number.isFinite(ps)) continue;
-        const bull = m > s && pm <= ps;
-        const bear = m < s && pm >= ps;
-        if (bull) signals.push({ ts: candles[i].timestamp, val: m, type: 'bull' });
-        if (bear) signals.push({ ts: candles[i].timestamp, val: m, type: 'bear' });
-      }
-      const recent = signals.slice(-maxSignals);
-
-      recent.forEach((ev) => {
-        if (!Number.isFinite(ev.ts) || !Number.isFinite(ev.val)) return;
-        const spec = {
-          name: 'text',
-          text: ev.type === 'bull' ? '▲' : '▼',
-          points: [{ timestamp: ev.ts, value: ev.val }],
-          paneId: macdPaneId,
-          styles: {
-            text: {
-              backgroundColor: ev.type === 'bull' ? 'rgba(38,166,154,0.15)' : 'rgba(239,83,80,0.15)',
-              color: ev.type === 'bull' ? '#0b5f56' : '#7a1f1f',
-              padding: 2,
-              borderSize: 0,
-            }
-          }
-        };
-        try {
-          const ov = chart.createOverlay(spec);
-          const id = (ov && (ov.id || ov)) || null;
-          if (id) macdLabelOverlayIdsRef.current.push(id);
-        } catch (_) { /* ignore */ }
-      });
-    } catch (_) { /* ignore */ }
-  }, [settings?.indicators?.macdEnhanced, settings?.indicatorSettings?.macdEnhanced, candles]);
+  // (Removed) MACD crossover arrows effect per request\n
 
   // Chart navigation methods
   const _scrollToLatest = useCallback(() => {
@@ -3858,10 +3756,10 @@ export const KLineChartComponent = ({
                   Save
                 </button>
               </div>
+              </div>
             </div>
-          </div>
-        )}
-
+          )}
+          
           {/* SuperTrend - Pro Settings Modal */}
           {showStSettings && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
