@@ -1519,7 +1519,7 @@ export const KLineChartComponent = ({
     registerOverlay({
       name: 'shortPosition',
       totalStep: 3,
-      createPointFigures: ({ chart, coordinates, overlay, bounding }) => {
+      createPointFigures: ({ chart, coordinates, overlay, bounding: _bounding }) => {
         const figures = [];
         const pts = overlay?.points || [];
         if (!Array.isArray(pts) || pts.length === 0) {
