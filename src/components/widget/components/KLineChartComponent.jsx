@@ -4478,6 +4478,8 @@ export const KLineChartComponent = ({
               <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 60 }}>
                 {activeBelow.map((key, idx) => {
                   const bottomOffset = (activeBelow.length - 1 - idx) * 120;
+                  // Determine readable indicator label (no extra badge or color dot)
+                  const label = key === 'rsiEnhanced' ? 'RSI' : key === 'atrEnhanced' ? 'ATR' : 'MACD';
                   return (
                     <div
                       key={key}
@@ -4491,6 +4493,8 @@ export const KLineChartComponent = ({
                         style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none' }}
                       >
             <div className="flex items-center gap-1.5 px-2 py-1.5 bg-transparent border border-gray-200 rounded-md">
+              {/* Indicator name (plain text, no extra badge/dot) */}
+              <span className="text-[11px] text-gray-700 whitespace-nowrap">{label}</span>
               {key === 'rsiEnhanced' && (
                 <label
                   className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"

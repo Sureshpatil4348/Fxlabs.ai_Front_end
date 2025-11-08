@@ -53,6 +53,17 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
     - Bull Wick / Bear Wick labels for wick-based break detections.
   - Badges are limited to the most recent signals for clarity.
 
+## Indicator Labels (Below Panes)
+
+- Location: Below-chart indicator panes (RSI, ATR, MACD) in the KLine chart widget.
+- Behavior: On hover, a small text label appears at the upper-left of the indicator pane with quick actions.
+- Contents:
+  - Indicator name (RSI, ATR, or MACD)
+  - Quick actions: Delete and Settings
+- Notes:
+  - Color pickers remain for RSI and ATR; MACD uses a default palette.
+  - Default KLine legends are suppressed to keep panes clean and readable.
+
 ## Price Precision (5 Decimals)
 
 - Prices across kline/candlestick charts and related UI now default to 5 decimal places.
