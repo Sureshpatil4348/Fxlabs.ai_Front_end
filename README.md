@@ -52,3 +52,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
     - Bull Wick / Bear Wick labels for wick-based break detections.
   - Badges are limited to the most recent signals for clarity.
 
+## Price Precision (5 Decimals)
+
+- Prices across kline/candlestick charts and related UI now default to 5 decimal places.
+- The advanced KLine chart enforces 5-decimal price precision internally; tooltips, price marks, and overlays follow this.
+- Utility `formatPrice(value, precision = 5)` is used app‑wide for price display; prefer it over manual `toFixed`.
+- Special cases (e.g., metals or JPY pairs) can still override precision where explicitly configured.
+

@@ -25,7 +25,7 @@ const IndicatorDataView = ({ symbol }) => {
 
   const formatValue = (value) => {
     if (typeof value === 'number') {
-      return value.toFixed(4);
+      return value.toFixed(5);
     }
     return value || 'N/A';
   };

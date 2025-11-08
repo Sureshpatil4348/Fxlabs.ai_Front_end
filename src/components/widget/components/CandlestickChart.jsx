@@ -1,4 +1,5 @@
 import { createChart } from 'lightweight-charts';
+import { formatPrice as formatPriceUtil } from '../../../utils/formatters';
 import React, { useEffect, useRef, useState } from 'react';
 
 export const CandlestickChart = ({
@@ -266,9 +267,9 @@ export const CandlestickChart = ({
                         {candles.slice(-10).map((candle, index) => {
                           // Defensive validation helper functions
                           const isValidNumber = (value) => Number.isFinite(value) && !isNaN(value);
-                          const formatPrice = (value) => {
+                          const formatPriceLocal = (value) => {
                             if (!isValidNumber(value)) return 'N/A';
-                            return `$${Number(value).toFixed(2)}`;
+                            return `$${formatPriceUtil(Number(value))}`;
                           };
                           const formatVolume = (value) => {
                             if (!isValidNumber(value)) return 'N/A';
@@ -288,10 +289,10 @@ export const CandlestickChart = ({
                           return (
                             <tr key={index} className="border-b">
                               <td className="px-3 py-2">{formatTime(candle.time)}</td>
-                              <td className="px-3 py-2">{formatPrice(candle.open)}</td>
-                              <td className="px-3 py-2">{formatPrice(candle.high)}</td>
-                              <td className="px-3 py-2">{formatPrice(candle.low)}</td>
-                              <td className="px-3 py-2">{formatPrice(candle.close)}</td>
+                              <td className="px-3 py-2">{formatPriceLocal(candle.open)}</td>
+                              <td className="px-3 py-2">{formatPriceLocal(candle.high)}</td>
+                              <td className="px-3 py-2">{formatPriceLocal(candle.low)}</td>
+                              <td className="px-3 py-2">{formatPriceLocal(candle.close)}</td>
                               <td className="px-3 py-2">{formatVolume(candle.volume)}</td>
                             </tr>
                           );

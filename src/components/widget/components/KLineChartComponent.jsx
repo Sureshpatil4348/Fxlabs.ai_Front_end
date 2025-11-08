@@ -852,7 +852,7 @@ export const KLineChartComponent = ({
           name: 'ATR_ENH',
           shortName: 'ATR',
           calcParams: [14, 0], // [length, methodCode] method: 0=RMA,1=SMA,2=EMA,3=WMA
-          precision: 4,
+          precision: 5,
           figures: [
             { key: 'atr', title: 'ATR: ', type: 'line' }
           ],
@@ -921,7 +921,7 @@ export const KLineChartComponent = ({
           name: 'EMA_TOUCH_ENH',
           shortName: 'Trend Strategy',
           series: 'price',
-          precision: 4,
+          precision: 5,
           // bbLen, bbMult, atrLen, tp1, tp2, tp3, slMult, horizonBars
           calcParams: [20, 2.0, 14, 1.0, 2.5, 4.0, 1.5, 25],
           figures: [
@@ -1028,7 +1028,7 @@ export const KLineChartComponent = ({
           name: 'ORB_ENH',
           shortName: 'ORB',
           series: 'price',
-          precision: 2,
+          precision: 5,
           calcParams: [9, 15, 1, 4.0], // hour, minute, period bars, RR
           figures: [
             { key: 'orHigh', title: 'OR High: ', type: 'line' },
@@ -1115,7 +1115,7 @@ export const KLineChartComponent = ({
           name: 'ST_ENH',
           shortName: 'ST',
           series: 'price',
-          precision: 4,
+          precision: 5,
           calcParams: [10, 3.0], // atrPeriod, atrMultiplier
           figures: [
             { key: 'st', title: 'ST: ', type: 'line' },
@@ -1163,7 +1163,7 @@ export const KLineChartComponent = ({
           name: 'MA_ENH',
           shortName: 'MA',
           series: 'price',
-          precision: 4,
+          precision: 5,
           // calcParams: [typeCode, sourceCode, len1, len2, len3, len4]
           // typeCode: 0=EMA, 1=SMA; sourceCode: 0=close,1=open,2=high,3=low,4=hl2,5=hlc3,6=ohlc4
           calcParams: [0, 0, 9, 21, 50, 100],
@@ -1240,7 +1240,7 @@ export const KLineChartComponent = ({
           name: 'SR_ENH',
           shortName: 'S/R',
           series: 'price',
-          precision: 2,
+          precision: 5,
           calcParams: [15, 15], // leftBars, rightBars
           figures: [
             { key: 'res', title: 'RES: ', type: 'line' },
@@ -1719,7 +1719,7 @@ export const KLineChartComponent = ({
             });
           }
         } catch (_e) {
-          precision = 2;
+          precision = 5;
         }
 
         // Robustly get pixel coordinates from overlay points
@@ -1819,7 +1819,7 @@ export const KLineChartComponent = ({
               });
             }
           } catch (_e) {
-            precision = 2;
+            precision = 5;
           }
 
           const coordsForWidth = [c0, c1, c2].filter(Boolean);
@@ -1905,6 +1905,16 @@ export const KLineChartComponent = ({
       // Initialize chart with timezone awareness
       const tz = settings.timezone || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
       const chart = init(container, { timezone: tz });
+      // Ensure price precision is 5 decimals across the chart
+      try {
+        if (typeof chart.setPrecision === 'function') {
+          chart.setPrecision({ price: 5, volume: 0 });
+        } else if (typeof chart.setPriceVolumePrecision === 'function') {
+          chart.setPriceVolumePrecision(5, 0);
+        }
+      } catch (_) {
+        // best effort; fall back to defaults if API not available
+      }
 
       // Configure chart styles using setStyles (not setStyleOptions)
       chart.setStyles({
