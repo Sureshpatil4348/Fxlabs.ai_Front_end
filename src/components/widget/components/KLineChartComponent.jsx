@@ -1767,6 +1767,264 @@ export const KLineChartComponent = ({
       },
     });
 
+    // Register Long Position overlay (TradingView-like, 2-click)
+    // Steps:
+    // 1) Click entry price
+    // 2) Click stop-loss (below entry)
+    // TP is auto-calculated to maintain RR = 1 (symmetric distance)
+    // Renders red (risk) area [SL..entry] and green (reward) area [entry..TP].
+    registerOverlay({
+      name: 'longPosition',
+      totalStep: 3,
+      createPointFigures: ({ chart, coordinates, overlay, bounding: _bounding }) => {
+        const figures = [];
+        const pts = overlay?.points || [];
+        if (!Array.isArray(pts) || pts.length === 0) {
+          return figures;
+        }
+
+        // Convert points to pixel coordinates like rectangle overlay does
+        let px = [];
+        try {
+          if (typeof chart?.convertToPixel === 'function') {
+            px = chart.convertToPixel(pts) || [];
+          }
+        } catch (_) { px = []; }
+        
+        const c0 = px[0] || coordinates?.[0]; // entry
+        const c1 = px[1] || coordinates?.[1]; // stop
+        
+        if (!c0) return figures;
+        
+        const validCoords = [c0, c1].filter(Boolean);
+        const minX = Math.min(...validCoords.map(p => p?.x || 0));
+        const maxX = Math.max(...validCoords.map(p => p?.x || 0));
+        const minWidth = 80; // ensure visible width while drawing
+        const rawWidth = (Number.isFinite(maxX - minX) ? (maxX - minX) : 0);
+        const width = Math.max(minWidth, rawWidth);
+        const xLeft = Number.isFinite(minX) ? minX : (c0?.x || 0);
+        const xRight = xLeft + width;
+
+        // Entry line + label
+        if (Number.isFinite(c0?.y)) {
+          figures.push({
+            type: 'line',
+            attrs: {
+              coordinates: [{ x: xLeft, y: c0.y }, { x: xRight, y: c0.y }],
+            },
+            styles: { color: '#374151', size: 1 },
+          });
+          const entryText = `Entry ${formatPrice(Number(pts?.[0]?.value))}`;
+          figures.push({
+            type: 'text',
+            attrs: {
+              x: xLeft + 4,
+              y: c0.y - 6,
+              text: entryText,
+              align: 'left',
+              baseline: 'bottom',
+            },
+            styles: {
+              backgroundColor: 'transparent',
+              borderSize: 0,
+              color: '#065f46',
+              size: 11,
+              weight: '600',
+            },
+          });
+        }
+
+        // With stop selected: draw risk rectangle and SL line/label
+        if (c1 && Number.isFinite(c1?.y) && Number.isFinite(c0?.y)) {
+          const riskTop = Math.min(c0.y, c1.y);
+          const riskBottom = Math.max(c0.y, c1.y);
+          figures.push({
+            type: 'rect',
+            attrs: {
+              x: xLeft,
+              y: riskTop,
+              width,
+              height: Math.max(1, riskBottom - riskTop),
+            },
+            styles: {
+              style: 'fill',
+              color: 'rgba(239,68,68,0.2)', // red-500 @ 20%
+              borderColor: '#ef4444',
+              borderSize: 1,
+            }
+          });
+          figures.push({
+            type: 'line',
+            attrs: {
+              coordinates: [{ x: xLeft, y: c1.y }, { x: xRight, y: c1.y }],
+            },
+            styles: { color: '#ef4444', size: 1 },
+          });
+          figures.push({
+            type: 'text',
+            attrs: {
+              x: xLeft + 4,
+              y: c1.y + 12,
+              text: `SL ${formatPrice(Number(pts?.[1]?.value))}`,
+              align: 'left',
+              baseline: 'top',
+            },
+            styles: {
+              backgroundColor: 'transparent',
+              borderSize: 0,
+              text: { color: '#dc2626', size: 11, weight: '600' },
+            },
+          });
+          
+          // Risk-side badges (below red rectangle)
+          const entryVal = Number(pts?.[0]?.value);
+          const stopVal = Number(pts?.[1]?.value);
+          const qty = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
+          if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
+            const priceDeltaRisk = Math.abs(entryVal - stopVal);
+            const percentRisk = entryVal !== 0 ? ((entryVal - stopVal) / Math.abs(entryVal)) * 100 : 0;
+            const riskAmount = priceDeltaRisk * qty;
+            const rrRatio = 1.0;
+            const closedPnL = (typeof overlay?.closedPnL === 'number') ? overlay.closedPnL : 0;
+            const badgeBottomY1 = riskBottom + 14;
+            const badgeBottomY2 = badgeBottomY1 + 18;
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: badgeBottomY1,
+                text: `Stop: ${formatPrice(stopVal)} (${percentRisk.toFixed(2)}%) ${formatPrice(priceDeltaRisk)}, Amount: ${formatPrice(riskAmount)}`,
+                align: 'left',
+                baseline: 'top',
+              },
+              styles: {
+              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
+              borderSize: 1,
+              borderColor: '#991b1b',
+              text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: badgeBottomY2,
+                text: `Closed P&L: ${formatPrice(closedPnL)}, Qty: ${qty}, RR Ratio: ${rrRatio.toFixed(2)}`,
+                align: 'left',
+                baseline: 'top',
+              },
+              styles: {
+              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
+              borderSize: 1,
+              borderColor: '#991b1b',
+              text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+          }
+          
+          // Auto TP (RR = 1) for LONG: TP symmetric above entry by same distance as risk
+          const deltaY = c1.y - c0.y;
+          const yTP = c0.y - Math.abs(deltaY); // ensure TP is above entry (lower y)
+          const rewardTop = Math.min(c0.y, yTP);
+          const rewardBottom = Math.max(c0.y, yTP);
+          figures.push({
+            type: 'rect',
+            attrs: {
+              x: xLeft,
+              y: rewardTop,
+              width,
+              height: Math.max(1, rewardBottom - rewardTop),
+            },
+            styles: {
+              style: 'fill',
+              color: 'rgba(16,185,129,0.2)', // emerald-500 @ 20%
+              borderColor: '#10b981',
+              borderSize: 1,
+            }
+          });
+          figures.push({
+            type: 'line',
+            attrs: {
+              coordinates: [{ x: xLeft, y: yTP }, { x: xRight, y: yTP }],
+            },
+            styles: { color: '#10b981', size: 1 },
+          });
+          figures.push({
+            type: 'text',
+            attrs: {
+              x: xLeft + 4,
+              y: yTP - 6,
+              text: (() => {
+                const entryVal = Number(pts?.[0]?.value);
+                const stopVal = Number(pts?.[1]?.value);
+                if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
+                  const tpVal = (2 * entryVal) - stopVal;
+                  return `TP ${formatPrice(tpVal)}`;
+                }
+                return 'TP';
+              })(),
+              align: 'left',
+              baseline: 'bottom',
+            },
+            styles: {
+              backgroundColor: 'transparent',
+              borderSize: 0,
+              text: { color: '#047857', size: 11, weight: '600' },
+            },
+          });
+          // Reward-side badge (above green rectangle)
+          const entryVal2 = Number(pts?.[0]?.value);
+          const stopVal2 = Number(pts?.[1]?.value);
+          if (Number.isFinite(entryVal2) && Number.isFinite(stopVal2)) {
+            const tpVal = (2 * entryVal2) - stopVal2;
+            const priceDeltaReward = Math.abs(tpVal - entryVal2);
+            const percentReward = entryVal2 !== 0 ? ((tpVal - entryVal2) / Math.abs(entryVal2)) * 100 : 0;
+            const qty2 = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
+            const rewardAmount = priceDeltaReward * qty2;
+            const badgeTopY = Math.max(0, rewardTop - 14);
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: badgeTopY,
+                text: `Target: ${formatPrice(tpVal)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
+                align: 'left',
+                baseline: 'bottom',
+              },
+              styles: {
+              backgroundColor: 'rgba(16,185,129,0.92)', // dark green (matches candle green)
+              borderSize: 1,
+              borderColor: '#065f46',
+              text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+          }
+
+          // No RR label rendered (per requirement)
+        }
+
+        return figures;
+      },
+      onDrawing: ({ overlay, step }) => {
+        console.log('📈 Long Position drawing step:', step, 'points:', overlay?.points);
+      },
+      onDrawEnd: ({ overlay }) => {
+        console.log('📈 Long Position tool drawn:', overlay);
+      },
+    });
+
     // Helper: open inline text editor centered at (x,y) inside the chart container
     const openInlineTextEditor = (x, y, initialText, onCommit, overlayMeta) => {
       try {
