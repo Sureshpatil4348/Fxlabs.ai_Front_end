@@ -214,7 +214,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   }}
                   className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
                     settings.timeframe === tf
-                      ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white transform scale-105 rounded-lg'
+                      ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -228,7 +228,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
                 className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 flex items-center gap-1 ${
                   showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(settings.timeframe)
-                    ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-lg'
+                    ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white rounded-lg'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -251,7 +251,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                       }}
                       className={`w-full text-left px-3 py-2 text-[13px] font-medium transition-all ${
                         settings.timeframe === tf
-                          ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white'
+                          ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
@@ -819,7 +819,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 <div className="flex items-center">
                   <p className="text-xs font-medium text-gray-900">RSI - Pro</p>
                 </div>
-                <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-blue-400' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-emerald-500' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -828,7 +828,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 <div className="flex items-center">
                   <p className="text-xs font-medium text-gray-900">Trend Strategy</p>
                 </div>
-                <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-blue-400' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.emaTouch ? 'bg-emerald-500' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.emaTouch ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -837,7 +837,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                 <div className="flex items-center">
                   <p className="text-xs font-medium text-gray-900">Bollinger Bands - Pro</p>
                 </div>
-                <button onClick={() => handleToggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-blue-400' : 'bg-gray-300'}`}>
+                <button onClick={() => handleToggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-emerald-500' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.bbPro ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
@@ -847,7 +847,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   <p className="text-xs font-medium text-gray-900">ATR - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('atrEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.atrEnhanced ? 'bg-blue-400' : 'bg-gray-300'
+                  settings.indicators.atrEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.atrEnhanced ? 'translate-x-6' : 'translate-x-1'
@@ -861,7 +861,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   <p className="text-xs font-medium text-gray-900">Moving Average - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('maEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.maEnhanced ? 'bg-blue-400' : 'bg-gray-300'
+                  settings.indicators.maEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.maEnhanced ? 'translate-x-6' : 'translate-x-1'
@@ -875,7 +875,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   <p className="text-xs font-medium text-gray-900">Breakout Strategy</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('orbEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.orbEnhanced ? 'bg-blue-400' : 'bg-gray-300'
+                  settings.indicators.orbEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.orbEnhanced ? 'translate-x-6' : 'translate-x-1'
@@ -889,7 +889,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   <p className="text-xs font-medium text-gray-900">Super Trend - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('stEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.stEnhanced ? 'bg-blue-400' : 'bg-gray-300'
+                  settings.indicators.stEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.stEnhanced ? 'translate-x-6' : 'translate-x-1'
@@ -903,7 +903,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   <p className="text-xs font-medium text-gray-900">Support Resitance - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.srEnhanced ? 'bg-blue-400' : 'bg-gray-300'
+                  settings.indicators.srEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.srEnhanced ? 'translate-x-6' : 'translate-x-1'
@@ -917,7 +917,7 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
                   <p className="text-xs font-medium text-gray-900">MACD - Pro</p>
                 </div>
                 <button onClick={() => handleToggleIndicator('macdEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.macdEnhanced ? 'bg-blue-400' : 'bg-gray-300'
+                  settings.indicators.macdEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.macdEnhanced ? 'translate-x-6' : 'translate-x-1'

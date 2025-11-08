@@ -242,7 +242,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('trendLine')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'trendLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'trendLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Trend Line"
         >
@@ -264,7 +264,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('horizontalLine')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'horizontalLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'horizontalLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Horizontal Line"
         >
@@ -282,7 +282,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('verticalLine')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'verticalLine' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'verticalLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Vertical Line"
         >
@@ -300,7 +300,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('fibonacci')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'fibonacci' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'fibonacci' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Fib Retracement"
         >
@@ -319,7 +319,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('fibExtension')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'fibExtension' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'fibExtension' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Fib Extension (3pt)"
         >
@@ -337,7 +337,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('rectangle')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'rectangle' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'rectangle' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Rectangle"
         >
@@ -355,7 +355,7 @@ export const Sidebar = () => {
           type="button"
           onClick={() => handleKLineToolSelect('text')}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            activeTool === 'text' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            activeTool === 'text' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title="Text"
         >
@@ -373,7 +373,7 @@ export const Sidebar = () => {
         <button
           type="button"
           onClick={handleKLineToggleVisibility}
-          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isWorkspaceHidden ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isWorkspaceHidden ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}
           title={isWorkspaceHidden ? 'Unhide All' : 'Hide All'}
           aria-pressed={isWorkspaceHidden}
         >
@@ -482,7 +482,7 @@ const CursorMenu = ({ current, onSelect }) => {
           ref={btnRef}
           onClick={() => setOpen((v) => !v)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-            current ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+            current ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
           title={`${label} (click to change)`}
           aria-haspopup="menu"
@@ -513,15 +513,15 @@ const CursorMenu = ({ current, onSelect }) => {
               type="button"
               onClick={() => { onSelect(opt.id); setOpen(false); }}
               className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm transition-colors ${
-                current === opt.id ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-50 text-gray-700'
+                current === opt.id ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-gray-50 text-gray-700'
               }`}
             >
-              <span className={`inline-flex ${current === opt.id ? 'text-blue-500' : 'text-gray-500'}`}>
+              <span className={`inline-flex ${current === opt.id ? 'text-emerald-500' : 'text-gray-500'}`}>
                 {renderIcon(opt.id)}
               </span>
               <span className="flex-1">{opt.name}</span>
               {current === opt.id && (
-                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}

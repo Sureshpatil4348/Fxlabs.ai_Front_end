@@ -151,7 +151,7 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
           className={`
             flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded border transition-colors
             ${activeTool 
-              ? 'bg-blue-500 text-white border-blue-500' 
+              ? 'bg-emerald-500 text-white border-emerald-500' 
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
             }
           `}
@@ -200,7 +200,7 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
                   className={`
                     w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors
                     ${activeTool === tool.id 
-                      ? 'bg-blue-50 text-blue-700' 
+                      ? 'bg-emerald-50 text-emerald-700' 
                       : 'text-gray-700 hover:bg-gray-100'
                     }
                   `}
@@ -211,7 +211,7 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
                     <div className="text-xs text-gray-500">{tool.description}</div>
                   </div>
                   {activeTool === tool.id && (
-                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -243,7 +243,7 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
 
       {/* Instructions */}
       {activeTool && (
-        <div className="absolute top-full left-0 right-0 bg-blue-50 border border-blue-200 rounded-b p-2 text-xs text-blue-700 z-10">
+        <div className="absolute top-full left-0 right-0 bg-emerald-50 border border-emerald-200 rounded-b p-2 text-xs text-emerald-700 z-10">
           <strong>{drawingTools.find(t => t.id === activeTool)?.name}:</strong>{' '}
           {drawingTools.find(t => t.id === activeTool)?.description}
         </div>

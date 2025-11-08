@@ -157,7 +157,7 @@ function TradingChart() {
                         onClick={() => handlePresetSelect(preset)}
                         className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
                           activePreset === preset.id
-                            ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white transform scale-105 rounded-lg'
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
                             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                         }`}
                         title={preset.description}

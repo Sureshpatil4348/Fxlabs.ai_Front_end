@@ -4669,7 +4669,7 @@ export const KLineChartComponent = ({
                           <button
                             type="button"
                             title="Configure"
-                            className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
+                            className="w-6 h-6 grid place-items-center text-gray-600 hover:text-emerald-600"
                             aria-label="Configure indicator"
                             onClick={() => { if (key === 'rsiEnhanced') setShowRsiSettings(true); if (key === 'atrEnhanced') setShowAtrSettings(true); if (key === 'macdEnhanced') setShowMacdSettings(true); }}
                           >
@@ -5067,7 +5067,7 @@ export const KLineChartComponent = ({
                         <button
                           type="button"
                           title="Configure"
-                          className="w-6 h-6 grid place-items-center text-gray-600 hover:text-blue-600"
+                          className="w-6 h-6 grid place-items-center text-gray-600 hover:text-emerald-600"
                           aria-label={`Configure ${LABELS[key] || key}`}
                           onClick={() => {
                             if (key === 'emaTouch') setShowEmaTouchSettings(true);

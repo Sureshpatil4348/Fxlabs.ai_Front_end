@@ -7,6 +7,21 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - KLineChart Fullscreen: Fixed the Indicators dropdown not opening/clicking in fullscreen by raising its portal z-index above the fullscreen overlay. The dropdown is now always visible and interactive when fullscreen is enabled.
  - KLineChart Below-Panes (RSI/ATR/MACD): Fixed pane-ordering so tables are bound to the correct panes regardless of enable order (e.g., ATR first then RSI). Overlays now compute offsets from the bottom (last-created pane sits at the bottom), aligned with our deterministic creation order (RSI → ATR → MACD).
 
+## KLinechart Green Active States
+
+- Updated bluish active UI to match the green tone used by the Dashboard “Analysis” tab.
+- Changes are limited to active states only (no broad palette changes):
+  - Timeframe selection: active timeframe now uses an emerald/green gradient.
+    - File: `src/components/widget/components/TradingViewHeader.jsx`
+  - Indicators panel: active switch state changed from blue to emerald.
+    - File: `src/components/widget/components/TradingViewHeader.jsx`
+  - Drawing tools: active tool styles updated from blue to emerald.
+    - Files: `src/components/widget/components/KLineDrawingToolbar.jsx`, `src/components/widget/components/Sidebar.jsx`
+  - Presets: active preset button now uses emerald/green gradient.
+    - File: `src/components/widget/TradingChart.jsx`
+- Notes: Save/confirm buttons remain unchanged (blue) to avoid unintended UI shifts. Only “active” states were updated per request.
+
+
 ## Trend Strategy (EMA Touch) – Entry Line
 
 - Location: `Trading` → KLineChart (advanced widget). Toggle "Trend Strategy" in the indicator list.
