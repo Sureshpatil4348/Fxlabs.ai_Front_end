@@ -1577,8 +1577,35 @@ export const KLineChartComponent = ({
           });
         }
 
-        // With stop selected: draw risk rectangle and SL line/label
+        // With stop selected: validate direction first, then draw risk rectangle and SL line/label
         if (c1 && Number.isFinite(c1?.y) && Number.isFinite(c0?.y)) {
+          // SHORT position requires SL above entry (smaller y in pixels)
+          const isDirectionValid = c1.y < c0.y;
+          overlay.__invalidDirection = !isDirectionValid;
+          if (!isDirectionValid) {
+            // Block opposite direction: render an inline warning and skip shapes
+            const warnY = Math.min(c0.y, c1.y) - 8;
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: warnY,
+                text: 'Invalid for Short: SL must be above Entry',
+                align: 'left',
+                baseline: 'bottom',
+              },
+              styles: {
+                backgroundColor: 'rgba(239,68,68,0.92)',
+                borderSize: 0,
+                text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+            return figures;
+          }
           const riskTop = Math.min(c0.y, c1.y);
           const riskBottom = Math.max(c0.y, c1.y);
           figures.push({
@@ -1763,6 +1790,17 @@ export const KLineChartComponent = ({
         console.log('📉 Short Position drawing step:', step, 'points:', overlay?.points);
       },
       onDrawEnd: ({ overlay }) => {
+        try {
+          if (overlay && overlay.__invalidDirection) {
+            const chart = chartRef.current;
+            const id = overlay?.id;
+            if (chart && id) {
+              try { chart.removeOverlay({ id }); } catch (_) { try { chart.removeOverlay(id); } catch (_) { /* ignore */ } }
+            }
+            console.warn('Blocked Short Position with invalid direction');
+            return;
+          }
+        } catch (_) { /* ignore */ }
         console.log('📉 Short Position tool drawn:', overlay);
       },
     });
@@ -1834,8 +1872,35 @@ export const KLineChartComponent = ({
           });
         }
 
-        // With stop selected: draw risk rectangle and SL line/label
+        // With stop selected: validate direction first, then draw risk rectangle and SL line/label
         if (c1 && Number.isFinite(c1?.y) && Number.isFinite(c0?.y)) {
+          // LONG position requires SL below entry (larger y in pixels)
+          const isDirectionValid = c1.y > c0.y;
+          overlay.__invalidDirection = !isDirectionValid;
+          if (!isDirectionValid) {
+            // Block opposite direction: render an inline warning and skip shapes
+            const warnY = Math.max(c0.y, c1.y) + 8;
+            figures.push({
+              type: 'text',
+              attrs: {
+                x: xLeft + 4,
+                y: warnY,
+                text: 'Invalid for Long: SL must be below Entry',
+                align: 'left',
+                baseline: 'top',
+              },
+              styles: {
+                backgroundColor: 'rgba(239,68,68,0.92)',
+                borderSize: 0,
+                text: { color: '#ffffff', size: 11, weight: '600' },
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
+              },
+            });
+            return figures;
+          }
           const riskTop = Math.min(c0.y, c1.y);
           const riskBottom = Math.max(c0.y, c1.y);
           figures.push({
@@ -2021,6 +2086,17 @@ export const KLineChartComponent = ({
         console.log('📈 Long Position drawing step:', step, 'points:', overlay?.points);
       },
       onDrawEnd: ({ overlay }) => {
+        try {
+          if (overlay && overlay.__invalidDirection) {
+            const chart = chartRef.current;
+            const id = overlay?.id;
+            if (chart && id) {
+              try { chart.removeOverlay({ id }); } catch (_) { try { chart.removeOverlay(id); } catch (_) { /* ignore */ } }
+            }
+            console.warn('Blocked Long Position with invalid direction');
+            return;
+          }
+        } catch (_) { /* ignore */ }
         console.log('📈 Long Position tool drawn:', overlay);
       },
     });
