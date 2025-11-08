@@ -4600,14 +4600,18 @@ export const KLineChartComponent = ({
 
           {/* Hover actions for below-chart indicator panes */}
           {(() => {
+            // Use a deterministic visual order that matches indicator creation order.
+            // Creation order is: rsiEnhanced, atrEnhanced, macdEnhanced. In KLineCharts,
+            // the first created below-pane sits at the bottom; subsequent panes stack above it.
             const fallbackKeys = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
-            const activeBelow = (Array.isArray(belowPaneOrder) && belowPaneOrder.length > 0
-              ? belowPaneOrder.filter((k) => settings?.indicators?.[k])
-              : fallbackKeys.filter((k) => settings?.indicators?.[k]));
+            const activeBelow = fallbackKeys.filter((k) => settings?.indicators?.[k]);
             if (activeBelow.length === 0 || isWorkspaceHidden) return null;
             return (
               <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 60 }}>
                 {activeBelow.map((key, idx) => {
+                  // Align overlay containers with the final pane order we create (RSI → ATR → MACD).
+                  // New panes are appended; the last created sits at the bottom.
+                  // Therefore, compute bottom offset from the end of the active list.
                   const bottomOffset = (activeBelow.length - 1 - idx) * 120;
                   // Determine readable indicator label (no extra badge or color dot)
                   const label = key === 'rsiEnhanced' ? 'RSI' : key === 'atrEnhanced' ? 'ATR' : 'MACD';

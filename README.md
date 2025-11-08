@@ -5,6 +5,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ## UI Fixes
 
 - KLineChart Fullscreen: Fixed the Indicators dropdown not opening/clicking in fullscreen by raising its portal z-index above the fullscreen overlay. The dropdown is now always visible and interactive when fullscreen is enabled.
+ - KLineChart Below-Panes (RSI/ATR/MACD): Fixed pane-ordering so tables are bound to the correct panes regardless of enable order (e.g., ATR first then RSI). Overlays now compute offsets from the bottom (last-created pane sits at the bottom), aligned with our deterministic creation order (RSI → ATR → MACD).
 
 ## Trend Strategy (EMA Touch) – Entry Line
 
