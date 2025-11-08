@@ -44,13 +44,13 @@ export const KLineDrawingToolbar = ({ chartRef, onToolChange }) => {
     {
       id: 'shortPosition',
       name: 'Short Position',
-      icon: '📉',
+      icon: '📈',
       description: 'Plan a short trade: Entry + SL (TP auto, RR=1)'
     },
     {
       id: 'longPosition',
       name: 'Long Position',
-      icon: '📈',
+      icon: '📉',
       description: 'Plan a long trade: Entry + SL (TP auto, RR=1)'
     },
     {
