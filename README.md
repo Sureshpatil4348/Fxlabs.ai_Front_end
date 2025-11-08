@@ -65,6 +65,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
   - Default KLine legends are suppressed to keep panes clean and readable.
   - On-chart indicator labels and drawing tool panels follow the same no‑card style (no border/background); only text and icons overlay the chart.
 
+## KLineChart Action Panel Order
+
+- All drawing tool and indicator action panels now strictly follow: Color, Configure, Delete.
+- No actions were added or removed — only ordering was adjusted to be consistent and predictable.
+
 ## Price Precision (5 Decimals)
 
 - Prices across kline/candlestick charts and related UI now default to 5 decimal places.
