@@ -166,7 +166,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[11000]">
       <div 
         ref={modalRef}
         className="bg-white rounded-lg shadow-2xl w-[90vw] max-w-4xl h-[80vh] max-h-[600px] flex flex-col"
