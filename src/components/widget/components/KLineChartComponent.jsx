@@ -1571,7 +1571,9 @@ export const KLineChartComponent = ({
             styles: {
               backgroundColor: 'transparent',
               borderSize: 0,
-              text: { color: '#111827', size: 11, weight: '600' },
+              color: '#065f46',
+              size: 11,
+              weight: '600',
             },
           });
         }
