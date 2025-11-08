@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-
 import { createChart } from 'lightweight-charts';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { formatPrice as formatPriceUtil } from '../../../utils/formatters';
 
