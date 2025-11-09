@@ -14,6 +14,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Annotations**: Rectangle zones and text labels
 - **Drawing Tool Restrictions**: All drawing tools are restricted to the main candle pane only. Drawing on below-chart indicator panes (RSI, MACD, etc.) is prevented for clarity and to avoid confusion.
 - **Quick Delete for Drawings**: All tools — including Long Position and Short Position — now show a small floating delete action when selected, consistent with other drawing tools.
+- **Interactive Tooltips**: Hover tooltips show tool names on hover. On click, an instant non-intrusive toast notification appears with the selected tool name, auto-dismissing after 2 seconds.
 
 ## Notes
 - klinecharts v10 convention: `totalStep = number of user clicks + 1` for automatic finalization

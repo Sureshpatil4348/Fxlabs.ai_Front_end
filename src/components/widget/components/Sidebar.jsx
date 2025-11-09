@@ -19,13 +19,52 @@ export const Sidebar = () => {
     clearAllDrawings
   } = useDrawingTools();
 
+  // Toast notification state
+  const [clickToast, setClickToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  // Show click toast helper
+  const showClickToast = (toolName, position) => {
+    // Clear any existing timeout
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    
+    setClickToast({ toolName, position });
+    
+    // Auto-dismiss after 2 seconds
+    toastTimeoutRef.current = setTimeout(() => {
+      setClickToast(null);
+    }, 2000);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // KLine drawing tools handlers
-  const handleKLineToolSelect = (toolId) => {
+  const handleKLineToolSelect = (toolId, toolName, event) => {
     if (klineChartRef && klineChartRef._handleDrawingToolChange) {
       try {
         klineChartRef._handleDrawingToolChange(toolId);
         setActiveTool(toolId);
         console.log('📈 KLine Drawing tool activated:', toolId);
+        
+        // Show click toast positioned next to the clicked button
+        if (event && event.currentTarget) {
+          const rect = event.currentTarget.getBoundingClientRect();
+          showClickToast(toolName, {
+            top: rect.top + rect.height / 2,
+            left: rect.right + 12
+          });
+        } else {
+          showClickToast(toolName);
+        }
       } catch (error) {
         console.warn('📈 Error activating KLine drawing tool:', error);
       }
@@ -232,6 +271,22 @@ export const Sidebar = () => {
   
   return (
     <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-0.5 h-full min-h-0 overflow-y-auto">
+      {/* Click Toast Notification */}
+      {clickToast && (
+        <div 
+          className="fixed z-[9999] fade-in"
+          style={{
+            top: clickToast.position ? `${clickToast.position.top}px` : '112px',
+            left: clickToast.position ? `${clickToast.position.left}px` : '64px',
+            transform: clickToast.position ? 'translateY(-50%)' : undefined
+          }}
+        >
+          <div className="bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white px-4 py-1 rounded-lg shadow-md">
+            <span className="text-sm font-semibold">{clickToast.toolName}</span>
+          </div>
+        </div>
+      )}
+
       {/* Cursor Types: moved to top; outlined icons, active = blue */}
       <CursorMenu
         current={settings.cursorType}
@@ -242,7 +297,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('trendLine')}
+          onClick={(e) => handleKLineToolSelect('trendLine', 'Trend Line', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'trendLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -264,7 +319,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('horizontalLine')}
+          onClick={(e) => handleKLineToolSelect('horizontalLine', 'Horizontal Line', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'horizontalLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -282,7 +337,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('verticalLine')}
+          onClick={(e) => handleKLineToolSelect('verticalLine', 'Vertical Line', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'verticalLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -300,7 +355,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('fibonacci')}
+          onClick={(e) => handleKLineToolSelect('fibonacci', 'Fib Retracement', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'fibonacci' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -319,7 +374,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('fibExtension')}
+          onClick={(e) => handleKLineToolSelect('fibExtension', 'Fib Extension (3pt)', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'fibExtension' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -337,7 +392,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('rectangle')}
+          onClick={(e) => handleKLineToolSelect('rectangle', 'Rectangle', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'rectangle' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -355,7 +410,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('shortPosition')}
+          onClick={(e) => handleKLineToolSelect('shortPosition', 'Short Position', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'shortPosition' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -374,7 +429,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('longPosition')}
+          onClick={(e) => handleKLineToolSelect('longPosition', 'Long Position', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'longPosition' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
@@ -393,7 +448,7 @@ export const Sidebar = () => {
       <div className="relative group">
         <button
           type="button"
-          onClick={() => handleKLineToolSelect('text')}
+          onClick={(e) => handleKLineToolSelect('text', 'Text', e)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
             activeTool === 'text' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
