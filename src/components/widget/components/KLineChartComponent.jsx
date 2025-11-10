@@ -1353,9 +1353,9 @@ export const KLineChartComponent = ({
           },
         });
       }
-      // Register MACD_ENH (below-chart)
-      if (Array.isArray(supported) && !supported.includes('MACD_ENH')) {
-        registerIndicator({
+      // Register/re-register MACD_ENH (below-chart) every mount to ensure latest styles/params apply
+      // (The library allows overriding existing indicator definitions by name.)
+      registerIndicator({
           name: 'MACD_ENH',
           shortName: 'MACD',
           precision: 4,
@@ -1364,10 +1364,26 @@ export const KLineChartComponent = ({
             { key: 'macd', title: 'MACD: ', type: 'line' },
             { key: 'signal', title: 'SIGNAL: ', type: 'line' },
             { key: 'zero', title: '', type: 'line' }, // zero line for reference
-            { key: 'histPS', title: 'HPS: ', type: 'bar' }, // pos strong
-            { key: 'histPW', title: 'HPW: ', type: 'bar' }, // pos weak
-            { key: 'histNW', title: 'HNW: ', type: 'bar' }, // neg weak
-            { key: 'histNS', title: 'HNS: ', type: 'bar' }, // neg strong
+            // Single histogram series anchored to zero with dynamic color (strong/weak bull/bear)
+            {
+              key: 'hist',
+              title: 'HIST: ',
+              type: 'bar',
+              baseValue: 0,
+              styles: ({ data }) => {
+                const prev = (data?.prev?.hist ?? 0);
+                const cur = (data?.current?.hist ?? 0);
+                let color = 'rgba(107,114,128,0.5)'; // neutral when zero/undefined
+                if (cur > 0) {
+                  // bullish: strong if growing vs previous, weak if fading
+                  color = cur > prev ? '#26A69A' : 'rgba(38,166,154,0.5)';
+                } else if (cur < 0) {
+                  // bearish: strong if expanding further below zero, weak if recovering
+                  color = cur < prev ? '#EF5350' : 'rgba(239,83,80,0.5)';
+                }
+                return { color, borderColor: color };
+              }
+            },
           ],
           calc: (dataList, indicator) => {
             const [fastLen, slowLen, sigLen, src] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [12, 26, 9, 'close'];
@@ -1395,27 +1411,15 @@ export const KLineChartComponent = ({
               const macd = (emaFast - emaSlow);
               emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
               const hist = macd - emaSignal;
-              const prevHist = i > 0 ? ((arr[i - 1].__macdHist) ?? 0) : 0;
-              // 4-level histogram splits
-              const posStrong = hist > 0 && hist > prevHist ? hist : NaN;
-              const posWeak = hist > 0 && hist <= prevHist ? hist : NaN;
-              const negWeak = hist <= 0 && hist > prevHist ? hist : NaN;
-              const negStrong = hist <= 0 && hist <= prevHist ? hist : NaN;
-              // stash for next comparison
-              k.__macdHist = hist;
               return {
                 macd,
                 signal: emaSignal,
                 zero: 0,
-                histPS: posStrong,
-                histPW: posWeak,
-                histNW: negWeak,
-                histNS: negStrong,
+                hist,
               };
             });
           },
         });
-      }
       // Register RSI_BOUNDS (Overbought/Oversold constant lines) for RSI pane
       if (Array.isArray(supported) && !supported.includes('RSI_BOUNDS')) {
         registerIndicator({
@@ -3891,6 +3895,9 @@ export const KLineChartComponent = ({
                 };
               }
               if (key === 'macdEnhanced') {
+                // Remove any existing MACD pane/instance first to avoid duplicates or stale styles
+                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) {}
                 indicatorArg = {
                   name: indicatorName,
                   calcParams: config.params.calcParams,
@@ -3898,13 +3905,11 @@ export const KLineChartComponent = ({
                     lines: [
                       { color: '#2962FF', size: 1 }, // MACD
                       { color: '#FF6D00', size: 1 }, // SIGNAL
-                      { color: 'rgba(107,114,128,0.5)', size: 1 }, // ZERO
+                      { color: 'rgba(107,114,128,0.5)', size: 2 }, // ZERO
                     ],
                     bars: [
-                      { upColor: '#26A69A', downColor: '#26A69A' }, // strong bull
-                      { upColor: 'rgba(38,166,154,0.5)', downColor: 'rgba(38,166,154,0.5)' }, // weak bull
-                      { upColor: 'rgba(239,83,80,0.5)', downColor: 'rgba(239,83,80,0.5)' }, // weak bear
-                      { upColor: '#EF5350', downColor: '#EF5350' }, // strong bear
+                      // Used by the histogram figure's styles callback as default fallbacks
+                      { upColor: '#26A69A', downColor: '#EF5350', noChangeColor: 'rgba(107,114,128,0.5)' },
                     ],
                   },
                 };

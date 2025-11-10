@@ -16,5 +16,8 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Quick Delete for Drawings**: All tools — including Long Position and Short Position — now show a small floating delete action when selected, consistent with other drawing tools.
 - **Interactive Tooltips**: Hover tooltips show tool names on hover. On click, an instant non-intrusive toast notification appears with the selected tool name, auto-dismissing after 2 seconds.
 
+### Indicators
+- **MACD Pro**: Adds vertical histogram columns (green/red) anchored at the zero line for momentum visualization, alongside MACD and Signal lines.
+
 ## Notes
 - klinecharts v10 convention: `totalStep = number of user clicks + 1` for automatic finalization
