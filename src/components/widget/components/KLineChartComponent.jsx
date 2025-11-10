@@ -1117,7 +1117,7 @@ export const KLineChartComponent = ({
             let openingHigh = NaN;
             let openingLow = NaN;
             let orStartIdx = -1;
-            let orEndIdx = -1;
+            let _orEndIdx = -1;
             let captured = false;
             let buyTaken = false;
             let sellTaken = false;
@@ -1131,8 +1131,8 @@ export const KLineChartComponent = ({
             let buySLHit = false;
             let sellTPHit = false;
             let sellSLHit = false;
-            let buySignalBar = -1;
-            let sellSignalBar = -1;
+            let _buySignalBar = -1;
+            let _sellSignalBar = -1;
 
             return dataList.map((k, i) => {
               // Robust timestamp handling: accept seconds or milliseconds; fallback to k.time
@@ -1147,7 +1147,7 @@ export const KLineChartComponent = ({
                 openingHigh = NaN;
                 openingLow = NaN;
                 orStartIdx = -1;
-                orEndIdx = -1;
+                _orEndIdx = -1;
                 captured = false;
                 buyTaken = false;
                 sellTaken = false;
@@ -1161,8 +1161,8 @@ export const KLineChartComponent = ({
                 buySLHit = false;
                 sellTPHit = false;
                 sellSLHit = false;
-                buySignalBar = -1;
-                sellSignalBar = -1;
+                _buySignalBar = -1;
+                _sellSignalBar = -1;
               }
 
               const isOpening = d.getHours() === Number(h) && d.getMinutes() === Number(m) && !captured;
@@ -1170,7 +1170,7 @@ export const KLineChartComponent = ({
                 openingHigh = k.high;
                 openingLow = k.low;
                 orStartIdx = i;
-                orEndIdx = i;
+                _orEndIdx = i;
                 captured = true;
               }
 
@@ -1178,7 +1178,7 @@ export const KLineChartComponent = ({
               if (captured && orStartIdx >= 0 && (i - orStartIdx) < Number(orPeriod)) {
                 openingHigh = Math.max(openingHigh, k.high);
                 openingLow = Math.min(openingLow, k.low);
-                orEndIdx = i;
+                _orEndIdx = i;
               }
 
               const range = isFinite(openingHigh) && isFinite(openingLow) ? (openingHigh - openingLow) : NaN;
@@ -1190,7 +1190,7 @@ export const KLineChartComponent = ({
                 buyEntry = k.close;
                 buyTP = openingHigh + range * Number(rr);
                 buySL = openingLow;
-                buySignalBar = i;
+                _buySignalBar = i;
               }
 
               // Sell signal detection
@@ -1199,7 +1199,7 @@ export const KLineChartComponent = ({
                 sellEntry = k.close;
                 sellTP = openingLow - range * Number(rr);
                 sellSL = openingHigh;
-                sellSignalBar = i;
+                _sellSignalBar = i;
               }
 
               // Check TP/SL hits for buy trade
@@ -1247,7 +1247,7 @@ export const KLineChartComponent = ({
             });
           },
           // Custom drawing for markers, annotations, and labels
-          draw: ({ ctx, barSpace, visibleRange, indicator, xAxis, yAxis }) => {
+          draw: ({ ctx, barSpace: _barSpace, visibleRange, indicator, xAxis, yAxis }) => {
             if (!indicator || !indicator.result || !visibleRange || !xAxis || !yAxis) return;
 
             const results = indicator.result;
@@ -1260,8 +1260,8 @@ export const KLineChartComponent = ({
             let sellSLHit = false;
             let buyEntryBar = -1;
             let sellEntryBar = -1;
-            let buyEntryPrice = NaN;
-            let sellEntryPrice = NaN;
+            let _buyEntryPrice = NaN;
+            let _sellEntryPrice = NaN;
 
             // First pass: find entry bars and TP/SL hit states
             for (let i = 0; i < results.length; i++) {
@@ -1272,14 +1272,14 @@ export const KLineChartComponent = ({
               if (data?.buyEntry && isFinite(data.buyEntry) && 
                   (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
                 buyEntryBar = i;
-                buyEntryPrice = data.buyEntry;
+                _buyEntryPrice = data.buyEntry;
               }
               
               // Detect sell entry
               if (data?.sellEntry && isFinite(data.sellEntry) && 
                   (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
                 sellEntryBar = i;
-                sellEntryPrice = data.sellEntry;
+                _sellEntryPrice = data.sellEntry;
               }
 
               // Check buy TP/SL hits (simplified check based on presence of zones)
