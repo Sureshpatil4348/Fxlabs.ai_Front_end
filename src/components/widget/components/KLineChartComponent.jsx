@@ -1084,7 +1084,7 @@ export const KLineChartComponent = ({
           },
         });
       }
-      // Register ORB_ENH (Opening Range Breakout - on chart)
+      // Register ORB_ENH (Opening Range Breakout - Enhanced with boxes, fills, markers)
       if (Array.isArray(supported) && !supported.includes('ORB_ENH')) {
         registerIndicator({
           name: 'ORB_ENH',
@@ -1099,6 +1099,17 @@ export const KLineChartComponent = ({
             { key: 'sellTP', title: 'Sell TP: ', type: 'line' },
             { key: 'buySL', title: 'Buy SL: ', type: 'line' },
             { key: 'sellSL', title: 'Sell SL: ', type: 'line' },
+            { key: 'buyEntry', title: 'Buy Entry: ', type: 'line' },
+            { key: 'sellEntry', title: 'Sell Entry: ', type: 'line' },
+            // Filled zones for profit/loss visualization
+            { key: 'buyProfitZoneTop', title: '', type: 'line' },
+            { key: 'buyProfitZoneBottom', title: '', type: 'line' },
+            { key: 'buyRiskZoneTop', title: '', type: 'line' },
+            { key: 'buyRiskZoneBottom', title: '', type: 'line' },
+            { key: 'sellProfitZoneTop', title: '', type: 'line' },
+            { key: 'sellProfitZoneBottom', title: '', type: 'line' },
+            { key: 'sellRiskZoneTop', title: '', type: 'line' },
+            { key: 'sellRiskZoneBottom', title: '', type: 'line' },
           ],
           calc: (dataList, indicator) => {
             const [h, m, orPeriod, rr] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [9, 15, 1, 4.0];
@@ -1106,62 +1117,111 @@ export const KLineChartComponent = ({
             let openingHigh = NaN;
             let openingLow = NaN;
             let orStartIdx = -1;
+            let orEndIdx = -1;
             let captured = false;
             let buyTaken = false;
             let sellTaken = false;
-            let _buyEntry = NaN;
-            let _sellEntry = NaN;
+            let buyEntry = NaN;
+            let sellEntry = NaN;
             let buyTP = NaN;
             let sellTP = NaN;
             let buySL = NaN;
             let sellSL = NaN;
+            let buyTPHit = false;
+            let buySLHit = false;
+            let sellTPHit = false;
+            let sellSLHit = false;
+            let buySignalBar = -1;
+            let sellSignalBar = -1;
+
             return dataList.map((k, i) => {
               // Robust timestamp handling: accept seconds or milliseconds; fallback to k.time
               const rawTime = (k.timestamp ?? k.time ?? 0);
               const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime; // if < year 2000 in ms, treat as seconds
               const d = new Date(tsMs);
               const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+              
               if (dayKey !== lastDay) {
                 // reset for new day
                 lastDay = dayKey;
                 openingHigh = NaN;
                 openingLow = NaN;
                 orStartIdx = -1;
+                orEndIdx = -1;
                 captured = false;
                 buyTaken = false;
                 sellTaken = false;
-                _buyEntry = NaN;
-                _sellEntry = NaN;
+                buyEntry = NaN;
+                sellEntry = NaN;
                 buyTP = NaN;
                 sellTP = NaN;
                 buySL = NaN;
                 sellSL = NaN;
+                buyTPHit = false;
+                buySLHit = false;
+                sellTPHit = false;
+                sellSLHit = false;
+                buySignalBar = -1;
+                sellSignalBar = -1;
               }
+
               const isOpening = d.getHours() === Number(h) && d.getMinutes() === Number(m) && !captured;
               if (isOpening) {
                 openingHigh = k.high;
                 openingLow = k.low;
                 orStartIdx = i;
+                orEndIdx = i;
                 captured = true;
               }
+
+              // Update range during opening period
               if (captured && orStartIdx >= 0 && (i - orStartIdx) < Number(orPeriod)) {
                 openingHigh = Math.max(openingHigh, k.high);
                 openingLow = Math.min(openingLow, k.low);
+                orEndIdx = i;
               }
+
               const range = isFinite(openingHigh) && isFinite(openingLow) ? (openingHigh - openingLow) : NaN;
               const prev = dataList[i - 1] || k;
+
+              // Buy signal detection
               if (captured && isFinite(range) && !buyTaken && k.close > openingHigh && prev.close <= openingHigh) {
                 buyTaken = true;
-                _buyEntry = k.close;
+                buyEntry = k.close;
                 buyTP = openingHigh + range * Number(rr);
                 buySL = openingLow;
+                buySignalBar = i;
               }
+
+              // Sell signal detection
               if (captured && isFinite(range) && !sellTaken && k.close < openingLow && prev.close >= openingLow) {
                 sellTaken = true;
-                _sellEntry = k.close;
+                sellEntry = k.close;
                 sellTP = openingLow - range * Number(rr);
                 sellSL = openingHigh;
+                sellSignalBar = i;
               }
+
+              // Check TP/SL hits for buy trade
+              if (buyTaken && !buyTPHit && !buySLHit) {
+                if (isFinite(buyTP) && k.high >= buyTP) {
+                  buyTPHit = true;
+                }
+                if (isFinite(buySL) && k.low <= buySL) {
+                  buySLHit = true;
+                }
+              }
+
+              // Check TP/SL hits for sell trade
+              if (sellTaken && !sellTPHit && !sellSLHit) {
+                if (isFinite(sellTP) && k.low <= sellTP) {
+                  sellTPHit = true;
+                }
+                if (isFinite(sellSL) && k.high >= sellSL) {
+                  sellSLHit = true;
+                }
+              }
+
               return {
                 orHigh: captured && isFinite(openingHigh) ? openingHigh : NaN,
                 orLow: captured && isFinite(openingLow) ? openingLow : NaN,
@@ -1169,8 +1229,302 @@ export const KLineChartComponent = ({
                 sellTP: sellTaken && isFinite(sellTP) ? sellTP : NaN,
                 buySL: buyTaken && isFinite(buySL) ? buySL : NaN,
                 sellSL: sellTaken && isFinite(sellSL) ? sellSL : NaN,
+                buyEntry: buyTaken && isFinite(buyEntry) ? buyEntry : NaN,
+                sellEntry: sellTaken && isFinite(sellEntry) ? sellEntry : NaN,
+                // Buy profit zone (entry to TP)
+                buyProfitZoneTop: buyTaken && isFinite(buyTP) ? buyTP : NaN,
+                buyProfitZoneBottom: buyTaken && isFinite(buyEntry) ? buyEntry : NaN,
+                // Buy risk zone (entry to SL)
+                buyRiskZoneTop: buyTaken && isFinite(buyEntry) ? buyEntry : NaN,
+                buyRiskZoneBottom: buyTaken && isFinite(buySL) ? buySL : NaN,
+                // Sell profit zone (TP to entry)
+                sellProfitZoneTop: sellTaken && isFinite(sellEntry) ? sellEntry : NaN,
+                sellProfitZoneBottom: sellTaken && isFinite(sellTP) ? sellTP : NaN,
+                // Sell risk zone (SL to entry)
+                sellRiskZoneTop: sellTaken && isFinite(sellSL) ? sellSL : NaN,
+                sellRiskZoneBottom: sellTaken && isFinite(sellEntry) ? sellEntry : NaN,
               };
             });
+          },
+          // Custom drawing for markers, annotations, and labels
+          draw: ({ ctx, barSpace, visibleRange, indicator, xAxis, yAxis }) => {
+            if (!indicator || !indicator.result || !visibleRange || !xAxis || !yAxis) return;
+
+            const results = indicator.result;
+            const { from, to } = visibleRange;
+
+            // Track states for TP/SL hit detection
+            let buyTPHit = false;
+            let buySLHit = false;
+            let sellTPHit = false;
+            let sellSLHit = false;
+            let buyEntryBar = -1;
+            let sellEntryBar = -1;
+            let buyEntryPrice = NaN;
+            let sellEntryPrice = NaN;
+
+            // First pass: find entry bars and TP/SL hit states
+            for (let i = 0; i < results.length; i++) {
+              const data = results[i];
+              const prev = i > 0 ? results[i - 1] : null;
+              
+              // Detect buy entry
+              if (data?.buyEntry && isFinite(data.buyEntry) && 
+                  (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
+                buyEntryBar = i;
+                buyEntryPrice = data.buyEntry;
+              }
+              
+              // Detect sell entry
+              if (data?.sellEntry && isFinite(data.sellEntry) && 
+                  (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
+                sellEntryBar = i;
+                sellEntryPrice = data.sellEntry;
+              }
+
+              // Check buy TP/SL hits (simplified check based on presence of zones)
+              if (buyEntryBar >= 0 && i > buyEntryBar && data?.buyTP && data?.buySL) {
+                const rawCandle = indicator.data?.[i];
+                if (rawCandle && isFinite(data.buyTP) && rawCandle.high >= data.buyTP && !buyTPHit) {
+                  buyTPHit = i;
+                }
+                if (rawCandle && isFinite(data.buySL) && rawCandle.low <= data.buySL && !buySLHit) {
+                  buySLHit = i;
+                }
+              }
+
+              // Check sell TP/SL hits
+              if (sellEntryBar >= 0 && i > sellEntryBar && data?.sellTP && data?.sellSL) {
+                const rawCandle = indicator.data?.[i];
+                if (rawCandle && isFinite(data.sellTP) && rawCandle.low <= data.sellTP && !sellTPHit) {
+                  sellTPHit = i;
+                }
+                if (rawCandle && isFinite(data.sellSL) && rawCandle.high >= data.sellSL && !sellSLHit) {
+                  sellSLHit = i;
+                }
+              }
+            }
+
+            // Second pass: draw markers and labels in visible range
+            for (let i = from; i < to && i < results.length; i++) {
+              const data = results[i];
+              if (!data) continue;
+
+              const x = xAxis.convertToPixel(i);
+              const prev = i > 0 ? results[i - 1] : null;
+
+              // Buy entry marker (triangle up)
+              if (data.buyEntry && isFinite(data.buyEntry) && 
+                  (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
+                const y = yAxis.convertToPixel(data.buyEntry);
+                ctx.fillStyle = '#26a69a';
+                ctx.beginPath();
+                ctx.moveTo(x, y + 10);
+                ctx.lineTo(x - 6, y + 20);
+                ctx.lineTo(x + 6, y + 20);
+                ctx.closePath();
+                ctx.fill();
+
+                // Entry label
+                ctx.fillStyle = '#3B82F6';
+                ctx.font = '11px sans-serif';
+                ctx.fillText('ENTRY', x + 10, y);
+              }
+
+              // Sell entry marker (triangle down)
+              if (data.sellEntry && isFinite(data.sellEntry) && 
+                  (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
+                const y = yAxis.convertToPixel(data.sellEntry);
+                ctx.fillStyle = '#ef5350';
+                ctx.beginPath();
+                ctx.moveTo(x, y - 10);
+                ctx.lineTo(x - 6, y - 20);
+                ctx.lineTo(x + 6, y - 20);
+                ctx.closePath();
+                ctx.fill();
+
+                // Entry label
+                ctx.fillStyle = '#3B82F6';
+                ctx.font = '11px sans-serif';
+                ctx.fillText('ENTRY', x + 10, y);
+              }
+
+              // Buy TP hit marker (diamond)
+              if (buyTPHit === i && data.buyTP && isFinite(data.buyTP)) {
+                const y = yAxis.convertToPixel(data.buyTP);
+                ctx.fillStyle = '#26a69a';
+                ctx.beginPath();
+                ctx.moveTo(x, y - 8); // top
+                ctx.lineTo(x + 6, y); // right
+                ctx.lineTo(x, y + 8); // bottom
+                ctx.lineTo(x - 6, y); // left
+                ctx.closePath();
+                ctx.fill();
+
+                // TP label
+                ctx.fillStyle = '#26a69a';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.fillText('TP ✓', x + 10, y);
+              }
+
+              // Buy SL hit marker (X cross)
+              if (buySLHit === i && data.buySL && isFinite(data.buySL)) {
+                const y = yAxis.convertToPixel(data.buySL);
+                ctx.strokeStyle = '#ef5350';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x - 6, y - 6);
+                ctx.lineTo(x + 6, y + 6);
+                ctx.moveTo(x + 6, y - 6);
+                ctx.lineTo(x - 6, y + 6);
+                ctx.stroke();
+
+                // SL label
+                ctx.fillStyle = '#ef5350';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.fillText('SL ✗', x + 10, y);
+              }
+
+              // Sell TP hit marker (diamond)
+              if (sellTPHit === i && data.sellTP && isFinite(data.sellTP)) {
+                const y = yAxis.convertToPixel(data.sellTP);
+                ctx.fillStyle = '#ef5350';
+                ctx.beginPath();
+                ctx.moveTo(x, y - 8); // top
+                ctx.lineTo(x + 6, y); // right
+                ctx.lineTo(x, y + 8); // bottom
+                ctx.lineTo(x - 6, y); // left
+                ctx.closePath();
+                ctx.fill();
+
+                // TP label
+                ctx.fillStyle = '#ef5350';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.fillText('TP ✓', x + 10, y);
+              }
+
+              // Sell SL hit marker (X cross)
+              if (sellSLHit === i && data.sellSL && isFinite(data.sellSL)) {
+                const y = yAxis.convertToPixel(data.sellSL);
+                ctx.strokeStyle = '#26a69a';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x - 6, y - 6);
+                ctx.lineTo(x + 6, y + 6);
+                ctx.moveTo(x + 6, y - 6);
+                ctx.lineTo(x - 6, y + 6);
+                ctx.stroke();
+
+                // SL label
+                ctx.fillStyle = '#26a69a';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.fillText('SL ✗', x + 10, y);
+              }
+
+              // Draw TP/SL price labels at the right edge of visible range
+              if (i === to - 1 || i === results.length - 1) {
+                ctx.font = '11px sans-serif';
+                const padding = 6;
+                const labelX = x + 10;
+
+                // Buy TP label
+                if (data.buyTP && isFinite(data.buyTP)) {
+                  const y = yAxis.convertToPixel(data.buyTP);
+                  ctx.fillStyle = 'rgba(38, 166, 154, 0.9)';
+                  const tpText = `TP: ${data.buyTP.toFixed(5)}`;
+                  const metrics = ctx.measureText(tpText);
+                  ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillText(tpText, labelX, y);
+                }
+
+                // Buy SL label
+                if (data.buySL && isFinite(data.buySL)) {
+                  const y = yAxis.convertToPixel(data.buySL);
+                  ctx.fillStyle = 'rgba(239, 83, 80, 0.9)';
+                  const slText = `SL: ${data.buySL.toFixed(5)}`;
+                  const metrics = ctx.measureText(slText);
+                  ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillText(slText, labelX, y);
+                }
+
+                // Sell TP label
+                if (data.sellTP && isFinite(data.sellTP)) {
+                  const y = yAxis.convertToPixel(data.sellTP);
+                  ctx.fillStyle = 'rgba(239, 83, 80, 0.9)';
+                  const tpText = `TP: ${data.sellTP.toFixed(5)}`;
+                  const metrics = ctx.measureText(tpText);
+                  ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillText(tpText, labelX, y);
+                }
+
+                // Sell SL label
+                if (data.sellSL && isFinite(data.sellSL)) {
+                  const y = yAxis.convertToPixel(data.sellSL);
+                  ctx.fillStyle = 'rgba(38, 166, 154, 0.9)';
+                  const slText = `SL: ${data.sellSL.toFixed(5)}`;
+                  const metrics = ctx.measureText(slText);
+                  ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillText(slText, labelX, y);
+                }
+              }
+            }
+          },
+          // Style callback for filled zones
+          styles: {
+            lines: [
+              { color: '#26a69a', size: 3 }, // OR High (bull color, thicker)
+              { color: '#ef5350', size: 3 }, // OR Low (bear color, thicker)
+              { color: '#26a69a', size: 2, dashedValue: [4, 4] }, // Buy TP (dashed)
+              { color: '#ef5350', size: 2, dashedValue: [4, 4] }, // Sell TP (dashed)
+              { color: '#ef5350', size: 2, dashedValue: [2, 2] }, // Buy SL (dotted)
+              { color: '#26a69a', size: 2, dashedValue: [2, 2] }, // Sell SL (dotted)
+              { color: '#3B82F6', size: 1 }, // Buy Entry (blue)
+              { color: '#3B82F6', size: 1 }, // Sell Entry (blue)
+              // Zone boundaries (transparent, just for fill)
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+              { color: 'transparent', size: 0 },
+            ],
+            // Fill areas between zones
+            areas: [
+              // Buy profit zone fill (green)
+              {
+                start: 'buyProfitZoneTop',
+                end: 'buyProfitZoneBottom',
+                style: 'solid',
+                color: 'rgba(38, 166, 154, 0.07)', // bull color with transparency
+              },
+              // Buy risk zone fill (red)
+              {
+                start: 'buyRiskZoneTop',
+                end: 'buyRiskZoneBottom',
+                style: 'solid',
+                color: 'rgba(239, 83, 80, 0.05)', // bear color with transparency
+              },
+              // Sell profit zone fill (red)
+              {
+                start: 'sellProfitZoneTop',
+                end: 'sellProfitZoneBottom',
+                style: 'solid',
+                color: 'rgba(239, 83, 80, 0.07)', // bear color with transparency
+              },
+              // Sell risk zone fill (green)
+              {
+                start: 'sellRiskZoneTop',
+                end: 'sellRiskZoneBottom',
+                style: 'solid',
+                color: 'rgba(38, 166, 154, 0.05)', // bull color with transparency
+              },
+            ],
           },
         });
       }
@@ -3743,17 +4097,59 @@ export const KLineChartComponent = ({
         console.warn('📈 KLineChart: Error handling MA Enhanced overlay:', e);
       }
 
-      // ORB Enhanced (on-chart Opening Range Breakout)
+      // ORB Enhanced (on-chart Opening Range Breakout with boxes and fills)
       try {
         const wantOrb = Boolean(settings.indicators?.orbEnhanced);
       const orbStyles = {
           lines: [
-            { color: '#26a69a', size: 1 }, // OR High
-            { color: '#ef5350', size: 1 }, // OR Low
-            { color: '#26a69a', size: 1, dashedValue: [4, 4] }, // Buy TP
-            { color: '#ef5350', size: 1, dashedValue: [4, 4] }, // Sell TP
-            { color: '#ef5350', size: 1, dashedValue: [2, 2] }, // Buy SL
-            { color: '#26a69a', size: 1, dashedValue: [2, 2] }, // Sell SL
+            { color: '#26a69a', size: 3 }, // OR High (bull color, thicker)
+            { color: '#ef5350', size: 3 }, // OR Low (bear color, thicker)
+            { color: '#26a69a', size: 2, dashedValue: [4, 4] }, // Buy TP (dashed)
+            { color: '#ef5350', size: 2, dashedValue: [4, 4] }, // Sell TP (dashed)
+            { color: '#ef5350', size: 2, dashedValue: [2, 2] }, // Buy SL (dotted)
+            { color: '#26a69a', size: 2, dashedValue: [2, 2] }, // Sell SL (dotted)
+            { color: '#3B82F6', size: 1 }, // Buy Entry (blue)
+            { color: '#3B82F6', size: 1 }, // Sell Entry (blue)
+            // Zone boundaries (transparent, just for fill)
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+            { color: 'transparent', size: 0 },
+          ],
+          // Fill areas between zones
+          areas: [
+            // Buy profit zone fill (green)
+            {
+              start: 'buyProfitZoneTop',
+              end: 'buyProfitZoneBottom',
+              style: 'solid',
+              color: 'rgba(38, 166, 154, 0.07)', // bull color with transparency
+            },
+            // Buy risk zone fill (red)
+            {
+              start: 'buyRiskZoneTop',
+              end: 'buyRiskZoneBottom',
+              style: 'solid',
+              color: 'rgba(239, 83, 80, 0.05)', // bear color with transparency
+            },
+            // Sell profit zone fill (red)
+            {
+              start: 'sellProfitZoneTop',
+              end: 'sellProfitZoneBottom',
+              style: 'solid',
+              color: 'rgba(239, 83, 80, 0.07)', // bear color with transparency
+            },
+            // Sell risk zone fill (green)
+            {
+              start: 'sellRiskZoneTop',
+              end: 'sellRiskZoneBottom',
+              style: 'solid',
+              color: 'rgba(38, 166, 154, 0.05)', // bull color with transparency
+            },
           ],
         };
         const existingOrb = typeof chartRef.current.getIndicators === 'function'
@@ -3771,7 +4167,7 @@ export const KLineChartComponent = ({
           const targetRR = Math.max(0.5, Number(orbCfg.targetRR) || 4.0);
           const indicatorArg = { name: 'ORB_ENH', calcParams: [startHour, startMinute, orPeriod, targetRR], styles: orbStyles };
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
-          console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane');
+          console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane with boxes and fills');
         } else if (hasOrb) {
           chartRef.current.removeIndicator({ name: 'ORB_ENH' });
           console.log('📈 KLineChart: ORB Enhanced overlay removed');

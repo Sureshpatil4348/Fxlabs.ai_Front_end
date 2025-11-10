@@ -18,6 +18,26 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ### Indicators
 - **MACD Pro**: Adds vertical histogram columns (green/red) anchored at the zero line for momentum visualization, alongside MACD and Signal lines.
+- **Opening Range Breakout (ORB) Enhanced**: Advanced breakout strategy indicator with comprehensive visual feedback
+  - **Opening Range Detection**: Identifies and highlights the opening price range based on configurable time (default: 9:15) and period duration
+  - **Breakout Signals**: 
+    - Buy signals (▲ green triangle) when price breaks above opening high
+    - Sell signals (▼ red triangle) when price breaks below opening low
+  - **Risk Management**:
+    - Automatic TP (Take Profit) calculation using configurable Risk:Reward ratio (default 1:4)
+    - SL (Stop Loss) set at opposite boundary of opening range
+    - Entry price tracking with blue horizontal lines
+  - **Visual Elements**:
+    - **Opening Range Lines**: Thick green (high) and red (low) lines marking the range boundaries
+    - **TP/SL Lines**: Dashed lines for TP levels, dotted lines for SL levels
+    - **Filled Zones**: 
+      - Green translucent zones showing profit areas (Entry to TP)
+      - Red translucent zones showing risk areas (Entry to SL)
+    - **Entry Markers**: Triangle markers at breakout points with "ENTRY" labels
+    - **TP Hit Markers**: Diamond shapes (◆) with "TP ✓" labels when take profit is reached
+    - **SL Hit Markers**: X-cross marks with "SL ✗" labels when stop loss is triggered
+    - **Price Labels**: Real-time TP and SL price labels at the right edge of the chart
+  - **Configuration**: Adjustable start hour/minute, opening range period, and Risk:Reward ratio
 
 ## Notes
 - klinecharts v10 convention: `totalStep = number of user clicks + 1` for automatic finalization
