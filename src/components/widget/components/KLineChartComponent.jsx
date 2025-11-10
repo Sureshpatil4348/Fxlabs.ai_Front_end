@@ -1397,7 +1397,7 @@ export const KLineChartComponent = ({
             const kf = 2 / (fl + 1);
             const ks = 2 / (sl + 1);
             const ks2 = 2 / (sg + 1);
-            return dataList.map((k, i, arr) => {
+            return dataList.map((k) => {
               const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
               let price = c;
               if (source === 'open') price = o;
