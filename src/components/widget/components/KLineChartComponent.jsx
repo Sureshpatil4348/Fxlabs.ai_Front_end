@@ -1965,7 +1965,7 @@ export const KLineChartComponent = ({
         
         const c0 = px[0] || coordinates?.[0]; // entry
         if (!c0) return figures;
-        const width = POSITION_OVERLAY_WIDTH_PX;
+        const width = (typeof overlay?.widthPx === 'number' && overlay.widthPx > 0) ? overlay.widthPx : POSITION_OVERLAY_WIDTH_PX;
         const xLeft = (typeof c0?.x === 'number') ? c0.x : 0;
         const xRight = xLeft + width;
 
@@ -2171,6 +2171,12 @@ export const KLineChartComponent = ({
             attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
+          // Width handle: right-middle circle at the meeting line (entry line)
+          figures.push({
+            type: 'circle',
+            attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'fill', color: '#374151', borderColor: '#ffffff', borderSize: 1 }
+          });
           figures.push({
             type: 'text',
             attrs: {
@@ -2284,7 +2290,7 @@ export const KLineChartComponent = ({
         } catch (_) { px = []; }
         const c0 = px[0] || coordinates?.[0]; // entry
         if (!c0) return figures;
-        const width = POSITION_OVERLAY_WIDTH_PX;
+        const width = (typeof overlay?.widthPx === 'number' && overlay.widthPx > 0) ? overlay.widthPx : POSITION_OVERLAY_WIDTH_PX;
         const xLeft = (typeof c0?.x === 'number') ? c0.x : 0;
         const xRight = xLeft + width;
 
@@ -2489,6 +2495,12 @@ export const KLineChartComponent = ({
             type: 'circle',
             attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
+          });
+          // Width handle: right-middle circle at entry line
+          figures.push({
+            type: 'circle',
+            attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'fill', color: '#374151', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
             type: 'text',
@@ -5058,7 +5070,7 @@ export const KLineChartComponent = ({
                   const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null; // entry
                   if (!c1) return;
                   const xLeft = c1.x;
-                  const width = POSITION_OVERLAY_WIDTH_PX;
+                  const width = (typeof ov?.widthPx === 'number' && ov.widthPx > 0) ? ov.widthPx : POSITION_OVERLAY_WIDTH_PX;
                   const xRight = xLeft + width;
                   const entryY = c1.y;
                   // Resolve stop/target Y using overlay values if present
@@ -5085,7 +5097,9 @@ export const KLineChartComponent = ({
                   const riskHandleY = (stopY < entryY) ? riskTop : riskBottom;
                   const rewardHandleY = (yTP < entryY) ? rewardTop : rewardBottom;
                   const near = (cx, cy) => Math.hypot(clickX - cx, clickY - cy) <= (POSITION_HANDLE_RADIUS_PX + 4);
-                  // Prefer handle hits over move
+                  // Prefer width handle (right-middle) over others
+                  if (!found && near(xRight, entryY)) { found = { overlay: ov, c1, dragType: 'width', startWidth: width }; return; }
+                  // Prefer corner handles over move
                   if (!found && near(xLeft, riskHandleY)) { found = { overlay: ov, c1, dragType: 'risk' }; return; }
                   if (!found && near(xLeft, rewardHandleY)) { found = { overlay: ov, c1, dragType: 'reward' }; return; }
                   // Fallback: inside overall area initiates move
@@ -5104,6 +5118,7 @@ export const KLineChartComponent = ({
                   startMouseY: clickY,
                   startEntryX: found.c1.x,
                   startEntryY: found.c1.y,
+                  startWidth: (typeof found.startWidth === 'number') ? found.startWidth : undefined,
                 };
                 e.preventDefault();
                 e.stopPropagation();
@@ -5182,6 +5197,14 @@ export const KLineChartComponent = ({
                         }
                       }
                     }
+                  } catch (_) { /* ignore */ }
+                } else if (drag.type === 'width') {
+                  // Resize width by dragging the right-middle handle
+                  try {
+                    const minWidth = 40;
+                    const baseWidth = (typeof drag.startWidth === 'number') ? drag.startWidth : Math.max(minWidth, 0);
+                    const newWidth = Math.max(minWidth, baseWidth + dx);
+                    try { chart.overrideOverlay({ id: drag.id, widthPx: newWidth }); } catch (_) { /* ignore */ }
                   } catch (_) { /* ignore */ }
                 }
                 e.preventDefault();
