@@ -34,6 +34,7 @@ export const KLineChartComponent = ({
   const [selectedOverlayPanel, setSelectedOverlayPanel] = useState(null);
   const inlineEditorActiveRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
+  const positionDragRef = useRef({ active: false, id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 });
   // RSI enhanced UI state
   const [_rsiValue, setRsiValue] = useState(null);
   const [_rsiStatus, setRsiStatus] = useState('NEUTRAL');
@@ -113,6 +114,10 @@ export const KLineChartComponent = ({
     atrPeriod: 10,
     atrMultiplier: 3.0,
   }));
+
+  // Single-click Position tool defaults (shared between render and hit-test)
+  const POSITION_OVERLAY_WIDTH_PX = 120; // horizontal width to the right
+  const POSITION_OVERLAY_RISK_PX = 40; // vertical risk height (reward is 1:1)
 
   // Keep track of programmatically-created ST label overlays (for cleanup)
   const stLabelOverlayIdsRef = useRef([]);
@@ -1937,15 +1942,10 @@ export const KLineChartComponent = ({
       },
     });
 
-    // Register Short Position overlay (TradingView-like, 2-click)
-    // Steps:
-    // 1) Click entry price
-    // 2) Click stop-loss (above entry)
-    // TP is auto-calculated to maintain RR = 1 (symmetric distance)
-    // Renders red (risk) area [entry..SL] and green (reward) area [TP..entry] with RR label.
+    // Register Short Position overlay - Single click (1:1 RR, to the right)
     registerOverlay({
       name: 'shortPosition',
-      totalStep: 3,
+      totalStep: 1,
       createPointFigures: ({ chart, coordinates, overlay, bounding: _bounding }) => {
         const figures = [];
         const pts = overlay?.points || [];
@@ -1962,17 +1962,9 @@ export const KLineChartComponent = ({
         } catch (_) { px = []; }
         
         const c0 = px[0] || coordinates?.[0]; // entry
-        const c1 = px[1] || coordinates?.[1]; // stop
-        
         if (!c0) return figures;
-        
-        const validCoords = [c0, c1].filter(Boolean);
-        const minX = Math.min(...validCoords.map(p => p?.x || 0));
-        const maxX = Math.max(...validCoords.map(p => p?.x || 0));
-        const minWidth = 80; // ensure visible width while drawing
-        const rawWidth = (Number.isFinite(maxX - minX) ? (maxX - minX) : 0);
-        const width = Math.max(minWidth, rawWidth);
-        const xLeft = Number.isFinite(minX) ? minX : (c0?.x || 0);
+        const width = POSITION_OVERLAY_WIDTH_PX;
+        const xLeft = (typeof c0?.x === 'number') ? c0.x : 0;
         const xRight = xLeft + width;
 
         // Entry line + label
@@ -2004,37 +1996,12 @@ export const KLineChartComponent = ({
           });
         }
 
-        // With stop selected: validate direction first, then draw risk rectangle and SL line/label
-        if (c1 && Number.isFinite(c1?.y) && Number.isFinite(c0?.y)) {
-          // SHORT position requires SL above entry (smaller y in pixels)
-          const isDirectionValid = c1.y < c0.y;
-          overlay.__invalidDirection = !isDirectionValid;
-          if (!isDirectionValid) {
-            // Block opposite direction: render an inline warning and skip shapes
-            const warnY = Math.min(c0.y, c1.y) - 8;
-            figures.push({
-              type: 'text',
-              attrs: {
-                x: xLeft + 4,
-                y: warnY,
-                text: 'Invalid for Short: SL must be above Entry',
-                align: 'left',
-                baseline: 'bottom',
-              },
-              styles: {
-                backgroundColor: 'rgba(239,68,68,0.92)',
-                borderSize: 0,
-                text: { color: '#ffffff', size: 11, weight: '600' },
-                paddingLeft: 4,
-                paddingRight: 4,
-                paddingTop: 2,
-                paddingBottom: 2,
-              },
-            });
-            return figures;
-          }
-          const riskTop = Math.min(c0.y, c1.y);
-          const riskBottom = Math.max(c0.y, c1.y);
+        if (Number.isFinite(c0?.y)) {
+          // Risk: above entry by fixed pixels; Reward: below by same pixels
+          const stopY = c0.y - POSITION_OVERLAY_RISK_PX;
+          const tpY = c0.y + POSITION_OVERLAY_RISK_PX;
+          const riskTop = Math.min(c0.y, stopY);
+          const riskBottom = Math.max(c0.y, stopY);
           figures.push({
             type: 'rect',
             attrs: {
@@ -2053,7 +2020,7 @@ export const KLineChartComponent = ({
           figures.push({
             type: 'line',
             attrs: {
-              coordinates: [{ x: xLeft, y: c1.y }, { x: xRight, y: c1.y }],
+              coordinates: [{ x: xLeft, y: stopY }, { x: xRight, y: stopY }],
             },
             styles: { color: '#ef4444', size: 1 },
           });
@@ -2061,8 +2028,17 @@ export const KLineChartComponent = ({
             type: 'text',
             attrs: {
               x: xLeft + 4,
-              y: c1.y - 6,
-              text: `SL ${formatPrice(Number(pts?.[1]?.value))}`,
+              y: stopY - 6,
+              text: (() => {
+                try {
+                  if (typeof chart?.convertFromPixel === 'function') {
+                    const p = chart.convertFromPixel({ x: xLeft, y: stopY });
+                    const v = Number(p?.value);
+                    if (Number.isFinite(v)) return `SL ${formatPrice(v)}`;
+                  }
+                } catch (_) { /* ignore */ }
+                return 'SL';
+              })(),
               align: 'left',
               baseline: 'bottom',
             },
@@ -2075,7 +2051,13 @@ export const KLineChartComponent = ({
           
           // Risk-side badges (above red rectangle)
           const entryVal = Number(pts?.[0]?.value);
-          const stopVal = Number(pts?.[1]?.value);
+          let stopVal = NaN;
+          try {
+            if (typeof chart?.convertFromPixel === 'function') {
+              const p = chart.convertFromPixel({ x: xLeft, y: stopY });
+              stopVal = Number(p?.value);
+            }
+          } catch (_) { /* ignore */ }
           const qty = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
           if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
             const priceDeltaRisk = Math.abs(stopVal - entryVal);
@@ -2126,10 +2108,9 @@ export const KLineChartComponent = ({
               },
             });
           }
-          
-          // Auto TP (RR = 1) for SHORT: TP symmetric below entry by same distance as risk
-          const deltaY = c0.y - c1.y;
-          const yTP = c0.y + Math.abs(deltaY); // ensure TP is below entry (higher y)
+
+          // TP symmetric below entry by fixed pixels
+          const yTP = tpY;
           const rewardTop = Math.min(c0.y, yTP);
           const rewardBottom = Math.max(c0.y, yTP);
           figures.push({
@@ -2160,12 +2141,13 @@ export const KLineChartComponent = ({
               x: xLeft + 4,
               y: yTP + 12,
               text: (() => {
-                const entryVal = Number(pts?.[0]?.value);
-                const stopVal = Number(pts?.[1]?.value);
-                if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
-                  const tpVal = (2 * entryVal) - stopVal;
-                  return `TP ${formatPrice(tpVal)}`;
-                }
+                try {
+                  if (typeof chart?.convertFromPixel === 'function') {
+                    const p = chart.convertFromPixel({ x: xLeft, y: yTP });
+                    const v = Number(p?.value);
+                    if (Number.isFinite(v)) return `TP ${formatPrice(v)}`;
+                  }
+                } catch (_) { /* ignore */ }
                 return 'TP';
               })(),
               align: 'left',
@@ -2179,11 +2161,16 @@ export const KLineChartComponent = ({
           });
           // Reward-side badge (under green rectangle)
           const entryVal2 = Number(pts?.[0]?.value);
-          const stopVal2 = Number(pts?.[1]?.value);
-          if (Number.isFinite(entryVal2) && Number.isFinite(stopVal2)) {
-            const tpVal = (2 * entryVal2) - stopVal2;
-            const priceDeltaReward = Math.abs(entryVal2 - tpVal);
-            const percentReward = entryVal2 !== 0 ? ((entryVal2 - tpVal) / Math.abs(entryVal2)) * 100 : 0;
+          let tpVal2 = NaN;
+          try {
+            if (typeof chart?.convertFromPixel === 'function') {
+              const p = chart.convertFromPixel({ x: xLeft, y: yTP });
+              tpVal2 = Number(p?.value);
+            }
+          } catch (_) { /* ignore */ }
+          if (Number.isFinite(entryVal2) && Number.isFinite(tpVal2)) {
+            const priceDeltaReward = Math.abs(entryVal2 - tpVal2);
+            const percentReward = entryVal2 !== 0 ? ((entryVal2 - tpVal2) / Math.abs(entryVal2)) * 100 : 0;
             const qty2 = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
             const rewardAmount = priceDeltaReward * qty2;
             figures.push({
@@ -2191,7 +2178,7 @@ export const KLineChartComponent = ({
               attrs: {
                 x: xLeft + 4,
                 y: rewardBottom + 14,
-                text: `Target: ${formatPrice(tpVal)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
+                text: `Target: ${formatPrice(tpVal2)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
                 align: 'left',
                 baseline: 'top',
               },
@@ -2207,8 +2194,6 @@ export const KLineChartComponent = ({
               },
             });
           }
-
-          // No RR label rendered (per requirement)
         }
 
         return figures;
@@ -2222,17 +2207,6 @@ export const KLineChartComponent = ({
             return false; // Cancel drawing
           }
         } catch (_) { /* ignore */ }
-      },
-      onDrawing: ({ overlay, step }) => {
-        // Additional check during drawing
-        try {
-          const paneId = overlay?.paneId || overlay?.pane?.id;
-          if (paneId && paneId !== 'candle_pane') {
-            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
-            return false; // Cancel drawing
-          }
-        } catch (_) { /* ignore */ }
-        console.log('📉 Short Position drawing step:', step, 'points:', overlay?.points);
       },
       onDrawEnd: ({ overlay }) => {
         try {
@@ -2248,30 +2222,15 @@ export const KLineChartComponent = ({
               return;
             }
           }
-          
-          if (overlay && overlay.__invalidDirection) {
-            const chart = chartRef.current;
-            const id = overlay?.id;
-            if (chart && id) {
-              try { chart.removeOverlay({ id }); } catch (_) { try { chart.removeOverlay(id); } catch (_) { /* ignore */ } }
-            }
-            console.warn('Blocked Short Position with invalid direction');
-            return;
-          }
         } catch (_) { /* ignore */ }
         console.log('📉 Short Position tool drawn:', overlay);
       },
     });
 
-    // Register Long Position overlay (TradingView-like, 2-click)
-    // Steps:
-    // 1) Click entry price
-    // 2) Click stop-loss (below entry)
-    // TP is auto-calculated to maintain RR = 1 (symmetric distance)
-    // Renders red (risk) area [SL..entry] and green (reward) area [entry..TP].
+    // Register Long Position overlay - Single click (1:1 RR, to the right)
     registerOverlay({
       name: 'longPosition',
-      totalStep: 3,
+      totalStep: 1,
       createPointFigures: ({ chart, coordinates, overlay, bounding: _bounding }) => {
         const figures = [];
         const pts = overlay?.points || [];
@@ -2286,19 +2245,10 @@ export const KLineChartComponent = ({
             px = chart.convertToPixel(pts) || [];
           }
         } catch (_) { px = []; }
-        
         const c0 = px[0] || coordinates?.[0]; // entry
-        const c1 = px[1] || coordinates?.[1]; // stop
-        
         if (!c0) return figures;
-        
-        const validCoords = [c0, c1].filter(Boolean);
-        const minX = Math.min(...validCoords.map(p => p?.x || 0));
-        const maxX = Math.max(...validCoords.map(p => p?.x || 0));
-        const minWidth = 80; // ensure visible width while drawing
-        const rawWidth = (Number.isFinite(maxX - minX) ? (maxX - minX) : 0);
-        const width = Math.max(minWidth, rawWidth);
-        const xLeft = Number.isFinite(minX) ? minX : (c0?.x || 0);
+        const width = POSITION_OVERLAY_WIDTH_PX;
+        const xLeft = (typeof c0?.x === 'number') ? c0.x : 0;
         const xRight = xLeft + width;
 
         // Entry line + label
@@ -2330,37 +2280,12 @@ export const KLineChartComponent = ({
           });
         }
 
-        // With stop selected: validate direction first, then draw risk rectangle and SL line/label
-        if (c1 && Number.isFinite(c1?.y) && Number.isFinite(c0?.y)) {
-          // LONG position requires SL below entry (larger y in pixels)
-          const isDirectionValid = c1.y > c0.y;
-          overlay.__invalidDirection = !isDirectionValid;
-          if (!isDirectionValid) {
-            // Block opposite direction: render an inline warning and skip shapes
-            const warnY = Math.max(c0.y, c1.y) + 8;
-            figures.push({
-              type: 'text',
-              attrs: {
-                x: xLeft + 4,
-                y: warnY,
-                text: 'Invalid for Long: SL must be below Entry',
-                align: 'left',
-                baseline: 'top',
-              },
-              styles: {
-                backgroundColor: 'rgba(239,68,68,0.92)',
-                borderSize: 0,
-                text: { color: '#ffffff', size: 11, weight: '600' },
-                paddingLeft: 4,
-                paddingRight: 4,
-                paddingTop: 2,
-                paddingBottom: 2,
-              },
-            });
-            return figures;
-          }
-          const riskTop = Math.min(c0.y, c1.y);
-          const riskBottom = Math.max(c0.y, c1.y);
+        if (Number.isFinite(c0?.y)) {
+          // Risk: below entry by fixed pixels; Reward: above by same pixels
+          const stopY = c0.y + POSITION_OVERLAY_RISK_PX;
+          const tpY = c0.y - POSITION_OVERLAY_RISK_PX;
+          const riskTop = Math.min(c0.y, stopY);
+          const riskBottom = Math.max(c0.y, stopY);
           figures.push({
             type: 'rect',
             attrs: {
@@ -2379,7 +2304,7 @@ export const KLineChartComponent = ({
           figures.push({
             type: 'line',
             attrs: {
-              coordinates: [{ x: xLeft, y: c1.y }, { x: xRight, y: c1.y }],
+              coordinates: [{ x: xLeft, y: stopY }, { x: xRight, y: stopY }],
             },
             styles: { color: '#ef4444', size: 1 },
           });
@@ -2387,8 +2312,17 @@ export const KLineChartComponent = ({
             type: 'text',
             attrs: {
               x: xLeft + 4,
-              y: c1.y + 12,
-              text: `SL ${formatPrice(Number(pts?.[1]?.value))}`,
+              y: stopY + 12,
+              text: (() => {
+                try {
+                  if (typeof chart?.convertFromPixel === 'function') {
+                    const p = chart.convertFromPixel({ x: xLeft, y: stopY });
+                    const v = Number(p?.value);
+                    if (Number.isFinite(v)) return `SL ${formatPrice(v)}`;
+                  }
+                } catch (_) { /* ignore */ }
+                return 'SL';
+              })(),
               align: 'left',
               baseline: 'top',
             },
@@ -2401,7 +2335,13 @@ export const KLineChartComponent = ({
           
           // Risk-side badges (below red rectangle)
           const entryVal = Number(pts?.[0]?.value);
-          const stopVal = Number(pts?.[1]?.value);
+          let stopVal = NaN;
+          try {
+            if (typeof chart?.convertFromPixel === 'function') {
+              const p = chart.convertFromPixel({ x: xLeft, y: stopY });
+              stopVal = Number(p?.value);
+            }
+          } catch (_) { /* ignore */ }
           const qty = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
           if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
             const priceDeltaRisk = Math.abs(entryVal - stopVal);
@@ -2453,9 +2393,8 @@ export const KLineChartComponent = ({
             });
           }
           
-          // Auto TP (RR = 1) for LONG: TP symmetric above entry by same distance as risk
-          const deltaY = c1.y - c0.y;
-          const yTP = c0.y - Math.abs(deltaY); // ensure TP is above entry (lower y)
+          // TP symmetric above entry by fixed pixels
+          const yTP = tpY; // ensure TP is above entry
           const rewardTop = Math.min(c0.y, yTP);
           const rewardBottom = Math.max(c0.y, yTP);
           figures.push({
@@ -2486,12 +2425,13 @@ export const KLineChartComponent = ({
               x: xLeft + 4,
               y: yTP - 6,
               text: (() => {
-                const entryVal = Number(pts?.[0]?.value);
-                const stopVal = Number(pts?.[1]?.value);
-                if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
-                  const tpVal = (2 * entryVal) - stopVal;
-                  return `TP ${formatPrice(tpVal)}`;
-                }
+                try {
+                  if (typeof chart?.convertFromPixel === 'function') {
+                    const p = chart.convertFromPixel({ x: xLeft, y: yTP });
+                    const v = Number(p?.value);
+                    if (Number.isFinite(v)) return `TP ${formatPrice(v)}`;
+                  }
+                } catch (_) { /* ignore */ }
                 return 'TP';
               })(),
               align: 'left',
@@ -2505,11 +2445,16 @@ export const KLineChartComponent = ({
           });
           // Reward-side badge (above green rectangle)
           const entryVal2 = Number(pts?.[0]?.value);
-          const stopVal2 = Number(pts?.[1]?.value);
-          if (Number.isFinite(entryVal2) && Number.isFinite(stopVal2)) {
-            const tpVal = (2 * entryVal2) - stopVal2;
-            const priceDeltaReward = Math.abs(tpVal - entryVal2);
-            const percentReward = entryVal2 !== 0 ? ((tpVal - entryVal2) / Math.abs(entryVal2)) * 100 : 0;
+          let tpVal2 = NaN;
+          try {
+            if (typeof chart?.convertFromPixel === 'function') {
+              const p = chart.convertFromPixel({ x: xLeft, y: yTP });
+              tpVal2 = Number(p?.value);
+            }
+          } catch (_) { /* ignore */ }
+          if (Number.isFinite(entryVal2) && Number.isFinite(tpVal2)) {
+            const priceDeltaReward = Math.abs(tpVal2 - entryVal2);
+            const percentReward = entryVal2 !== 0 ? ((tpVal2 - entryVal2) / Math.abs(entryVal2)) * 100 : 0;
             const qty2 = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
             const rewardAmount = priceDeltaReward * qty2;
             const badgeTopY = Math.max(0, rewardTop - 14);
@@ -2518,7 +2463,7 @@ export const KLineChartComponent = ({
               attrs: {
                 x: xLeft + 4,
                 y: badgeTopY,
-                text: `Target: ${formatPrice(tpVal)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
+                text: `Target: ${formatPrice(tpVal2)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
                 align: 'left',
                 baseline: 'bottom',
               },
@@ -2534,8 +2479,6 @@ export const KLineChartComponent = ({
               },
             });
           }
-
-          // No RR label rendered (per requirement)
         }
 
         return figures;
@@ -2550,17 +2493,6 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
       },
-      onDrawing: ({ overlay, step }) => {
-        // Additional check during drawing
-        try {
-          const paneId = overlay?.paneId || overlay?.pane?.id;
-          if (paneId && paneId !== 'candle_pane') {
-            console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
-            return false; // Cancel drawing
-          }
-        } catch (_) { /* ignore */ }
-        console.log('📈 Long Position drawing step:', step, 'points:', overlay?.points);
-      },
       onDrawEnd: ({ overlay }) => {
         try {
           // Safety check: Remove overlay if it's not on the candle pane
@@ -2574,16 +2506,6 @@ export const KLineChartComponent = ({
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
             }
-          }
-          
-          if (overlay && overlay.__invalidDirection) {
-            const chart = chartRef.current;
-            const id = overlay?.id;
-            if (chart && id) {
-              try { chart.removeOverlay({ id }); } catch (_) { try { chart.removeOverlay(id); } catch (_) { /* ignore */ } }
-            }
-            console.warn('Blocked Long Position with invalid direction');
-            return;
           }
         } catch (_) { /* ignore */ }
         console.log('📈 Long Position tool drawn:', overlay);
@@ -4972,23 +4894,26 @@ export const KLineChartComponent = ({
 
                   // Long/Short position: treat as selectable within risk/reward area
                   if ((name === 'longPosition' || name === 'shortPosition') && c1) {
-                    // Compute horizontal extent similar to overlay rendering logic
-                    const minWidth = 80;
-                    const minX = Math.min(c1.x, c2?.x ?? c1.x);
-                    const maxX = Math.max(c1.x, c2?.x ?? c1.x);
-                    const rawWidth = Number.isFinite(maxX - minX) ? (maxX - minX) : 0;
-                    const xLeft = Number.isFinite(minX) ? minX : (c1?.x || 0);
-                    const width = Math.max(minWidth, rawWidth);
+                    // For legacy 2-point overlays, keep compatibility; for single-point, use fixed width/risk
+                    const hasStop = Boolean(c2);
+                    const xLeft = c1.x;
+                    const width = hasStop
+                      ? Math.max(80, Number.isFinite((c2?.x ?? c1.x) - c1.x) ? Math.abs((c2?.x ?? c1.x) - c1.x) : 0)
+                      : POSITION_OVERLAY_WIDTH_PX;
                     const xRight = xLeft + width;
 
-                    // Three key horizontal lines: entry (c0.y), stop (c1.y), tp (symmetric)
                     const entryY = c1?.y;
-                    const stopY = c2?.y;
-                    const yTP = (typeof entryY === 'number' && typeof stopY === 'number')
-                      ? (2 * entryY - stopY)
-                      : undefined;
+                    let stopY;
+                    let yTP;
+                    if (hasStop && typeof c2?.y === 'number') {
+                      stopY = c2.y;
+                      yTP = (typeof entryY === 'number' && typeof stopY === 'number') ? (2 * entryY - stopY) : undefined;
+                    } else if (typeof entryY === 'number') {
+                      const risk = POSITION_OVERLAY_RISK_PX;
+                      stopY = name === 'shortPosition' ? (entryY - risk) : (entryY + risk);
+                      yTP = name === 'shortPosition' ? (entryY + risk) : (entryY - risk);
+                    }
 
-                    // Bounding box covering risk + reward rectangles
                     const ys = [entryY, stopY, yTP].filter((v) => typeof v === 'number');
                     if (ys.length > 0) {
                       const yTop = Math.min(...ys);
@@ -5030,6 +4955,74 @@ export const KLineChartComponent = ({
               }
             } catch (_) {}
           }}
+          onMouseDown={(e) => {
+            // Start drag for long/short overlays when pressing inside their area
+            try {
+              const chart = chartRef.current;
+              const container = chartContainerRef.current;
+              if (!chart || !container) return;
+              const target = e.target;
+              if (target) {
+                const overlayPanel = target.closest('[role="dialog"][aria-label="Drawing actions"]');
+                const colorPalette = target.closest('.kv-rect-color-palette, .kv-trendline-color-palette, .kv-horizline-color-palette, .kv-vertline-color-palette, .kv-fib-color-palette, .kv-fibext-color-palette');
+                if (overlayPanel || colorPalette) return;
+              }
+              if (isWorkspaceHidden || inlineEditorActiveRef.current) return;
+              const rect = container.getBoundingClientRect();
+              const clickX = e.clientX - rect.left;
+              const clickY = e.clientY - rect.top;
+              // Find a position overlay under pointer
+              let overlays = [];
+              try {
+                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+              } catch (_) {}
+              overlays = Array.isArray(overlays) ? overlays : [];
+              const posOverlays = overlays.filter((ov) => ov && (ov.name === 'longPosition' || ov.name === 'shortPosition'));
+              let found = null;
+              posOverlays.forEach((ov) => {
+                try {
+                  const pts = Array.isArray(ov.points) ? ov.points : [];
+                  const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                  const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null; // entry
+                  if (!c1) return;
+                  const xLeft = c1.x;
+                  const width = POSITION_OVERLAY_WIDTH_PX;
+                  const xRight = xLeft + width;
+                  const risk = POSITION_OVERLAY_RISK_PX;
+                  const entryY = c1.y;
+                  const stopY = ov.name === 'shortPosition' ? (entryY - risk) : (entryY + risk);
+                  const yTP = ov.name === 'shortPosition' ? (entryY + risk) : (entryY - risk);
+                  const yTop = Math.min(entryY, stopY, yTP);
+                  const yBottom = Math.max(entryY, stopY, yTP);
+                  const inside = (clickX >= xLeft && clickX <= xRight && clickY >= yTop && clickY <= yBottom);
+                  if (inside && !found) {
+                    found = { overlay: ov, c1 };
+                  }
+                } catch (_) { /* ignore */ }
+              });
+              if (found && found.overlay) {
+                positionDragRef.current = {
+                  active: true,
+                  id: found.overlay.id,
+                  paneId: found.overlay.paneId || found.overlay.pane?.id,
+                  name: found.overlay.name,
+                  startMouseX: clickX,
+                  startMouseY: clickY,
+                  startEntryX: found.c1.x,
+                  startEntryY: found.c1.y,
+                };
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            } catch (_) { /* ignore */ }
+          }}
+          onMouseUp={() => {
+            // End drag if active
+            if (positionDragRef.current?.active) {
+              positionDragRef.current = { active: false, id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 };
+            }
+          }}
           onKeyDown={(e) => {
             // Handle keyboard interaction for accessibility
             if (e.key === 'Enter' || e.key === ' ') {
@@ -5040,6 +5033,51 @@ export const KLineChartComponent = ({
           }}
           onMouseMove={(e) => {
             try {
+              // Drag move for position overlays (long/short)
+              const drag = positionDragRef.current;
+              if (drag && drag.active) {
+                const chart = chartRef.current;
+                const container = chartContainerRef.current;
+                if (!chart || !container) return;
+                const rect = container.getBoundingClientRect();
+                const curX = e.clientX - rect.left;
+                const curY = e.clientY - rect.top;
+                const dx = curX - drag.startMouseX;
+                const dy = curY - drag.startMouseY;
+                const newX = drag.startEntryX + dx;
+                const newY = drag.startEntryY + dy;
+                try {
+                  if (typeof chart.convertFromPixel === 'function') {
+                    const p = chart.convertFromPixel({ x: newX, y: newY });
+                    const newPoint = {};
+                    if (p && typeof p.value === 'number') newPoint.value = p.value;
+                    if (p && (typeof p.timestamp === 'number' || typeof p.time === 'number' || typeof p.dataIndex === 'number')) {
+                      if (typeof p.timestamp === 'number') newPoint.timestamp = p.timestamp;
+                      else if (typeof p.time === 'number') newPoint.timestamp = p.time;
+                      else if (typeof p.dataIndex === 'number') newPoint.dataIndex = p.dataIndex;
+                    }
+                    // Fallback: preserve original x key if conversion lacks it
+                    if (!('timestamp' in newPoint) && !('dataIndex' in newPoint)) {
+                      try {
+                        const overlays = (typeof chart.getAllOverlays === 'function') ? chart.getAllOverlays() : (typeof chart.getOverlays === 'function' ? chart.getOverlays() : []);
+                        const ov = (overlays || []).find((o) => o && o.id === drag.id);
+                        if (ov && Array.isArray(ov.points) && ov.points[0]) {
+                          const op = ov.points[0];
+                          if (typeof op.timestamp === 'number') newPoint.timestamp = op.timestamp;
+                          else if (typeof op.time === 'number') newPoint.timestamp = op.time;
+                          else if (typeof op.dataIndex === 'number') newPoint.dataIndex = op.dataIndex;
+                        }
+                      } catch (_) { /* ignore */ }
+                    }
+                    if (Object.keys(newPoint).length >= 1) {
+                      try { chart.overrideOverlay({ id: drag.id, points: [newPoint] }); } catch (_) { /* ignore */ }
+                    }
+                  }
+                } catch (_) { /* ignore */ }
+                e.preventDefault();
+                e.stopPropagation();
+                return; // Do not run hover logic while dragging
+              }
               const container = chartContainerRef.current;
               if (!container) return;
               const rect = container.getBoundingClientRect();
