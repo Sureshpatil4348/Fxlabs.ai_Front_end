@@ -7,7 +7,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ### Advanced Chart Drawing Tools
 - **Long Position Tool** 📉: Single-click placement at Entry. Draws risk (red) below and reward (green) above the click point, to the right. The entire overlay is draggable to move. Upper (reward) and lower (risk) rectangles are individually draggable up/down to adjust their heights. RR ratio and badges update live.
 - **Short Position Tool** 📈: Single-click placement at Entry. Draws risk (red) above and reward (green) below the click point, to the right. The entire overlay is draggable to move. Upper (risk) and lower (reward) rectangles are individually draggable up/down to adjust their heights. RR ratio and badges update live.
-  - Usability: Each rectangle has a circular handle at its upper-left corner for precise dragging/resizing.
+  - Usability: Upper rectangle has a circular handle at its upper-left corner; lower rectangle has a circular handle at its lower-left corner, for precise dragging/resizing.
   - Note: Drag/hover and second-point click interactions are removed for these tools.
 - **Trend Lines**: Draw trend lines between two points
 - **Fibonacci Tools**: Retracement levels and 3-point extensions

@@ -2158,15 +2158,17 @@ export const KLineChartComponent = ({
             styles: { color: '#10b981', size: 1 },
           });
 
-          // Circle handles at upper-left corners of risk and reward rectangles
+          // Circle handles: upper-left for upper rectangle, lower-left for lower rectangle
+          const riskHandleY = (stopY < c0.y) ? riskTop : riskBottom;
+          const rewardHandleY = (yTP < c0.y) ? rewardTop : rewardBottom;
           figures.push({
             type: 'circle',
-            attrs: { x: xLeft, y: riskTop, r: POSITION_HANDLE_RADIUS_PX },
+            attrs: { x: xLeft, y: riskHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
             type: 'circle',
-            attrs: { x: xLeft, y: rewardTop, r: POSITION_HANDLE_RADIUS_PX },
+            attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
@@ -2475,15 +2477,17 @@ export const KLineChartComponent = ({
             styles: { color: '#10b981', size: 1 },
           });
 
-          // Circle handles at upper-left corners of risk and reward rectangles
+          // Circle handles: upper-left for upper rectangle, lower-left for lower rectangle
+          const riskHandleY = (stopY < c0.y) ? riskTop : riskBottom;
+          const rewardHandleY = (yTP < c0.y) ? rewardTop : rewardBottom;
           figures.push({
             type: 'circle',
-            attrs: { x: xLeft, y: riskTop, r: POSITION_HANDLE_RADIUS_PX },
+            attrs: { x: xLeft, y: riskHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
             type: 'circle',
-            attrs: { x: xLeft, y: rewardTop, r: POSITION_HANDLE_RADIUS_PX },
+            attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
@@ -5075,11 +5079,15 @@ export const KLineChartComponent = ({
                   const yBottom = Math.max(entryY, stopY, yTP);
                   // Compute handle centers (upper-left corners)
                   const riskTop = Math.min(entryY, stopY);
+                  const riskBottom = Math.max(entryY, stopY);
                   const rewardTop = Math.min(entryY, yTP);
+                  const rewardBottom = Math.max(entryY, yTP);
+                  const riskHandleY = (stopY < entryY) ? riskTop : riskBottom;
+                  const rewardHandleY = (yTP < entryY) ? rewardTop : rewardBottom;
                   const near = (cx, cy) => Math.hypot(clickX - cx, clickY - cy) <= (POSITION_HANDLE_RADIUS_PX + 4);
                   // Prefer handle hits over move
-                  if (!found && near(xLeft, riskTop)) { found = { overlay: ov, c1, dragType: 'risk' }; return; }
-                  if (!found && near(xLeft, rewardTop)) { found = { overlay: ov, c1, dragType: 'reward' }; return; }
+                  if (!found && near(xLeft, riskHandleY)) { found = { overlay: ov, c1, dragType: 'risk' }; return; }
+                  if (!found && near(xLeft, rewardHandleY)) { found = { overlay: ov, c1, dragType: 'reward' }; return; }
                   // Fallback: inside overall area initiates move
                   const inside = (clickX >= xLeft && clickX <= xRight && clickY >= yTop && clickY <= yBottom);
                   if (inside && !found) { found = { overlay: ov, c1, dragType: 'move' }; }
