@@ -2175,7 +2175,7 @@ export const KLineChartComponent = ({
           figures.push({
             type: 'circle',
             attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
-            styles: { style: 'fill', color: '#374151', borderColor: '#ffffff', borderSize: 1 }
+            styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
           });
           figures.push({
             type: 'text',
@@ -2500,7 +2500,7 @@ export const KLineChartComponent = ({
           figures.push({
             type: 'circle',
             attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
-            styles: { style: 'fill', color: '#374151', borderColor: '#ffffff', borderSize: 1 }
+            styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
           });
           figures.push({
             type: 'text',
