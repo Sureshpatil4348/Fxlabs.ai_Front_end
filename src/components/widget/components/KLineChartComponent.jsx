@@ -35,7 +35,8 @@ export const KLineChartComponent = ({
   const inlineEditorActiveRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
   const positionDragRef = useRef({ active: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 });
-  const thickHandlesRef = useRef({}); // { [overlayId]: { risk: boolean, reward: boolean } }
+  // Circle handle radius for risk/reward resize
+  const POSITION_HANDLE_RADIUS_PX = 7;
   // RSI enhanced UI state
   const [_rsiValue, setRsiValue] = useState(null);
   const [_rsiStatus, setRsiStatus] = useState('NEUTRAL');
@@ -1998,10 +1999,6 @@ export const KLineChartComponent = ({
         }
 
         if (Number.isFinite(c0?.y)) {
-          const thick = thickHandlesRef.current || {};
-          const thickFlags = thick[overlay?.id] || {};
-          const isRiskThick = Boolean(thickFlags.risk || thickFlags.both);
-          const isRewardThick = Boolean(thickFlags.reward || thickFlags.both);
           // Risk/Reward derived from overlay values if present, else default 1:1 by pixels
           const entryVal = Number(pts?.[0]?.value);
           let stopY = c0.y - POSITION_OVERLAY_RISK_PX;
@@ -2030,7 +2027,7 @@ export const KLineChartComponent = ({
               style: 'fill',
               color: 'rgba(239,68,68,0.2)', // red-500 @ 20%
               borderColor: '#ef4444',
-              borderSize: isRiskThick ? 2 : 1,
+              borderSize: 1,
             }
           });
           figures.push({
@@ -2038,7 +2035,7 @@ export const KLineChartComponent = ({
             attrs: {
               coordinates: [{ x: xLeft, y: stopY }, { x: xRight, y: stopY }],
             },
-            styles: { color: '#ef4444', size: isRiskThick ? 3 : 1 },
+            styles: { color: '#ef4444', size: 1 },
           });
           figures.push({
             type: 'text',
@@ -2150,7 +2147,7 @@ export const KLineChartComponent = ({
               style: 'fill',
               color: 'rgba(16,185,129,0.2)', // emerald-500 @ 20%
               borderColor: '#10b981',
-              borderSize: isRewardThick ? 2 : 1,
+              borderSize: 1,
             }
           });
           figures.push({
@@ -2158,7 +2155,19 @@ export const KLineChartComponent = ({
             attrs: {
               coordinates: [{ x: xLeft, y: yTP }, { x: xRight, y: yTP }],
             },
-            styles: { color: '#10b981', size: isRewardThick ? 3 : 1 },
+            styles: { color: '#10b981', size: 1 },
+          });
+
+          // Circle handles at upper-left corners of risk and reward rectangles
+          figures.push({
+            type: 'circle',
+            attrs: { x: xLeft, y: riskTop, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
+          });
+          figures.push({
+            type: 'circle',
+            attrs: { x: xLeft, y: rewardTop, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
             type: 'text',
@@ -2307,10 +2316,6 @@ export const KLineChartComponent = ({
         }
 
         if (Number.isFinite(c0?.y)) {
-          const thick = thickHandlesRef.current || {};
-          const thickFlags = thick[overlay?.id] || {};
-          const isRiskThick = Boolean(thickFlags.risk || thickFlags.both);
-          const isRewardThick = Boolean(thickFlags.reward || thickFlags.both);
           // Risk/Reward derived from overlay values if present, else default 1:1 by pixels
           let stopY = c0.y + POSITION_OVERLAY_RISK_PX;
           let tpY = c0.y - POSITION_OVERLAY_RISK_PX;
@@ -2338,7 +2343,7 @@ export const KLineChartComponent = ({
               style: 'fill',
               color: 'rgba(239,68,68,0.2)', // red-500 @ 20%
               borderColor: '#ef4444',
-              borderSize: isRiskThick ? 2 : 1,
+              borderSize: 1,
             }
           });
           figures.push({
@@ -2346,7 +2351,7 @@ export const KLineChartComponent = ({
             attrs: {
               coordinates: [{ x: xLeft, y: stopY }, { x: xRight, y: stopY }],
             },
-            styles: { color: '#ef4444', size: isRiskThick ? 3 : 1 },
+            styles: { color: '#ef4444', size: 1 },
           });
           figures.push({
             type: 'text',
@@ -2459,7 +2464,7 @@ export const KLineChartComponent = ({
               style: 'fill',
               color: 'rgba(16,185,129,0.2)', // emerald-500 @ 20%
               borderColor: '#10b981',
-              borderSize: isRewardThick ? 2 : 1,
+              borderSize: 1,
             }
           });
           figures.push({
@@ -2467,7 +2472,19 @@ export const KLineChartComponent = ({
             attrs: {
               coordinates: [{ x: xLeft, y: yTP }, { x: xRight, y: yTP }],
             },
-            styles: { color: '#10b981', size: isRewardThick ? 3 : 1 },
+            styles: { color: '#10b981', size: 1 },
+          });
+
+          // Circle handles at upper-left corners of risk and reward rectangles
+          figures.push({
+            type: 'circle',
+            attrs: { x: xLeft, y: riskTop, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
+          });
+          figures.push({
+            type: 'circle',
+            attrs: { x: xLeft, y: rewardTop, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
           figures.push({
             type: 'text',
@@ -5056,30 +5073,19 @@ export const KLineChartComponent = ({
                   } catch (_) { /* ignore */ }
                   const yTop = Math.min(entryY, stopY, yTP);
                   const yBottom = Math.max(entryY, stopY, yTP);
+                  // Compute handle centers (upper-left corners)
+                  const riskTop = Math.min(entryY, stopY);
+                  const rewardTop = Math.min(entryY, yTP);
+                  const near = (cx, cy) => Math.hypot(clickX - cx, clickY - cy) <= (POSITION_HANDLE_RADIUS_PX + 4);
+                  // Prefer handle hits over move
+                  if (!found && near(xLeft, riskTop)) { found = { overlay: ov, c1, dragType: 'risk' }; return; }
+                  if (!found && near(xLeft, rewardTop)) { found = { overlay: ov, c1, dragType: 'reward' }; return; }
+                  // Fallback: inside overall area initiates move
                   const inside = (clickX >= xLeft && clickX <= xRight && clickY >= yTop && clickY <= yBottom);
-                  if (inside && !found) {
-                    // Determine drag mode: prefer resizing when clicking inside risk/reward rectangles
-                    const riskTop = Math.min(entryY, stopY);
-                    const riskBottom = Math.max(entryY, stopY);
-                    const rewardTop = Math.min(entryY, yTP);
-                    const rewardBottom = Math.max(entryY, yTP);
-                    const nearEntry = Math.abs(clickY - entryY) <= 6;
-                    let dragType = 'move';
-                    if (clickY >= riskTop && clickY <= riskBottom) dragType = 'risk';
-                    else if (clickY >= rewardTop && clickY <= rewardBottom) dragType = 'reward';
-                    else if (nearEntry) dragType = 'move';
-                    found = { overlay: ov, c1, dragType };
-                  }
+                  if (inside && !found) { found = { overlay: ov, c1, dragType: 'move' }; }
                 } catch (_) { /* ignore */ }
               });
               if (found && found.overlay) {
-                // Update thick handle flags when clicking inside boxes
-                try {
-                  const id = found.overlay.id;
-                  // Clear previous flags for others
-                  thickHandlesRef.current = { [id]: { risk: found.dragType === 'risk', reward: found.dragType === 'reward' } };
-                  try { chart.overrideOverlay({ id, __force: Date.now() }); } catch (_) { /* trigger redraw */ }
-                } catch (_) { /* ignore */ }
                 positionDragRef.current = {
                   active: true,
                   type: found.dragType || 'move',
