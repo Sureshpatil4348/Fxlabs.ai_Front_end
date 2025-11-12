@@ -18,7 +18,7 @@ function TradingChart() {
     {
       id: 'moneytize',
       name: 'Moneytize',
-      description: 'Moving average pro, RSI, MACD and ATR',
+      description: 'Moving Average Pro + RSI - Pro + MACD - Pro + ATR - Pro',
       icon: '📈',
       indicators: {
         rsiEnhanced: true,
@@ -35,7 +35,7 @@ function TradingChart() {
     {
       id: 'trend-scalper',
       name: 'Trend Scalper',
-      description: 'Super Trend Pro + MACD',
+      description: 'Super Trend - Pro + MACD - Pro',
       icon: '🌊',
       indicators: {
         rsiEnhanced: false,
@@ -52,7 +52,7 @@ function TradingChart() {
     {
       id: 'buy-sell-signal',
       name: 'Buy / Sell Signal',
-      description: 'Trend Strategy + ATR',
+      description: 'Trend Strategy + ATR - Pro',
       icon: '🎯',
       indicators: {
         rsiEnhanced: false,
