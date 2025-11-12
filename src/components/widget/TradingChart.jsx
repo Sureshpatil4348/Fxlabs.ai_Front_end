@@ -52,8 +52,6 @@ function TradingChart() {
     errorTimeoutRef.current = setTimeout(() => setErrorMessage(''), 3000);
   };
 
-  const countActive = (keys) => keys.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
-
   // Check if a preset is currently active
   const isPresetActive = (preset) => {
     return preset.indicators.every((ind) => settings.indicators?.[ind]);
