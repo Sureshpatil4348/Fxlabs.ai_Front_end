@@ -7297,29 +7297,18 @@ export const KLineChartComponent = ({
                       // gets corrupted and removeOverlay(id) silently fails. We force visibility=false instead.
                       let removed = false;
                       
-                      // For position overlays, try removal then force-hide if it fails
+                      // For position overlays, HIDE instead of remove to avoid deleting all instances
+                      // KlineChart bug: removeOverlay() with totalStep:2 overlays removes ALL instances with same name
                       if (name === 'longPosition' || name === 'shortPosition') {
-                        // Attempt standard removal (will silently fail due to KLineChart bug)
-                        try { chart.removeOverlay({ id, paneId }); } catch (_) {}
-                        try { chart.removeOverlay({ id }); } catch (_) {}
-                        try { chart.removeOverlay(id); } catch (_) {}
+                        console.log('🗑️ Hiding position overlay with ID:', id);
                         
-                        // Verify removal worked
-                        let overlaysAfter = [];
                         try {
-                          if (typeof chart.getOverlays === 'function') overlaysAfter = chart.getOverlays();
-                          else if (typeof chart.getAllOverlays === 'function') overlaysAfter = chart.getAllOverlays();
-                        } catch (_) {}
-                        
-                        const stillExists = overlaysAfter.find(o => o && o.id === id);
-                        if (stillExists) {
-                          // Removal failed (due to KLineChart bug) - force hide it
-                          try {
-                            chart.overrideOverlay({ id, visible: false });
-                            removed = true;
-                          } catch (_) {}
-                        } else {
+                          // Hide this specific overlay instead of removing it
+                          chart.overrideOverlay({ id, visible: false });
                           removed = true;
+                          console.log('✅ Overlay hidden successfully');
+                        } catch (e) {
+                          console.warn('❌ Failed to hide overlay:', e);
                         }
                       } else {
                         // For other overlays, try ID-based removal
@@ -7449,24 +7438,12 @@ export const KLineChartComponent = ({
                       
                       let removed = false;
                       
-                      // For position overlays, use same workaround as onMouseDown
+                      // For position overlays, HIDE instead of remove (same as onMouseDown)
                       if (name === 'longPosition' || name === 'shortPosition') {
-                        try { chart.removeOverlay({ id, paneId }); } catch (_) {}
-                        try { chart.removeOverlay({ id }); } catch (_) {}
-                        try { chart.removeOverlay(id); } catch (_) {}
-                        
-                        let overlaysAfter = [];
                         try {
-                          if (typeof chart.getOverlays === 'function') overlaysAfter = chart.getOverlays();
-                          else if (typeof chart.getAllOverlays === 'function') overlaysAfter = chart.getAllOverlays();
-                        } catch (_) {}
-                        
-                        const stillExists = overlaysAfter.find(o => o && o.id === id);
-                        if (stillExists) {
-                          try { chart.overrideOverlay({ id, visible: false }); removed = true; } catch (_) {}
-                        } else {
+                          chart.overrideOverlay({ id, visible: false });
                           removed = true;
-                        }
+                        } catch (_) {}
                       } else {
                         // For other overlays, use ID
                         try { chart.removeOverlay({ id, paneId }); removed = true; } catch (_) {}
