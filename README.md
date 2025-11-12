@@ -4,54 +4,74 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Features
 
-### Advanced Chart Drawing Tools
-- **Long Position Tool** 📉: Single-click placement at Entry. Draws risk (red) below and reward (green) above the click point, to the right. The entire overlay is draggable to move. Upper (reward) and lower (risk) rectangles are individually draggable up/down to adjust their heights. RR ratio and badges update live.
-- **Short Position Tool** 📈: Single-click placement at Entry. Draws risk (red) above and reward (green) below the click point, to the right. The entire overlay is draggable to move. Upper (risk) and lower (reward) rectangles are individually draggable up/down to adjust their heights. RR ratio and badges update live.
-  - Usability: Upper rectangle has a circular handle at its upper-left corner; lower rectangle has a circular handle at its lower-left corner. In addition to the existing right-middle width handle, there is now a matching left-middle width handle at the entry line, allowing horizontal resizing from either side.
-  - Technical: Delete works via `visible=false` workaround for KLineChart bug where `removeOverlay()` fails after `points` updates (left-handle drag).
-  - Note: Drag/hover and second-point click interactions are removed for these tools.
-- **Trend Lines**: Draw trend lines between two points
-- **Fibonacci Tools**: Retracement levels and 3-point extensions
-- **Support/Resistance**: Horizontal and vertical lines
-- **Annotations**: Rectangle zones and text labels
-- **Drawing Tool Restrictions**: All drawing tools are restricted to the main candle pane only. Drawing on below-chart indicator panes (RSI, MACD, etc.) is prevented for clarity and to avoid confusion.
-- **Quick Delete for Drawings**: All tools — including Long Position and Short Position — now show a small floating delete action when selected, consistent with other drawing tools.
-- **Interactive Tooltips**: Hover tooltips show tool names on hover. On click, an instant non-intrusive toast notification appears with the selected tool name, auto-dismissing after 2 seconds.
-- Fix: Delete remains functional after resizing a Long/Short Position using the left width handle.
+### KLineChart Indicator Presets
 
-### Indicators
-- **MACD Pro**: Adds vertical histogram columns (green/red) anchored at the zero line for momentum visualization, alongside MACD and Signal lines.
-- **Opening Range Breakout (ORB) Enhanced**: Advanced breakout strategy indicator with comprehensive visual feedback
-  - **Opening Range Detection**: Considers the single closing candle at the configured time (default: 9:15); the range is that candle’s High/Low
-  - **Breakout Signals**: 
-    - Buy signals (▲ green triangle) when price breaks above opening high
-    - Sell signals (▼ red triangle) when price breaks below opening low
-  - **Risk Management**:
-    - On the first breakout of the day only, a locked Long/Short position overlay is added automatically
-    - Risk (red rectangle) equals the breakout candle’s height; Reward (green rectangle) equals Risk × RR (default 1:4)
-    - Entry is the breakout candle’s close; SL/TP are derived from risk around entry
-    - Overlays are locked (no drag or customization)
-  - **Visual Elements**:
-    - **Programmatic Position Overlay**: Locked Long/Short rectangles (red risk, green reward) anchored at breakout candle close; no full-width horizontal guide lines
-    - **Entry Markers**: Triangle markers at breakout points with "ENTRY" labels
-    - **TP Hit Markers**: Diamond shapes (◆) with "TP ✓" labels when take profit is reached
-    - **SL Hit Markers**: X-cross marks with "SL ✗" labels when stop loss is triggered
-    - **Price Labels**: Real-time TP and SL price labels at the right edge of the chart
-  - **Configuration**: Adjustable start hour/minute, opening range period (kept), and Risk:Reward ratio
-  - **Timeframe**: Works only for timeframe ≤ 1h; shows a warning if greater
-  - **History**: Automatically displays the position overlay for the first breakout at the configured time for up to the last 30 days
+The KLineChart component now includes a sophisticated preset system for quickly applying groups of technical indicators.
 
-## Notes
-- klinecharts v10 convention: single-click overlays use `totalStep = 1` and finalize immediately
+#### Preset Functionality
 
-## KLineChart Loading & Error States
-- Default behavior shows a loading spinner first when the dashboard opens or reloads (label: "Loading Trading Chart...").
-- On successful initialization and first data apply, the chart renders and follows real-time.
-- If initialization or first data update fails, the component exits the initial loading state and displays a clear error panel with a retry action.
-- Error display is suppressed during the initial loading phase to prevent transient flicker.
-- When embedded via `UnifiedChart` with `chartType === 'candlestick'`, the page-level loader is suppressed and the inner KLineChart spinner is used to avoid duplicate loaders.
-- Robust incremental updates: if the chart's internal data list is empty on reload, the component falls back to `applyNewData` with the full dataset instead of calling `updateData` for the latest candles. Invalid latest candles (missing or non-numeric `timestamp`) are filtered out before incremental updates to prevent runtime errors.
-- API compatibility: `setOptions`-related errors are suppressed from the UI but logged to console for debugging.
+**Available Presets:**
+1. **Moneytize** - Moving Average Pro + RSI Pro + MACD Pro (3 indicators: 1 on-chart, 2 below-chart)
+2. **Trend Scalper** - Super Trend Pro + MACD Pro (2 indicators: 1 on-chart, 1 below-chart)
+3. **Buy/Sell Signal** - Trend Strategy + ATR Pro (2 indicators: 1 on-chart, 1 below-chart)
 
-## UI Fixes
-- Sidebar (drawing tools) horizontal scrollbar removed. The left tools panel now enforces `overflow-x-hidden` to prevent unintended horizontal scrolling while preserving vertical scroll for long tool lists.
+**Features:**
+- **Smart Activation**: Clicking a preset applies only the indicators that aren't already active, preserving existing indicator configurations
+- **Visual Feedback**: Active presets are highlighted with a gradient background
+- **Interactive Tooltips**: Hover over any preset to see:
+  - All indicators included in the preset
+  - Which indicators are currently active (shown in green)
+  - Which indicators will be activated (shown in gray)
+  - Contextual help text
+- **Intelligent Toggle**: Clicking an active preset removes only those preset indicators, leaving any extra indicators intact
+- **Limit Enforcement**: Respects indicator limits (3 on-chart, 2 below-chart) and shows clear error messages when limits would be exceeded
+- **Automatic Sync**: Preset state automatically syncs with indicators dropdown - indicators show as active in both places
+
+#### How It Works
+
+**Applying a Preset:**
+- If NO indicators from preset are active → All preset indicators activate
+- If SOME indicators from preset are active → Only missing indicators activate (existing ones remain untouched)
+- If ALL indicators from preset are active → Preset is marked as active (green highlight)
+
+**Removing a Preset:**
+- Click an active preset → Only preset indicators are removed
+- Non-preset indicators remain active
+- Example: If you have Moneytize preset + Support/Resistance Pro active, clicking Moneytize removes only the 4 Moneytize indicators
+
+**Limit Checking:**
+- On-chart indicators: Max 3 (Trend Strategy, Bollinger Bands Pro, Moving Average Pro, Breakout Strategy, Super Trend Pro, Support/Resistance Pro)
+- Below-chart indicators: Max 2 (RSI Pro, ATR Pro, MACD Pro)
+- Error messages show current count and how many more indicators the preset needs
+
+**Edge Cases Handled:**
+1. Partial preset active + try to activate → Only missing indicators added
+2. At limit + try preset → Clear error message shown
+3. Active preset + extra indicators → Removing preset keeps extras
+4. Multiple indicators from different presets → Each can be managed independently
+5. Indicator toggled via dropdown → Preset state updates automatically
+
+#### Usage Example
+
+```javascript
+// Scenario: You want to use Moneytize preset
+// Current state: RSI Pro is already active
+
+// Step 1: Hover over "Moneytize" button
+// Tooltip shows:
+// • Moving Average Pro (gray) - will be activated
+// • RSI Pro (green) - already active
+// • MACD Pro (gray) - will be activated
+// • ATR Pro (gray) - will be activated
+// "Click to activate remaining"
+
+// Step 2: Click "Moneytize"
+// Result: Moving Average Pro, MACD Pro, and ATR Pro are activated
+// RSI Pro remains with its existing configuration
+// Moneytize button turns green (active state)
+
+// Step 3: Click "Moneytize" again
+// Result: All 4 Moneytize indicators are removed
+// Any other indicators remain active
+```
+
