@@ -50,6 +50,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - If initialization or first data update fails, the component exits the initial loading state and displays a clear error panel with a retry action.
 - Error display is suppressed during the initial loading phase to prevent transient flicker.
 - When embedded via `UnifiedChart` with `chartType === 'candlestick'`, the page-level loader is suppressed and the inner KLineChart spinner is used to avoid duplicate loaders.
+- Robust incremental updates: if the chart’s internal data list is empty on reload, the component falls back to `applyNewData` with the full dataset instead of calling `updateData` for the latest candles. Invalid latest candles (missing or non-numeric `timestamp`) are filtered out before incremental updates to prevent runtime errors.
 
 ## UI Fixes
 - Sidebar (drawing tools) horizontal scrollbar removed. The left tools panel now enforces `overflow-x-hidden` to prevent unintended horizontal scrolling while preserving vertical scroll for long tool lists.

@@ -3828,10 +3828,29 @@ export const KLineChartComponent = ({
       };
 
       if (handledWithIncrementalUpdate) {
-        const latestCandles = appendedCount > 0 ? klineData.slice(-appendedCount) : (klineData.length > 0 ? [klineData[klineData.length - 1]] : []);
-        latestCandles.forEach((candle) => {
-          chartRef.current.updateData(candle);
-        });
+        const latestCandles = appendedCount > 0
+          ? klineData.slice(-appendedCount)
+          : (klineData.length > 0 ? [klineData[klineData.length - 1]] : []);
+
+        // Guard against undefined/invalid candles and empty internal data list
+        const safeLatestCandles = latestCandles.filter(
+          (c) => c && typeof c.timestamp === 'number' && isFinite(c.timestamp)
+        );
+        const existingDataList = typeof chartRef.current.getDataList === 'function'
+          ? (chartRef.current.getDataList() || [])
+          : [];
+
+        if (!Array.isArray(existingDataList) || existingDataList.length === 0) {
+          // If the chart has no data yet (e.g., after reload), apply the full dataset instead of incremental updates
+          if (klineData.length > 0) {
+            chartRef.current.applyNewData(klineData);
+          }
+        } else {
+          // Normal incremental path
+          safeLatestCandles.forEach((candle) => {
+            chartRef.current.updateData(candle);
+          });
+        }
 
         if (chartRef.current.setOptions) {
           chartRef.current.setOptions({
