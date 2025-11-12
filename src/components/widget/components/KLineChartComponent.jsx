@@ -2171,7 +2171,12 @@ export const KLineChartComponent = ({
             attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
-          // Width handle: right-middle circle at the meeting line (entry line)
+          // Width handles: left-middle and right-middle circles at the entry line
+          figures.push({
+            type: 'circle',
+            attrs: { x: xLeft, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
+          });
           figures.push({
             type: 'circle',
             attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
@@ -2496,7 +2501,12 @@ export const KLineChartComponent = ({
             attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
           });
-          // Width handle: right-middle circle at entry line
+          // Width handles: left-middle and right-middle circles at entry line
+          figures.push({
+            type: 'circle',
+            attrs: { x: xLeft, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+            styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
+          });
           figures.push({
             type: 'circle',
             attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
@@ -5101,8 +5111,9 @@ export const KLineChartComponent = ({
                   const riskHandleY = (stopY < entryY) ? riskTop : riskBottom;
                   const rewardHandleY = (yTP < entryY) ? rewardTop : rewardBottom;
                   const near = (cx, cy) => Math.hypot(clickX - cx, clickY - cy) <= (POSITION_HANDLE_RADIUS_PX + 4);
-                  // Prefer width handle (right-middle) over others
+                  // Prefer width handles (left/right) over others
                   if (!found && near(xRight, entryY)) { found = { overlay: ov, c1, dragType: 'width', startWidth: width }; return; }
+                  if (!found && near(xLeft, entryY)) { found = { overlay: ov, c1, dragType: 'widthLeft', startWidth: width }; return; }
                   // Prefer corner handles over move
                   if (!found && near(xLeft, riskHandleY)) { found = { overlay: ov, c1, dragType: 'risk' }; return; }
                   if (!found && near(xLeft, rewardHandleY)) { found = { overlay: ov, c1, dragType: 'reward' }; return; }
@@ -5209,6 +5220,46 @@ export const KLineChartComponent = ({
                     const baseWidth = (typeof drag.startWidth === 'number') ? drag.startWidth : Math.max(minWidth, 0);
                     const newWidth = Math.max(minWidth, baseWidth + dx);
                     try { chart.overrideOverlay({ id: drag.id, widthPx: newWidth }); } catch (_) { /* ignore */ }
+                  } catch (_) { /* ignore */ }
+                } else if (drag.type === 'widthLeft') {
+                  // Resize by dragging the left-middle handle: move left edge, keep right fixed
+                  try {
+                    const minWidth = 40;
+                    const startWidth = (typeof drag.startWidth === 'number') ? drag.startWidth : POSITION_OVERLAY_WIDTH_PX;
+                    const xRight = drag.startEntryX + startWidth;
+                    let newXLeft = drag.startEntryX + dx; // follow mouse horizontally
+                    // Compute new width keeping right fixed, clamp to minWidth
+                    let newWidth = xRight - newXLeft;
+                    if (!Number.isFinite(newWidth)) newWidth = startWidth;
+                    if (newWidth < minWidth) {
+                      newWidth = minWidth;
+                      newXLeft = xRight - minWidth;
+                    }
+                    // Convert new left x back to point at the original entry Y
+                    if (typeof chart.convertFromPixel === 'function') {
+                      const p = chart.convertFromPixel({ x: newXLeft, y: drag.startEntryY });
+                      const newPoint = {};
+                      if (p && typeof p.value === 'number') newPoint.value = p.value;
+                      if (p && (typeof p.timestamp === 'number' || typeof p.time === 'number' || typeof p.dataIndex === 'number')) {
+                        if (typeof p.timestamp === 'number') newPoint.timestamp = p.timestamp;
+                        else if (typeof p.time === 'number') newPoint.timestamp = p.time;
+                        else if (typeof p.dataIndex === 'number') newPoint.dataIndex = p.dataIndex;
+                      }
+                      // Fallback: preserve original x key if conversion lacks it
+                      if (!('timestamp' in newPoint) && !('dataIndex' in newPoint)) {
+                        try {
+                          const overlays = (typeof chart.getAllOverlays === 'function') ? chart.getAllOverlays() : (typeof chart.getOverlays === 'function' ? chart.getOverlays() : []);
+                          const ov = (overlays || []).find((o) => o && o.id === drag.id);
+                          if (ov && Array.isArray(ov.points) && ov.points[0]) {
+                            const op = ov.points[0];
+                            if (typeof op.timestamp === 'number') newPoint.timestamp = op.timestamp;
+                            else if (typeof op.time === 'number') newPoint.timestamp = op.time;
+                            else if (typeof op.dataIndex === 'number') newPoint.dataIndex = op.dataIndex;
+                          }
+                        } catch (_) { /* ignore */ }
+                      }
+                      try { chart.overrideOverlay({ id: drag.id, points: [newPoint], widthPx: newWidth }); } catch (_) { /* ignore */ }
+                    }
                   } catch (_) { /* ignore */ }
                 }
                 e.preventDefault();
