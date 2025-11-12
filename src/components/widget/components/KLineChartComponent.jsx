@@ -464,7 +464,7 @@ export const KLineChartComponent = ({
       const cfg = settings?.indicatorSettings?.orbEnhanced || {};
       const h = Math.max(0, Math.min(23, Number(cfg.startHour) || 9));
       const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 15));
-      const orPeriod = Math.max(1, Number(cfg.orPeriod) || 1);
+      const _orPeriod = Math.max(1, Number(cfg.orPeriod) || 1);
       const rr = Math.max(0.5, Number(cfg.targetRR) || 4.0);
       // timeframe suitability (<= 60 minutes)
       const tf = String(settings?.timeframe || '1h');
@@ -484,7 +484,7 @@ export const KLineChartComponent = ({
       let lastDay = null;
       let openingHigh = NaN;
       let openingLow = NaN;
-      let orStartIdx = -1;
+      let _orStartIdx = -1;
       let captured = false;
       let firstBreakTaken = false;
       let buyTaken = false;
@@ -515,7 +515,7 @@ export const KLineChartComponent = ({
           lastDay = dayKey;
           openingHigh = NaN;
           openingLow = NaN;
-          orStartIdx = -1;
+          _orStartIdx = -1;
           captured = false;
           firstBreakTaken = false;
           buyTaken = false;
@@ -539,7 +539,7 @@ export const KLineChartComponent = ({
         if (isOpening) {
           openingHigh = Number(k.high);
           openingLow = Number(k.low);
-          orStartIdx = i;
+          _orStartIdx = i;
           captured = true;
         }
         // New logic: use only the single closing candle at configured time (no multi-bar expansion)
@@ -1113,11 +1113,11 @@ export const KLineChartComponent = ({
           calcParams: [9, 15, 1, 4.0], // hour, minute, period bars, RR
           figures: [],
           calc: (dataList, indicator) => {
-            const [h, m, orPeriod, rr] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [9, 15, 1, 4.0];
+            const [h, m, _orPeriod, rr] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [9, 15, 1, 4.0];
             let lastDay = null;
             let openingHigh = NaN;
             let openingLow = NaN;
-            let orStartIdx = -1;
+            let _orStartIdx = -1;
             let _orEndIdx = -1;
             let captured = false;
             let firstBreakTaken = false;
@@ -1148,7 +1148,7 @@ export const KLineChartComponent = ({
                 lastDay = dayKey;
                 openingHigh = NaN;
                 openingLow = NaN;
-                orStartIdx = -1;
+                _orStartIdx = -1;
                 _orEndIdx = -1;
                 captured = false;
                 firstBreakTaken = false;
@@ -1172,7 +1172,7 @@ export const KLineChartComponent = ({
               if (isOpening) {
                 openingHigh = k.high;
                 openingLow = k.low;
-                orStartIdx = i;
+                _orStartIdx = i;
                 _orEndIdx = i;
                 captured = true;
               }
