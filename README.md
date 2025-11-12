@@ -39,6 +39,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
     - **Price Labels**: Real-time TP and SL price labels at the right edge of the chart
   - **Configuration**: Adjustable start hour/minute, opening range period (kept), and Risk:Reward ratio
   - **Timeframe**: Works only for timeframe ≤ 1h; shows a warning if greater
+  - **History**: Automatically displays the position overlay for the first breakout at the configured time for up to the last 30 days
 
 ## Notes
 - klinecharts v10 convention: single-click overlays use `totalStep = 1` and finalize immediately

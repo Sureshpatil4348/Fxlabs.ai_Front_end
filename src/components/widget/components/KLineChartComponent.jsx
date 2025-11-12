@@ -4414,8 +4414,21 @@ export const KLineChartComponent = ({
       } catch (_) { /* ignore */ }
       orbPositionOverlayIdsRef.current = [];
 
-      if (!settings?.indicators?.orbEnhanced || !orbStats) return;
-      if (!orbStats.isSuitableTimeframe) return; // enforce ≤ 1h
+      if (!settings?.indicators?.orbEnhanced) return;
+      // timeframe suitability (<= 60 minutes)
+      const tf = String(settings?.timeframe || '1h');
+      const toMinutes = (tfStr) => {
+        const match = /^([0-9]+)([mhdw])$/i.exec(tfStr.trim());
+        if (!match) return 60; // default 60m
+        const n = parseInt(match[1], 10);
+        const u = match[2].toLowerCase();
+        if (u === 'm') return n;
+        if (u === 'h') return n * 60;
+        if (u === 'd') return n * 60 * 24;
+        if (u === 'w') return n * 60 * 24 * 7;
+        return 60;
+      };
+      if (toMinutes(tf) > 60) return; // enforce ≤ 1h
 
       const addPosition = (name, ts, entry, stop, target) => {
         if (!Number.isFinite(ts) || !Number.isFinite(entry)) return;
@@ -4436,13 +4449,97 @@ export const KLineChartComponent = ({
         } catch (_) { /* ignore */ }
       };
 
-      if (orbStats.buyTaken && orbStats.buyEntry != null && orbStats.buySL != null && orbStats.buyTP != null && orbStats.buyTs != null) {
-        addPosition('longPosition', orbStats.buyTs, orbStats.buyEntry, orbStats.buySL, orbStats.buyTP);
-      } else if (orbStats.sellTaken && orbStats.sellEntry != null && orbStats.sellSL != null && orbStats.sellTP != null && orbStats.sellTs != null) {
-        addPosition('shortPosition', orbStats.sellTs, orbStats.sellEntry, orbStats.sellSL, orbStats.sellTP);
+      // Compute breakouts for up to 30 previous days (including most recent day)
+      const cfg = settings?.indicatorSettings?.orbEnhanced || {};
+      const h = Math.max(0, Math.min(23, Number(cfg.startHour) || 9));
+      const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 15));
+      const rr = Math.max(0.5, Number(cfg.targetRR) || 4.0);
+      const dl = Array.isArray(candles) ? candles : (typeof chart.getDataList === 'function' ? chart.getDataList() : []);
+      if (!Array.isArray(dl) || dl.length === 0) return;
+
+      // Group indices by day
+      const dayToIndices = new Map();
+      const dayKeys = [];
+      for (let i = 0; i < dl.length; i++) {
+        const k = dl[i];
+        const rawTime = (k.timestamp ?? k.time ?? 0);
+        const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime;
+        const d = new Date(tsMs);
+        const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (!dayToIndices.has(dayKey)) {
+          dayToIndices.set(dayKey, []);
+          dayKeys.push(dayKey);
+        }
+        dayToIndices.get(dayKey).push(i);
       }
+
+      // Keep only last 30 unique day keys
+      const last30 = dayKeys.slice(Math.max(0, dayKeys.length - 30));
+
+      // For each day, find opening candle and first breakout, then add overlay
+      last30.forEach((dk) => {
+        const idxs = dayToIndices.get(dk) || [];
+        if (!idxs || idxs.length === 0) return;
+        // Find the opening candle at configured time
+        let openingIdx = -1;
+        for (let j = 0; j < idxs.length; j++) {
+          const i = idxs[j];
+          const k = dl[i];
+          const rawTime = (k.timestamp ?? k.time ?? 0);
+          const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime;
+          const d = new Date(tsMs);
+          if (d.getHours() === h && d.getMinutes() === m) {
+            openingIdx = i;
+            break;
+          }
+        }
+        if (openingIdx < 0) return; // no opening candle for this day
+        const openingHigh = Number(dl[openingIdx]?.high);
+        const openingLow = Number(dl[openingIdx]?.low);
+        if (!Number.isFinite(openingHigh) || !Number.isFinite(openingLow)) return;
+
+        // Find first breakout after opening within same day
+        for (let j = 0; j < idxs.length; j++) {
+          const i = idxs[j];
+          if (i <= openingIdx) continue;
+          const k = dl[i];
+          const p = dl[i - 1] || k;
+          const close = Number(k?.close);
+          const prevClose = Number(p?.close);
+          if (!Number.isFinite(close) || !Number.isFinite(prevClose)) continue;
+
+          // Upside breakout
+          if (close > openingHigh && prevClose <= openingHigh) {
+            const high = Number(k?.high);
+            const low = Number(k?.low);
+            if (!Number.isFinite(high) || !Number.isFinite(low)) break;
+            const height = Math.max(0, high - low);
+            const entry = close;
+            const sl = entry - height;
+            const tp = entry + (height * rr);
+            const rawTime = (k.timestamp ?? k.time ?? 0);
+            const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime;
+            addPosition('longPosition', tsMs, entry, sl, tp);
+            break;
+          }
+          // Downside breakout
+          if (close < openingLow && prevClose >= openingLow) {
+            const high = Number(k?.high);
+            const low = Number(k?.low);
+            if (!Number.isFinite(high) || !Number.isFinite(low)) break;
+            const height = Math.max(0, high - low);
+            const entry = close;
+            const sl = entry + height;
+            const tp = entry - (height * rr);
+            const rawTime = (k.timestamp ?? k.time ?? 0);
+            const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime;
+            addPosition('shortPosition', tsMs, entry, sl, tp);
+            break;
+          }
+        }
+      });
     } catch (_) { /* ignore */ }
-  }, [settings?.indicators?.orbEnhanced, orbStats]);
+  }, [settings?.indicators?.orbEnhanced, settings?.indicatorSettings?.orbEnhanced, settings?.timeframe, candles]);
 
   // Programmatic S/R BREAK and Wick badges on chart (using 'text' overlay)
   useEffect(() => {
