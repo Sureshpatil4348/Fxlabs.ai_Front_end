@@ -34,7 +34,8 @@ export const KLineChartComponent = ({
   const [selectedOverlayPanel, setSelectedOverlayPanel] = useState(null);
   const inlineEditorActiveRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, cancelText, onConfirm }
-  const positionDragRef = useRef({ active: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 });
+  const positionDragRef = useRef({ active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 });
+  const DRAG_THRESHOLD_PX = 5; // Minimum pixels to move before drag activates
   // Circle handle radius for risk/reward resize
   const POSITION_HANDLE_RADIUS_PX = 7;
   // RSI enhanced UI state
@@ -4854,6 +4855,11 @@ export const KLineChartComponent = ({
                   return;
                 }
               }
+              // Skip onClick if a drag just completed (onMouseUp already handled selection)
+              // Allow a small time window to prevent conflict between onMouseUp selection and onClick
+              if (positionDragRef.current?.lastEndTime && (Date.now() - positionDragRef.current.lastEndTime) < 50) {
+                return;
+              }
               // When workspace is hidden, suppress overlay selection UI entirely
               if (isWorkspaceHidden) { setSelectedOverlayPanel(null); return; }
               if (inlineEditorActiveRef.current) {
@@ -4993,7 +4999,7 @@ export const KLineChartComponent = ({
                   // Long/Short position: treat as selectable within risk/reward area
                   if ((name === 'longPosition' || name === 'shortPosition') && c1) {
                     const xLeft = c1.x;
-                    const width = POSITION_OVERLAY_WIDTH_PX;
+                    const width = (typeof ov?.widthPx === 'number' && ov.widthPx > 0) ? ov.widthPx : POSITION_OVERLAY_WIDTH_PX;
                     const xRight = xLeft + width;
 
                     const entryY = c1?.y;
@@ -5123,8 +5129,10 @@ export const KLineChartComponent = ({
                 } catch (_) { /* ignore */ }
               });
               if (found && found.overlay) {
+                // Mark as pending, not active - requires movement threshold before drag starts
                 positionDragRef.current = {
-                  active: true,
+                  active: false,
+                  pending: true,
                   type: found.dragType || 'move',
                   id: found.overlay.id,
                   paneId: found.overlay.paneId || found.overlay.pane?.id,
@@ -5134,16 +5142,48 @@ export const KLineChartComponent = ({
                   startEntryX: found.c1.x,
                   startEntryY: found.c1.y,
                   startWidth: (typeof found.startWidth === 'number') ? found.startWidth : undefined,
+                  lastEndTime: 0,
                 };
-                e.preventDefault();
-                e.stopPropagation();
+                // Don't prevent default yet - let onClick work for simple clicks
               }
             } catch (_) { /* ignore */ }
           }}
-          onMouseUp={() => {
-            // End drag if active
-            if (positionDragRef.current?.active) {
-              positionDragRef.current = { active: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 };
+          onMouseUp={(e) => {
+            // End drag if active, and select the overlay so delete button appears
+            const wasActive = positionDragRef.current?.active;
+            const wasPending = positionDragRef.current?.pending;
+            if (wasActive) {
+              const dragInfo = positionDragRef.current;
+              try {
+                // Select the overlay that was just dragged
+                const chart = chartRef.current;
+                const container = chartContainerRef.current;
+                if (chart && container && dragInfo.id) {
+                  const rect = container.getBoundingClientRect();
+                  const mouseX = e.clientX - rect.left;
+                  const mouseY = e.clientY - rect.top;
+                  // Get the current overlay to find its updated position
+                  let overlays = [];
+                  try {
+                    if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                    else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                  } catch (_) {}
+                  const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === dragInfo.id) : null;
+                  if (ov) {
+                    setSelectedOverlayPanel({
+                      id: ov.id,
+                      name: ov.name,
+                      paneId: ov.paneId || ov.pane?.id,
+                      x: mouseX,
+                      y: mouseY
+                    });
+                  }
+                }
+              } catch (_) { /* ignore */ }
+              positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: Date.now() };
+            } else if (wasPending) {
+              // Was pending but never activated (click without drag) - clear pending state
+              positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 };
             }
           }}
           onKeyDown={(e) => {
@@ -5156,15 +5196,28 @@ export const KLineChartComponent = ({
           }}
           onMouseMove={(e) => {
             try {
-              // Drag move/resize for position overlays (long/short)
               const drag = positionDragRef.current;
-              if (drag && drag.active) {
                 const chart = chartRef.current;
                 const container = chartContainerRef.current;
                 if (!chart || !container) return;
                 const rect = container.getBoundingClientRect();
                 const curX = e.clientX - rect.left;
                 const curY = e.clientY - rect.top;
+              
+              // Check if pending drag should activate based on distance threshold
+              if (drag && drag.pending && !drag.active) {
+                const dx = curX - drag.startMouseX;
+                const dy = curY - drag.startMouseY;
+                const distance = Math.hypot(dx, dy);
+                if (distance >= DRAG_THRESHOLD_PX) {
+                  // Activate drag mode
+                  positionDragRef.current = { ...drag, active: true, pending: false };
+                }
+                return; // Don't process drag yet, wait for activation
+              }
+              
+              // Drag move/resize for position overlays (long/short)
+              if (drag && drag.active) {
                 const dx = curX - drag.startMouseX;
                 const dy = curY - drag.startMouseY;
                 if (drag.type === 'move') {
@@ -5266,9 +5319,9 @@ export const KLineChartComponent = ({
                 e.stopPropagation();
                 return; // Do not run hover logic while dragging
               }
-              const container = chartContainerRef.current;
+              // container and rect already declared above - reuse them
               if (!container) return;
-              const rect = container.getBoundingClientRect();
+              // rect already declared - reuse it
               const y = e.clientY - rect.top;
               const totalHeight = rect.height;
               // Determine active below-chart panes and their aggregate height (each pane created with height: 120)
@@ -5290,7 +5343,7 @@ export const KLineChartComponent = ({
               if (hoveringMain !== isHoveringOnChartOverlays) setIsHoveringOnChartOverlays(hoveringMain);
             } catch (_) {}
           }}
-          onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active) { positionDragRef.current = { active: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 }; } }}
+          onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
           {(isInitialLoad || (!chartRef.current && !error)) && (
             <div className="absolute inset-0 flex items-start justify-center pt-16 bg-gradient-to-br from-gray-50 to-gray-100 z-10">
