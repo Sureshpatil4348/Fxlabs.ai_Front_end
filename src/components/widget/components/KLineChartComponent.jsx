@@ -5168,6 +5168,81 @@ export const KLineChartComponent = ({
                     if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                     else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
                   } catch (_) {}
+                  
+                  // For position overlays (long/short), ALWAYS use proximity search instead of ID lookup
+                  // because left-handle drags update both points and widthPx, which causes KLineChart
+                  // to recreate the overlay with a new ID.
+                  const isPositionOverlay = dragInfo.name === 'longPosition' || dragInfo.name === 'shortPosition';
+                  
+                  if (isPositionOverlay) {
+                    // Always search by proximity for position overlays
+                    try {
+                      const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
+                        o && (o.name === dragInfo.name) && Array.isArray(o.points) && o.points.length > 0
+                      );
+                      let best = { dist: Infinity, overlay: null };
+                      candidates.forEach((o) => {
+                        try {
+                          const pts = Array.isArray(o.points) ? o.points : [];
+                          const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                          const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null; // entry
+                          if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
+                          const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
+                          const xLeft = c1.x;
+                          const xRight = xLeft + width;
+                          const entryY = c1.y;
+                          // Resolve stop/target Y using overlay values if present
+                          let stopY = o.name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
+                          let yTP = o.name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                          try {
+                            const refPoint = (pts && pts[0]) ? pts[0] : null;
+                            if (refPoint && typeof o.stopValue === 'number') {
+                              const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
+                              if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
+                            }
+                            if (refPoint && typeof o.targetValue === 'number') {
+                              const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
+                              if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
+                            }
+                          } catch (_) { /* ignore */ }
+                          const yTop = Math.min(entryY, stopY, yTP);
+                          const yBottom = Math.max(entryY, stopY, yTP);
+                          const inside = (mouseX >= xLeft && mouseX <= xRight && mouseY >= yTop && mouseY <= yBottom);
+                          let dist = Infinity;
+                          if (inside) {
+                            dist = 0;
+                          } else {
+                            // distance to any of the three horizontal lines
+                            const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
+                              const dx = x2 - x1;
+                              const dy = y2 - y1;
+                              if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+                              const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+                              const cx = x1 + t * dx;
+                              const cy = y1 + t * dy;
+                              return Math.hypot(px - cx, py - cy);
+                            };
+                            const lines = [entryY, stopY];
+                            if (typeof yTP === 'number') lines.push(yTP);
+                            dist = Math.min(...lines
+                              .filter((ly) => typeof ly === 'number')
+                              .map((ly) => distancePointToSegment(mouseX, mouseY, xLeft, ly, xRight, ly)));
+                          }
+                          if (dist < best.dist) best = { dist, overlay: o };
+                        } catch (_) { /* ignore candidate */ }
+                      });
+                      if (best.overlay && best.dist <= 24 /* generous threshold */) {
+                        setSelectedOverlayPanel({
+                          id: best.overlay.id,
+                          name: best.overlay.name,
+                          paneId: best.overlay.paneId || best.overlay.pane?.id,
+                          x: mouseX,
+                          y: mouseY
+                        });
+                      }
+                    } catch (_) { /* ignore */ }
+                  } else {
+                    // For non-position overlays, use ID lookup as before
                   const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === dragInfo.id) : null;
                   if (ov) {
                     setSelectedOverlayPanel({
@@ -5177,6 +5252,7 @@ export const KLineChartComponent = ({
                       x: mouseX,
                       y: mouseY
                     });
+                    }
                   }
                 }
               } catch (_) { /* ignore */ }
@@ -5311,6 +5387,8 @@ export const KLineChartComponent = ({
                           }
                         } catch (_) { /* ignore */ }
                       }
+                      // Update both points and widthPx (KLineChart may recreate overlay with new ID, but
+                      // onMouseUp uses proximity search for position overlays, so ID changes don't matter)
                       try { chart.overrideOverlay({ id: drag.id, points: [newPoint], widthPx: newWidth }); } catch (_) { /* ignore */ }
                     }
                   } catch (_) { /* ignore */ }
@@ -7053,29 +7131,141 @@ export const KLineChartComponent = ({
                       const chart = chartRef.current;
                       const id = selectedOverlayPanel?.id;
                       const paneId = selectedOverlayPanel?.paneId;
+                      const name = selectedOverlayPanel?.name;
+                      
                       if (!chart || !id) {
                         setSelectedOverlayPanel(null);
                         return;
                       }
 
-                      // Only remove the exact overlay by id; do NOT pass name
-                      // Try object form with paneId first (most specific), then fallback to id string
+                      // KLineChart Bug Workaround:
+                      // When left-handle drag updates overlay.points, KLineChart's internal registry
+                      // gets corrupted and removeOverlay(id) silently fails. We force visibility=false instead.
                       let removed = false;
-                      try {
-                        chart.removeOverlay({ id, paneId });
-                        removed = true;
-                      } catch (_) { /* ignore */ }
-                      if (!removed) {
+                      
+                      // For position overlays, try removal then force-hide if it fails
+                      if (name === 'longPosition' || name === 'shortPosition') {
+                        // Attempt standard removal (will silently fail due to KLineChart bug)
+                        try { chart.removeOverlay({ id, paneId }); } catch (_) {}
+                        try { chart.removeOverlay({ id }); } catch (_) {}
+                        try { chart.removeOverlay(id); } catch (_) {}
+                        
+                        // Verify removal worked
+                        let overlaysAfter = [];
                         try {
-                          chart.removeOverlay({ id });
+                          if (typeof chart.getOverlays === 'function') overlaysAfter = chart.getOverlays();
+                          else if (typeof chart.getAllOverlays === 'function') overlaysAfter = chart.getAllOverlays();
+                        } catch (_) {}
+                        
+                        const stillExists = overlaysAfter.find(o => o && o.id === id);
+                        if (stillExists) {
+                          // Removal failed (due to KLineChart bug) - force hide it
+                          try {
+                            chart.overrideOverlay({ id, visible: false });
+                            removed = true;
+                          } catch (_) {}
+                        } else {
                           removed = true;
-                        } catch (_) { /* ignore */ }
+                        }
+                      } else {
+                        // For other overlays, try ID-based removal
+                        try {
+                          chart.removeOverlay({ id, paneId });
+                          console.log('✅ removeOverlay({ id, paneId }) succeeded');
+                          removed = true;
+                        } catch (err) { 
+                          console.log('❌ removeOverlay({ id, paneId }) failed:', err.message);
+                        }
+                        if (!removed) {
+                          try {
+                            chart.removeOverlay({ id });
+                            console.log('✅ removeOverlay({ id }) succeeded');
+                            removed = true;
+                          } catch (err) { 
+                            console.log('❌ removeOverlay({ id }) failed:', err.message);
+                          }
+                        }
+                        if (!removed) {
+                          try {
+                            chart.removeOverlay(id);
+                            console.log('✅ removeOverlay(id) succeeded');
+                            removed = true;
+                          } catch (err) { 
+                            console.log('❌ removeOverlay(id) failed:', err.message);
+                          }
+                        }
                       }
-                      if (!removed) {
+                  // Fallback: if removal by id failed (can happen after left-handle drag),
+                  // locate nearest matching overlay at the action panel coords and remove it.
+                  if (!removed) {
+                    try {
+                      const container = chartContainerRef.current;
+                      const name = selectedOverlayPanel?.name;
+                      if (container && name && (name === 'longPosition' || name === 'shortPosition')) {
+                        const x = Math.max(0, Math.min(selectedOverlayPanel.x, container.clientWidth || 0));
+                        const y = Math.max(0, Math.min(selectedOverlayPanel.y, container.clientHeight || 0));
+                        let overlays = [];
                         try {
-                          chart.removeOverlay(id);
-                          removed = true;
+                          if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                          else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                        } catch (_) {}
+                        const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
+                          o && o.name === name && Array.isArray(o.points) && o.points.length > 0
+                        );
+                        let best = { dist: Infinity, ov: null };
+                        candidates.forEach((o) => {
+                          try {
+                            const pts = Array.isArray(o.points) ? o.points : [];
+                            const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                            const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
+                            if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
+                            const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
+                            const xLeft = c1.x;
+                            const xRight = xLeft + width;
+                            const entryY = c1.y;
+                            let stopY = name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
+                            let yTP = name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                            try {
+                              const refPoint = (pts && pts[0]) ? pts[0] : null;
+                              if (refPoint && typeof o.stopValue === 'number') {
+                                const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
+                                if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
+                              }
+                              if (refPoint && typeof o.targetValue === 'number') {
+                                const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
+                                if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
+                              }
                         } catch (_) { /* ignore */ }
+                            const yTop = Math.min(entryY, stopY, yTP);
+                            const yBottom = Math.max(entryY, stopY, yTP);
+                            const inside = (x >= xLeft && x <= xRight && y >= yTop && y <= yBottom);
+                            const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
+                              const dx = x2 - x1;
+                              const dy = y2 - y1;
+                              if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+                              const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+                              const cx = x1 + t * dx;
+                              const cy = y1 + t * dy;
+                              return Math.hypot(px - cx, py - cy);
+                            };
+                            let dist = inside ? 0 : Infinity;
+                            if (!inside) {
+                              const lines = [entryY, stopY];
+                              if (typeof yTP === 'number') lines.push(yTP);
+                              dist = Math.min(...lines
+                                .filter((ly) => typeof ly === 'number')
+                                .map((ly) => distancePointToSegment(x, y, xLeft, ly, xRight, ly)));
+                            }
+                            if (dist < best.dist) best = { dist, ov: o };
+                          } catch (_) { /* ignore */ }
+                        });
+                        if (best.ov && best.dist <= 24) {
+                          try { chart.removeOverlay({ id: best.ov.id, paneId: best.ov.paneId || best.ov.pane?.id }); removed = true; } catch (_) {}
+                          if (!removed) { try { chart.removeOverlay({ id: best.ov.id }); removed = true; } catch (_) {} }
+                          if (!removed) { try { chart.removeOverlay(best.ov.id); removed = true; } catch (_) {} }
+                        }
+                      }
+                    } catch (_) { /* ignore */ }
                       }
                     } catch (_) { /* ignore */ }
                     // Also remove any inline editor if open
@@ -7096,14 +7286,110 @@ export const KLineChartComponent = ({
                       const chart = chartRef.current;
                       const id = selectedOverlayPanel?.id;
                       const paneId = selectedOverlayPanel?.paneId;
+                      const name = selectedOverlayPanel?.name;
+                      
                       if (!chart || !id) {
                         setSelectedOverlayPanel(null);
                         return;
                       }
+                      
                       let removed = false;
-                      try { chart.removeOverlay({ id, paneId }); removed = true; } catch (_) {}
-                      if (!removed) { try { chart.removeOverlay({ id }); removed = true; } catch (_) {} }
-                      if (!removed) { try { chart.removeOverlay(id); removed = true; } catch (_) {} }
+                      
+                      // For position overlays, use same workaround as onMouseDown
+                      if (name === 'longPosition' || name === 'shortPosition') {
+                        try { chart.removeOverlay({ id, paneId }); } catch (_) {}
+                        try { chart.removeOverlay({ id }); } catch (_) {}
+                        try { chart.removeOverlay(id); } catch (_) {}
+                        
+                        let overlaysAfter = [];
+                        try {
+                          if (typeof chart.getOverlays === 'function') overlaysAfter = chart.getOverlays();
+                          else if (typeof chart.getAllOverlays === 'function') overlaysAfter = chart.getAllOverlays();
+                        } catch (_) {}
+                        
+                        const stillExists = overlaysAfter.find(o => o && o.id === id);
+                        if (stillExists) {
+                          try { chart.overrideOverlay({ id, visible: false }); removed = true; } catch (_) {}
+                        } else {
+                          removed = true;
+                        }
+                      } else {
+                        // For other overlays, use ID
+                        try { chart.removeOverlay({ id, paneId }); removed = true; } catch (_) {}
+                        if (!removed) { try { chart.removeOverlay({ id }); removed = true; } catch (_) {} }
+                        if (!removed) { try { chart.removeOverlay(id); removed = true; } catch (_) {} }
+                      }
+                  // Fallback: attempt proximity-based deletion if id-based removal failed
+                  if (!removed) {
+                    try {
+                      const container = chartContainerRef.current;
+                      const name = selectedOverlayPanel?.name;
+                      if (container && name && (name === 'longPosition' || name === 'shortPosition')) {
+                        const x = Math.max(0, Math.min(selectedOverlayPanel.x, container.clientWidth || 0));
+                        const y = Math.max(0, Math.min(selectedOverlayPanel.y, container.clientHeight || 0));
+                        let overlays = [];
+                        try {
+                          if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                          else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                        } catch (_) {}
+                        const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
+                          o && o.name === name && Array.isArray(o.points) && o.points.length > 0
+                        );
+                        let best = { dist: Infinity, ov: null };
+                        candidates.forEach((o) => {
+                          try {
+                            const pts = Array.isArray(o.points) ? o.points : [];
+                            const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                            const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
+                            if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
+                            const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
+                            const xLeft = c1.x;
+                            const xRight = xLeft + width;
+                            const entryY = c1.y;
+                            let stopY = name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
+                            let yTP = name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                            try {
+                              const refPoint = (pts && pts[0]) ? pts[0] : null;
+                              if (refPoint && typeof o.stopValue === 'number') {
+                                const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
+                                if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
+                              }
+                              if (refPoint && typeof o.targetValue === 'number') {
+                                const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
+                                if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
+                              }
+                            } catch (_) { /* ignore */ }
+                            const yTop = Math.min(entryY, stopY, yTP);
+                            const yBottom = Math.max(entryY, stopY, yTP);
+                            const inside = (x >= xLeft && x <= xRight && y >= yTop && y <= yBottom);
+                            const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
+                              const dx = x2 - x1;
+                              const dy = y2 - y1;
+                              if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+                              const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+                              const cx = x1 + t * dx;
+                              const cy = y1 + t * dy;
+                              return Math.hypot(px - cx, py - cy);
+                            };
+                            let dist = inside ? 0 : Infinity;
+                            if (!inside) {
+                              const lines = [entryY, stopY];
+                              if (typeof yTP === 'number') lines.push(yTP);
+                              dist = Math.min(...lines
+                                .filter((ly) => typeof ly === 'number')
+                                .map((ly) => distancePointToSegment(x, y, xLeft, ly, xRight, ly)));
+                            }
+                            if (dist < best.dist) best = { dist, ov: o };
+                          } catch (_) { /* ignore */ }
+                        });
+                        if (best.ov && best.dist <= 24) {
+                          try { chart.removeOverlay({ id: best.ov.id, paneId: best.ov.paneId || best.ov.pane?.id }); removed = true; } catch (_) {}
+                          if (!removed) { try { chart.removeOverlay({ id: best.ov.id }); removed = true; } catch (_) {} }
+                          if (!removed) { try { chart.removeOverlay(best.ov.id); removed = true; } catch (_) {} }
+                        }
+                      }
+                    } catch (_) { /* ignore */ }
+                  }
                     } catch (_) { /* ignore */ }
                     try {
                       const container = chartContainerRef.current;

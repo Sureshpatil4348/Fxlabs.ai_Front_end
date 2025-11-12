@@ -8,6 +8,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Long Position Tool** 📉: Single-click placement at Entry. Draws risk (red) below and reward (green) above the click point, to the right. The entire overlay is draggable to move. Upper (reward) and lower (risk) rectangles are individually draggable up/down to adjust their heights. RR ratio and badges update live.
 - **Short Position Tool** 📈: Single-click placement at Entry. Draws risk (red) above and reward (green) below the click point, to the right. The entire overlay is draggable to move. Upper (risk) and lower (reward) rectangles are individually draggable up/down to adjust their heights. RR ratio and badges update live.
   - Usability: Upper rectangle has a circular handle at its upper-left corner; lower rectangle has a circular handle at its lower-left corner. In addition to the existing right-middle width handle, there is now a matching left-middle width handle at the entry line, allowing horizontal resizing from either side.
+  - Technical: Delete works via `visible=false` workaround for KLineChart bug where `removeOverlay()` fails after `points` updates (left-handle drag).
   - Note: Drag/hover and second-point click interactions are removed for these tools.
 - **Trend Lines**: Draw trend lines between two points
 - **Fibonacci Tools**: Retracement levels and 3-point extensions
@@ -16,6 +17,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - **Drawing Tool Restrictions**: All drawing tools are restricted to the main candle pane only. Drawing on below-chart indicator panes (RSI, MACD, etc.) is prevented for clarity and to avoid confusion.
 - **Quick Delete for Drawings**: All tools — including Long Position and Short Position — now show a small floating delete action when selected, consistent with other drawing tools.
 - **Interactive Tooltips**: Hover tooltips show tool names on hover. On click, an instant non-intrusive toast notification appears with the selected tool name, auto-dismissing after 2 seconds.
+- Fix: Delete remains functional after resizing a Long/Short Position using the left width handle.
 
 ### Indicators
 - **MACD Pro**: Adds vertical histogram columns (green/red) anchored at the zero line for momentum visualization, alongside MACD and Signal lines.
