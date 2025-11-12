@@ -126,6 +126,8 @@ export const KLineChartComponent = ({
   const stLabelOverlayIdsRef = useRef([]);
   // Keep track of programmatically-created ORB label overlays (for cleanup)
   const orbLabelOverlayIdsRef = useRef([]);
+  // Keep track of programmatically-created ORB position overlays (for cleanup)
+  const orbPositionOverlayIdsRef = useRef([]);
   // Keep track of programmatically-created S/R break label overlays (for cleanup)
   const srLabelOverlayIdsRef = useRef([]);
 
@@ -484,6 +486,7 @@ export const KLineChartComponent = ({
       let openingLow = NaN;
       let orStartIdx = -1;
       let captured = false;
+      let firstBreakTaken = false;
       let buyTaken = false;
       let sellTaken = false;
       let buyEntry = NaN;
@@ -514,6 +517,7 @@ export const KLineChartComponent = ({
           openingLow = NaN;
           orStartIdx = -1;
           captured = false;
+          firstBreakTaken = false;
           buyTaken = false;
           sellTaken = false;
           buyEntry = NaN;
@@ -538,24 +542,31 @@ export const KLineChartComponent = ({
           orStartIdx = i;
           captured = true;
         }
-        if (captured && orStartIdx >= 0 && (i - orStartIdx) < orPeriod) {
-          openingHigh = Math.max(openingHigh, Number(k.high));
-          openingLow = Math.min(openingLow, Number(k.low));
-        }
+        // New logic: use only the single closing candle at configured time (no multi-bar expansion)
         const range = (isFinite(openingHigh) && isFinite(openingLow)) ? (openingHigh - openingLow) : NaN;
         const prev = candles[i - 1] || k;
-        if (captured && isFinite(range) && !buyTaken && Number(k.close) > openingHigh && Number(prev.close) <= openingHigh) {
+        if (captured && isFinite(range) && !firstBreakTaken && !buyTaken && Number(k.close) > openingHigh && Number(prev.close) <= openingHigh) {
+          // First breakout of the day to the upside -> Long
+          const breakoutHigh = Number(k.high);
+          const breakoutLow = Number(k.low);
+          const candleHeight = breakoutHigh - breakoutLow;
           buyTaken = true;
+          firstBreakTaken = true;
           buyEntry = Number(k.close);
-          buyTP = openingHigh + range * rr;
-          buySL = openingLow;
+          buySL = buyEntry - candleHeight;
+          buyTP = buyEntry + (candleHeight * rr);
           buyTs = tsMs;
         }
-        if (captured && isFinite(range) && !sellTaken && Number(k.close) < openingLow && Number(prev.close) >= openingLow) {
+        if (captured && isFinite(range) && !firstBreakTaken && !sellTaken && Number(k.close) < openingLow && Number(prev.close) >= openingLow) {
+          // First breakout of the day to the downside -> Short
+          const breakoutHigh = Number(k.high);
+          const breakoutLow = Number(k.low);
+          const candleHeight = breakoutHigh - breakoutLow;
           sellTaken = true;
+          firstBreakTaken = true;
           sellEntry = Number(k.close);
-          sellTP = openingLow - range * rr;
-          sellSL = openingHigh;
+          sellSL = sellEntry + candleHeight;
+          sellTP = sellEntry - (candleHeight * rr);
           sellTs = tsMs;
         }
 
@@ -1100,25 +1111,7 @@ export const KLineChartComponent = ({
           series: 'price',
           precision: 5,
           calcParams: [9, 15, 1, 4.0], // hour, minute, period bars, RR
-          figures: [
-            { key: 'orHigh', title: 'OR High: ', type: 'line' },
-            { key: 'orLow', title: 'OR Low: ', type: 'line' },
-            { key: 'buyTP', title: 'Buy TP: ', type: 'line' },
-            { key: 'sellTP', title: 'Sell TP: ', type: 'line' },
-            { key: 'buySL', title: 'Buy SL: ', type: 'line' },
-            { key: 'sellSL', title: 'Sell SL: ', type: 'line' },
-            { key: 'buyEntry', title: 'Buy Entry: ', type: 'line' },
-            { key: 'sellEntry', title: 'Sell Entry: ', type: 'line' },
-            // Filled zones for profit/loss visualization
-            { key: 'buyProfitZoneTop', title: '', type: 'line' },
-            { key: 'buyProfitZoneBottom', title: '', type: 'line' },
-            { key: 'buyRiskZoneTop', title: '', type: 'line' },
-            { key: 'buyRiskZoneBottom', title: '', type: 'line' },
-            { key: 'sellProfitZoneTop', title: '', type: 'line' },
-            { key: 'sellProfitZoneBottom', title: '', type: 'line' },
-            { key: 'sellRiskZoneTop', title: '', type: 'line' },
-            { key: 'sellRiskZoneBottom', title: '', type: 'line' },
-          ],
+          figures: [],
           calc: (dataList, indicator) => {
             const [h, m, orPeriod, rr] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [9, 15, 1, 4.0];
             let lastDay = null;
@@ -1127,6 +1120,7 @@ export const KLineChartComponent = ({
             let orStartIdx = -1;
             let _orEndIdx = -1;
             let captured = false;
+            let firstBreakTaken = false;
             let buyTaken = false;
             let sellTaken = false;
             let buyEntry = NaN;
@@ -1157,6 +1151,7 @@ export const KLineChartComponent = ({
                 orStartIdx = -1;
                 _orEndIdx = -1;
                 captured = false;
+                firstBreakTaken = false;
                 buyTaken = false;
                 sellTaken = false;
                 buyEntry = NaN;
@@ -1182,31 +1177,30 @@ export const KLineChartComponent = ({
                 captured = true;
               }
 
-              // Update range during opening period
-              if (captured && orStartIdx >= 0 && (i - orStartIdx) < Number(orPeriod)) {
-                openingHigh = Math.max(openingHigh, k.high);
-                openingLow = Math.min(openingLow, k.low);
-                _orEndIdx = i;
-              }
+              // New logic: do not expand range across multiple bars; use only the single opening candle
 
               const range = isFinite(openingHigh) && isFinite(openingLow) ? (openingHigh - openingLow) : NaN;
               const prev = dataList[i - 1] || k;
 
               // Buy signal detection
-              if (captured && isFinite(range) && !buyTaken && k.close > openingHigh && prev.close <= openingHigh) {
+              if (captured && isFinite(range) && !firstBreakTaken && !buyTaken && k.close > openingHigh && prev.close <= openingHigh) {
+                const candleHeight = Number(k.high) - Number(k.low);
                 buyTaken = true;
+                firstBreakTaken = true;
                 buyEntry = k.close;
-                buyTP = openingHigh + range * Number(rr);
-                buySL = openingLow;
+                buySL = buyEntry - candleHeight;
+                buyTP = buyEntry + (candleHeight * Number(rr));
                 _buySignalBar = i;
               }
 
               // Sell signal detection
-              if (captured && isFinite(range) && !sellTaken && k.close < openingLow && prev.close >= openingLow) {
+              if (captured && isFinite(range) && !firstBreakTaken && !sellTaken && k.close < openingLow && prev.close >= openingLow) {
+                const candleHeight = Number(k.high) - Number(k.low);
                 sellTaken = true;
+                firstBreakTaken = true;
                 sellEntry = k.close;
-                sellTP = openingLow - range * Number(rr);
-                sellSL = openingHigh;
+                sellSL = sellEntry + candleHeight;
+                sellTP = sellEntry - (candleHeight * Number(rr));
                 _sellSignalBar = i;
               }
 
@@ -1231,6 +1225,7 @@ export const KLineChartComponent = ({
               }
 
               return {
+                // Keep values for custom draw logic only; no built-in lines/areas are defined
                 orHigh: captured && isFinite(openingHigh) ? openingHigh : NaN,
                 orLow: captured && isFinite(openingLow) ? openingLow : NaN,
                 buyTP: buyTaken && isFinite(buyTP) ? buyTP : NaN,
@@ -1239,18 +1234,6 @@ export const KLineChartComponent = ({
                 sellSL: sellTaken && isFinite(sellSL) ? sellSL : NaN,
                 buyEntry: buyTaken && isFinite(buyEntry) ? buyEntry : NaN,
                 sellEntry: sellTaken && isFinite(sellEntry) ? sellEntry : NaN,
-                // Buy profit zone (entry to TP)
-                buyProfitZoneTop: buyTaken && isFinite(buyTP) ? buyTP : NaN,
-                buyProfitZoneBottom: buyTaken && isFinite(buyEntry) ? buyEntry : NaN,
-                // Buy risk zone (entry to SL)
-                buyRiskZoneTop: buyTaken && isFinite(buyEntry) ? buyEntry : NaN,
-                buyRiskZoneBottom: buyTaken && isFinite(buySL) ? buySL : NaN,
-                // Sell profit zone (TP to entry)
-                sellProfitZoneTop: sellTaken && isFinite(sellEntry) ? sellEntry : NaN,
-                sellProfitZoneBottom: sellTaken && isFinite(sellTP) ? sellTP : NaN,
-                // Sell risk zone (SL to entry)
-                sellRiskZoneTop: sellTaken && isFinite(sellSL) ? sellSL : NaN,
-                sellRiskZoneBottom: sellTaken && isFinite(sellEntry) ? sellEntry : NaN,
               };
             });
           },
@@ -1481,59 +1464,7 @@ export const KLineChartComponent = ({
               }
             }
           },
-          // Style callback for filled zones
-          styles: {
-            lines: [
-              { color: '#26a69a', size: 3 }, // OR High (bull color, thicker)
-              { color: '#ef5350', size: 3 }, // OR Low (bear color, thicker)
-              { color: '#26a69a', size: 2, dashedValue: [4, 4] }, // Buy TP (dashed)
-              { color: '#ef5350', size: 2, dashedValue: [4, 4] }, // Sell TP (dashed)
-              { color: '#ef5350', size: 2, dashedValue: [2, 2] }, // Buy SL (dotted)
-              { color: '#26a69a', size: 2, dashedValue: [2, 2] }, // Sell SL (dotted)
-              { color: '#3B82F6', size: 1 }, // Buy Entry (blue)
-              { color: '#3B82F6', size: 1 }, // Sell Entry (blue)
-              // Zone boundaries (transparent, just for fill)
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-              { color: 'transparent', size: 0 },
-            ],
-            // Fill areas between zones
-            areas: [
-              // Buy profit zone fill (green)
-              {
-                start: 'buyProfitZoneTop',
-                end: 'buyProfitZoneBottom',
-                style: 'solid',
-                color: 'rgba(38, 166, 154, 0.07)', // bull color with transparency
-              },
-              // Buy risk zone fill (red)
-              {
-                start: 'buyRiskZoneTop',
-                end: 'buyRiskZoneBottom',
-                style: 'solid',
-                color: 'rgba(239, 83, 80, 0.05)', // bear color with transparency
-              },
-              // Sell profit zone fill (red)
-              {
-                start: 'sellProfitZoneTop',
-                end: 'sellProfitZoneBottom',
-                style: 'solid',
-                color: 'rgba(239, 83, 80, 0.07)', // bear color with transparency
-              },
-              // Sell risk zone fill (green)
-              {
-                start: 'sellRiskZoneTop',
-                end: 'sellRiskZoneBottom',
-                style: 'solid',
-                color: 'rgba(38, 166, 154, 0.05)', // bull color with transparency
-              },
-            ],
-          },
+          // No built-in lines/areas; only custom draw markers used
         });
       }
       // Register ST_ENH (SuperTrend - on chart)
@@ -2159,30 +2090,57 @@ export const KLineChartComponent = ({
             styles: { color: '#10b981', size: 1 },
           });
 
-          // Circle handles: upper-left for upper rectangle, lower-left for lower rectangle
-          const riskHandleY = (stopY < c0.y) ? riskTop : riskBottom;
-          const rewardHandleY = (yTP < c0.y) ? rewardTop : rewardBottom;
-          figures.push({
-            type: 'circle',
-            attrs: { x: xLeft, y: riskHandleY, r: POSITION_HANDLE_RADIUS_PX },
-            styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
-          });
-          figures.push({
-            type: 'circle',
-            attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
-            styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
-          });
-          // Width handles: left-middle and right-middle circles at the entry line
-          figures.push({
-            type: 'circle',
-            attrs: { x: xLeft, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
-            styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
-          });
-          figures.push({
-            type: 'circle',
-            attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
-            styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
-          });
+          // Circle handles and width handles are hidden for locked (programmatic) overlays
+          if (!overlay?.locked) {
+            const riskHandleY = (stopY < c0.y) ? riskTop : riskBottom;
+            const rewardHandleY = (yTP < c0.y) ? rewardTop : rewardBottom;
+            figures.push({
+              type: 'circle',
+              attrs: { x: xLeft, y: riskHandleY, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
+            });
+            figures.push({
+              type: 'circle',
+              attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
+            });
+            // Width handles: left-middle and right-middle circles at the entry line
+            figures.push({
+              type: 'circle',
+              attrs: { x: xLeft, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
+            });
+            figures.push({
+              type: 'circle',
+              attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
+            });
+          }
+          if (!overlay?.locked) {
+            const riskHandleY = (stopY < c0.y) ? riskTop : riskBottom;
+            const rewardHandleY = (yTP < c0.y) ? rewardTop : rewardBottom;
+            figures.push({
+              type: 'circle',
+              attrs: { x: xLeft, y: riskHandleY, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'fill', color: '#ef4444', borderColor: '#ffffff', borderSize: 1 }
+            });
+            figures.push({
+              type: 'circle',
+              attrs: { x: xLeft, y: rewardHandleY, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'fill', color: '#10b981', borderColor: '#ffffff', borderSize: 1 }
+            });
+            // Width handles: left-middle and right-middle circles at the entry line
+            figures.push({
+              type: 'circle',
+              attrs: { x: xLeft, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
+            });
+            figures.push({
+              type: 'circle',
+              attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
+              styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
+            });
+          }
           figures.push({
             type: 'text',
             attrs: {
@@ -4118,61 +4076,9 @@ export const KLineChartComponent = ({
         console.warn('📈 KLineChart: Error handling MA Enhanced overlay:', e);
       }
 
-      // ORB Enhanced (on-chart Opening Range Breakout with boxes and fills)
+      // ORB Enhanced (on-chart Opening Range Breakout; markers only, no horizontal lines)
       try {
         const wantOrb = Boolean(settings.indicators?.orbEnhanced);
-      const orbStyles = {
-          lines: [
-            { color: '#26a69a', size: 3 }, // OR High (bull color, thicker)
-            { color: '#ef5350', size: 3 }, // OR Low (bear color, thicker)
-            { color: '#26a69a', size: 2, dashedValue: [4, 4] }, // Buy TP (dashed)
-            { color: '#ef5350', size: 2, dashedValue: [4, 4] }, // Sell TP (dashed)
-            { color: '#ef5350', size: 2, dashedValue: [2, 2] }, // Buy SL (dotted)
-            { color: '#26a69a', size: 2, dashedValue: [2, 2] }, // Sell SL (dotted)
-            { color: '#3B82F6', size: 1 }, // Buy Entry (blue)
-            { color: '#3B82F6', size: 1 }, // Sell Entry (blue)
-            // Zone boundaries (transparent, just for fill)
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-            { color: 'transparent', size: 0 },
-          ],
-          // Fill areas between zones
-          areas: [
-            // Buy profit zone fill (green)
-            {
-              start: 'buyProfitZoneTop',
-              end: 'buyProfitZoneBottom',
-              style: 'solid',
-              color: 'rgba(38, 166, 154, 0.07)', // bull color with transparency
-            },
-            // Buy risk zone fill (red)
-            {
-              start: 'buyRiskZoneTop',
-              end: 'buyRiskZoneBottom',
-              style: 'solid',
-              color: 'rgba(239, 83, 80, 0.05)', // bear color with transparency
-            },
-            // Sell profit zone fill (red)
-            {
-              start: 'sellProfitZoneTop',
-              end: 'sellProfitZoneBottom',
-              style: 'solid',
-              color: 'rgba(239, 83, 80, 0.07)', // bear color with transparency
-            },
-            // Sell risk zone fill (green)
-            {
-              start: 'sellRiskZoneTop',
-              end: 'sellRiskZoneBottom',
-              style: 'solid',
-              color: 'rgba(38, 166, 154, 0.05)', // bull color with transparency
-            },
-          ],
-        };
         const existingOrb = typeof chartRef.current.getIndicators === 'function'
           ? chartRef.current.getIndicators({ name: 'ORB_ENH' })
           : [];
@@ -4186,9 +4092,9 @@ export const KLineChartComponent = ({
           const startMinute = Math.max(0, Math.min(59, Number(orbCfg.startMinute) || 15));
           const orPeriod = Math.max(1, Number(orbCfg.orPeriod) || 1);
           const targetRR = Math.max(0.5, Number(orbCfg.targetRR) || 4.0);
-          const indicatorArg = { name: 'ORB_ENH', calcParams: [startHour, startMinute, orPeriod, targetRR], styles: orbStyles };
+          const indicatorArg = { name: 'ORB_ENH', calcParams: [startHour, startMinute, orPeriod, targetRR] };
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
-          console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane with boxes and fills');
+          console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane (markers only)');
         } else if (hasOrb) {
           chartRef.current.removeIndicator({ name: 'ORB_ENH' });
           console.log('📈 KLineChart: ORB Enhanced overlay removed');
@@ -4492,6 +4398,51 @@ export const KLineChartComponent = ({
       } catch (_) { /* ignore */ }
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.orbEnhanced, orbStats, settings?.symbol]);
+
+  // Programmatic ORB position overlays (long/short) with locked interaction
+  useEffect(() => {
+    try {
+      const chart = chartRef.current;
+      if (!chart) return;
+      // Remove previously created ORB position overlays
+      try {
+        const ids = Array.isArray(orbPositionOverlayIdsRef.current) ? orbPositionOverlayIdsRef.current : [];
+        ids.forEach((id) => {
+          try { chart.removeOverlay({ id }); } catch (_) {}
+          try { chart.removeOverlay(id); } catch (_) {}
+        });
+      } catch (_) { /* ignore */ }
+      orbPositionOverlayIdsRef.current = [];
+
+      if (!settings?.indicators?.orbEnhanced || !orbStats) return;
+      if (!orbStats.isSuitableTimeframe) return; // enforce ≤ 1h
+
+      const addPosition = (name, ts, entry, stop, target) => {
+        if (!Number.isFinite(ts) || !Number.isFinite(entry)) return;
+        const spec = {
+          name,
+          paneId: 'candle_pane',
+          points: [{ timestamp: ts, value: entry }],
+          stopValue: Number(stop),
+          targetValue: Number(target),
+          widthPx: POSITION_OVERLAY_WIDTH_PX,
+          qty: 1,
+          locked: true,
+        };
+        try {
+          const ov = chart.createOverlay(spec);
+          const id = (ov && (ov.id || ov)) || null;
+          if (id) orbPositionOverlayIdsRef.current.push(id);
+        } catch (_) { /* ignore */ }
+      };
+
+      if (orbStats.buyTaken && orbStats.buyEntry != null && orbStats.buySL != null && orbStats.buyTP != null && orbStats.buyTs != null) {
+        addPosition('longPosition', orbStats.buyTs, orbStats.buyEntry, orbStats.buySL, orbStats.buyTP);
+      } else if (orbStats.sellTaken && orbStats.sellEntry != null && orbStats.sellSL != null && orbStats.sellTP != null && orbStats.sellTs != null) {
+        addPosition('shortPosition', orbStats.sellTs, orbStats.sellEntry, orbStats.sellSL, orbStats.sellTP);
+      }
+    } catch (_) { /* ignore */ }
+  }, [settings?.indicators?.orbEnhanced, orbStats]);
 
   // Programmatic S/R BREAK and Wick badges on chart (using 'text' overlay)
   useEffect(() => {
@@ -5045,7 +4996,7 @@ export const KLineChartComponent = ({
 
               // Threshold in pixels to count as clicking on the line
               const THRESHOLD = 8;
-              if (best.overlay && best.dist <= THRESHOLD) {
+              if (best.overlay && !best.overlay.locked && best.dist <= THRESHOLD) {
                 setSelectedOverlayPanel({
                   id: best.overlay.id,
                   name: best.overlay.name,
@@ -5085,6 +5036,8 @@ export const KLineChartComponent = ({
               let found = null;
               posOverlays.forEach((ov) => {
                 try {
+                  // Skip locked programmatic overlays
+                  if (ov && ov.locked) return;
                   const pts = Array.isArray(ov.points) ? ov.points : [];
                   const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
                   const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null; // entry
