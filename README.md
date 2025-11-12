@@ -42,3 +42,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Notes
 - klinecharts v10 convention: single-click overlays use `totalStep = 1` and finalize immediately
+
+## KLineChart Loading & Error States
+- Default behavior shows a loading spinner first when the dashboard opens or reloads (label: "Loading Trading Chart...").
+- On successful initialization and first data apply, the chart renders and follows real-time.
+- If initialization or first data update fails, the component exits the initial loading state and displays a clear error panel with a retry action.
+- Error display is suppressed during the initial loading phase to prevent transient flicker.
+- When embedded via `UnifiedChart` with `chartType === 'candlestick'`, the page-level loader is suppressed and the inner KLineChart spinner is used to avoid duplicate loaders.

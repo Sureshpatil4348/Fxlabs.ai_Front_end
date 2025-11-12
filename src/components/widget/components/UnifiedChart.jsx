@@ -676,7 +676,8 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
 
     // Initialize wishlist WebSocket (temporarily disabled to fix main chart)
 
-    if (isLoading) {
+    // For candlestick (KLineChart), let the inner component handle its own initial loader
+    if (isLoading && settings.chartType !== "candlestick") {
         return (
             <div className="flex-1 bg-white flex items-start justify-center pt-16 h-full">
                 <div className="text-center">

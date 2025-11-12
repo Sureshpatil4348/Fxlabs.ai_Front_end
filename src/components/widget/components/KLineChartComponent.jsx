@@ -3486,6 +3486,8 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 Error initializing K-line chart:', error);
       setError(error instanceof Error ? error.message : 'Failed to initialize K-line chart');
+      // End initial loading if initialization fails
+      setIsInitialLoad(false);
     }
   }, [settings.showGrid, setKLineChartRef, settings.timezone]); // Include timezone for initial setup
 
@@ -3911,6 +3913,8 @@ export const KLineChartComponent = ({
     } catch (error) {
       console.error('📈 Error updating K-line chart data:', error);
       setError(error instanceof Error ? error.message : 'Failed to update chart data');
+      // End initial loading if data update fails
+      setIsInitialLoad(false);
       isLoadingRef.current = false;
     }
   }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll, hasMoreHistory, onLoadMoreHistory]);
@@ -5237,14 +5241,14 @@ export const KLineChartComponent = ({
           }}
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active) { positionDragRef.current = { active: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0 }; } }}
         >
-          {!chartRef.current && (
+          {(isInitialLoad || (!chartRef.current && !error)) && (
             <div className="absolute inset-0 flex items-start justify-center pt-16 bg-gradient-to-br from-gray-50 to-gray-100 z-10">
               <div className="text-center">
                 <div className="relative inline-block">
                   <div className="w-12 h-12 border-4 border-gray-300 rounded-full"></div>
                   <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
-                <p className="text-gray-700 mt-3 text-sm font-medium">Loading K-line Chart...</p>
+                <p className="text-gray-700 mt-3 text-sm font-medium">Loading Trading Chart...</p>
               </div>
             </div>
           )}
@@ -5769,7 +5773,7 @@ export const KLineChartComponent = ({
             </div>
           )}
           
-          {error && chartRef.current && (
+          {!isInitialLoad && error && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4 z-10">
               <div className="text-center mb-4">
                 <div className="text-6xl mb-4">⚠️</div>
@@ -5787,18 +5791,6 @@ export const KLineChartComponent = ({
               >
                 Retry Chart
               </button>
-            </div>
-          )}
-          
-          {!chartRef.current && error && (
-            <div className="absolute inset-0 flex items-start justify-center pt-16 bg-gradient-to-br from-gray-50 to-gray-100 z-10">
-              <div className="text-center">
-                <div className="relative inline-block">
-                  <div className="w-12 h-12 border-4 border-gray-300 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
-                </div>
-                <p className="text-gray-700 mt-3 text-sm font-medium">Loading K-line Chart...</p>
-              </div>
             </div>
           )}
           
