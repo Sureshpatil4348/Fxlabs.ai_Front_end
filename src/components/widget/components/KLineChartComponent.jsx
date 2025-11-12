@@ -1879,7 +1879,7 @@ export const KLineChartComponent = ({
     // Register Short Position overlay - Single click (1:1 RR, to the right)
     registerOverlay({
       name: 'shortPosition',
-      totalStep: 1,
+      totalStep: 2, // Changed from 1 to 2 to allow multiple instances
       createPointFigures: ({ chart, coordinates, overlay, bounding: _bounding, yAxis }) => {
         const figures = [];
         const pts = overlay?.points || [];
@@ -2215,6 +2215,18 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
       },
+      performEventPressedMove: ({ overlay }) => {
+        // Auto-complete the overlay after first point (simulate 2nd click)
+        // This allows totalStep: 2 to work like totalStep: 1
+        try {
+          const pts = overlay?.points || [];
+          if (pts.length === 1) {
+            // Auto-add a second point at the same location to complete the overlay
+            return { points: [pts[0], { ...pts[0] }] };
+          }
+        } catch (_) {}
+        return {};
+      },
       onDrawEnd: ({ overlay }) => {
         try {
           // Safety check: Remove overlay if it's not on the candle pane
@@ -2229,15 +2241,45 @@ export const KLineChartComponent = ({
               return;
             }
           }
-        } catch (_) { /* ignore */ }
-        console.log('📉 Short Position tool drawn:', overlay);
+          
+          console.log('📉 Short Position onDrawEnd called for overlay:', overlay?.id, 'name:', overlay?.name);
+          
+          // CRITICAL: Auto-deactivate the tool after drawing completes
+          // This allows clicking the tool button again to create a NEW instance
+          // instead of replacing the current one
+          try {
+            const chart = chartRef.current;
+            if (chart && typeof chart._handleDrawingToolChange === 'function') {
+              chart._handleDrawingToolChange(null); // Deactivate
+              console.log('🔄 Short Position tool auto-deactivated');
+            }
+          } catch (e) {
+            console.warn('Error deactivating tool:', e);
+          }
+          
+          // DEBUG: Check overlays after drawing completes
+          try {
+            const chart = chartRef.current;
+            if (chart) {
+              setTimeout(() => {
+                const after = chart.getOverlays?.() || chart.getAllOverlays?.() || [];
+                const positions = after.filter(o => o && (o.name === 'shortPosition' || o.name === 'longPosition'));
+                console.log('📊 Total overlays after drawing:', after.length, 'Position overlays:', positions.length, positions.map(o => o.id));
+              }, 50);
+            }
+          } catch (e) {
+            console.warn('Error checking overlays:', e);
+          }
+        } catch (err) {
+          console.warn('Error in onDrawEnd:', err);
+        }
       },
     });
 
     // Register Long Position overlay - Single click (1:1 RR, to the right)
     registerOverlay({
       name: 'longPosition',
-      totalStep: 1,
+      totalStep: 2, // Changed from 1 to 2 to allow multiple instances
       createPointFigures: ({ chart, coordinates, overlay, bounding: _bounding, yAxis }) => {
         const figures = [];
         const pts = overlay?.points || [];
@@ -2546,6 +2588,18 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
       },
+      performEventPressedMove: ({ overlay }) => {
+        // Auto-complete the overlay after first point (simulate 2nd click)
+        // This allows totalStep: 2 to work like totalStep: 1
+        try {
+          const pts = overlay?.points || [];
+          if (pts.length === 1) {
+            // Auto-add a second point at the same location to complete the overlay
+            return { points: [pts[0], { ...pts[0] }] };
+          }
+        } catch (_) {}
+        return {};
+      },
       onDrawEnd: ({ overlay }) => {
         try {
           // Safety check: Remove overlay if it's not on the candle pane
@@ -2560,8 +2614,38 @@ export const KLineChartComponent = ({
               return;
             }
           }
-        } catch (_) { /* ignore */ }
-        console.log('📈 Long Position tool drawn:', overlay);
+          
+          console.log('📈 Long Position onDrawEnd called for overlay:', overlay?.id, 'name:', overlay?.name);
+          
+          // CRITICAL: Auto-deactivate the tool after drawing completes
+          // This allows clicking the tool button again to create a NEW instance
+          // instead of replacing the current one
+          try {
+            const chart = chartRef.current;
+            if (chart && typeof chart._handleDrawingToolChange === 'function') {
+              chart._handleDrawingToolChange(null); // Deactivate
+              console.log('🔄 Long Position tool auto-deactivated');
+            }
+          } catch (e) {
+            console.warn('Error deactivating tool:', e);
+          }
+          
+          // DEBUG: Check overlays after drawing completes
+          try {
+            const chart = chartRef.current;
+            if (chart) {
+              setTimeout(() => {
+                const after = chart.getOverlays?.() || chart.getAllOverlays?.() || [];
+                const positions = after.filter(o => o && (o.name === 'shortPosition' || o.name === 'longPosition'));
+                console.log('📊 Total overlays after drawing:', after.length, 'Position overlays:', positions.length, positions.map(o => o.id));
+              }, 50);
+            }
+          } catch (e) {
+            console.warn('Error checking overlays:', e);
+          }
+        } catch (err) {
+          console.warn('Error in onDrawEnd:', err);
+        }
       },
     });
 
@@ -3346,6 +3430,13 @@ export const KLineChartComponent = ({
         try {
           if (!toolType) return; // deactivated
           if (typeof chart.createOverlay === 'function') {
+            // DEBUG: Log existing overlays before creating new one
+            try {
+              const existing = chart.getOverlays?.() || chart.getAllOverlays?.() || [];
+              const positionOverlays = existing.filter(o => o && (o.name === 'shortPosition' || o.name === 'longPosition'));
+              console.log('📊 Existing position overlays BEFORE creation:', positionOverlays.length, positionOverlays.map(o => ({ id: o.id, name: o.name })));
+            } catch (_) {}
+            
             // Prefer built-in, battle-tested overlays where available
             const overlayMap = {
               trendLine: 'segment', // 2-point segment
@@ -3358,19 +3449,32 @@ export const KLineChartComponent = ({
               verticalLine: 'verticalStraightLine',
             };
             const name = overlayMap[toolType] || toolType;
+            
+            // SIMPLE FIX: Just pass name and paneId, let KlineChart handle IDs
+            const overlayConfig = { name, paneId: 'candle_pane' };
+            console.log('📈 Creating overlay:', toolType, '→', name);
+            
             try {
               // Preferred signature (v10+) - ALWAYS restrict to candle_pane only
-              chart.createOverlay({ name, paneId: 'candle_pane' });
+              chart.createOverlay(overlayConfig);
             } catch (_e) {
               // Fallback with paneId restriction
               try {
-                chart.createOverlay({ name, paneId: 'candle_pane' });
+                chart.createOverlay(overlayConfig);
               } catch (_e2) {
                 // Last resort fallback (older API versions)
                 chart.createOverlay(name);
               }
             }
-            console.log('📈 Overlay creation started for tool:', name, '(restricted to candle_pane)');
+            
+            // DEBUG: Log overlays immediately after creation
+            setTimeout(() => {
+              try {
+                const after = chart.getOverlays?.() || chart.getAllOverlays?.() || [];
+                const positionOverlays = after.filter(o => o && (o.name === 'shortPosition' || o.name === 'longPosition'));
+                console.log('📊 Existing position overlays AFTER creation:', positionOverlays.length, positionOverlays.map(o => ({ id: o.id, name: o.name })));
+              } catch (_) {}
+            }, 100);
           }
         } catch (err) {
           console.warn('📈 Error activating drawing tool:', err);

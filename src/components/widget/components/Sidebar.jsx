@@ -51,9 +51,27 @@ export const Sidebar = () => {
   const handleKLineToolSelect = (toolId, toolName, event) => {
     if (klineChartRef && klineChartRef._handleDrawingToolChange) {
       try {
-        klineChartRef._handleDrawingToolChange(toolId);
-        setActiveTool(toolId);
-        console.log('📈 KLine Drawing tool activated:', toolId);
+        // CRITICAL FIX: For position tools, always deactivate first, then reactivate
+        // This ensures each button click starts a fresh drawing session
+        const isPositionTool = (toolId === 'shortPosition' || toolId === 'longPosition');
+        
+        if (isPositionTool && activeTool === toolId) {
+          // Tool is already active - deactivate first, then reactivate after a brief delay
+          console.log('🔄 Position tool already active, cycling...');
+          klineChartRef._handleDrawingToolChange(null);
+          setActiveTool(null);
+          
+          setTimeout(() => {
+            klineChartRef._handleDrawingToolChange(toolId);
+            setActiveTool(toolId);
+            console.log('📈 KLine Drawing tool reactivated:', toolId);
+          }, 100);
+        } else {
+          // Normal activation
+          klineChartRef._handleDrawingToolChange(toolId);
+          setActiveTool(toolId);
+          console.log('📈 KLine Drawing tool activated:', toolId);
+        }
         
         // Show click toast positioned next to the clicked button
         if (event && event.currentTarget) {
