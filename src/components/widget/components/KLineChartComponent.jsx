@@ -28,6 +28,14 @@ export const KLineChartComponent = ({
   const [error, setError] = useState(null);
   const [_currentOHLC, setCurrentOHLC] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Helper: check if error should be suppressed from UI (but still logged)
+  const shouldSuppressError = useCallback((err) => {
+    if (!err) return false;
+    const msg = err instanceof Error ? err.message : String(err);
+    // Suppress setOptions-related errors (API compatibility issues)
+    return msg.includes('setOptions') || msg.includes('i.setOptions');
+  }, []);
   const initialBarSpaceRef = useRef(null);
   const [isHoveringBelowPanes, setIsHoveringBelowPanes] = useState(false);
   const [isHoveringOnChartOverlays, setIsHoveringOnChartOverlays] = useState(false);
@@ -3558,11 +3566,14 @@ export const KLineChartComponent = ({
       };
     } catch (error) {
       console.error('📈 Error initializing K-line chart:', error);
-      setError(error instanceof Error ? error.message : 'Failed to initialize K-line chart');
+      // Only show error in UI if it's not a suppressed error type
+      if (!shouldSuppressError(error)) {
+        setError(error instanceof Error ? error.message : 'Failed to initialize K-line chart');
+      }
       // End initial loading if initialization fails
       setIsInitialLoad(false);
     }
-  }, [settings.showGrid, setKLineChartRef, settings.timezone]); // Include timezone for initial setup
+  }, [settings.showGrid, setKLineChartRef, settings.timezone, shouldSuppressError]); // Include timezone for initial setup
 
   // Apply cursor mode (crosshair, pointer, grab) for KLine chart
   // - Crosshair: enable chart crosshair and set cursor to crosshair
@@ -3848,8 +3859,8 @@ export const KLineChartComponent = ({
         } else {
           // Normal incremental path
           safeLatestCandles.forEach((candle) => {
-            chartRef.current.updateData(candle);
-          });
+          chartRef.current.updateData(candle);
+        });
         }
 
         if (chartRef.current.setOptions) {
@@ -4004,12 +4015,15 @@ export const KLineChartComponent = ({
       prevLastTimestampRef.current = lastTimestamp;
     } catch (error) {
       console.error('📈 Error updating K-line chart data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update chart data');
+      // Only show error in UI if it's not a suppressed error type
+      if (!shouldSuppressError(error)) {
+        setError(error instanceof Error ? error.message : 'Failed to update chart data');
+      }
       // End initial loading if data update fails
       setIsInitialLoad(false);
       isLoadingRef.current = false;
     }
-  }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll, hasMoreHistory, onLoadMoreHistory]);
+  }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll, hasMoreHistory, onLoadMoreHistory, shouldSuppressError]);
 
   // Handle indicator visibility changes
   useEffect(() => {
