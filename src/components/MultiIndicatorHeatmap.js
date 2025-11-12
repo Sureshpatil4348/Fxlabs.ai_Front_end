@@ -138,7 +138,7 @@ const MultiIndicatorHeatmapSkeleton = () => {
   );
 };
 
-// Shimmer Skeleton for Trading Meter
+// Shimmer Skeleton for Trend Meter
 const TradingMeterSkeleton = () => {
   return (
     <Card className="shadow-lg bg-white dark:bg-[#19235d] border border-gray-200 dark:border-gray-700 rounded-lg p-3">
@@ -706,9 +706,9 @@ useEffect(() => {
               </thead>
             </table>
           </div>
-          {/* Right: Trading Meter Header (desktop only) */}
+          {/* Right: Trend Meter Header (desktop only) */}
           <div className="w-96 xl:w-[28rem] shrink-0 text-center py-0.5 px-0.5">
-            <span className={`text-sm font-bold text-[#19235d] dark:text-gray-200 ${isInitialLoading ? 'shimmer-text' : ''}`}>Trading Meter</span>
+            <span className={`text-sm font-bold text-[#19235d] dark:text-gray-200 ${isInitialLoading ? 'shimmer-text' : ''}`}>Trend Meter</span>
           </div>
         </div>
 
@@ -979,12 +979,12 @@ useEffect(() => {
         </div>
         </div>
 
-        {/* Mobile Layout - Trading Meter First, Then Table */}
+        {/* Mobile Layout - Trend Meter First, Then Table */}
         <div className="lg:hidden flex flex-col gap-3 pt-1.5">
-          {/* Trading Meter Section - Above Table on Mobile */}
+          {/* Trend Meter Section - Above Table on Mobile */}
           <div className="w-full px-2">
             <div className="text-center py-1 mb-2 border-b border-gray-200 dark:border-slate-600 pb-3">
-              <span className={`text-sm font-bold text-[#19235d] dark:text-gray-200 ${isInitialLoading ? 'shimmer-text' : ''}`}>Trading Meter</span>
+              <span className={`text-sm font-bold text-[#19235d] dark:text-gray-200 ${isInitialLoading ? 'shimmer-text' : ''}`}>Trend Meter</span>
             </div>
             {isInitialLoading ? (
               <TradingMeterSkeleton />
