@@ -37,7 +37,13 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 **Removing a Preset:**
 - Click an active preset → Only preset indicators are removed
 - Non-preset indicators remain active
-- Example: If you have Moneytize preset + Support/Resistance Pro active, clicking Moneytize removes only the 4 Moneytize indicators
+- Example: If you have Moneytize preset + Support/Resistance Pro active, clicking Moneytize removes only the 3 Moneytize indicators
+
+**Switching Between Presets:**
+- Clicking a different preset automatically removes the previous preset's indicators first
+- Then applies the new preset's indicators
+- Example: Moneytize active → Click Trend Scalper → Moneytize indicators removed, Trend Scalper indicators applied
+- Non-preset indicators remain untouched during switches
 
 **Limit Checking:**
 - On-chart indicators: Max 3 (Trend Strategy, Bollinger Bands Pro, Moving Average Pro, Breakout Strategy, Super Trend Pro, Support/Resistance Pro)

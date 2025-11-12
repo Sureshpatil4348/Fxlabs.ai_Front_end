@@ -13,7 +13,6 @@ function TradingChart() {
   const [activePreset, setActivePreset] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [hoveredPreset, setHoveredPreset] = useState(null);
   const errorTimeoutRef = useRef(null);
 
   // Indicator groups and limits (same as in TradingViewHeader)
@@ -21,19 +20,6 @@ function TradingChart() {
   const BELOW_CHART_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
   const ON_CHART_LIMIT = 3;
   const BELOW_CHART_LIMIT = 2;
-
-  // Indicator display names for UI
-  const indicatorNames = {
-    rsiEnhanced: 'RSI - Pro',
-    atrEnhanced: 'ATR - Pro',
-    bbPro: 'Bollinger Bands - Pro',
-    maEnhanced: 'Moving Average - Pro',
-    orbEnhanced: 'Breakout Strategy',
-    stEnhanced: 'Super Trend - Pro',
-    srEnhanced: 'Support/Resistance - Pro',
-    macdEnhanced: 'MACD - Pro',
-    emaTouch: 'Trend Strategy',
-  };
 
   // Carefully selected indicator presets (respecting limits: 3 on-chart, 2 below-chart)
   const indicatorPresets = [
@@ -71,15 +57,6 @@ function TradingChart() {
   // Check if a preset is currently active
   const isPresetActive = (preset) => {
     return preset.indicators.every((ind) => settings.indicators?.[ind]);
-  };
-
-  // Get which indicators from preset are already on chart
-  const getPresetIndicatorStatus = (preset) => {
-    return preset.indicators.map((ind) => ({
-      key: ind,
-      name: indicatorNames[ind] || ind,
-      isActive: !!settings.indicators?.[ind]
-    }));
   };
 
   // Handle Escape key to close fullscreen
@@ -126,6 +103,20 @@ function TradingChart() {
       });
       setActivePreset(null);
       return;
+    }
+
+    // If switching from another preset, remove the previous preset's indicators first
+    if (activePreset && activePreset !== preset.id) {
+      const previousPreset = indicatorPresets.find(p => p.id === activePreset);
+      if (previousPreset) {
+        // Remove all indicators from previous preset
+        previousPreset.indicators.forEach((ind) => {
+          if (settings.indicators?.[ind]) {
+            toggleIndicator(ind);
+          }
+        });
+        console.log(`🔄 Switching presets: removed "${previousPreset.name}" indicators`);
+      }
     }
 
     // Check which indicators from preset are already active
@@ -197,71 +188,25 @@ function TradingChart() {
             )}
 
             <div className="flex items-center justify-between">
-              {/* Left Side - Preset Buttons with Hover Tooltips */}
+              {/* Left Side - Preset Buttons */}
               <div className="flex items-center">
                 <div className="flex items-center gap-1 bg-white">
-                  {indicatorPresets.map((preset, index) => {
-                    const indicatorStatus = getPresetIndicatorStatus(preset);
-                    const presetIsActive = activePreset === preset.id;
-
-                    return (
-                      <React.Fragment key={preset.id}>
-                        {index > 0 && <div className="h-6 w-px bg-gray-300 mx-2"></div>}
-                        <div
-                          className="relative group"
-                          onMouseEnter={() => setHoveredPreset(preset.id)}
-                          onMouseLeave={() => setHoveredPreset(null)}
-                        >
-                          <button
-                            onClick={() => handlePresetSelect(preset)}
-                            className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
-                              presetIsActive
-                                ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg'
-                            }`}
-                          >
-                            {preset.name}
-                          </button>
-
-                          {/* Hover Tooltip showing preset indicators */}
-                          {hoveredPreset === preset.id && (
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-[10000] pointer-events-none">
-                              <div className="bg-gray-900 text-white px-3 py-2 rounded-lg shadow-xl text-xs min-w-[200px]">
-                                <div className="font-semibold mb-2 text-emerald-400">{preset.name} Preset</div>
-                                <div className="space-y-1">
-                                  {indicatorStatus.map((ind) => (
-                                    <div key={ind.key} className="flex items-center gap-2">
-                                      <div
-                                        className={`w-2 h-2 rounded-full ${
-                                          ind.isActive ? 'bg-emerald-400' : 'bg-gray-500'
-                                        }`}
-                                      />
-                                      <span className={ind.isActive ? 'text-emerald-300' : 'text-gray-300'}>
-                                        {ind.name}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="mt-2 pt-2 border-t border-gray-700 text-[10px] text-gray-400">
-                                  {presetIsActive
-                                    ? 'Click to remove these indicators'
-                                    : indicatorStatus.every((ind) => ind.isActive)
-                                    ? 'All indicators active'
-                                    : indicatorStatus.some((ind) => ind.isActive)
-                                    ? 'Click to activate remaining'
-                                    : 'Click to activate all'}
-                                </div>
-                              </div>
-                              {/* Arrow pointer */}
-                              <div className="absolute left-1/2 top-full -translate-x-1/2 -mt-1">
-                                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </React.Fragment>
-                    );
-                  })}
+                  {indicatorPresets.map((preset, index) => (
+                    <React.Fragment key={preset.id}>
+                      {index > 0 && <div className="h-6 w-px bg-gray-300 mx-2"></div>}
+                      <button
+                        onClick={() => handlePresetSelect(preset)}
+                        className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
+                          activePreset === preset.id
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                        title={preset.description}
+                      >
+                        {preset.name}
+                      </button>
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
 
