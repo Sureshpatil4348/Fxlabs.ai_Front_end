@@ -9,7 +9,7 @@ import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
 
 function TradingChart() {
-  const { settings, toggleGrid, toggleIndicator } = useChartStore();
+  const { settings, toggleGrid, setIndicatorsPreset } = useChartStore();
   const [activePreset, setActivePreset] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -96,67 +96,77 @@ function TradingChart() {
 
     if (presetIsActive) {
       // Clicking active preset: remove only preset indicators, keeping extras
+      const updates = {};
       preset.indicators.forEach((ind) => {
         if (settings.indicators?.[ind]) {
-          toggleIndicator(ind);
+          updates[ind] = false;
         }
       });
+      setIndicatorsPreset(updates);
       setActivePreset(null);
+      console.log(`❌ Preset "${preset.name}": removed all indicators`);
       return;
     }
 
-    // If switching from another preset, remove the previous preset's indicators first
+    // Calculate the final desired state
+    // Step 1: Start with current indicator state
+    const finalState = { ...settings.indicators };
+
+    // Step 2: If switching from another preset, turn off those indicators
     if (activePreset && activePreset !== preset.id) {
       const previousPreset = indicatorPresets.find(p => p.id === activePreset);
       if (previousPreset) {
-        // Remove all indicators from previous preset
         previousPreset.indicators.forEach((ind) => {
-          if (settings.indicators?.[ind]) {
-            toggleIndicator(ind);
-          }
+          finalState[ind] = false;
         });
-        console.log(`🔄 Switching presets: removed "${previousPreset.name}" indicators`);
+        console.log(`🔄 Switching: removing "${previousPreset.name}" indicators`);
       }
     }
 
-    // Check which indicators from preset are already active
-    const alreadyActive = preset.indicators.filter((ind) => settings.indicators?.[ind]);
-    const needToActivate = preset.indicators.filter((ind) => !settings.indicators?.[ind]);
-
-    // Check limits for indicators we need to activate
-    const needOnChart = needToActivate.filter((ind) => ON_CHART_KEYS.includes(ind));
-    const needBelowChart = needToActivate.filter((ind) => BELOW_CHART_KEYS.includes(ind));
-
-    const currentOnChart = countActive(ON_CHART_KEYS);
-    const currentBelowChart = countActive(BELOW_CHART_KEYS);
-
-    const newOnChart = currentOnChart + needOnChart.length;
-    const newBelowChart = currentBelowChart + needBelowChart.length;
-
-    // Check if limits would be exceeded
-    if (newOnChart > ON_CHART_LIMIT) {
-      showError(`Cannot apply preset: would exceed on-chart indicator limit (${ON_CHART_LIMIT} max). Currently ${currentOnChart}/3, preset needs ${needOnChart.length} more.`);
-      return;
-    }
-
-    if (newBelowChart > BELOW_CHART_LIMIT) {
-      showError(`Cannot apply preset: would exceed below-chart indicator limit (${BELOW_CHART_LIMIT} max). Currently ${currentBelowChart}/2, preset needs ${needBelowChart.length} more.`);
-      return;
-    }
-
-    // Apply preset: only activate indicators that aren't already active
-    needToActivate.forEach((ind) => {
-      toggleIndicator(ind);
+    // Step 3: Turn on all indicators from the new preset
+    preset.indicators.forEach((ind) => {
+      finalState[ind] = true;
     });
 
-    // Log for debugging
-    if (alreadyActive.length > 0) {
-      console.log(`✅ Preset "${preset.name}": kept ${alreadyActive.length} existing indicator(s), activated ${needToActivate.length} new`);
-    } else {
-      console.log(`✅ Preset "${preset.name}": activated all ${needToActivate.length} indicators`);
+    // Step 4: Count how many will be active in final state
+    const finalOnChart = ON_CHART_KEYS.reduce((acc, k) => acc + (finalState[k] ? 1 : 0), 0);
+    const finalBelowChart = BELOW_CHART_KEYS.reduce((acc, k) => acc + (finalState[k] ? 1 : 0), 0);
+
+    // Step 5: Check limits based on FINAL state
+    if (finalOnChart > ON_CHART_LIMIT) {
+      showError(`Cannot apply preset: would exceed on-chart indicator limit (${ON_CHART_LIMIT} max). Final count would be ${finalOnChart}/${ON_CHART_LIMIT}.`);
+      return;
     }
 
+    if (finalBelowChart > BELOW_CHART_LIMIT) {
+      showError(`Cannot apply preset: would exceed below-chart indicator limit (${BELOW_CHART_LIMIT} max). Final count would be ${finalBelowChart}/${BELOW_CHART_LIMIT}.`);
+      return;
+    }
+
+    // Step 6: Apply all changes atomically
+    const updates = {};
+    preset.indicators.forEach((ind) => {
+      updates[ind] = true;
+    });
+    
+    // Also remove previous preset indicators if switching
+    if (activePreset && activePreset !== preset.id) {
+      const previousPreset = indicatorPresets.find(p => p.id === activePreset);
+      if (previousPreset) {
+        previousPreset.indicators.forEach((ind) => {
+          updates[ind] = false;
+        });
+      }
+    }
+    
+    // Apply new preset indicators (these will override the false values if there's overlap)
+    preset.indicators.forEach((ind) => {
+      updates[ind] = true;
+    });
+
+    setIndicatorsPreset(updates);
     setActivePreset(preset.id);
+    console.log(`✅ Preset "${preset.name}": applied (on-chart: ${finalOnChart}/${ON_CHART_LIMIT}, below-chart: ${finalBelowChart}/${BELOW_CHART_LIMIT})`);
   };
 
   // Render the main widget content
