@@ -12,6 +12,8 @@ const defaultSettings = {
   // Auto-detect system timezone by default
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
+  // Split mode settings
+  isSplitMode: false,
   // Per-indicator configuration
   indicatorSettings: {
     rsiEnhanced: {
@@ -91,6 +93,22 @@ const defaultSettings = {
     stEnhanced: false,
     srEnhanced: false,
     macdEnhanced: false,
+  },
+  // Split chart settings (for the second chart in split mode)
+  splitChart: {
+    symbol: 'GBPUSD',
+    timeframe: '1h',
+    indicators: {
+      rsiEnhanced: true,
+      emaTouch: false,
+      atrEnhanced: false,
+      bbPro: false,
+      maEnhanced: false,
+      orbEnhanced: false,
+      stEnhanced: false,
+      srEnhanced: false,
+      macdEnhanced: false,
+    }
   }
 };
 
@@ -412,6 +430,59 @@ export const useChartStore = create(
         hasMoreHistory: true, 
         isLoadingHistory: false 
       }),
+
+      // Split mode actions
+      toggleSplitMode: () => {
+        console.log('💾 ChartStore: Toggling split mode');
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            isSplitMode: !state.settings.isSplitMode
+          }
+        }));
+      },
+
+      setSplitChartSymbol: (symbol) => {
+        console.log('💾 ChartStore: Setting split chart symbol to', symbol);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            splitChart: {
+              ...state.settings.splitChart,
+              symbol
+            }
+          }
+        }));
+      },
+
+      setSplitChartTimeframe: (timeframe) => {
+        console.log('💾 ChartStore: Setting split chart timeframe to', timeframe);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            splitChart: {
+              ...state.settings.splitChart,
+              timeframe
+            }
+          }
+        }));
+      },
+
+      toggleSplitChartIndicator: (indicator) => {
+        console.log('💾 ChartStore: Toggling split chart indicator', indicator);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            splitChart: {
+              ...state.settings.splitChart,
+              indicators: {
+                ...state.settings.splitChart.indicators,
+                [indicator]: !state.settings.splitChart.indicators[indicator]
+              }
+            }
+          }
+        }));
+      },
     }),
     {
       name: 'tradingview-chart-storage',
@@ -436,6 +507,27 @@ export const useChartStore = create(
             // Enforce candlestick-only mode on rehydrate
             if (_state.settings.chartType !== 'candlestick') {
               _state.settings.chartType = 'candlestick';
+            }
+            // Ensure split mode settings exist (migration for existing users)
+            if (!_state.settings.isSplitMode) {
+              _state.settings.isSplitMode = false;
+            }
+            if (!_state.settings.splitChart) {
+              _state.settings.splitChart = {
+                symbol: 'GBPUSD',
+                timeframe: '1h',
+                indicators: {
+                  rsiEnhanced: true,
+                  emaTouch: false,
+                  atrEnhanced: false,
+                  bbPro: false,
+                  maEnhanced: false,
+                  orbEnhanced: false,
+                  stEnhanced: false,
+                  srEnhanced: false,
+                  macdEnhanced: false,
+                }
+              };
             }
           } catch (_e) {
             // noop

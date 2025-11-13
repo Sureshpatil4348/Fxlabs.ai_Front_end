@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
+import { SplitChartPanel } from './components/SplitChartPanel.jsx';
 import { TradingViewHeader } from './components/TradingViewHeader.jsx';
 import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
@@ -182,17 +183,19 @@ function TradingChart() {
       
       {/* Main Content with Sidebar */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <Sidebar />
+        {/* Left Sidebar - hidden in split mode */}
+        {!settings.isSplitMode && <Sidebar />}
         
         {/* Chart Area */}
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <UnifiedChart isFullscreen={isFullscreen} />
-          </div>
-          
-          {/* Bottom Bar */}
-          <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1 relative">
+        {!settings.isSplitMode ? (
+          // Normal single chart view
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <UnifiedChart isFullscreen={isFullscreen} />
+            </div>
+            
+            {/* Bottom Bar */}
+            <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1 relative">
             {/* Error Message Toast */}
             {errorMessage && (
               <div className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 z-[10000]">
@@ -246,7 +249,27 @@ function TradingChart() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        ) : (
+          // Split mode - side-by-side charts
+          <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
+            {/* Left Chart */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden border-r border-gray-200">
+              <SplitChartPanel chartIndex={1} />
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <UnifiedChart isFullscreen={isFullscreen} chartIndex={1} />
+              </div>
+            </div>
+
+            {/* Right Chart */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <SplitChartPanel chartIndex={2} />
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <UnifiedChart isFullscreen={isFullscreen} chartIndex={2} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

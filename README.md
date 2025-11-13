@@ -63,9 +63,49 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 - Green badge: “Target: mm (nn%)”.
 - This reduces on-chart clutter and applies to both long and short position tools.
 
-### Split Button Visibility (KLine Chart)
+### Split Mode (KLine Chart)
 
-- The Split button in the KLine chart header is visible only in fullscreen mode (triggered via the upper-right fullscreen arrow).
+The KLineChart now supports a split mode feature that allows you to view two independent charts side-by-side. This is particularly useful for comparing different currency pairs or timeframes simultaneously.
+
+#### Accessing Split Mode
+
+- The **Split** button in the KLine chart header is visible only in fullscreen mode (triggered via the upper-right fullscreen arrow)
+- Click the **Split** button to enter split mode
+- Click the **Unsplit** button to exit split mode and return to single chart view
+
+#### Split Mode Features
+
+When in split mode:
+
+**Top Panel:**
+- Only displays the **Unsplit** button and **Timezone** selector
+- Preset buttons are hidden
+- Symbol selector, timeframe selector, and indicators dropdown are hidden from the main header
+
+**Each Split Chart:**
+- Has its own independent top panel with:
+  - **Pair Selector**: Choose different currency pairs for each chart
+  - **Timeframe Selector**: Select different timeframes (1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w) for each chart
+  - **Indicators Selector**: Configure indicators independently for each chart
+- Displays charts horizontally (side-by-side)
+- Respects the same indicator limits (3 on-chart, 2 below-chart) per chart
+- Fetches and displays data independently for each chart
+
+**Layout:**
+- Sidebar is hidden in split mode to maximize chart viewing area
+- Charts are evenly divided with a vertical separator
+- Each chart maintains its own data, state, and real-time updates
+- Both charts update independently via WebSocket connections
+
+**Use Cases:**
+- Compare the same pair across different timeframes (e.g., EURUSD 1m vs EURUSD 1h)
+- Monitor multiple pairs simultaneously (e.g., EURUSD vs GBPUSD)
+- Apply different indicator sets to analyze the same pair from multiple perspectives
+- Track correlated pairs for divergence analysis
+
+**Default Configuration:**
+- Left Chart: Uses main chart settings (EURUSD, 1h by default)
+- Right Chart: Default GBPUSD, 1h, RSI Pro enabled
 
 #### Usage Example
 

@@ -19,11 +19,13 @@ import { UniversalDrawingTools } from "./UniversalDrawingTools";
 import useMarketCacheStore from "../../../store/useMarketCacheStore";
 import { realMarketService } from "../services/realMarketService";
 import { useChartStore } from "../stores/useChartStore";
+import { useSplitChartStore } from "../stores/useSplitChartStore";
 import { calculateAllIndicators } from "../utils/indicators";
 
-export const UnifiedChart = ({ isFullscreen = false }) => {
+export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [lineChartKey, setLineChartKey] = useState(0); // Key to force re-render
+    const isMainChart = chartIndex === 1;
 
     // Throttle state for real-time tick updates (avoid per-tick re-renders)
     const tickThrottleLastEmitRef = useRef(0);
@@ -37,10 +39,16 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
         return Number.isFinite(val) && val >= 0 ? val : 0;
     }, []);
 
+    // Use different stores based on chart index
+    const mainChartStore = useChartStore();
+    const splitChartStore = useSplitChartStore();
+    
+    const store = isMainChart ? mainChartStore : splitChartStore;
+    const settings = mainChartStore.settings; // Settings always come from main store
+    
     const {
         candles,
         indicators,
-        settings,
         isLoading,
         error,
         currentPage,
@@ -58,7 +66,28 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
         setLoadingHistory,
         prependCandles,
         resetPagination,
-    } = useChartStore();
+    } = store;
+
+    // Get current settings based on chart index (with fallbacks for safety)
+    const currentSymbol = isMainChart 
+        ? settings.symbol 
+        : (settings.splitChart?.symbol || 'GBPUSD');
+    const currentTimeframe = isMainChart 
+        ? settings.timeframe 
+        : (settings.splitChart?.timeframe || '1h');
+    const currentIndicators = isMainChart 
+        ? settings.indicators 
+        : (settings.splitChart?.indicators || {
+            rsiEnhanced: true,
+            emaTouch: false,
+            atrEnhanced: false,
+            bbPro: false,
+            maEnhanced: false,
+            orbEnhanced: false,
+            stEnhanced: false,
+            srEnhanced: false,
+            macdEnhanced: false,
+        });
 
     // Determine how many initial bars to load.
     // Business rule: always fetch 150 candles via REST `limit` param.
@@ -85,7 +114,7 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
     useEffect(() => {
         preloadSessionRef.current += 1;
         backgroundPreloadStartedRef.current = false;
-    }, [settings.symbol, settings.timeframe]);
+    }, [currentSymbol, currentTimeframe]);
 
     // Create lookup maps for better performance
     const indicatorMaps = useMemo(() => {
@@ -197,9 +226,9 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
     // Performance optimized - removed debug logging for better performance
 
     // Calculate price information - use same data source as Trending Pairs for consistency
-    const currentSymbol = settings.symbol ? `${settings.symbol}m` : null;
-    const pricing = currentSymbol
-        ? pricingBySymbol.get(currentSymbol) || {}
+    const pricingSymbol = currentSymbol ? `${currentSymbol}m` : null;
+    const pricing = pricingSymbol
+        ? pricingBySymbol.get(pricingSymbol) || {}
         : {};
 
     // Use bid price from market cache (same as Trending Pairs) instead of candle close price
@@ -254,8 +283,8 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
                             try {
                                 setLoadingHistory(true);
                                 const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
-                                  settings.symbol,
-                                  settings.timeframe,
+                                  currentSymbol,
+                                  currentTimeframe,
                                   { limit: 500, before: olderCursorRef.current }
                                 );
                                 if (slice.length > 0) {
@@ -300,7 +329,7 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
                                     };
                                     // eslint-disable-next-line no-console
                                     console.log('[ChartSummary]', {
-                                        timeframe: settings.timeframe,
+                                        timeframe: currentTimeframe,
                                         totalCandles: sorted.length,
                                         firstCandle: first,
                                         lastCandle: last,
@@ -310,7 +339,7 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
                                 } else {
                                     // eslint-disable-next-line no-console
                                     console.log('[ChartSummary]', {
-                                        timeframe: settings.timeframe,
+                                        timeframe: currentTimeframe,
                                         totalCandles: 0
                                     });
                                 }
@@ -328,24 +357,24 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
             };
         }
         return undefined;
-    }, [currentPage, hasMoreHistory, settings.symbol, settings.timeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory]);
+    }, [currentPage, hasMoreHistory, currentSymbol, currentTimeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory]);
 
     // Load historical data
     useEffect(() => {
         const loadHistoricalData = async () => {
             console.log("🚀 Starting to load historical data...");
             console.log("📊 Settings:", {
-                symbol: settings.symbol,
-                timeframe: settings.timeframe,
+                symbol: currentSymbol,
+                timeframe: currentTimeframe,
             });
 
       // If candles are already loaded for this symbol/timeframe, reuse cache and skip REST
       try {
-        const state = useChartStore.getState();
+        const state = store;
         const hasCached = Array.isArray(state.candles) && state.candles.length > 0
           && state.candlesMeta
-          && state.candlesMeta.symbol === settings.symbol
-          && state.candlesMeta.timeframe === settings.timeframe;
+          && state.candlesMeta.symbol === currentSymbol
+          && state.candlesMeta.timeframe === currentTimeframe;
 
         if (hasCached) {
           console.log('♻️ Using cached candles; skipping REST fetch');
@@ -366,7 +395,7 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
             try {
                 // Figure out how many bars to fetch initially (fixed at 150)
                 const desiredBars = getInitialBarsForTimeframe(
-                    settings.timeframe
+                    currentTimeframe
                 );
                 // Always request 150 candles per REST call
                 const LIMIT_PER_CALL = 150;
@@ -377,8 +406,8 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
                     const limit = LIMIT_PER_CALL;
                     // eslint-disable-next-line no-await-in-loop
                     const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
-                        settings.symbol,
-                        settings.timeframe,
+                        currentSymbol,
+                        currentTimeframe,
                         { limit, before }
                     );
                     if (slice.length > 0) combined.push(...slice);
@@ -492,18 +521,11 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
         if (isInitialized) {
             loadHistoricalData();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         isInitialized,
-        settings.symbol,
-        settings.timeframe,
-        setCandles,
-        setIndicators,
-        setLoading,
-        setError,
-        resetPagination,
-        getInitialBarsForTimeframe,
-        setCurrentPage,
-        setHasMoreHistory,
+        currentSymbol,
+        currentTimeframe,
     ]);
 
     // WebSocket connection for real-time data (throttled)
@@ -654,8 +676,8 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
 
         // Connect to WebSocket
         realMarketService.connectWebSocket(
-            settings.symbol,
-            settings.timeframe,
+            currentSymbol,
+            currentTimeframe,
             handleNewCandle,
             handleError,
             handleClose,
@@ -672,7 +694,7 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
             setConnected(false);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isInitialized, settings.symbol, settings.timeframe]);
+    }, [isInitialized, currentSymbol, currentTimeframe]);
 
     // Initialize wishlist WebSocket (temporarily disabled to fix main chart)
 
@@ -730,10 +752,10 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
                         style={{ top: 0, left: 0, right: 0, bottom: 0 }}
                     >
                         <EnhancedCandlestickChart
-                            key={`enhanced-candlestick-${settings.symbol}-${settings.timeframe}`}
+                            key={`enhanced-candlestick-${currentSymbol}-${currentTimeframe}`}
                             candles={displayCandles}
                             indicators={indicators}
-                            settings={settings}
+                            settings={{...settings, symbol: currentSymbol, timeframe: currentTimeframe, indicators: currentIndicators}}
                             isLoadingHistory={isLoadingHistory}
                             hasMoreHistory={hasMoreHistory}
                             isFullscreen={isFullscreen}
@@ -750,7 +772,7 @@ export const UnifiedChart = ({ isFullscreen = false }) => {
                                 {/* Price Chart - Always visible */}
                                 <div className="bg-white rounded-lg border border-gray-200 p-1 relative">
                                     <h4 className="text-xs font-medium text-gray-700 mb-0.5">
-                                        Price Chart - {settings.symbol}
+                                        Price Chart - {currentSymbol}
                                     </h4>
                                     <div className="text-[10px] text-gray-600 mb-0.5">
                                         Data: {chartData.length} points | Price:

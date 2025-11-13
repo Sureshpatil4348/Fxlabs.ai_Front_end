@@ -9,7 +9,7 @@ import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) => {
-  const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
+  const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone, toggleSplitMode } = useChartStore();
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef(null);
   const [_activeTimeframe, setActiveTimeframe] = useState('1m');
@@ -166,7 +166,8 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
     <>
     <div className="bg-white border-b border-gray-200 px-3 py-2 h-11 shadow-sm">
       <div className="flex items-center justify-between h-full">
-        {/* Left Section - Symbol Selector */}
+        {/* Left Section - Conditionally rendered based on split mode */}
+        {!settings.isSplitMode && (
         <div className="flex items-center">
           {/* Symbol Search Button */}
           <div className="flex items-center">
@@ -283,21 +284,32 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
           </div>
 
                   </div>
+        )}
 
-        {/* Right Section - Split Graph + Timezone */}
+        {/* Right Section - Split/Unsplit + Timezone */}
         <div className="flex items-center">
-          {/* Split Graph Button - only visible in fullscreen */}
+          {/* Split/Unsplit Button - only visible in fullscreen */}
           {isFullscreen && (
-            <button
-              className="px-2 py-1 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              title="Split Graph View"
-            >
-              <span>Split</span>
-            </button>
+            <>
+              <button
+                onClick={toggleSplitMode}
+                className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded"
+                title={settings.isSplitMode ? "Exit Split View" : "Split Graph View"}
+              >
+                <span>{settings.isSplitMode ? 'Unsplit' : 'Split'}</span>
+              </button>
+              {/* Vertical Separator */}
+              <div className="h-6 w-px bg-gray-300 mx-2"></div>
+            </>
           )}
 
-          {/* Vertical Separator */}
-          <div className="h-6 w-px bg-gray-300 mx-2"></div>
+          {/* Timezone section - always visible */}
+          {!settings.isSplitMode && (
+            <>
+              {/* Vertical Separator - only if not preceded by split button */}
+              {!isFullscreen && <div className="h-6 w-px bg-gray-300 mx-2"></div>}
+            </>
+          )}
 
           {/* Premium Timezone Dropdown */}
           <div className="flex items-center space-x-2">

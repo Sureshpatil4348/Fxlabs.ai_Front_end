@@ -2160,7 +2160,7 @@ export const KLineChartComponent = ({
             }
           } catch (_) { /* ignore */ }
           if (Number.isFinite(entryVal2) && Number.isFinite(tpVal2)) {
-            const priceDeltaReward = Math.abs(entryVal2 - tpVal2);
+            const _priceDeltaReward = Math.abs(entryVal2 - tpVal2);
             const percentReward = entryVal2 !== 0 ? ((entryVal2 - tpVal2) / Math.abs(entryVal2)) * 100 : 0;
             figures.push({
               type: 'text',
@@ -2506,7 +2506,7 @@ export const KLineChartComponent = ({
             }
           } catch (_) { /* ignore */ }
           if (Number.isFinite(entryVal2) && Number.isFinite(tpVal2)) {
-            const priceDeltaReward = Math.abs(tpVal2 - entryVal2);
+            const _priceDeltaReward = Math.abs(tpVal2 - entryVal2);
             const percentReward = entryVal2 !== 0 ? ((tpVal2 - entryVal2) / Math.abs(entryVal2)) * 100 : 0;
             const badgeTopY = Math.max(0, rewardTop - 14);
             figures.push({
