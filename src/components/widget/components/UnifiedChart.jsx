@@ -17,7 +17,7 @@ import {
 import { EnhancedCandlestickChart } from "./EnhancedCandlestickChart";
 import { UniversalDrawingTools } from "./UniversalDrawingTools";
 import useMarketCacheStore from "../../../store/useMarketCacheStore";
-import { realMarketService } from "../services/realMarketService";
+import { RealMarketService } from "../services/realMarketService";
 import { useChartStore } from "../stores/useChartStore";
 import { useSplitChartStore } from "../stores/useSplitChartStore";
 import { calculateAllIndicators } from "../utils/indicators";
@@ -26,6 +26,13 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [lineChartKey, setLineChartKey] = useState(0); // Key to force re-render
     const isMainChart = chartIndex === 1;
+
+    // Create a dedicated service instance for this chart to avoid conflicts
+    const marketServiceRef = useRef(null);
+    if (!marketServiceRef.current) {
+        marketServiceRef.current = new RealMarketService();
+    }
+    const realMarketService = marketServiceRef.current;
 
     // Throttle state for real-time tick updates (avoid per-tick re-renders)
     const tickThrottleLastEmitRef = useRef(0);
@@ -347,7 +354,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
             };
         }
         return undefined;
-    }, [currentPage, hasMoreHistory, currentSymbol, currentTimeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory]);
+    }, [currentPage, hasMoreHistory, currentSymbol, currentTimeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory, realMarketService]);
 
     // Load historical data
     useEffect(() => {
@@ -526,8 +533,9 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
 
         // Internal apply function that always uses the latest store state
         const applyCandle = (newCandle) => {
-            const store = useChartStore.getState();
-            const currentCandles = store.candles;
+            // Use the correct store based on chart index
+            const storeState = isMainChart ? useChartStore.getState() : useSplitChartStore.getState();
+            const currentCandles = storeState.candles;
             const lastCandle = currentCandles[currentCandles.length - 1];
 
             // Special handling for live tick updates (partial bar updates)
@@ -555,7 +563,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                             (Number(lastCandle.volume) || 0) +
                             (Number(newCandle.volume) || 0),
                     };
-                    store.updateLastCandle(merged);
+                    storeState.updateLastCandle(merged);
                 } else if (!lastCandle || lastCandle.time < time) {
                     // Start a new (live) bar for this timeframe bucket
                     const live = {
@@ -566,17 +574,17 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                         close: price,
                         volume: Number(newCandle.volume) || 0,
                     };
-                    store.addCandle(live);
+                    storeState.addCandle(live);
                 } else {
                     // Older tick than last candle's time — ignore to keep chart stable
                     return;
                 }
 
                 // Recalculate indicators with updated candles
-                const postUpdate = useChartStore.getState().candles;
+                const postUpdate = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState()).candles;
                 const sorted = [...postUpdate].sort((a, b) => a.time - b.time);
                 const calculatedIndicators = calculateAllIndicators(sorted);
-                store.setIndicators(calculatedIndicators);
+                storeState.setIndicators(calculatedIndicators);
                 return;
             }
 
@@ -594,17 +602,17 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
             }
 
             if (lastCandle && newCandle.time === lastCandle.time) {
-                store.updateLastCandle(newCandle);
+                storeState.updateLastCandle(newCandle);
             } else if (!lastCandle || newCandle.time > lastCandle.time) {
-                store.addCandle(newCandle);
+                storeState.addCandle(newCandle);
             } else {
                 const updatedCandles = [...currentCandles, newCandle].sort(
                     (a, b) => a.time - b.time
                 );
-                store.setCandles(updatedCandles);
+                storeState.setCandles(updatedCandles);
                 const calculatedIndicators =
                     calculateAllIndicators(updatedCandles);
-                store.setIndicators(calculatedIndicators);
+                storeState.setIndicators(calculatedIndicators);
                 return;
             }
 
@@ -616,7 +624,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                 (a, b) => a.time - b.time
             );
             const calculatedIndicators = calculateAllIndicators(sortedCandles);
-            store.setIndicators(calculatedIndicators);
+            storeState.setIndicators(calculatedIndicators);
         };
 
         // Tick handler (per-tick if throttle is 0, otherwise throttled)

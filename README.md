@@ -97,7 +97,11 @@ When in split mode:
 - **Charts**: Evenly divided with a vertical separator
 - **Bottom Panel**: Visible with Alert and Grid buttons (preset buttons hidden)
 - Each chart maintains its own data, state, and real-time updates
-- Both charts update independently via WebSocket connections
+- Both charts update independently via WebSocket connections and state stores:
+  - Chart 1 (left): Uses `useChartStore` for state management
+  - Chart 2 (right): Uses `useSplitChartStore` for state management
+  - WebSocket updates are routed to the correct store based on chart index
+  - Separate service instances ensure no interference between charts
 
 **Use Cases:**
 - Compare the same pair across different timeframes (e.g., EURUSD 1m vs EURUSD 1h)
