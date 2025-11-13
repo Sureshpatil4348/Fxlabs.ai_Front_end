@@ -40,9 +40,9 @@ function TradingChart() {
     {
       id: 'buy-sell-signal',
       name: 'Buy / Sell Signal',
-      description: 'Trend Strategy + ATR - Pro',
+      description: 'Breakout Strategy + ATR - Pro',
       icon: '🎯',
-      indicators: ['emaTouch', 'atrEnhanced']
+      indicators: ['orbEnhanced', 'atrEnhanced']
     }
   ];
 
@@ -83,10 +83,15 @@ function TradingChart() {
     };
   }, [isFullscreen]);
 
-  // Sync active preset state based on current indicators
+  // Clear active preset if manually changed indicators break the preset
   useEffect(() => {
-    const matchingPreset = indicatorPresets.find(preset => isPresetActive(preset));
-    setActivePreset(matchingPreset?.id || null);
+    if (activePreset) {
+      const currentPreset = indicatorPresets.find(p => p.id === activePreset);
+      if (currentPreset && !isPresetActive(currentPreset)) {
+        // Preset is no longer fully active (user manually changed indicators)
+        setActivePreset(null);
+      }
+    }
   }, [settings.indicators]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePresetSelect = (preset) => {
@@ -126,18 +131,20 @@ function TradingChart() {
       finalState[ind] = true;
     });
 
-    // Step 4: Count how many will be active in final state
+    // Step 4: Count current and final state
+    const currentOnChart = ON_CHART_KEYS.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
+    const currentBelowChart = BELOW_CHART_KEYS.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
     const finalOnChart = ON_CHART_KEYS.reduce((acc, k) => acc + (finalState[k] ? 1 : 0), 0);
     const finalBelowChart = BELOW_CHART_KEYS.reduce((acc, k) => acc + (finalState[k] ? 1 : 0), 0);
 
-    // Step 5: Check limits based on FINAL state
+    // Step 5: Check limits based on FINAL state with descriptive messages
     if (finalOnChart > ON_CHART_LIMIT) {
-      showError(`Cannot apply preset: would exceed on-chart indicator limit (${ON_CHART_LIMIT} max). Final count would be ${finalOnChart}/${ON_CHART_LIMIT}.`);
+      showError(`Cannot apply "${preset.name}" preset: You currently have ${currentOnChart} on-chart indicator${currentOnChart !== 1 ? 's' : ''}. Adding this preset would result in ${finalOnChart} indicators, exceeding the limit of ${ON_CHART_LIMIT}. Please disable some indicators first.`);
       return;
     }
 
     if (finalBelowChart > BELOW_CHART_LIMIT) {
-      showError(`Cannot apply preset: would exceed below-chart indicator limit (${BELOW_CHART_LIMIT} max). Final count would be ${finalBelowChart}/${BELOW_CHART_LIMIT}.`);
+      showError(`Cannot apply "${preset.name}" preset: You currently have ${currentBelowChart} below-chart indicator${currentBelowChart !== 1 ? 's' : ''}. Adding this preset would result in ${finalBelowChart} indicators, exceeding the limit of ${BELOW_CHART_LIMIT}. Please disable some indicators first.`);
       return;
     }
 
