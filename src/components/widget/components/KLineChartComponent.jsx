@@ -4447,7 +4447,7 @@ export const KLineChartComponent = ({
     isWorkspaceHidden
   ]);
 
-  // Programmatic ORB TP/SL badges on chart (using 'text' overlay)
+  // Cleanup ORB label overlays (badges removed as per user request - only position tools remain)
   useEffect(() => {
     try {
       const chart = chartRef.current;
@@ -4462,77 +4462,6 @@ export const KLineChartComponent = ({
         });
       } catch (_) { /* ignore */ }
       orbLabelOverlayIdsRef.current = [];
-
-      if (!settings?.indicators?.orbEnhanced || !orbStats) return;
-
-      const precision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
-      const addBadge = (ts, price, label, style) => {
-        if (!Number.isFinite(ts) || !Number.isFinite(price)) return;
-        const overlaySpec = {
-          name: 'text',
-          text: label,
-          points: [{ timestamp: ts, value: price }],
-          styles: {
-            text: {
-              backgroundColor: style.bg,
-              color: style.color,
-              padding: 4,
-              borderSize: 0,
-            }
-          }
-        };
-        try {
-          const ov = chart.createOverlay(overlaySpec);
-          const id = (ov && (ov.id || ov)) || null;
-          if (id) orbLabelOverlayIdsRef.current.push(id);
-        } catch (_) { /* ignore */ }
-      };
-
-      // BUY badges
-      if (orbStats.buyTaken && orbStats.buyTs != null) {
-        // Entry arrow/label
-        if (orbStats.buyEntry != null) {
-          addBadge(orbStats.buyTs, orbStats.buyEntry, `BUY ▲ ${formatPrice(orbStats.buyEntry, precision)}`, { bg: 'rgba(38,166,154,0.15)', color: '#0b5f56' });
-        }
-        if (orbStats.buyTP != null) addBadge(orbStats.buyTs, orbStats.buyTP, `TP: ${formatPrice(orbStats.buyTP, precision)}`, { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' });
-        if (orbStats.buySL != null) addBadge(orbStats.buyTs, orbStats.buySL, `SL: ${formatPrice(orbStats.buySL, precision)}`, { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' });
-      }
-      // SELL badges
-      if (orbStats.sellTaken && orbStats.sellTs != null) {
-        if (orbStats.sellEntry != null) {
-          addBadge(orbStats.sellTs, orbStats.sellEntry, `SELL ▼ ${formatPrice(orbStats.sellEntry, precision)}`, { bg: 'rgba(239,83,80,0.15)', color: '#7a1f1f' });
-        }
-        if (orbStats.sellTP != null) addBadge(orbStats.sellTs, orbStats.sellTP, `TP: ${formatPrice(orbStats.sellTP, precision)}`, { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' });
-        if (orbStats.sellSL != null) addBadge(orbStats.sellTs, orbStats.sellSL, `SL: ${formatPrice(orbStats.sellSL, precision)}`, { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' });
-      }
-
-      // TP/SL hit markers
-      if (orbStats.buyTPHit && orbStats.buyTPHitTs && orbStats.buyTP != null) {
-        addBadge(orbStats.buyTPHitTs, orbStats.buyTP, `BUY TP HIT ★`, { bg: 'rgba(38,166,154,0.25)', color: '#0b5f56' });
-      }
-      if (orbStats.buySLHit && orbStats.buySLHitTs && orbStats.buySL != null) {
-        addBadge(orbStats.buySLHitTs, orbStats.buySL, `BUY SL HIT ✖`, { bg: 'rgba(239,83,80,0.25)', color: '#7a1f1f' });
-      }
-      if (orbStats.sellTPHit && orbStats.sellTPHitTs && orbStats.sellTP != null) {
-        addBadge(orbStats.sellTPHitTs, orbStats.sellTP, `SELL TP HIT ★`, { bg: 'rgba(239,83,80,0.25)', color: '#7a1f1f' });
-      }
-      if (orbStats.sellSLHit && orbStats.sellSLHitTs && orbStats.sellSL != null) {
-        addBadge(orbStats.sellSLHitTs, orbStats.sellSL, `SELL SL HIT ✖`, { bg: 'rgba(38,166,154,0.25)', color: '#0b5f56' });
-      }
-
-      // Timeframe suitability warning near last bar
-      try {
-        if (orbStats && !orbStats.isSuitableTimeframe && typeof chart.getDataList === 'function') {
-          const dl = chart.getDataList() || [];
-          const last = dl[dl.length - 1];
-          const ts = last ? (last.timestamp ?? last.time ?? null) : null;
-          const tsMs = ts != null ? (ts < 946684800000 ? ts * 1000 : ts) : null;
-          const val = last ? Number(last.high ?? last.close ?? last.low) : null;
-          if (tsMs && Number.isFinite(val)) {
-            addBadge(tsMs, val, 'Use timeframe ≤ 60m for accurate signals', { bg: 'rgba(255,165,0,0.20)', color: '#6b3f00' });
-          }
-        }
-      } catch (_) { /* ignore */ }
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.orbEnhanced, orbStats, settings?.symbol]);
 
