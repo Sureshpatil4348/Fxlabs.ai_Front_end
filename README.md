@@ -57,6 +57,12 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 4. Multiple indicators from different presets → Each can be managed independently
 5. Indicator toggled via dropdown → Preset state updates automatically
 
+### Position Tools Badge Display
+
+- Short/Long Position red badge: single line showing “Stop xx (yy%) RR Ratio: zz”.
+- Green badge: “Target: mm (nn%)”.
+- This reduces on-chart clutter and applies to both long and short position tools.
+
 #### Usage Example
 
 ```javascript

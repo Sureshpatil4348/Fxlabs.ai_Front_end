@@ -2011,11 +2011,9 @@ export const KLineChartComponent = ({
               stopVal = Number(p?.value);
             }
           } catch (_) { /* ignore */ }
-          const qty = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
           if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
             const priceDeltaRisk = Math.abs(stopVal - entryVal);
             const percentRisk = entryVal !== 0 ? ((stopVal - entryVal) / Math.abs(entryVal)) * 100 : 0;
-            const riskAmount = priceDeltaRisk * qty;
             let rrRatio = 0;
             try {
               if (typeof chart?.convertFromPixel === 'function') {
@@ -2026,35 +2024,13 @@ export const KLineChartComponent = ({
                 }
               }
             } catch (_) { /* ignore */ }
-            const closedPnL = (typeof overlay?.closedPnL === 'number') ? overlay.closedPnL : 0;
             const badgeTopY1 = Math.max(0, (riskTop - 18));
-            const badgeTopY0 = Math.max(0, (badgeTopY1 - 18));
-            figures.push({
-              type: 'text',
-              attrs: {
-                x: xLeft + 4,
-                y: badgeTopY0,
-                text: `Stop: ${formatPrice(stopVal)} (${percentRisk.toFixed(2)}%) ${formatPrice(priceDeltaRisk)}, Amount: ${formatPrice(riskAmount)}`,
-                align: 'left',
-                baseline: 'bottom',
-              },
-              styles: {
-              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
-              borderSize: 1,
-              borderColor: '#991b1b',
-              text: { color: '#ffffff', size: 11, weight: '600' },
-                paddingLeft: 4,
-                paddingRight: 4,
-                paddingTop: 2,
-                paddingBottom: 2,
-              },
-            });
             figures.push({
               type: 'text',
               attrs: {
                 x: xLeft + 4,
                 y: badgeTopY1,
-                text: `Closed P&L: ${formatPrice(closedPnL)}, Qty: ${qty}, RR Ratio: ${rrRatio.toFixed(2)}`,
+                text: `Stop ${formatPrice(stopVal)} (${percentRisk.toFixed(2)}%) RR Ratio: ${rrRatio.toFixed(2)}`,
                 align: 'left',
                 baseline: 'bottom',
               },
@@ -2186,14 +2162,12 @@ export const KLineChartComponent = ({
           if (Number.isFinite(entryVal2) && Number.isFinite(tpVal2)) {
             const priceDeltaReward = Math.abs(entryVal2 - tpVal2);
             const percentReward = entryVal2 !== 0 ? ((entryVal2 - tpVal2) / Math.abs(entryVal2)) * 100 : 0;
-            const qty2 = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
-            const rewardAmount = priceDeltaReward * qty2;
             figures.push({
               type: 'text',
               attrs: {
                 x: xLeft + 4,
                 y: rewardBottom + 14,
-                text: `Target: ${formatPrice(tpVal2)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
+                text: `Target: ${formatPrice(tpVal2)} (${percentReward.toFixed(2)}%)`,
                 align: 'left',
                 baseline: 'top',
               },
@@ -2410,11 +2384,9 @@ export const KLineChartComponent = ({
               stopVal = Number(p?.value);
             }
           } catch (_) { /* ignore */ }
-          const qty = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
           if (Number.isFinite(entryVal) && Number.isFinite(stopVal)) {
             const priceDeltaRisk = Math.abs(entryVal - stopVal);
             const percentRisk = entryVal !== 0 ? ((entryVal - stopVal) / Math.abs(entryVal)) * 100 : 0;
-            const riskAmount = priceDeltaRisk * qty;
             let rrRatio = 0;
             try {
               if (typeof chart?.convertFromPixel === 'function') {
@@ -2425,35 +2397,13 @@ export const KLineChartComponent = ({
                 }
               }
             } catch (_) { /* ignore */ }
-            const closedPnL = (typeof overlay?.closedPnL === 'number') ? overlay.closedPnL : 0;
             const badgeBottomY1 = riskBottom + 14;
-            const badgeBottomY2 = badgeBottomY1 + 18;
             figures.push({
               type: 'text',
               attrs: {
                 x: xLeft + 4,
                 y: badgeBottomY1,
-                text: `Stop: ${formatPrice(stopVal)} (${percentRisk.toFixed(2)}%) ${formatPrice(priceDeltaRisk)}, Amount: ${formatPrice(riskAmount)}`,
-                align: 'left',
-                baseline: 'top',
-              },
-              styles: {
-              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
-              borderSize: 1,
-              borderColor: '#991b1b',
-              text: { color: '#ffffff', size: 11, weight: '600' },
-                paddingLeft: 4,
-                paddingRight: 4,
-                paddingTop: 2,
-                paddingBottom: 2,
-              },
-            });
-            figures.push({
-              type: 'text',
-              attrs: {
-                x: xLeft + 4,
-                y: badgeBottomY2,
-                text: `Closed P&L: ${formatPrice(closedPnL)}, Qty: ${qty}, RR Ratio: ${rrRatio.toFixed(2)}`,
+                text: `Stop ${formatPrice(stopVal)} (${percentRisk.toFixed(2)}%) RR Ratio: ${rrRatio.toFixed(2)}`,
                 align: 'left',
                 baseline: 'top',
               },
@@ -2558,15 +2508,13 @@ export const KLineChartComponent = ({
           if (Number.isFinite(entryVal2) && Number.isFinite(tpVal2)) {
             const priceDeltaReward = Math.abs(tpVal2 - entryVal2);
             const percentReward = entryVal2 !== 0 ? ((tpVal2 - entryVal2) / Math.abs(entryVal2)) * 100 : 0;
-            const qty2 = (typeof overlay?.qty === 'number' && overlay.qty > 0) ? overlay.qty : 1;
-            const rewardAmount = priceDeltaReward * qty2;
             const badgeTopY = Math.max(0, rewardTop - 14);
             figures.push({
               type: 'text',
               attrs: {
                 x: xLeft + 4,
                 y: badgeTopY,
-                text: `Target: ${formatPrice(tpVal2)} (${percentReward.toFixed(2)}%) ${formatPrice(priceDeltaReward)}, Amount: ${formatPrice(rewardAmount)}`,
+                text: `Target: ${formatPrice(tpVal2)} (${percentReward.toFixed(2)}%)`,
                 align: 'left',
                 baseline: 'bottom',
               },
