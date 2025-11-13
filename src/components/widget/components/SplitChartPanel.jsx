@@ -28,26 +28,16 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
   const moreTimeframesDropdownRef = useRef(null);
   const indicatorsPanelRef = useRef(null);
 
-  // Get current settings based on chart index (with fallbacks for safety)
+  // Get current settings based on chart index (with fallbacks matching main chart)
   const currentSymbol = isMainChart 
     ? settings.symbol 
-    : (settings.splitChart?.symbol || 'GBPUSD');
+    : (settings.splitChart?.symbol || settings.symbol);
   const currentTimeframe = isMainChart 
     ? settings.timeframe 
-    : (settings.splitChart?.timeframe || '1h');
+    : (settings.splitChart?.timeframe || settings.timeframe);
   const currentIndicators = isMainChart 
     ? settings.indicators 
-    : (settings.splitChart?.indicators || {
-        rsiEnhanced: true,
-        emaTouch: false,
-        atrEnhanced: false,
-        bbPro: false,
-        maEnhanced: false,
-        orbEnhanced: false,
-        stEnhanced: false,
-        srEnhanced: false,
-        macdEnhanced: false,
-      });
+    : (settings.splitChart?.indicators || settings.indicators);
 
   // Indicator groups and limits
   const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];

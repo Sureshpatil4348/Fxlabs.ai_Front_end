@@ -286,8 +286,8 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
                   </div>
         )}
 
-        {/* Right Section - Split/Unsplit + Timezone */}
-        <div className="flex items-center">
+        {/* Right Section - Split/Unsplit + Timezone + Fullscreen */}
+        <div className="flex items-center ml-auto">
           {/* Split/Unsplit Button - only visible in fullscreen */}
           {isFullscreen && (
             <>
@@ -300,14 +300,6 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
               </button>
               {/* Vertical Separator */}
               <div className="h-6 w-px bg-gray-300 mx-2"></div>
-            </>
-          )}
-
-          {/* Timezone section - always visible */}
-          {!settings.isSplitMode && (
-            <>
-              {/* Vertical Separator - only if not preceded by split button */}
-              {!isFullscreen && <div className="h-6 w-px bg-gray-300 mx-2"></div>}
             </>
           )}
 

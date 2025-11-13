@@ -190,8 +190,8 @@ function TradingChart() {
       
       {/* Main Content with Sidebar */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* Left Sidebar - hidden in split mode */}
-        {!settings.isSplitMode && <Sidebar />}
+        {/* Left Sidebar - always visible */}
+        <Sidebar />
         
         {/* Chart Area */}
         {!settings.isSplitMode ? (
@@ -258,21 +258,62 @@ function TradingChart() {
           </div>
           </div>
         ) : (
-          // Split mode - side-by-side charts
-          <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
-            {/* Left Chart */}
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden border-r border-gray-200">
-              <SplitChartPanel chartIndex={1} />
-              <div className="flex-1 min-h-0 overflow-hidden">
-                <UnifiedChart isFullscreen={isFullscreen} chartIndex={1} />
+          // Split mode - side-by-side charts with bottom panel
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
+              {/* Left Chart */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden border-r border-gray-200">
+                <SplitChartPanel chartIndex={1} />
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <UnifiedChart isFullscreen={isFullscreen} chartIndex={1} />
+                </div>
+              </div>
+
+              {/* Right Chart */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                <SplitChartPanel chartIndex={2} />
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <UnifiedChart isFullscreen={isFullscreen} chartIndex={2} />
+                </div>
               </div>
             </div>
 
-            {/* Right Chart */}
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <SplitChartPanel chartIndex={2} />
-              <div className="flex-1 min-h-0 overflow-hidden">
-                <UnifiedChart isFullscreen={isFullscreen} chartIndex={2} />
+            {/* Bottom Bar - same as normal mode but preset buttons hidden */}
+            <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1 relative">
+              {/* Error Message Toast */}
+              {errorMessage && (
+                <div className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 z-[10000]">
+                  <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm max-w-md">
+                    {errorMessage}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                {/* Left Side - Empty in split mode (preset buttons hidden) */}
+                <div className="flex items-center">
+                  {/* Preset buttons hidden in split mode */}
+                </div>
+
+                {/* Right Side - Alert & Grid */}
+                <div className="flex items-center space-x-2 ml-auto">
+                  <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
+                    <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                  </button>
+                  <button 
+                    onClick={toggleGrid}
+                    className={`p-2 transition-colors duration-300 group ${
+                      settings.showGrid 
+                        ? 'text-emerald-600' 
+                        : 'text-gray-400 hover:text-emerald-600'
+                    }`}
+                    title="Grid"
+                  >
+                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

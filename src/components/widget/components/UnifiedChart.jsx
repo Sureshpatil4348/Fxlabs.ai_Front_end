@@ -68,26 +68,16 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
         resetPagination,
     } = store;
 
-    // Get current settings based on chart index (with fallbacks for safety)
+    // Get current settings based on chart index (with fallbacks matching main chart)
     const currentSymbol = isMainChart 
         ? settings.symbol 
-        : (settings.splitChart?.symbol || 'GBPUSD');
+        : (settings.splitChart?.symbol || settings.symbol);
     const currentTimeframe = isMainChart 
         ? settings.timeframe 
-        : (settings.splitChart?.timeframe || '1h');
+        : (settings.splitChart?.timeframe || settings.timeframe);
     const currentIndicators = isMainChart 
         ? settings.indicators 
-        : (settings.splitChart?.indicators || {
-            rsiEnhanced: true,
-            emaTouch: false,
-            atrEnhanced: false,
-            bbPro: false,
-            maEnhanced: false,
-            orbEnhanced: false,
-            stEnhanced: false,
-            srEnhanced: false,
-            macdEnhanced: false,
-        });
+        : (settings.splitChart?.indicators || settings.indicators);
 
     // Determine how many initial bars to load.
     // Business rule: always fetch 150 candles via REST `limit` param.

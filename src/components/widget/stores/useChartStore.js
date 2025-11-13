@@ -95,8 +95,9 @@ const defaultSettings = {
     macdEnhanced: false,
   },
   // Split chart settings (for the second chart in split mode)
+  // Initially matches main chart settings
   splitChart: {
-    symbol: 'GBPUSD',
+    symbol: 'EURUSD',
     timeframe: '1h',
     indicators: {
       rsiEnhanced: true,
@@ -434,12 +435,32 @@ export const useChartStore = create(
       // Split mode actions
       toggleSplitMode: () => {
         console.log('💾 ChartStore: Toggling split mode');
-        set((state) => ({
-          settings: {
-            ...state.settings,
-            isSplitMode: !state.settings.isSplitMode
+        set((state) => {
+          const willEnableSplitMode = !state.settings.isSplitMode;
+          
+          // When enabling split mode, initialize split chart with current main chart settings
+          if (willEnableSplitMode) {
+            return {
+              settings: {
+                ...state.settings,
+                isSplitMode: true,
+                splitChart: {
+                  symbol: state.settings.symbol,
+                  timeframe: state.settings.timeframe,
+                  indicators: { ...state.settings.indicators }
+                }
+              }
+            };
           }
-        }));
+          
+          // When disabling, just toggle the flag
+          return {
+            settings: {
+              ...state.settings,
+              isSplitMode: false
+            }
+          };
+        });
       },
 
       setSplitChartSymbol: (symbol) => {
@@ -513,10 +534,11 @@ export const useChartStore = create(
               _state.settings.isSplitMode = false;
             }
             if (!_state.settings.splitChart) {
+              // Initialize split chart with same settings as main chart
               _state.settings.splitChart = {
-                symbol: 'GBPUSD',
-                timeframe: '1h',
-                indicators: {
+                symbol: _state.settings.symbol || 'EURUSD',
+                timeframe: _state.settings.timeframe || '1h',
+                indicators: { ...(_state.settings.indicators || {
                   rsiEnhanced: true,
                   emaTouch: false,
                   atrEnhanced: false,
@@ -526,7 +548,7 @@ export const useChartStore = create(
                   stEnhanced: false,
                   srEnhanced: false,
                   macdEnhanced: false,
-                }
+                })}
               };
             }
           } catch (_e) {

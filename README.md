@@ -79,8 +79,7 @@ The KLineChart now supports a split mode feature that allows you to view two ind
 When in split mode:
 
 **Top Panel:**
-- Only displays the **Unsplit** button and **Timezone** selector
-- Preset buttons are hidden
+- **Unsplit**, **Timezone**, and **Fullscreen** buttons positioned at the rightmost side
 - Symbol selector, timeframe selector, and indicators dropdown are hidden from the main header
 
 **Each Split Chart:**
@@ -91,10 +90,12 @@ When in split mode:
 - Displays charts horizontally (side-by-side)
 - Respects the same indicator limits (3 on-chart, 2 below-chart) per chart
 - Fetches and displays data independently for each chart
+- **Default State**: Both charts initially display the same pair, timeframe, and indicators as the main chart when split mode is activated
 
 **Layout:**
-- Sidebar is hidden in split mode to maximize chart viewing area
-- Charts are evenly divided with a vertical separator
+- **Left Sidebar**: Visible with drawing tools and chart controls
+- **Charts**: Evenly divided with a vertical separator
+- **Bottom Panel**: Visible with Alert and Grid buttons (preset buttons hidden)
 - Each chart maintains its own data, state, and real-time updates
 - Both charts update independently via WebSocket connections
 
@@ -105,8 +106,9 @@ When in split mode:
 - Track correlated pairs for divergence analysis
 
 **Default Configuration:**
-- Left Chart: Uses main chart settings (EURUSD, 1h by default)
-- Right Chart: Default GBPUSD, 1h, RSI Pro enabled
+- Both charts initially use the main chart settings (same pair, timeframe, and indicators)
+- You can then independently modify either chart's settings
+- Changes to one chart do not affect the other chart
 
 #### Usage Example
 
