@@ -72,6 +72,7 @@ The KLineChart now supports a split mode feature that allows you to view two ind
 - The **Split** button in the KLine chart header is visible only in fullscreen mode (triggered via the upper-right fullscreen arrow)
 - Click the **Split** button to enter split mode
 - Click the **Unsplit** button to exit split mode and return to single chart view
+- **Auto-unsplit**: Split mode automatically disables when exiting fullscreen mode to ensure UI consistency
 
 #### Split Mode Features
 

@@ -10,7 +10,7 @@ import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
 
 function TradingChart() {
-  const { settings, toggleGrid, setIndicatorsPreset } = useChartStore();
+  const { settings, toggleGrid, setIndicatorsPreset, toggleSplitMode } = useChartStore();
   const [activePreset, setActivePreset] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -83,6 +83,13 @@ function TradingChart() {
       document.body.style.overflow = '';
     };
   }, [isFullscreen]);
+
+  // Auto-disable split mode when exiting fullscreen
+  useEffect(() => {
+    if (!isFullscreen && settings.isSplitMode) {
+      toggleSplitMode();
+    }
+  }, [isFullscreen, settings.isSplitMode, toggleSplitMode]);
 
   // Clear active preset if manually changed indicators break the preset
   useEffect(() => {
