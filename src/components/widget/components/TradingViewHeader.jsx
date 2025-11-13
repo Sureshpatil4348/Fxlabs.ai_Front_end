@@ -8,7 +8,7 @@ import { listTimezonesWithOffsets } from '../../../utils/marketHoursEngine';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
-export const TradingViewHeader = ({ onFullscreenToggle }) => {
+export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) => {
   const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef(null);
@@ -286,13 +286,15 @@ export const TradingViewHeader = ({ onFullscreenToggle }) => {
 
         {/* Right Section - Split Graph + Timezone */}
         <div className="flex items-center">
-          {/* Split Graph Button */}
-          <button
-            className="px-2 py-1 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            title="Split Graph View"
-          >
-            <span>Split</span>
-          </button>
+          {/* Split Graph Button - only visible in fullscreen */}
+          {isFullscreen && (
+            <button
+              className="px-2 py-1 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              title="Split Graph View"
+            >
+              <span>Split</span>
+            </button>
+          )}
 
           {/* Vertical Separator */}
           <div className="h-6 w-px bg-gray-300 mx-2"></div>

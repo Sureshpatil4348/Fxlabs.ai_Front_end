@@ -178,7 +178,7 @@ function TradingChart() {
   const renderWidgetContent = () => (
     <div className="h-full bg-white flex flex-col overflow-hidden border border-gray-200 shadow-lg rounded-lg">
       {/* Header */}
-      <TradingViewHeader onFullscreenToggle={() => setIsFullscreen(!isFullscreen)} />
+      <TradingViewHeader onFullscreenToggle={() => setIsFullscreen(!isFullscreen)} isFullscreen={isFullscreen} />
       
       {/* Main Content with Sidebar */}
       <div className="flex-1 min-h-0 flex overflow-hidden">

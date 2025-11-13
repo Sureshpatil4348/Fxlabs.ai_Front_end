@@ -63,6 +63,10 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 - Green badge: “Target: mm (nn%)”.
 - This reduces on-chart clutter and applies to both long and short position tools.
 
+### Split Button Visibility (KLine Chart)
+
+- The Split button in the KLine chart header is visible only in fullscreen mode (triggered via the upper-right fullscreen arrow).
+
 #### Usage Example
 
 ```javascript
