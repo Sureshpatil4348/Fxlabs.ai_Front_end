@@ -21,6 +21,7 @@ import { RealMarketService } from "../services/realMarketService";
 import { useChartStore } from "../stores/useChartStore";
 import { useSplitChartStore } from "../stores/useSplitChartStore";
 import { calculateAllIndicators } from "../utils/indicators";
+import { loadCandles as loadPersistedCandles, saveCandles as savePersistedCandles } from "../utils/chartPersistence";
 
 export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     const [isInitialized, setIsInitialized] = useState(false);
@@ -106,6 +107,42 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
             chartContainer.style.cursor = settings.cursorType || "crosshair";
         }
     }, [settings.cursorType]);
+
+    // Load any persisted candles instantly for current (chartIndex, symbol, timeframe)
+    useEffect(() => {
+        try {
+            const persisted = loadPersistedCandles(chartIndex, currentSymbol, currentTimeframe);
+            if (Array.isArray(persisted) && persisted.length > 0) {
+                // Apply to this chart's store and calculate indicators
+                setCandles(persisted);
+                const calculatedIndicators = calculateAllIndicators(persisted);
+                setIndicators(calculatedIndicators);
+            }
+        } catch (_) {
+            // ignore
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chartIndex, currentSymbol, currentTimeframe]);
+
+    // Persist candles with light debounce to avoid excessive writes
+    const persistTimerRef = useRef(null);
+    useEffect(() => {
+        try {
+            if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+            persistTimerRef.current = setTimeout(() => {
+                try {
+                    savePersistedCandles(chartIndex, currentSymbol, currentTimeframe, candles);
+                } catch (_) { /* ignore */ }
+            }, 750);
+        } catch (_) { /* ignore */ }
+        return () => {
+            if (persistTimerRef.current) {
+                clearTimeout(persistTimerRef.current);
+                persistTimerRef.current = null;
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [candles, chartIndex, currentSymbol, currentTimeframe]);
 
     // Reset background preload session on symbol/timeframe change
     useEffect(() => {

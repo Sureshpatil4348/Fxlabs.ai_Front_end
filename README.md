@@ -138,6 +138,30 @@ When in split mode:
 
 #### Usage Example
 
+### Persistent KLineChart State
+
+The KLine chart now persists state across page reloads and browser restarts. What is preserved:
+
+- Candles: Recent history per chart (main/split) and per pair/timeframe.
+- Indicators: Toggles and per-indicator settings (via existing zustand persistence).
+- Drawings: User-created overlays (trend lines, horizontal/vertical lines, rectangles, text, Fibonacci tools, long/short positions).
+- UI: Fullscreen mode state.
+
+Behavior and guarantees:
+
+- On reopen after hours, the chart opens at the latest candles (real-time view). When you scroll back, your older drawings reappear on the exact candles they were created on.
+- Overlays are anchored by timestamp/value (not pixels), so they remain aligned even when new data arrives.
+- Programmatic overlays (like ORB labels/locked positions or ST badges) are not persisted. Only user-created overlays are saved.
+- Candles are pruned to the most recent 3000 per pair/timeframe to respect localStorage limits.
+
+Technical notes:
+
+- Persistence keys are namespaced by chart: `main` (chart 1) and `split` (chart 2), and by `SYMBOL@TIMEFRAME`.
+- Candles are persisted as `{time, open, high, low, close, volume}`.
+- Overlays persist name, points `{timestamp, value}`, plus relevant fields (e.g., `widthPx`, `stopValue`, `targetValue`, `qty`, `text`, and `styles`).
+- Fullscreen is stored under a UI key and restored on load.
+
+
 ```javascript
 // Scenario: You want to use Moneytize preset
 // Current state: RSI Pro is already active

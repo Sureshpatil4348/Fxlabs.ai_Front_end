@@ -3,6 +3,7 @@ import { Trash2, Settings } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 import { formatPrice } from '../../../utils/formatters';
+import { saveOverlays as persistSaveOverlays, loadOverlays as persistLoadOverlays } from '../utils/chartPersistence';
 import { useChartStore } from '../stores/useChartStore';
 import { useSplitChartStore } from '../stores/useSplitChartStore';
 import { calculateRSI, calculateEMA, calculateSMA, calculateBollingerBands } from '../utils/indicators';
@@ -112,6 +113,76 @@ export const KLineChartComponent = ({
     source: 'close',
     stdDev: 2.0,
   }));
+
+  // --- Persistence helpers (overlays) ---
+  const persistTimerRef = useRef(null);
+  const getAllowedOverlays = useCallback(() => {
+    try {
+      const chart = chartRef.current;
+      if (!chart) return [];
+      let overlays = [];
+      try {
+        if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+        else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+      } catch (_) { overlays = []; }
+      return (Array.isArray(overlays) ? overlays : []).filter((ov) => {
+        if (!ov || ov.visible === false || ov.locked) return false;
+        const n = ov.name;
+        return (
+          n === 'segment' || n === 'trendLine' ||
+          n === 'horizontalStraightLine' || n === 'horizontalLine' ||
+          n === 'verticalStraightLine' || n === 'verticalLine' ||
+          n === 'fibonacciRightLine' || n === 'fibonacciTrendExtensionRight' ||
+          n === 'rectangle' || n === 'text' ||
+          n === 'longPosition' || n === 'shortPosition'
+        );
+      });
+    } catch (_) {
+      return [];
+    }
+  }, []);
+
+  const persistOverlaysDebounced = useCallback(() => {
+    try {
+      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+      persistTimerRef.current = setTimeout(() => {
+        try {
+          const list = getAllowedOverlays();
+          const sym = settings?.symbol;
+          const tf = settings?.timeframe;
+          if (sym && tf) persistSaveOverlays(chartIndex, sym, tf, list);
+        } catch (_) { /* ignore */ }
+      }, 400);
+    } catch (_) { /* ignore */ }
+  }, [chartIndex, getAllowedOverlays, settings?.symbol, settings?.timeframe]);
+
+  // Restore persisted overlays when symbol/timeframe changes or chart mounts
+  useEffect(() => {
+    try {
+      const chart = chartRef.current;
+      const sym = settings?.symbol;
+      const tf = settings?.timeframe;
+      if (!chart || !sym || !tf) return;
+
+      // Clear user overlays before restore to avoid duplicates
+      try {
+        const existing = getAllowedOverlays();
+        existing.forEach((ov) => {
+          try { chart.removeOverlay({ id: ov.id, paneId: ov.paneId || ov.pane?.id }); } catch (_) {}
+          try { chart.removeOverlay({ id: ov.id }); } catch (_) {}
+          try { chart.removeOverlay(ov.id); } catch (_) {}
+        });
+      } catch (_) { /* ignore */ }
+
+      const specs = persistLoadOverlays(chartIndex, sym, tf);
+      if (Array.isArray(specs) && specs.length > 0) {
+        specs.forEach((spec) => {
+          try { chart.createOverlay(spec); } catch (_) { /* ignore */ }
+        });
+      }
+    } catch (_) { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartIndex, settings?.symbol, settings?.timeframe]);
 
   // Opening Range Breakout (ORB) UI state
   const [showOrbSettings, setShowOrbSettings] = useState(false);
@@ -1800,6 +1871,7 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
         console.log('📈 Trend line drawn:', overlay);
+        try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
       },
     });
 
@@ -1846,6 +1918,7 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
         console.log('📈 Horizontal line drawn:', overlay);
+        try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
       },
     });
 
@@ -1892,6 +1965,7 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
         console.log('📈 Vertical line drawn:', overlay);
+        try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
       },
     });
 
@@ -2263,6 +2337,7 @@ export const KLineChartComponent = ({
           } catch (e) {
             console.warn('Error checking overlays:', e);
           }
+          try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
         } catch (err) {
           console.warn('Error in onDrawEnd:', err);
         }
@@ -2610,6 +2685,7 @@ export const KLineChartComponent = ({
           } catch (e) {
             console.warn('Error checking overlays:', e);
           }
+          try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
         } catch (err) {
           console.warn('Error in onDrawEnd:', err);
         }
@@ -2803,6 +2879,7 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
         console.log('📈 Rectangle drawn:', overlay);
+        try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
       },
       onClick: ({ chart, overlay, figure }) => {
         try {
@@ -2822,6 +2899,7 @@ export const KLineChartComponent = ({
           const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
           openInlineTextEditor(cx, cy, current, (val) => {
             chart.overrideOverlay({ id: overlay.id, text: String(val || '') });
+            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
           }, { id: overlay.id, name: overlay.name, paneId: overlay.paneId || overlay.pane?.id });
         } catch (_) { /* ignore */ }
       },
@@ -2878,6 +2956,7 @@ export const KLineChartComponent = ({
           const current = (overlay && typeof overlay.text === 'string') ? overlay.text : '';
           openInlineTextEditor(c0.x, c0.y, current, (val) => {
             chart.overrideOverlay({ id: overlay.id, text: String(val || '') });
+            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
           }, { id: overlay.id, name: overlay.name, paneId: overlay.paneId || overlay.pane?.id });
         } catch (_) { /* ignore */ }
       },
@@ -2907,6 +2986,7 @@ export const KLineChartComponent = ({
           }
         } catch (_) { /* ignore */ }
         console.log('📈 Text annotation drawn:', overlay);
+        try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
       },
     });
 
@@ -5363,6 +5443,7 @@ export const KLineChartComponent = ({
                 }
               } catch (_) { /* ignore */ }
               positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: Date.now() };
+              try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
             } else if (wasPending) {
               // Was pending but never activated (click without drag) - clear pending state
               positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 };
@@ -6876,6 +6957,7 @@ export const KLineChartComponent = ({
                             const b = parseInt(hex.slice(5,7),16);
                             const fill = `rgba(${r},${g},${b},0.3)`;
                             chart.overrideOverlay({ id, styles: { rect: { color: fill, borderColor: hex } } });
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
                             try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
                           } catch (_) { /* ignore */ }
                         }}
@@ -6940,6 +7022,11 @@ export const KLineChartComponent = ({
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
                             try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
                           } catch (_) { /* ignore */ }
                         }}
@@ -7004,6 +7091,7 @@ export const KLineChartComponent = ({
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
+                            try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
                             try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
                           } catch (_) { /* ignore */ }
                         }}
@@ -7373,6 +7461,7 @@ export const KLineChartComponent = ({
                     } catch (_) { /* ignore */ }
                     inlineEditorActiveRef.current = false;
                     setSelectedOverlayPanel(null);
+                    try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
                   }}
                   onClick={(e) => {
                     // Fallback for keyboard users (Enter/Space)
@@ -7483,6 +7572,7 @@ export const KLineChartComponent = ({
                     } catch (_) { /* ignore */ }
                     inlineEditorActiveRef.current = false;
                     setSelectedOverlayPanel(null);
+                    try { persistOverlaysDebounced(); } catch (_) { /* ignore */ }
                   }}
                 >
                   <Trash2 className="w-4 h-4" />
