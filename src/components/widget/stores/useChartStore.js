@@ -574,9 +574,9 @@ export const useChartStore = create(
       },
 
       // Persisted overlays actions
-      saveOverlaysForSymbol: (symbol, timeframe, overlays) => {
-        const key = `${symbol}_${timeframe}`;
-        console.log('💾 ChartStore: Saving overlays for', symbol, timeframe, overlays.length);
+      saveOverlaysForSymbol: (symbol, timeframe, overlays, chartIndex = 1) => {
+        const key = `${symbol}_${timeframe}_chart${chartIndex}`;
+        console.log('💾 ChartStore: Saving overlays for', symbol, timeframe, 'chart', chartIndex, overlays.length);
         console.log('💾 [DEBUG] Key:', key, 'Overlays:', overlays);
         set((state) => {
           const newState = {
@@ -606,18 +606,18 @@ export const useChartStore = create(
         });
       },
 
-      getOverlaysForSymbol: (symbol, timeframe) => {
+      getOverlaysForSymbol: (symbol, timeframe, chartIndex = 1) => {
         const state = useChartStore.getState();
-        const key = `${symbol}_${timeframe}`;
+        const key = `${symbol}_${timeframe}_chart${chartIndex}`;
         const overlays = state.persistedOverlays[key] || [];
-        console.log('💾 [DEBUG] getOverlaysForSymbol:', { key, found: overlays.length, allKeys: Object.keys(state.persistedOverlays || {}) });
+        console.log('💾 [DEBUG] getOverlaysForSymbol:', { key, chartIndex, found: overlays.length, allKeys: Object.keys(state.persistedOverlays || {}) });
         return overlays;
       },
 
-      clearOverlaysForSymbol: (symbol, timeframe) => {
-        console.log('💾 ChartStore: Clearing overlays for', symbol, timeframe);
+      clearOverlaysForSymbol: (symbol, timeframe, chartIndex = 1) => {
+        console.log('💾 ChartStore: Clearing overlays for', symbol, timeframe, 'chart', chartIndex);
         set((state) => {
-          const key = `${symbol}_${timeframe}`;
+          const key = `${symbol}_${timeframe}_chart${chartIndex}`;
           const newPersistedOverlays = { ...state.persistedOverlays };
           delete newPersistedOverlays[key];
           return { persistedOverlays: newPersistedOverlays };

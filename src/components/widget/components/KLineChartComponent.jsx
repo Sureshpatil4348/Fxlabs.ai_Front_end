@@ -3603,21 +3603,21 @@ export const KLineChartComponent = ({
       const timeframe = settings?.timeframe;
       if (!symbol || !timeframe) return;
 
-      const persistedOverlays = getOverlaysForSymbol(symbol, timeframe);
+      const persistedOverlays = getOverlaysForSymbol(symbol, timeframe, chartIndex);
       
       // CRITICAL: Initialize the counter from persisted data to prevent overwriting
       const persistedCount = persistedOverlays?.length || 0;
       if (lastSavedOverlayCountRef.current === -1) {
         lastSavedOverlayCountRef.current = persistedCount;
-        console.log('💾 [INIT] Set lastSavedCount to', persistedCount, 'from persisted data');
+        console.log('💾 [INIT] Set lastSavedCount to', persistedCount, 'from persisted data for chart', chartIndex);
       }
       
       if (!persistedOverlays || persistedOverlays.length === 0) {
-        console.log('💾 No persisted overlays to restore for', symbol, timeframe);
+        console.log('💾 No persisted overlays to restore for', symbol, timeframe, 'chart', chartIndex);
         return;
       }
 
-      console.log('💾 Restoring', persistedOverlays.length, 'overlays for', symbol, timeframe, 'Details:', persistedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
+      console.log('💾 Restoring', persistedOverlays.length, 'overlays for', symbol, timeframe, 'chart', chartIndex, 'Details:', persistedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
 
       // Small delay to ensure chart is fully initialized with data
       setTimeout(() => {
@@ -3645,7 +3645,7 @@ export const KLineChartComponent = ({
     } catch (err) {
       console.error('💾 Error restoring overlays:', err);
     }
-  }, [candles, settings?.symbol, settings?.timeframe, getOverlaysForSymbol]);
+  }, [candles, settings?.symbol, settings?.timeframe, chartIndex, getOverlaysForSymbol]);
 
   // Save overlays when they are created, modified, or deleted
   useEffect(() => {
@@ -3657,7 +3657,7 @@ export const KLineChartComponent = ({
     if (!symbol || !timeframe) return;
     
     // CRITICAL: Reset counter and flags for new symbol/timeframe to read from persisted data
-    console.log('💾 [INIT] Resetting lastSavedCount for new symbol/timeframe:', symbol, timeframe);
+    console.log('💾 [INIT] Resetting lastSavedCount for', symbol, timeframe, 'chart', chartIndex);
     lastSavedOverlayCountRef.current = -1;
     justRemovedOverlayRef.current = false;
 
@@ -3761,9 +3761,9 @@ export const KLineChartComponent = ({
         
         // Initialize lastCount from persisted data on first save attempt
         if (lastCount === -1) {
-          const persistedCount = getOverlaysForSymbol(symbol, timeframe)?.length || 0;
+          const persistedCount = getOverlaysForSymbol(symbol, timeframe, chartIndex)?.length || 0;
           lastSavedOverlayCountRef.current = persistedCount;
-          console.log('💾 [PROTECTION] Initialized lastSavedCount from localStorage:', persistedCount);
+          console.log('💾 [PROTECTION] Initialized lastSavedCount from localStorage:', persistedCount, 'for chart', chartIndex);
           
           // If trying to save 0 but we have persisted data, BLOCK IT (unless user just deleted)
           if (currentCount === 0 && persistedCount > 0 && !justRemoved) {
@@ -3783,8 +3783,8 @@ export const KLineChartComponent = ({
         }
 
         lastSavedOverlayCountRef.current = currentCount;
-        saveOverlaysForSymbol(symbol, timeframe, serializedOverlays);
-        console.log('💾 Saved', serializedOverlays.length, 'overlays for', symbol, timeframe, 'Details:', serializedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
+        saveOverlaysForSymbol(symbol, timeframe, serializedOverlays, chartIndex);
+        console.log('💾 Saved', serializedOverlays.length, 'overlays for', symbol, timeframe, 'chart', chartIndex, 'Details:', serializedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
       } catch (err) {
         console.error('💾 Error saving overlays:', err);
       }
@@ -3821,7 +3821,7 @@ export const KLineChartComponent = ({
       // Final save when unmounting or changing pairs
       saveOverlays();
     };
-  }, [settings?.symbol, settings?.timeframe, saveOverlaysForSymbol]);
+  }, [settings?.symbol, settings?.timeframe, chartIndex, saveOverlaysForSymbol, getOverlaysForSymbol]);
 
   // Apply cursor mode (crosshair, pointer, grab) for KLine chart
   // - Crosshair: enable chart crosshair and set cursor to crosshair
