@@ -3624,21 +3624,14 @@ export const KLineChartComponent = ({
         let successCount = 0;
         persistedOverlays.forEach((overlayData, index) => {
           try {
-            console.log(`💾 [DEBUG] Restoring overlay ${index + 1}:`, overlayData.name, 'Styles:', overlayData.styles);
+            console.log(`💾 [DEBUG] Restoring overlay ${index + 1}:`, overlayData.name, 'ALL DATA:', overlayData);
             // Restore overlay with its original configuration
             // The overlay points already contain timestamps, so they will be anchored correctly
             if (typeof chart.createOverlay === 'function') {
+              // Restore ALL properties (including text, custom fields, etc.)
               const restored = chart.createOverlay({
-                name: overlayData.name,
-                points: overlayData.points,
-                styles: overlayData.styles,
-                lock: overlayData.lock,
-                visible: overlayData.visible !== false,
-                zLevel: overlayData.zLevel,
-                mode: overlayData.mode,
-                modeSensitivity: overlayData.modeSensitivity,
-                extendLeft: overlayData.extendLeft,
-                extendRight: overlayData.extendRight,
+                ...overlayData,  // Spread all saved properties
+                visible: overlayData.visible !== false,  // Ensure boolean
               });
               successCount++;
               console.log(`💾 Restored overlay ${index + 1}/${persistedOverlays.length}:`, overlayData.name, 'Result ID:', restored);
@@ -3737,7 +3730,7 @@ export const KLineChartComponent = ({
 
         // Serialize overlays for storage
         const serializedOverlays = userDrawnOverlays.map((overlay) => {
-          console.log('💾 [DEBUG] Serializing overlay:', overlay.name, 'Styles:', overlay.styles);
+          console.log('💾 [DEBUG] Serializing overlay:', overlay.name, 'ALL PROPERTIES:', overlay);
           return {
             name: overlay.name,
             points: overlay.points,
@@ -3749,6 +3742,15 @@ export const KLineChartComponent = ({
             modeSensitivity: overlay.modeSensitivity,
             extendLeft: overlay.extendLeft,
             extendRight: overlay.extendRight,
+            // Save ALL other properties dynamically (text, custom data, etc.)
+            ...Object.keys(overlay).reduce((acc, key) => {
+              // Skip the properties we already explicitly saved
+              const explicitProps = ['name', 'points', 'styles', 'lock', 'visible', 'zLevel', 'mode', 'modeSensitivity', 'extendLeft', 'extendRight', 'id', 'paneId'];
+              if (!explicitProps.includes(key)) {
+                acc[key] = overlay[key];
+              }
+              return acc;
+            }, {})
           };
         });
 
