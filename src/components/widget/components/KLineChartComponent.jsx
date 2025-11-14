@@ -240,7 +240,6 @@ export const KLineChartComponent = ({
   const overlayRestoreTriggeredRef = useRef(false);
   const overlaySaveTimerRef = useRef(null);
   const lastSavedOverlayCountRef = useRef(-1); // Track last saved count (-1 = not initialized yet)
-  const isInitialMountRef = useRef(true); // Track if this is the first mount
   const justRemovedOverlayRef = useRef(false); // Track if we just removed an overlay (allow saving 0)
   
   // Sync local MA settings when opening the modal
