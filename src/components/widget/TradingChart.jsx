@@ -8,14 +8,11 @@ import { SplitChartPanel } from './components/SplitChartPanel.jsx';
 import { TradingViewHeader } from './components/TradingViewHeader.jsx';
 import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
-import { loadFullscreenState, saveFullscreenState } from './utils/chartPersistence';
 
 function TradingChart() {
   const { settings, toggleGrid, setIndicatorsPreset, toggleSplitMode } = useChartStore();
   const [activePreset, setActivePreset] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(() => {
-    try { return loadFullscreenState(); } catch (_) { return false; }
-  });
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const errorTimeoutRef = useRef(null);
 
@@ -85,11 +82,6 @@ function TradingChart() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isFullscreen]);
-
-  // Persist fullscreen state across sessions
-  useEffect(() => {
-    try { saveFullscreenState(Boolean(isFullscreen)); } catch (_) { /* ignore */ }
   }, [isFullscreen]);
 
   // Auto-disable split mode when exiting fullscreen
