@@ -237,9 +237,12 @@ function TradingChart() {
 
               {/* Right Side - Alert & Grid */}
               <div className="flex items-center space-x-2">
-                <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
-                  <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                </button>
+                {/* NOTE: Alert button temporarily hidden */}
+                {false && (
+                  <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
+                    <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                  </button>
+                )}
                 <button 
                   onClick={toggleGrid}
                   className={`p-2 transition-colors duration-300 group ${
@@ -297,9 +300,12 @@ function TradingChart() {
 
                 {/* Right Side - Alert & Grid */}
                 <div className="flex items-center space-x-2 ml-auto">
-                  <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
-                    <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  </button>
+                  {/* NOTE: Alert button temporarily hidden */}
+                  {false && (
+                    <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
+                      <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                  )}
                   <button 
                     onClick={toggleGrid}
                     className={`p-2 transition-colors duration-300 group ${
