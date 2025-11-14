@@ -11,13 +11,14 @@ export const Sidebar = () => {
     klineChartRef: mainChartRef,
     setIndicatorsPreset,
     isWorkspaceHidden,
-    setWorkspaceHidden
+    setWorkspaceHidden,
+    activeChartIndex
   } = useChartStore();
   
   const { klineChartRef: splitChartRef } = useSplitChartStore();
   
-  // In split mode, drawing tools are activated on BOTH charts simultaneously
-  // so the cursor changes appropriately on both charts
+  // In split mode, drawing tools must activate on exactly ONE chart
+  // (the active chart) to avoid duplicate handling across charts.
   
   const {
     activeTool,
@@ -56,47 +57,21 @@ export const Sidebar = () => {
   // KLine drawing tools handlers
   const handleKLineToolSelect = (toolId, toolName, event) => {
       try {
-        // CRITICAL FIX: For position tools, always deactivate first, then reactivate
-        // This ensures each button click starts a fresh drawing session
-        const isPositionTool = (toolId === 'shortPosition' || toolId === 'longPosition');
-      
-      // In split mode, activate tool on BOTH charts so cursor works on both
-      const chartsToUpdate = [];
-      if (mainChartRef && mainChartRef._handleDrawingToolChange) {
-        chartsToUpdate.push({ ref: mainChartRef, name: 'main' });
-      }
-      if (settings.isSplitMode && splitChartRef && splitChartRef._handleDrawingToolChange) {
-        chartsToUpdate.push({ ref: splitChartRef, name: 'split' });
-      }
-      
-      if (chartsToUpdate.length === 0) {
-        console.warn('📈 No chart refs available for drawing tool');
-        return;
-      }
-        
-        if (isPositionTool && activeTool === toolId) {
-          // Tool is already active - deactivate first, then reactivate after a brief delay
-          console.log('🔄 Position tool already active, cycling...');
-        chartsToUpdate.forEach(({ ref }) => {
-          ref._handleDrawingToolChange(null);
-        });
-          setActiveTool(null);
-          
-          setTimeout(() => {
-          chartsToUpdate.forEach(({ ref, name }) => {
-            ref._handleDrawingToolChange(toolId);
-            console.log(`📈 KLine Drawing tool reactivated on ${name} chart:`, toolId);
-          });
-            setActiveTool(toolId);
-          }, 100);
-        } else {
-        // Normal activation - activate on all available charts
-        chartsToUpdate.forEach(({ ref, name }) => {
-          ref._handleDrawingToolChange(toolId);
-          console.log(`📈 KLine Drawing tool activated on ${name} chart:`, toolId);
-        });
-          setActiveTool(toolId);
-        }
+        // Lazy arming: set a pending tool, and let the first chart click
+        // arm the tool on that chart only. This avoids ambiguity and fixes
+        // right-side activation without requiring pre-click.
+
+        // Clear any currently armed tool on both charts (best-effort)
+        try { if (mainChartRef && typeof mainChartRef._handleDrawingToolChange === 'function') mainChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+        try { if (splitChartRef && typeof splitChartRef._handleDrawingToolChange === 'function') splitChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+
+        // Mark pending tool in store so KLine chart can arm it on first click
+        try { if (typeof useChartStore.getState === 'function') useChartStore.getState().setPendingKLineTool?.(toolId); } catch (_) { /* ignore */ }
+
+        // Maintain UI highlight via drawing tools manager
+        setActiveTool(toolId);
+
+        console.log('📌 KLine Drawing tool pending; click a chart to arm:', toolId);
         
         // Show click toast positioned next to the clicked button
         if (event && event.currentTarget) {

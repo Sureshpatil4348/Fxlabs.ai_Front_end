@@ -148,6 +148,8 @@ export const useChartStore = create(
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
+      // KLine drawing tool pending selection (arms on first chart click)
+      pendingKLineTool: null,
       // Workspace visibility state
       isWorkspaceHidden: false,
       hiddenIndicatorsSnapshot: null,
@@ -373,7 +375,17 @@ export const useChartStore = create(
       
       clearAllDrawings: () => {
         console.log('🎨 ChartStore: Clearing all drawings');
-        set({ drawings: [], activeDrawingTool: null });
+        set({ drawings: [], activeDrawingTool: null, pendingKLineTool: null });
+      },
+
+      // Pending KLine tool controls
+      setPendingKLineTool: (tool) => {
+        console.log('📌 ChartStore: Set pending KLine tool =', tool);
+        set({ pendingKLineTool: tool || null });
+      },
+      clearPendingKLineTool: () => {
+        console.log('📌 ChartStore: Clear pending KLine tool');
+        set({ pendingKLineTool: null });
       },
       
       // KLine chart ref actions

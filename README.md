@@ -104,14 +104,10 @@ When in split mode:
   - Separate service instances ensure no interference between charts
 
 **Drawing Tools in Split Mode:**
-- Drawing tools work independently on both charts
-- Each chart maintains its own separate chart reference
-- When a drawing tool is selected from the sidebar, it activates on BOTH charts simultaneously
-- This ensures the cursor changes to the drawing tool cursor on both charts
-- Click or drag on either chart to create the drawing on that specific chart
-- Active chart tracking ensures drawings are created on the correct chart instance
-- All drawing tools (trend lines, fibonacci, rectangles, positions, etc.) fully functional on both charts
-- Each chart maintains its own independent set of drawings
+- Drawing tools work independently per chart.
+- Selecting a tool queues it as “pending”. The first chart you click arms the tool on that chart only (single-use per selection), preventing duplicate actions across both charts.
+- All drawing tools (trend lines, fibonacci, rectangles, positions, etc.) remain fully functional on both charts.
+- Each chart maintains its own independent set of drawings.
 
 ### Seamless Loading on Pair/Timeframe Change
 

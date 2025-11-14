@@ -4922,6 +4922,26 @@ export const KLineChartComponent = ({
           role="application"
           aria-label="Trading chart with drawing tools"
           tabIndex={0}
+          onMouseDownCapture={(e) => {
+            // If a tool is pending, arm it on THIS chart before the
+            // underlying KLine canvas processes the event. This ensures
+            // the same click becomes the 1st point of the overlay.
+            try {
+              const pending = mainChartStore?.pendingKLineTool;
+              const chart = chartRef.current;
+              if (pending && chart && typeof chart._handleDrawingToolChange === 'function') {
+                // Mark this chart active as well
+                try { setActiveChartIndex(chartIndex); } catch (_) { /* ignore */ }
+                chart._handleDrawingToolChange(pending);
+                mainChartStore?.clearPendingKLineTool?.();
+                // Do NOT stop propagation; allow KLine to handle this click
+              }
+            } catch (_) { /* ignore */ }
+          }}
+          onFocus={() => {
+            // Also mark active on keyboard focus to support accessibility
+            try { setActiveChartIndex(chartIndex); } catch (_) { /* ignore */ }
+          }}
           onClick={(e) => {
             try {
               // Set this chart as active for drawing tools
