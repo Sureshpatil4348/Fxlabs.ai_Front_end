@@ -641,7 +641,8 @@ export const useChartStore = create(
       partialize: (state) => ({
         settings: state.settings,
         persistedOverlays: state.persistedOverlays,
-        isFullscreen: state.isFullscreen
+        isFullscreen: state.isFullscreen,
+        isWorkspaceHidden: state.isWorkspaceHidden
       }),
       onRehydrateStorage: () => (_state) => {
         if (_state) {
@@ -651,6 +652,7 @@ export const useChartStore = create(
             chartType: _state.settings.chartType,
             indicators: _state.settings.indicators,
             isFullscreen: _state.isFullscreen,
+            isWorkspaceHidden: _state.isWorkspaceHidden,
             overlayKeys: Object.keys(_state.persistedOverlays || {})
           });
           // If timezone wasn't previously set, ensure we apply system timezone automatically
@@ -704,3 +706,4 @@ export const selectError = (state) => state.error;
 export const selectDailyChangeData = (state) => state.dailyChangeData;
 export const selectIsFullscreen = (state) => state.isFullscreen;
 export const selectPersistedOverlays = (state) => state.persistedOverlays;
+export const selectIsWorkspaceHidden = (state) => state.isWorkspaceHidden;

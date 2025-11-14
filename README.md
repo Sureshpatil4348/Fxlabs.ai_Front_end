@@ -17,6 +17,7 @@ All chart state is automatically persisted to localStorage and restored on page 
 - **Indicators**: All active indicators and their configurations persist across sessions
 - **Drawings & Overlays**: User-drawn objects (trend lines, fibonacci retracements, rectangles, positions, annotations) are saved per symbol-timeframe combination
 - **Fullscreen State**: Fullscreen mode preference is remembered
+- **Workspace Visibility**: Hide/Unhide All button state persists - if you hide all indicators and reload, they stay hidden
 - **Chart Settings**: Grid visibility, timezone, cursor type, and all other preferences
 
 **Drawings Persistence Details:**
@@ -25,8 +26,10 @@ All chart state is automatically persisted to localStorage and restored on page 
 - Automatic saving occurs 2 seconds after last modification (debounced)
 - Separate drawing storage for each symbol-timeframe-chart combination (e.g., EURUSD 1h chart 1 drawings won't appear on EURUSD 1h chart 2 in split mode)
 - **Split Mode Support**: Each chart in split mode maintains its own independent drawing storage - chart 1 and chart 2 drawings persist separately
+- **Hide/Show State**: Hidden drawings persist in their hidden state - if you hide a drawing and reload, it stays hidden
+- **All Modifications Persist**: Color changes, text edits, style updates, visibility toggles all trigger automatic saves
 - Programmatically generated overlays (indicator labels, markers) are excluded from persistence
-- All overlay properties persist including text annotations, position lengths, styles, and colors
+- All overlay properties persist including text annotations, position lengths, styles, colors, and visibility state
 
 **Benefits:**
 - Seamless experience across browser sessions

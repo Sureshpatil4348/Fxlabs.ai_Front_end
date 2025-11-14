@@ -3523,6 +3523,27 @@ export const KLineChartComponent = ({
         };
       }
 
+      // Wrap overrideOverlay to trigger persistence saves (for visibility changes, color updates, text edits, etc.)
+      const originalOverrideOverlay = chart.overrideOverlay;
+      if (typeof originalOverrideOverlay === 'function') {
+        chart.overrideOverlay = function(...args) {
+          const updateData = args[0];
+          const isVisibilityChange = updateData && typeof updateData.visible === 'boolean';
+          console.log('💾 [WRAPPER] overrideOverlay called with:', args, isVisibilityChange ? `[VISIBILITY: ${updateData.visible}]` : '');
+          const result = originalOverrideOverlay.apply(this, args);
+          // Trigger save after overlay is modified
+          setTimeout(() => {
+            if (overlaySaveTimerRef.current) clearTimeout(overlaySaveTimerRef.current);
+            overlaySaveTimerRef.current = setTimeout(() => {
+              console.log('💾 [WRAPPER] Dispatching kline-overlay-changed event (after override)');
+              const saveEvent = new CustomEvent('kline-overlay-changed');
+              window.dispatchEvent(saveEvent);
+            }, 500);
+          }, 100);
+          return result;
+        };
+      }
+
           // Handle resize - FORCE FULL WIDTH
           const handleResize = () => {
             if (container && chart) {
@@ -3624,7 +3645,8 @@ export const KLineChartComponent = ({
         let successCount = 0;
         persistedOverlays.forEach((overlayData, index) => {
           try {
-            console.log(`💾 [DEBUG] Restoring overlay ${index + 1}:`, overlayData.name, 'ALL DATA:', overlayData);
+            const visibilityStatus = overlayData.visible === false ? '[HIDDEN]' : '[VISIBLE]';
+            console.log(`💾 [DEBUG] Restoring overlay ${index + 1}:`, overlayData.name, visibilityStatus, 'ALL DATA:', overlayData);
             // Restore overlay with its original configuration
             // The overlay points already contain timestamps, so they will be anchored correctly
             if (typeof chart.createOverlay === 'function') {
@@ -3730,7 +3752,8 @@ export const KLineChartComponent = ({
 
         // Serialize overlays for storage
         const serializedOverlays = userDrawnOverlays.map((overlay) => {
-          console.log('💾 [DEBUG] Serializing overlay:', overlay.name, 'ALL PROPERTIES:', overlay);
+          const visibilityStatus = overlay.visible === false ? '[HIDDEN]' : '[VISIBLE]';
+          console.log('💾 [DEBUG] Serializing overlay:', overlay.name, visibilityStatus, 'ALL PROPERTIES:', overlay);
           return {
             name: overlay.name,
             points: overlay.points,
