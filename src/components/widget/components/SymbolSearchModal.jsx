@@ -4,12 +4,19 @@ import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS } from 
 import { formatSymbolDisplay } from '../../../utils/formatters';
 
 const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) => {
-  const [searchQuery, setSearchQuery] = useState(currentSymbol || '');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSource, setSelectedSource] = useState('All sources');
   const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const modalRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  // Reset search query when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery('');
+    }
+  }, [isOpen]);
 
   // Helper function to create symbol descriptions
   const getSymbolDescription = (symbol) => {
