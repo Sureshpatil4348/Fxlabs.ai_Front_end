@@ -8,6 +8,13 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Split Mode UI: Indicator dropdown and currency pair selector now match non-split styling (removed unintended borders/rounded styles in split panel controls) for visual consistency.
 - Numeric inputs: All key number fields now allow fully clearing the value while typing; if left empty, the value commits as 0 on blur. This prevents jumpy defaults and makes editing smoother.
 
+### ATR Percentage Mode (KLineCharts)
+
+- ATR Enhanced now displays strictly as percentage of close (ATR%).
+- Indicator line, pane label, and stats table use percentage values only.
+- Axis values may compact very small decimals; values are already scaled to percent to improve readability.
+- No toggle exists for raw ATR — percentage mode is always on by design.
+
 ## Numeric Input Behavior
 
 - You can delete the entire value in any updated numeric field and type a new value freely.

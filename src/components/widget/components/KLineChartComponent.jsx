@@ -706,7 +706,7 @@ export const KLineChartComponent = ({
     }
   }, [candles, settings?.indicatorSettings?.orbEnhanced, settings?.timeframe]);
   
-  // ATR Pro stats (Current ATR, Volatility classification, Trend)
+  // ATR Pro stats (Percentage mode only: ATR as % of close)
   const atrProStats = useMemo(() => {
     try {
       if (!Array.isArray(candles) || candles.length === 0) return null;
@@ -725,7 +725,7 @@ export const KLineChartComponent = ({
         const prevClose = Number(prev.close);
         trSeries[i] = Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose));
       }
-      // ATR via selected method
+      // ATR via selected method (raw)
       const atrSeries = new Array(n);
       if (method === 'SMA') {
         let sum = 0;
@@ -774,30 +774,37 @@ export const KLineChartComponent = ({
           }
         }
       }
-      const lastAtr = atrSeries[n - 1];
+      // Convert ATR series to percentage of close
+      const atrPctSeries = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const close = Number(candles[i]?.close);
+        const rawAtr = atrSeries[i];
+        atrPctSeries[i] = (Number.isFinite(close) && close !== 0 && Number.isFinite(rawAtr)) ? (rawAtr / close) * 100 : NaN;
+      }
+      const lastAtr = atrPctSeries[n - 1];
       if (!Number.isFinite(lastAtr)) return null;
       // ATR moving average for trend (SMA of 20)
       const maLen = 20;
       let atrMa = null;
       if (n >= maLen) {
         let sum = 0;
-        for (let i = n - maLen; i < n; i++) sum += atrSeries[i];
+        for (let i = n - maLen; i < n; i++) sum += atrPctSeries[i];
         atrMa = sum / maLen;
       }
-      const trendUp = Number.isFinite(atrMa) ? lastAtr > atrMa : (n > 1 ? lastAtr > atrSeries[n - 2] : true);
+      const trendUp = Number.isFinite(atrMa) ? lastAtr > atrMa : (n > 1 ? lastAtr > atrPctSeries[n - 2] : true);
       // Volatility classification using 100-period average
       const avgLen = 100;
       let atrAvg = null;
       if (n >= avgLen) {
         let sum = 0;
-        for (let i = n - avgLen; i < n; i++) sum += atrSeries[i];
+        for (let i = n - avgLen; i < n; i++) sum += atrPctSeries[i];
         atrAvg = sum / avgLen;
       }
       const relative = Number.isFinite(atrAvg) && atrAvg !== 0 ? lastAtr / atrAvg : null;
       const isHighVol = Number.isFinite(relative) ? relative >= 1.5 : false;
       const isLowVol = Number.isFinite(relative) ? relative <= 0.5 : false;
       const isNormalVol = !isHighVol && !isLowVol;
-      return { currentAtr: lastAtr, trendUp, isHighVol, isLowVol, isNormalVol };
+      return { currentAtrPercent: lastAtr, trendUp, isHighVol, isLowVol, isNormalVol };
     } catch (_e) {
       return null;
     }
@@ -999,11 +1006,11 @@ export const KLineChartComponent = ({
       if (Array.isArray(supported) && !supported.includes('ATR_ENH')) {
         registerIndicator({
           name: 'ATR_ENH',
-          shortName: 'ATR',
+          shortName: 'ATR%',
           calcParams: [14, 0], // [length, methodCode] method: 0=RMA,1=SMA,2=EMA,3=WMA
-          precision: 5,
+          precision: 2, // percentage precision
           figures: [
-            { key: 'atr', title: 'ATR: ', type: 'line' }
+            { key: 'atr', title: 'ATR%: ', type: 'line' }
           ],
           calc: (dataList, indicator) => {
             const params = Array.isArray(indicator.calcParams) ? indicator.calcParams : [14, 0];
@@ -1020,6 +1027,7 @@ export const KLineChartComponent = ({
               const high = Number(k.high);
               const low = Number(k.low);
               const closePrev = Number(prev.close);
+              const closeNow = Number(k.close);
               const tr = Math.max(high - low, Math.abs(high - closePrev), Math.abs(low - closePrev));
               // Maintain buffer for SMA/WMA
               trBuf.push(tr);
@@ -1059,7 +1067,8 @@ export const KLineChartComponent = ({
                 }
                 atrVal = prevAtr;
               }
-              return { atr: atrVal };
+              const pct = (Number.isFinite(closeNow) && closeNow !== 0 && Number.isFinite(atrVal)) ? (atrVal / closeNow) * 100 : NaN;
+              return { atr: pct };
             });
           }
         });
@@ -6709,7 +6718,7 @@ export const KLineChartComponent = ({
                   // Therefore, compute bottom offset from the end of the active list.
                   const bottomOffset = (activeBelow.length - 1 - idx) * 120;
                   // Determine readable indicator label (no extra badge or color dot)
-                  const label = key === 'rsiEnhanced' ? 'RSI' : key === 'atrEnhanced' ? 'ATR' : 'MACD';
+                  const label = key === 'rsiEnhanced' ? 'RSI' : key === 'atrEnhanced' ? 'ATR %' : 'MACD';
                   return (
                     <div
                       key={key}
@@ -6788,14 +6797,15 @@ export const KLineChartComponent = ({
                             <table className="text-[11px] text-gray-700">
                               <tbody>
                                 {(() => {
-                                  const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
-                                  const currentAtr = atrProStats.currentAtr != null ? formatPrice(atrProStats.currentAtr, pricePrecision) : '--';
+                                  const currentAtr = (typeof atrProStats.currentAtrPercent === 'number' && Number.isFinite(atrProStats.currentAtrPercent))
+                                    ? `${atrProStats.currentAtrPercent.toFixed(2)}%`
+                                    : '--';
                                   const volText = atrProStats.isHighVol ? 'HIGH ⚠' : atrProStats.isLowVol ? 'LOW ⚡' : 'NORMAL ●';
                                   const volBg = atrProStats.isHighVol ? 'rgba(239,83,80,0.35)' : atrProStats.isLowVol ? 'rgba(255,167,38,0.35)' : 'rgba(38,166,154,0.35)';
                                   const trendText = atrProStats.trendUp ? 'RISING ▲' : 'FALLING ▼';
                                   const trendBg = atrProStats.trendUp ? 'rgba(239,83,80,0.25)' : 'rgba(38,166,154,0.25)';
                                   const rows = [
-                                    { label: 'Current ATR', value: currentAtr, cellBg: undefined },
+                                    { label: 'Current ATR (%)', value: currentAtr, cellBg: undefined },
                                     { label: 'Volatility', value: volText, cellBg: volBg },
                                     { label: 'Trend', value: trendText, cellBg: trendBg },
                                   ];
