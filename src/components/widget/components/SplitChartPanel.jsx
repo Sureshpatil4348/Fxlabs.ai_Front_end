@@ -144,7 +144,7 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
           {/* Symbol Search Button */}
           <button
             onClick={() => setShowSymbolSearch(true)}
-            className="px-2 py-1 text-[13px] font-medium bg-white hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between rounded border border-gray-300"
+            className="px-2 py-1 text-[13px] font-medium bg-white hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
           >
             <span>{currentSymbol ? formatSymbolDisplay(currentSymbol) : 'Select Symbol'}</span>
             <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +216,7 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
             <button 
               ref={indicatorsButtonRef}
               onClick={handleIndicatorsToggle}
-              className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1 border border-gray-300 rounded"
+              className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1"
             >
               <span>Indicators{totalActiveIndicators > 0 ? ` ( ${totalActiveIndicators} )` : ''}</span>
               <svg className={`w-3 h-3 transition-transform ${showIndicators ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,4 +370,3 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
     </>
   );
 };
-

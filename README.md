@@ -2,6 +2,10 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
+## Recent Fixes
+
+- Split Mode UI: Indicator dropdown and currency pair selector now match non-split styling (removed unintended borders/rounded styles in split panel controls) for visual consistency.
+
 ## Features
 
 ### Indicator Table Styling
