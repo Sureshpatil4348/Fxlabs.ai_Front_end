@@ -6101,7 +6101,7 @@ export const KLineChartComponent = ({
 
           {/* MA Enhanced: MA values table (top-right, no header) */}
           {isFullscreen && settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
-            <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '80px' }}>
+            <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '88px' }}>
               <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
@@ -6132,7 +6132,7 @@ export const KLineChartComponent = ({
           {isFullscreen && settings?.indicators?.bbPro && !isWorkspaceHidden && bbProStats && (
             <div
               className="absolute right-2 z-40 pointer-events-none"
-              style={{ right: '80px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
+              style={{ right: '88px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
             >
               <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                 <table className="text-[11px] text-gray-700">
@@ -6164,7 +6164,7 @@ export const KLineChartComponent = ({
             <div
               className="absolute right-2 z-40 pointer-events-none"
               style={{
-                right: '80px',
+                right: '88px',
                 top: (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
                   ? '158px'
                   : (settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? '80px' : '2px'
@@ -6194,7 +6194,7 @@ export const KLineChartComponent = ({
             <div
               className="absolute right-2 z-40 pointer-events-none"
               style={{
-                right: '80px',
+                right: '88px',
                 top: (() => {
                   const base = (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
                     ? 158
@@ -6409,7 +6409,7 @@ export const KLineChartComponent = ({
                       </div>
                       {/* ATR - Pro: stats table (top-right of ATR pane) */}
                       {isFullscreen && key === 'atrEnhanced' && atrProStats && (
-                        <div className="absolute pointer-events-none" style={{ right: '80px', top: '2px' }}>
+                        <div className="absolute pointer-events-none" style={{ right: '88px', top: '2px' }}>
                           <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                             <table className="text-[11px] text-gray-700">
                               <tbody>
@@ -6440,7 +6440,7 @@ export const KLineChartComponent = ({
 
                       {/* MACD - Pro: Trend & Momentum table (top-right of MACD pane) */}
                       {isFullscreen && key === 'macdEnhanced' && macdProStats && (
-                        <div className="absolute pointer-events-none" style={{ right: '80px', top: '2px' }}>
+                        <div className="absolute pointer-events-none" style={{ right: '88px', top: '2px' }}>
                           <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                             <table className="text-[11px] text-gray-700">
                               <tbody>
