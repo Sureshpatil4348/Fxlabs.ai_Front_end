@@ -102,7 +102,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
       source: getSymbolSource(symbol),
       type: 'forex'
     })),
-    CFD: PRECIOUS_METALS_PAIRS.map(symbol => ({
+    Commodity: PRECIOUS_METALS_PAIRS.map(symbol => ({
       symbol,
       description: getSymbolDescription(symbol),
       source: getSymbolSource(symbol),
@@ -116,7 +116,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
     })),
   };
 
-  const categories = ['All', 'Forex', 'CFD', 'Crypto'];
+  const categories = ['All', 'Forex', 'Commodity', 'Crypto'];
 
   // Focus search input when modal opens
   useEffect(() => {
