@@ -5912,13 +5912,39 @@ export const KLineChartComponent = ({
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
           {(isInitialLoad || (!chartRef.current && !error)) && (
-            <div className="absolute inset-0 flex items-start justify-center pt-16 bg-gradient-to-br from-gray-50 to-gray-100 z-10">
-              <div className="text-center">
-                <div className="relative inline-block">
-                  <div className="w-12 h-12 border-4 border-gray-300 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 z-10 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
+              <div className="h-full w-full flex flex-col space-y-3">
+                {/* Top controls skeleton (symbol, timeframe, actions) */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+                    <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+                    <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+                    <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+                    <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
+                  </div>
                 </div>
-                <p className="text-gray-700 mt-3 text-sm font-medium">Loading Trading Chart...</p>
+
+                {/* Main chart skeleton */}
+                <div className="flex-1 relative rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                  <div className="absolute inset-0 shimmer-bg"></div>
+                  <div className="absolute bottom-3 left-3 right-3 space-y-1">
+                    <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+                    <div className="h-3 w-5/6 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
+                  </div>
+                </div>
+
+                {/* Below-chart panes skeleton (e.g., RSI / ATR / MACD) */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                      <div className="absolute inset-0 shimmer-bg"></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

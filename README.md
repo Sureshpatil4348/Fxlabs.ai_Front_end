@@ -185,7 +185,7 @@ When in split mode:
 
 ### Seamless Loading on Pair/Timeframe Change
 
-- Changing the currency pair or timeframe now shows the same loader overlay used on first page load: "Loading Trading Chart...".
+- Changing the currency pair or timeframe now shows a shimmer-based skeleton overlay (consistent with Currency Strength Meter and AI News Analysis loaders) instead of the old text/circular spinner.
 - Old candles are cleared immediately on selection change so no broken/half-baked candles appear.
 - While the initial REST fetch is in progress, live WebSocket updates are temporarily ignored to prevent partial bar rendering; they resume automatically once loading completes.
 - Applies to both single and split mode. Each split chart independently shows the loader and manages its own data flow.
