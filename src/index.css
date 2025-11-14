@@ -195,6 +195,56 @@
   background: #64748b;
 }
 
+/* Auto-hiding scrollbar for Windows/cross-platform compatibility */
+.scrollbar-autohide {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.scrollbar-autohide:hover,
+.scrollbar-autohide:focus-within {
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.dark .scrollbar-autohide:hover,
+.dark .scrollbar-autohide:focus-within {
+  scrollbar-color: #475569 #19235d;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.scrollbar-autohide::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-autohide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-autohide::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.scrollbar-autohide:hover::-webkit-scrollbar-thumb,
+.scrollbar-autohide:focus-within::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+.dark .scrollbar-autohide:hover::-webkit-scrollbar-thumb,
+.dark .scrollbar-autohide:focus-within::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.scrollbar-autohide::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark .scrollbar-autohide::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
 /* Animation classes */
 .fade-in {
   animation: fadeIn 0.3s ease-in-out;

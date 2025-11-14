@@ -305,7 +305,7 @@ export const Sidebar = () => {
   };
   
   return (
-    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-0.5 h-full min-h-0 overflow-y-auto overflow-x-hidden">
+    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-0.5 h-full min-h-0 overflow-y-auto overflow-x-hidden scrollbar-autohide">
       {/* Click Toast Notification */}
       {clickToast && (
         <div 
