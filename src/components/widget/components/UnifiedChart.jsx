@@ -355,7 +355,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
             };
         }
         return undefined;
-    }, [currentPage, hasMoreHistory, currentSymbol, currentTimeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory, realMarketService]);
+    }, [currentPage, hasMoreHistory, currentSymbol, currentTimeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory, realMarketService, isMainChart]);
 
     // Load historical data
     useEffect(() => {

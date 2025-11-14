@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS } from '../../../constants/pairs';
 import { formatSymbolDisplay } from '../../../utils/formatters';
 
-const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) => {
+const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _currentSymbol }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const modalRef = useRef(null);
