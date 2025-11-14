@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { useDrawingTools } from '../hooks/useDrawingTools';
 import { useChartStore } from '../stores/useChartStore';
+import { useSplitChartStore } from '../stores/useSplitChartStore';
 
 export const Sidebar = () => {
   const { 
@@ -12,6 +13,9 @@ export const Sidebar = () => {
     isWorkspaceHidden,
     setWorkspaceHidden
   } = useChartStore();
+  
+  // Get split chart ref for handling drawing tools in split mode
+  const { klineChartRef: splitChartRef } = useSplitChartStore();
   
   const {
     activeTool,
@@ -49,7 +53,16 @@ export const Sidebar = () => {
 
   // KLine drawing tools handlers
   const handleKLineToolSelect = (toolId, toolName, event) => {
-    if (klineChartRef && klineChartRef._handleDrawingToolChange) {
+    // Collect all active chart refs (main + split if in split mode)
+    const chartRefs = [klineChartRef];
+    if (settings.isSplitMode && splitChartRef) {
+      chartRefs.push(splitChartRef);
+    }
+    
+    // Filter to only valid refs with the handler
+    const validRefs = chartRefs.filter(ref => ref && ref._handleDrawingToolChange);
+    
+    if (validRefs.length > 0) {
       try {
         // CRITICAL FIX: For position tools, always deactivate first, then reactivate
         // This ensures each button click starts a fresh drawing session
@@ -58,19 +71,19 @@ export const Sidebar = () => {
         if (isPositionTool && activeTool === toolId) {
           // Tool is already active - deactivate first, then reactivate after a brief delay
           console.log('🔄 Position tool already active, cycling...');
-          klineChartRef._handleDrawingToolChange(null);
+          validRefs.forEach(ref => ref._handleDrawingToolChange(null));
           setActiveTool(null);
           
           setTimeout(() => {
-            klineChartRef._handleDrawingToolChange(toolId);
+            validRefs.forEach(ref => ref._handleDrawingToolChange(toolId));
             setActiveTool(toolId);
-            console.log('📈 KLine Drawing tool reactivated:', toolId);
+            console.log('📈 KLine Drawing tool reactivated on', validRefs.length, 'chart(s):', toolId);
           }, 100);
         } else {
-          // Normal activation
-          klineChartRef._handleDrawingToolChange(toolId);
+          // Normal activation - notify all charts
+          validRefs.forEach(ref => ref._handleDrawingToolChange(toolId));
           setActiveTool(toolId);
-          console.log('📈 KLine Drawing tool activated:', toolId);
+          console.log('📈 KLine Drawing tool activated on', validRefs.length, 'chart(s):', toolId);
         }
         
         // Show click toast positioned next to the clicked button
@@ -91,27 +104,75 @@ export const Sidebar = () => {
 
   // Toggle visibility for all KLine overlays and indicators (no confirmation)
   const handleKLineToggleVisibility = () => {
+    // Helper to toggle visibility for a single chart
+    const toggleChartVisibility = (chart, visible) => {
+      if (!chart) return;
+      
+      if (!visible) {
+        // Hide overlays
+        try {
+          const fetchOverlays = () => {
+            try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+            try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+            return [];
+          };
+          const overlays = fetchOverlays();
+          if (Array.isArray(overlays)) {
+            overlays.forEach((ov) => {
+              try { chart.overrideOverlay({ id: ov?.id, visible: false }); } catch (_) { /* ignore */ }
+            });
+          }
+          // Dismiss any custom inline UI/panels
+          try { if (typeof chart._dismissSelectedOverlayPanel === 'function') chart._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
+        } catch (_) { /* ignore */ }
+        
+        // Temporarily remove indicators
+        try {
+          const tryRemoveByList = (list) => {
+            if (!Array.isArray(list)) return;
+            list.forEach((ind) => {
+              try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+              try { chart.removeIndicator({ name: ind?.name }); } catch (_) {}
+              try { chart.removeIndicator(ind?.id); } catch (_) {}
+            });
+          };
+          let inds = [];
+          try { inds = chart.getIndicators?.() || []; } catch (_) { inds = []; }
+          if (!Array.isArray(inds) || inds.length === 0) {
+            const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2', 'pane-rsiEnhanced', 'pane-atrEnhanced', 'pane-macdEnhanced'];
+            panes.forEach((pid) => {
+              try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+            });
+          } else {
+            tryRemoveByList(inds);
+          }
+        } catch (_) { /* ignore */ }
+      } else {
+        // Unhide overlays
+        try {
+          const fetchOverlays = () => {
+            try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+            try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+            return [];
+          };
+          const overlays = fetchOverlays();
+          if (Array.isArray(overlays)) {
+            overlays.forEach((ov) => {
+              try { chart.overrideOverlay({ id: ov?.id, visible: true }); } catch (_) { /* ignore */ }
+            });
+          }
+        } catch (_) { /* ignore */ }
+      }
+    };
+    
     try {
-      const chart = klineChartRef;
       if (!isWorkspaceHidden) {
-        // 1) Hide all KLine overlays (best-effort via overrideOverlay visible: false)
-        if (chart) {
-          try {
-            const fetchOverlays = () => {
-              try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
-              try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
-              return [];
-            };
-            const overlays = fetchOverlays();
-            if (Array.isArray(overlays)) {
-              overlays.forEach((ov) => {
-                try { chart.overrideOverlay({ id: ov?.id, visible: false }); } catch (_) { /* ignore */ }
-              });
-            }
-            // Dismiss any custom inline UI/panels
-            try { if (typeof chart._dismissSelectedOverlayPanel === 'function') chart._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
-          } catch (_) { /* ignore */ }
+        // Hide all charts
+        toggleChartVisibility(klineChartRef, false);
+        if (settings.isSplitMode && splitChartRef) {
+          toggleChartVisibility(splitChartRef, false);
         }
+        
         // Also remove any stray inline editors or palettes injected in DOM
         try {
           document.querySelectorAll('.kv-inline-rect-editor,.kv-rect-color-palette').forEach((el) => {
@@ -119,51 +180,16 @@ export const Sidebar = () => {
           });
         } catch (_) { /* ignore */ }
 
-        // 2) Temporarily remove all indicators from the chart (without changing switches)
-        if (chart) {
-          try {
-            const tryRemoveByList = (list) => {
-              if (!Array.isArray(list)) return;
-              list.forEach((ind) => {
-                try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
-                try { chart.removeIndicator({ name: ind?.name }); } catch (_) {}
-                try { chart.removeIndicator(ind?.id); } catch (_) {}
-              });
-            };
-            let inds = [];
-            try { inds = chart.getIndicators?.() || []; } catch (_) { inds = []; }
-            if (!Array.isArray(inds) || inds.length === 0) {
-              const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2', 'pane-rsiEnhanced', 'pane-atrEnhanced', 'pane-macdEnhanced'];
-              panes.forEach((pid) => {
-                try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
-              });
-            } else {
-              tryRemoveByList(inds);
-            }
-          } catch (_) { /* ignore */ }
-        }
-
         setWorkspaceHidden(true);
         console.log('📈 Workspace hidden: overlays hidden, indicators temporarily removed (switches unchanged)');
       } else {
-        // 1) Unhide all overlays
-        if (chart) {
-          try {
-            const fetchOverlays = () => {
-              try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
-              try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
-              return [];
-            };
-            const overlays = fetchOverlays();
-            if (Array.isArray(overlays)) {
-              overlays.forEach((ov) => {
-                try { chart.overrideOverlay({ id: ov?.id, visible: true }); } catch (_) { /* ignore */ }
-              });
-            }
-          } catch (_) { /* ignore */ }
+        // Unhide all charts
+        toggleChartVisibility(klineChartRef, true);
+        if (settings.isSplitMode && splitChartRef) {
+          toggleChartVisibility(splitChartRef, true);
         }
 
-        // 2) Re-apply indicator instances by emitting a no-op preset (same switches) to trigger chart effect
+        // Re-apply indicator instances by emitting a no-op preset (same switches) to trigger chart effect
         try { setIndicatorsPreset({ ...(settings?.indicators || {}) }); } catch (_) { /* ignore */ }
 
         setWorkspaceHidden(false);
@@ -175,87 +201,97 @@ export const Sidebar = () => {
   };
   
   const handleKLineClearAll = () => {
+    // Helper function to clear overlays from a single chart
+    const clearChartOverlays = (chartRef, chartName = '') => {
+      if (!chartRef) return;
+      
+      try {
+        // Robustly collect overlays (support both APIs)
+        const fetchOverlays = () => {
+          try {
+            if (typeof chartRef.getOverlays === 'function') return chartRef.getOverlays();
+            if (typeof chartRef.getAllOverlays === 'function') return chartRef.getAllOverlays();
+          } catch (_) {}
+          return [];
+        };
+
+        let safetyCounter = 0;
+        while (safetyCounter < 10) {
+          safetyCounter += 1;
+          const overlays = fetchOverlays();
+          if (!Array.isArray(overlays) || overlays.length === 0) break;
+
+          let removedAny = false;
+          overlays.forEach((ov) => {
+            try { chartRef.removeOverlay({ id: ov?.id, paneId: ov?.paneId || ov?.pane?.id }); removedAny = true; } catch (_) {}
+            try { chartRef.removeOverlay({ id: ov?.id }); removedAny = true; } catch (_) {}
+            try { chartRef.removeOverlay(ov?.id); removedAny = true; } catch (_) {}
+            // As last resort, attempt by common names (may remove all instances by name depending on lib)
+            try { if (ov?.name) { chartRef.removeOverlay({ name: ov.name }); removedAny = true; } } catch (_) {}
+          });
+
+          // Extra pass for known overlay names in case id-based removal fails
+          const knownNames = [
+            'segment',
+            'horizontalStraightLine',
+            'verticalStraightLine',
+            'fibonacciRightLine',
+            'fibonacciTrendExtensionRight',
+            'rectangle',
+            'text',
+            'shortPosition',
+            'longPosition'
+          ];
+          knownNames.forEach((name) => {
+            try { chartRef.removeOverlay({ name }); removedAny = true; } catch (_) {}
+            try { chartRef.removeOverlay(name); removedAny = true; } catch (_) {}
+          });
+
+          if (!removedAny) break; // avoid infinite loop if API no-ops
+        }
+
+        console.log(`📈 All KLine overlays cleared (robust)${chartName ? ' for ' + chartName : ''}`);
+        try { if (typeof chartRef._dismissSelectedOverlayPanel === 'function') chartRef._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
+
+        // Try to remove all indicators immediately (best-effort)
+        try {
+          const tryRemoveByList = (list) => {
+            if (!Array.isArray(list)) return;
+            list.forEach((ind) => {
+              try { chartRef.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+              try { chartRef.removeIndicator({ name: ind?.name }); } catch (_) {}
+              try { chartRef.removeIndicator(ind?.id); } catch (_) {}
+            });
+          };
+          let inds = [];
+          try { inds = chartRef.getIndicators?.() || []; } catch (_) { inds = []; }
+          if (!Array.isArray(inds) || inds.length === 0) {
+            const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2'];
+            panes.forEach((pid) => {
+              try { tryRemoveByList(chartRef.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+            });
+          } else {
+            tryRemoveByList(inds);
+          }
+        } catch (_) {}
+      } catch (error) {
+        console.warn(`📈 Error clearing KLine overlays/indicators${chartName ? ' for ' + chartName : ''}:`, error);
+      }
+    };
+    
     const performClearAll = () => {
       // 1) Clear custom (Recharts) drawings managed by UniversalDrawingTools
       try { clearAllDrawings(); } catch (_) { /* ignore */ }
 
-      // 2) Clear KLine overlays if chart is available
-      if (klineChartRef) {
-        try {
-          // Robustly collect overlays (support both APIs)
-          const fetchOverlays = () => {
-            try {
-              if (typeof klineChartRef.getOverlays === 'function') return klineChartRef.getOverlays();
-              if (typeof klineChartRef.getAllOverlays === 'function') return klineChartRef.getAllOverlays();
-            } catch (_) {}
-            return [];
-          };
-
-          let safetyCounter = 0;
-          while (safetyCounter < 10) {
-            safetyCounter += 1;
-            const overlays = fetchOverlays();
-            if (!Array.isArray(overlays) || overlays.length === 0) break;
-
-            let removedAny = false;
-            overlays.forEach((ov) => {
-              try { klineChartRef.removeOverlay({ id: ov?.id, paneId: ov?.paneId || ov?.pane?.id }); removedAny = true; } catch (_) {}
-              try { klineChartRef.removeOverlay({ id: ov?.id }); removedAny = true; } catch (_) {}
-              try { klineChartRef.removeOverlay(ov?.id); removedAny = true; } catch (_) {}
-              // As last resort, attempt by common names (may remove all instances by name depending on lib)
-              try { if (ov?.name) { klineChartRef.removeOverlay({ name: ov.name }); removedAny = true; } } catch (_) {}
-            });
-
-            // Extra pass for known overlay names in case id-based removal fails
-            const knownNames = [
-              'segment',
-              'horizontalStraightLine',
-              'verticalStraightLine',
-              'fibonacciRightLine',
-              'fibonacciTrendExtensionRight',
-              'rectangle',
-              'text',
-              'shortPosition',
-              'longPosition'
-            ];
-            knownNames.forEach((name) => {
-              try { klineChartRef.removeOverlay({ name }); removedAny = true; } catch (_) {}
-              try { klineChartRef.removeOverlay(name); removedAny = true; } catch (_) {}
-            });
-
-            if (!removedAny) break; // avoid infinite loop if API no-ops
-          }
-
-          console.log('📈 All KLine overlays cleared (robust)');
-          try { if (typeof klineChartRef._dismissSelectedOverlayPanel === 'function') klineChartRef._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
-
-          // Try to remove all indicators immediately (best-effort)
-          try {
-            const tryRemoveByList = (list) => {
-              if (!Array.isArray(list)) return;
-              list.forEach((ind) => {
-                try { klineChartRef.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
-                try { klineChartRef.removeIndicator({ name: ind?.name }); } catch (_) {}
-                try { klineChartRef.removeIndicator(ind?.id); } catch (_) {}
-              });
-            };
-            let inds = [];
-            try { inds = klineChartRef.getIndicators?.() || []; } catch (_) { inds = []; }
-            if (!Array.isArray(inds) || inds.length === 0) {
-              const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2'];
-              panes.forEach((pid) => {
-                try { tryRemoveByList(klineChartRef.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
-              });
-            } else {
-              tryRemoveByList(inds);
-            }
-          } catch (_) {}
-        } catch (error) {
-          console.warn('📈 Error clearing KLine overlays/indicators:', error);
-        }
+      // 2) Clear KLine overlays from main chart
+      clearChartOverlays(klineChartRef, 'main chart');
+      
+      // 3) Clear KLine overlays from split chart if in split mode
+      if (settings.isSplitMode && splitChartRef) {
+        clearChartOverlays(splitChartRef, 'split chart');
       }
 
-      // Turn off all indicator toggles via store so the effect cleans up consistently
+      // 4) Turn off all indicator toggles via store so the effect cleans up consistently
       try {
         const cleared = Object.keys(settings?.indicators || {}).reduce((acc, key) => {
           acc[key] = false;
@@ -264,9 +300,10 @@ export const Sidebar = () => {
         setIndicatorsPreset(cleared);
       } catch (_) { /* ignore */ }
 
-      // 3) Deactivate any active drawing tools (both KLine and Universal)
+      // 5) Deactivate any active drawing tools (both KLine and Universal)
       try { setActiveTool(null); } catch (_) { /* ignore */ }
       try { if (klineChartRef && typeof klineChartRef._handleDrawingToolChange === 'function') klineChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+      try { if (splitChartRef && typeof splitChartRef._handleDrawingToolChange === 'function') splitChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
     };
 
     // Prefer custom modal inside the KLine widget

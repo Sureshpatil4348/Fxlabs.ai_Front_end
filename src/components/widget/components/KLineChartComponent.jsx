@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import { formatPrice } from '../../../utils/formatters';
 import { useChartStore } from '../stores/useChartStore';
+import { useSplitChartStore } from '../stores/useSplitChartStore';
 import { calculateRSI, calculateEMA, calculateSMA, calculateBollingerBands } from '../utils/indicators';
 
 // MA colors by index (stable references for hook dependencies)
@@ -22,6 +23,7 @@ export const KLineChartComponent = ({
   hasMoreHistory = true,
   panelSettings: _panelSettings = {},
   isFullscreen = false,
+  chartIndex = 1,
 }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
@@ -222,8 +224,17 @@ export const KLineChartComponent = ({
     });
   }, [showEmaTouchSettings, settings?.indicatorSettings?.emaTouch]);
   
-  // Get the setter from store
-  const { setKLineChartRef, toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = useChartStore();
+  // Get the setters from the appropriate store based on chartIndex
+  const mainChartStore = useChartStore();
+  const splitChartStore = useSplitChartStore();
+  const isMainChart = chartIndex === 1;
+  const currentChartStore = isMainChart ? mainChartStore : splitChartStore;
+  
+  // Get setKLineChartRef from the appropriate store
+  const setKLineChartRef = currentChartStore.setKLineChartRef;
+  
+  // Get other store methods (always from main store since settings are global)
+  const { toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = mainChartStore;
   
   // Sync local MA settings when opening the modal
   useEffect(() => {

@@ -9,6 +9,7 @@ export const EnhancedCandlestickChart = ({
   isLoadingHistory = false,
   hasMoreHistory = true,
   isFullscreen = false,
+  chartIndex = 1,
 }) => {
   return (
     <KLineChartComponent
@@ -18,6 +19,7 @@ export const EnhancedCandlestickChart = ({
       isLoadingHistory={isLoadingHistory}
       hasMoreHistory={hasMoreHistory}
       isFullscreen={isFullscreen}
+      chartIndex={chartIndex}
     />
   );
 };

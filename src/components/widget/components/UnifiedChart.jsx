@@ -771,6 +771,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                             isLoadingHistory={isLoadingHistory}
                             hasMoreHistory={hasMoreHistory}
                             isFullscreen={isFullscreen}
+                            chartIndex={chartIndex}
                         />
                     </div>
                 ) : (

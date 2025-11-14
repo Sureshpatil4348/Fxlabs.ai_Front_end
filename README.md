@@ -103,6 +103,13 @@ When in split mode:
   - WebSocket updates are routed to the correct store based on chart index
   - Separate service instances ensure no interference between charts
 
+**Drawing Tools in Split Mode:**
+- Drawing tools (trend lines, position markers, etc.) work independently on both charts
+- When a drawing tool is activated from the sidebar, both charts receive the tool activation
+- Each chart maintains its own cursor state and drawing overlays
+- Cursor changes to indicate active tool state in both charts simultaneously
+- Clearing all drawings, hiding/unhiding overlays affects both charts consistently
+
 ### Seamless Loading on Pair/Timeframe Change
 
 - Changing the currency pair or timeframe now shows the same loader overlay used on first page load: "Loading Trading Chart...".

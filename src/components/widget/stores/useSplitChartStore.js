@@ -23,6 +23,8 @@ export const useSplitChartStore = create((set) => ({
   currentPage: 1,
   hasMoreHistory: true,
   isLoadingHistory: false,
+  // KLine chart ref (not persisted)
+  klineChartRef: null,
 
   // Actions
   setCandles: (candles, symbol, timeframe) => set({
@@ -86,6 +88,12 @@ export const useSplitChartStore = create((set) => ({
     hasMoreHistory: true, 
     isLoadingHistory: false 
   }),
+
+  // KLine chart ref actions
+  setKLineChartRef: (ref) => {
+    console.log('📊 SplitChartStore: Setting KLine chart ref');
+    set({ klineChartRef: ref });
+  },
 }));
 
 // Selectors for better performance
