@@ -103,6 +103,13 @@ When in split mode:
   - WebSocket updates are routed to the correct store based on chart index
   - Separate service instances ensure no interference between charts
 
+### Seamless Loading on Pair/Timeframe Change
+
+- Changing the currency pair or timeframe now shows the same loader overlay used on first page load: "Loading Trading Chart...".
+- Old candles are cleared immediately on selection change so no broken/half-baked candles appear.
+- While the initial REST fetch is in progress, live WebSocket updates are temporarily ignored to prevent partial bar rendering; they resume automatically once loading completes.
+- Applies to both single and split mode. Each split chart independently shows the loader and manages its own data flow.
+
 **Use Cases:**
 - Compare the same pair across different timeframes (e.g., EURUSD 1m vs EURUSD 1h)
 - Monitor multiple pairs simultaneously (e.g., EURUSD vs GBPUSD)
@@ -137,4 +144,3 @@ When in split mode:
 // Result: All 4 Moneytize indicators are removed
 // Any other indicators remain active
 ```
-

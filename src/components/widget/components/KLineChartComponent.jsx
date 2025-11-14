@@ -3670,7 +3670,15 @@ export const KLineChartComponent = ({
 
   // Update chart with data
   useEffect(() => {
-    if (!chartRef.current || candles.length === 0) return;
+    if (!chartRef.current) return;
+    // When candles are cleared (e.g., on pair/timeframe change), explicitly clear KLine data
+    if (!Array.isArray(candles) || candles.length === 0) {
+      try { chartRef.current.applyNewData([]); } catch (_) { /* optional API */ }
+      prevCandleCountRef.current = 0;
+      prevFirstTimestampRef.current = null;
+      prevLastTimestampRef.current = null;
+      return;
+    }
 
     try {
       setError(null);

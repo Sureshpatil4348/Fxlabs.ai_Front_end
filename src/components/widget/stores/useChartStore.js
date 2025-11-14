@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useSplitChartStore } from './useSplitChartStore';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 // Resolve system timezone once on load; fallback to 'UTC'
@@ -236,7 +237,15 @@ export const useChartStore = create(
           settings: {
             ...state.settings,
             symbol
-          }
+          },
+          // Immediately enter loading state and clear existing candles to avoid stale display
+          candles: [],
+          candlesMeta: null,
+          isLoading: true,
+          error: null,
+          currentPage: 1,
+          hasMoreHistory: true,
+          isLoadingHistory: false,
         }));
       },
       
@@ -246,7 +255,15 @@ export const useChartStore = create(
           settings: {
             ...state.settings,
             timeframe
-          }
+          },
+          // Immediately enter loading state and clear existing candles to avoid stale display
+          candles: [],
+          candlesMeta: null,
+          isLoading: true,
+          error: null,
+          currentPage: 1,
+          hasMoreHistory: true,
+          isLoadingHistory: false,
         }));
       },
       
@@ -465,6 +482,13 @@ export const useChartStore = create(
 
       setSplitChartSymbol: (symbol) => {
         console.log('💾 ChartStore: Setting split chart symbol to', symbol);
+        // Immediately clear split chart data and enter loading state to avoid stale/partial candles
+        try {
+          const split = useSplitChartStore.getState();
+          split.resetPagination();
+          split.setCandles([], symbol, (useChartStore.getState().settings.splitChart?.timeframe || useChartStore.getState().settings.timeframe));
+          split.setLoading(true);
+        } catch (_e) { /* ignore if store not ready */ }
         set((state) => ({
           settings: {
             ...state.settings,
@@ -478,6 +502,13 @@ export const useChartStore = create(
 
       setSplitChartTimeframe: (timeframe) => {
         console.log('💾 ChartStore: Setting split chart timeframe to', timeframe);
+        // Immediately clear split chart data and enter loading state to avoid stale/partial candles
+        try {
+          const split = useSplitChartStore.getState();
+          split.resetPagination();
+          split.setCandles([], (useChartStore.getState().settings.splitChart?.symbol || useChartStore.getState().settings.symbol), timeframe);
+          split.setLoading(true);
+        } catch (_e) { /* ignore if store not ready */ }
         set((state) => ({
           settings: {
             ...state.settings,

@@ -272,7 +272,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                             // Stop if session changed (symbol/timeframe switched)
                             if (preloadSessionRef.current !== sessionId) break;
                             // Stop if we've reached max total pages (include the first page)
-                            const { currentPage: latestPage, hasMoreHistory: stillHasMore } = useChartStore.getState();
+                            const { currentPage: latestPage, hasMoreHistory: stillHasMore } = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState());
                             if (latestPage >= MAX_TOTAL_PAGES) break;
                             if (!stillHasMore) break;
 
@@ -286,13 +286,14 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                                 );
                                 if (slice.length > 0) {
                                     // Merge candles and recalc indicators using latest store data
-                                    const existing = useChartStore.getState().candles;
+                                    const existing = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState()).candles;
                                     prependCandles(slice);
                                     const allCandles = [...slice, ...existing].sort((a, b) => a.time - b.time);
                                     const calculatedIndicators = calculateAllIndicators(allCandles);
                                     setIndicators(calculatedIndicators);
 
-                                    setCurrentPage(useChartStore.getState().currentPage + 1);
+                                    const latest = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState()).currentPage;
+                                    setCurrentPage((latest || 1) + 1);
                                     olderCursorRef.current = nextBefore || null;
                                     setHasMoreHistory(Boolean(nextBefore && count > 0));
                                 } else {
@@ -314,7 +315,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                         // Log a summary only if we're still in the same session
                         try {
                             if (preloadSessionRef.current === sessionId) {
-                                const state = useChartStore.getState();
+                                const state = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState());
                                 const all = Array.isArray(state.candles) ? [...state.candles] : [];
                                 if (all.length > 0) {
                                     const sorted = all.sort((a, b) => a.time - b.time);
@@ -388,6 +389,11 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
       setLoading(true);
       setError(null);
       resetPagination(); // Reset pagination when loading new data
+      // Clear existing candles immediately to avoid showing stale/half-baked data
+      // Always pass symbol/timeframe to support split store metadata
+      try {
+        setCandles([], currentSymbol, currentTimeframe);
+      } catch (_) { /* fallback: main store ignores extra args */ setCandles([]); }
 
             try {
                 // Figure out how many bars to fetch initially (fixed at 150)
@@ -467,7 +473,10 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                 }
 
                 console.log("💾 Setting candles in store...");
-                setCandles(sliced);
+                // Set fresh candles for this selection (ensure split store gets metadata)
+                try {
+                  setCandles(sliced, currentSymbol, currentTimeframe);
+                } catch (_) { setCandles(sliced); }
                 console.log("✅ Candles set in store, length:", sliced.length);
 
                 // Update pagination counters to reflect how many pages we fetched
@@ -535,6 +544,11 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
         const applyCandle = (newCandle) => {
             // Use the correct store based on chart index
             const storeState = isMainChart ? useChartStore.getState() : useSplitChartStore.getState();
+            // While initial REST load is in progress for a new symbol/timeframe,
+            // ignore live websocket updates to avoid rendering partial candles
+            if (storeState.isLoading) {
+                return;
+            }
             const currentCandles = storeState.candles;
             const lastCandle = currentCandles[currentCandles.length - 1];
 
