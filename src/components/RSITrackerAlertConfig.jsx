@@ -2,6 +2,7 @@ import { Bell, Check, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import rsiTrackerAlertService from '../services/rsiTrackerAlertService';
+import NumericInput from './ui/NumericInput.jsx';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 
 const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
@@ -118,25 +119,23 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label htmlFor="rsi-tracker-overbought" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Overbought</label>
-                  <input
+                  <NumericInput
                     id="rsi-tracker-overbought"
-                    type="number"
-                    min="60"
-                    max="90"
+                    min={60}
+                    max={90}
                     value={form.rsiOverbought}
-                    onChange={(e) => setForm({ ...form, rsiOverbought: parseInt(e.target.value) })}
+                    onChange={(n) => setForm({ ...form, rsiOverbought: n })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
                 <div>
                   <label htmlFor="rsi-tracker-oversold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Oversold</label>
-                  <input
+                  <NumericInput
                     id="rsi-tracker-oversold"
-                    type="number"
-                    min="10"
-                    max="40"
+                    min={10}
+                    max={40}
                     value={form.rsiOversold}
-                    onChange={(e) => setForm({ ...form, rsiOversold: parseInt(e.target.value) })}
+                    onChange={(n) => setForm({ ...form, rsiOversold: n })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-[#19235d] bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
@@ -175,5 +174,4 @@ const RSITrackerAlertConfig = ({ isOpen, onClose }) => {
 };
 
 export default RSITrackerAlertConfig;
-
 

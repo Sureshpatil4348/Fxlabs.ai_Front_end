@@ -6,6 +6,14 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 - **Drawing Tools Sidebar Scrollbar**: Scrollbar now auto-hides on Windows (matches Mac behavior) - only visible on hover/scroll, improving UI cleanliness.
 - Split Mode UI: Indicator dropdown and currency pair selector now match non-split styling (removed unintended borders/rounded styles in split panel controls) for visual consistency.
+- Numeric inputs: All key number fields now allow fully clearing the value while typing; if left empty, the value commits as 0 on blur. This prevents jumpy defaults and makes editing smoother.
+
+## Numeric Input Behavior
+
+- You can delete the entire value in any updated numeric field and type a new value freely.
+- If you clear a field and leave it empty (blur), the app treats it as `0`.
+- This is powered by a shared `NumericInput` component (`src/components/ui/NumericInput.jsx`) that ensures consistent UX without side effects.
+- We applied this behavior across alert configs, global RSI settings, RSI correlation settings, and key KLineChart indicator settings.
 
 ## Features
 

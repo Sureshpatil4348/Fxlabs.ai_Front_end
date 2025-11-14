@@ -6,6 +6,7 @@ import { formatPrice } from '../../../utils/formatters';
 import { useChartStore } from '../stores/useChartStore';
 import { useSplitChartStore } from '../stores/useSplitChartStore';
 import { calculateRSI, calculateEMA, calculateSMA, calculateBollingerBands } from '../utils/indicators';
+import NumericInput from '../../ui/NumericInput.jsx';
 
 // MA colors by index (stable references for hook dependencies)
 const MA_COLORS_BY_INDEX = {
@@ -5931,34 +5932,31 @@ export const KLineChartComponent = ({
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label htmlFor="macd-fast" className="block text-sm text-gray-700 mb-1">Fast Length</label>
-                    <input
+                    <NumericInput
                       id="macd-fast"
-                      type="number"
                       min={1}
                       value={localMacdSettings.fastLength}
-                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, fastLength: Math.max(1, parseInt(e.target.value || '12', 10)) }))}
+                      onChange={(n) => setLocalMacdSettings((p) => ({ ...p, fastLength: Math.max(1, Math.floor(n)) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
                   <div>
                     <label htmlFor="macd-slow" className="block text-sm text-gray-700 mb-1">Slow Length</label>
-                    <input
+                    <NumericInput
                       id="macd-slow"
-                      type="number"
                       min={1}
                       value={localMacdSettings.slowLength}
-                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, slowLength: Math.max(1, parseInt(e.target.value || '26', 10)) }))}
+                      onChange={(n) => setLocalMacdSettings((p) => ({ ...p, slowLength: Math.max(1, Math.floor(n)) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
                   <div>
                     <label htmlFor="macd-signal" className="block text-sm text-gray-700 mb-1">Signal Length</label>
-                    <input
+                    <NumericInput
                       id="macd-signal"
-                      type="number"
                       min={1}
                       value={localMacdSettings.signalLength}
-                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, signalLength: Math.max(1, parseInt(e.target.value || '9', 10)) }))}
+                      onChange={(n) => setLocalMacdSettings((p) => ({ ...p, signalLength: Math.max(1, Math.floor(n)) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -6027,24 +6025,22 @@ export const KLineChartComponent = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="st-atr-period" className="block text-sm text-gray-700 mb-1">ATR Period</label>
-                    <input
+                    <NumericInput
                       id="st-atr-period"
-                      type="number"
                       min={1}
                       value={localStSettings.atrPeriod}
-                      onChange={(e) => setLocalStSettings((s) => ({ ...s, atrPeriod: Math.max(1, Number(e.target.value) || 10) }))}
+                      onChange={(n) => setLocalStSettings((s) => ({ ...s, atrPeriod: Math.max(1, n) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
                   <div>
                     <label htmlFor="st-atr-multiplier" className="block text-sm text-gray-700 mb-1">ATR Multiplier</label>
-                    <input
+                    <NumericInput
                       id="st-atr-multiplier"
-                      type="number"
-                      step="0.1"
+                      step={0.1}
                       min={0.5}
                       value={localStSettings.atrMultiplier}
-                      onChange={(e) => setLocalStSettings((s) => ({ ...s, atrMultiplier: Math.max(0.5, Number(e.target.value) || 3.0) }))}
+                      onChange={(n) => setLocalStSettings((s) => ({ ...s, atrMultiplier: Math.max(0.5, n) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -6094,30 +6090,28 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="orb-hour" className="block text-sm text-gray-700 mb-1">Opening Candle Hour</label>
-                      <input
+                      <NumericInput
                         id="orb-hour"
-                        type="number"
                         min={0}
                         max={23}
                         value={localOrbSettings.startHour}
-                        onChange={(e) => {
+                        onChange={(n) => {
                           setOrbValidationError('');
-                          setLocalOrbSettings((p) => ({ ...p, startHour: Math.max(0, Math.min(23, parseInt(e.target.value || '9', 10))) }));
+                          setLocalOrbSettings((p) => ({ ...p, startHour: Math.max(0, Math.min(23, Math.floor(n))) }));
                         }}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
                     <div>
                       <label htmlFor="orb-minute" className="block text-sm text-gray-700 mb-1">Opening Candle Minute</label>
-                      <input
+                      <NumericInput
                         id="orb-minute"
-                        type="number"
                         min={0}
                         max={59}
                         value={localOrbSettings.startMinute}
-                        onChange={(e) => {
+                        onChange={(n) => {
                           setOrbValidationError('');
-                          setLocalOrbSettings((p) => ({ ...p, startMinute: Math.max(0, Math.min(59, parseInt(e.target.value || '15', 10))) }));
+                          setLocalOrbSettings((p) => ({ ...p, startMinute: Math.max(0, Math.min(59, Math.floor(n))) }));
                         }}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
@@ -6126,25 +6120,23 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="orb-period" className="block text-sm text-gray-700 mb-1">Opening Range Period (bars)</label>
-                      <input
+                      <NumericInput
                         id="orb-period"
-                        type="number"
                         min={1}
                         value={localOrbSettings.orPeriod}
-                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, orPeriod: Math.max(1, parseInt(e.target.value || '1', 10)) }))}
+                        onChange={(n) => setLocalOrbSettings((p) => ({ ...p, orPeriod: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
                     <div>
                       <label htmlFor="orb-rr" className="block text-sm text-gray-700 mb-1">Risk:Reward Ratio</label>
-                      <input
+                      <NumericInput
                         id="orb-rr"
-                        type="number"
                         min={0.5}
                         max={10}
                         step={0.5}
                         value={localOrbSettings.targetRR}
-                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, targetRR: Math.max(0.5, Math.min(10, parseFloat(e.target.value || '4.0'))) }))}
+                        onChange={(n) => setLocalOrbSettings((p) => ({ ...p, targetRR: Math.max(0.5, Math.min(10, n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6207,12 +6199,11 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="bb-length" className="block text-sm text-gray-700 mb-1">BB Length</label>
-                      <input
+                      <NumericInput
                         id="bb-length"
-                        type="number"
                         min={1}
                         value={localBbSettings.length}
-                        onChange={(e) => setLocalBbSettings((p) => ({ ...p, length: Math.max(1, parseInt(e.target.value || '20', 10)) }))}
+                        onChange={(n) => setLocalBbSettings((p) => ({ ...p, length: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6236,13 +6227,12 @@ export const KLineChartComponent = ({
                   </div>
                   <div>
                     <label htmlFor="bb-stddev" className="block text-sm text-gray-700 mb-1">Standard Deviation</label>
-                    <input
+                    <NumericInput
                       id="bb-stddev"
-                      type="number"
                       min={0.1}
                       step={0.1}
                       value={localBbSettings.stdDev}
-                      onChange={(e) => setLocalBbSettings((p) => ({ ...p, stdDev: Math.max(0.1, parseFloat(e.target.value || '2.0')) }))}
+                      onChange={(n) => setLocalBbSettings((p) => ({ ...p, stdDev: Math.max(0.1, n) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -6334,12 +6324,11 @@ export const KLineChartComponent = ({
                     </label>
                     <div>
                       <label htmlFor="ma1-length" className="block text-sm text-gray-700 mb-1">MA 1 Length</label>
-                      <input
+                      <NumericInput
                         id="ma1-length"
-                        type="number"
                         min={1}
                         value={localMaSettings.ma1Length}
-                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma1Length: Math.max(1, parseInt(e.target.value || '9', 10)) }))}
+                        onChange={(n) => setLocalMaSettings((p) => ({ ...p, ma1Length: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6357,12 +6346,11 @@ export const KLineChartComponent = ({
                     </label>
                     <div>
                       <label htmlFor="ma2-length" className="block text-sm text-gray-700 mb-1">MA 2 Length</label>
-                      <input
+                      <NumericInput
                         id="ma2-length"
-                        type="number"
                         min={1}
                         value={localMaSettings.ma2Length}
-                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma2Length: Math.max(1, parseInt(e.target.value || '21', 10)) }))}
+                        onChange={(n) => setLocalMaSettings((p) => ({ ...p, ma2Length: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6380,12 +6368,11 @@ export const KLineChartComponent = ({
                     </label>
                     <div>
                       <label htmlFor="ma3-length" className="block text-sm text-gray-700 mb-1">MA 3 Length</label>
-                      <input
+                      <NumericInput
                         id="ma3-length"
-                        type="number"
                         min={1}
                         value={localMaSettings.ma3Length}
-                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma3Length: Math.max(1, parseInt(e.target.value || '50', 10)) }))}
+                        onChange={(n) => setLocalMaSettings((p) => ({ ...p, ma3Length: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6403,12 +6390,11 @@ export const KLineChartComponent = ({
                     </label>
                     <div>
                       <label htmlFor="ma4-length" className="block text-sm text-gray-700 mb-1">MA 4 Length</label>
-                      <input
+                      <NumericInput
                         id="ma4-length"
-                        type="number"
                         min={1}
                         value={localMaSettings.ma4Length}
-                        onChange={(e) => setLocalMaSettings((p) => ({ ...p, ma4Length: Math.max(1, parseInt(e.target.value || '100', 10)) }))}
+                        onChange={(n) => setLocalMaSettings((p) => ({ ...p, ma4Length: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6874,13 +6860,12 @@ export const KLineChartComponent = ({
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="rsi-length" className="block text-sm text-gray-700 mb-1">RSI Length</label>
-                    <input
+                    <NumericInput
                       id="rsi-length"
-                      type="number"
                       min={1}
                       max={100}
                       value={localRsiSettings.length}
-                      onChange={(e) => setLocalRsiSettings((p) => ({ ...p, length: Math.max(1, parseInt(e.target.value || '14', 10)) }))}
+                      onChange={(n) => setLocalRsiSettings((p) => ({ ...p, length: Math.max(1, Math.floor(n)) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -6904,25 +6889,23 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="rsi-overbought" className="block text-sm text-gray-700 mb-1">Overbought</label>
-                      <input
+                      <NumericInput
                         id="rsi-overbought"
-                        type="number"
                         min={50}
                         max={100}
                         value={localRsiSettings.overbought}
-                        onChange={(e) => setLocalRsiSettings((p) => ({ ...p, overbought: parseInt(e.target.value || '70', 10) }))}
+                        onChange={(n) => setLocalRsiSettings((p) => ({ ...p, overbought: n }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
                     <div>
                       <label htmlFor="rsi-oversold" className="block text-sm text-gray-700 mb-1">Oversold</label>
-                      <input
+                      <NumericInput
                         id="rsi-oversold"
-                        type="number"
                         min={0}
                         max={50}
                         value={localRsiSettings.oversold}
-                        onChange={(e) => setLocalRsiSettings((p) => ({ ...p, oversold: parseInt(e.target.value || '30', 10) }))}
+                        onChange={(n) => setLocalRsiSettings((p) => ({ ...p, oversold: n }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6979,12 +6962,11 @@ export const KLineChartComponent = ({
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="atr-length" className="block text-sm text-gray-700 mb-1">ATR Period</label>
-                    <input
+                    <NumericInput
                       id="atr-length"
-                      type="number"
                       min={1}
                       value={localAtrSettings.length}
-                      onChange={(e) => setLocalAtrSettings((p) => ({ ...p, length: Math.max(1, parseInt(e.target.value || '14', 10)) }))}
+                      onChange={(n) => setLocalAtrSettings((p) => ({ ...p, length: Math.max(1, Math.floor(n)) }))}
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
@@ -7048,24 +7030,22 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="ts-bb-length" className="block text-sm text-gray-700 mb-1">BB Period</label>
-                      <input
+                      <NumericInput
                         id="ts-bb-length"
-                        type="number"
                         min={1}
                         value={localEmaTouchSettings.bbLength}
-                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, bbLength: Math.max(1, parseInt(e.target.value || '20', 10)) }))}
+                        onChange={(n) => setLocalEmaTouchSettings((p) => ({ ...p, bbLength: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
                     <div>
                       <label htmlFor="ts-bb-std" className="block text-sm text-gray-700 mb-1">BB StdDev</label>
-                      <input
+                      <NumericInput
                         id="ts-bb-std"
-                        type="number"
-                        step="0.1"
+                        step={0.1}
                         min={0.1}
                         value={localEmaTouchSettings.bbStdDev}
-                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, bbStdDev: Math.max(0.1, Number(e.target.value || '2.0')) }))}
+                        onChange={(n) => setLocalEmaTouchSettings((p) => ({ ...p, bbStdDev: Math.max(0.1, n) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -7073,12 +7053,11 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="ts-atr-length" className="block text-sm text-gray-700 mb-1">ATR Period</label>
-                      <input
+                      <NumericInput
                         id="ts-atr-length"
-                        type="number"
                         min={1}
                         value={localEmaTouchSettings.atrLength}
-                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, atrLength: Math.max(1, parseInt(e.target.value || '14', 10)) }))}
+                        onChange={(n) => setLocalEmaTouchSettings((p) => ({ ...p, atrLength: Math.max(1, Math.floor(n)) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -7086,37 +7065,34 @@ export const KLineChartComponent = ({
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label htmlFor="ts-tp1" className="block text-sm text-gray-700 mb-1">TP1 ATR Multiplier</label>
-                      <input
+                      <NumericInput
                         id="ts-tp1"
-                        type="number"
-                        step="0.1"
+                        step={0.1}
                         min={0.1}
                         value={localEmaTouchSettings.tp1Multiplier}
-                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, tp1Multiplier: Math.max(0.1, Number(e.target.value || '1.0')) }))}
+                        onChange={(n) => setLocalEmaTouchSettings((p) => ({ ...p, tp1Multiplier: Math.max(0.1, n) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
                     <div>
                       <label htmlFor="ts-tp2" className="block text-sm text-gray-700 mb-1">TP2 ATR Multiplier</label>
-                      <input
+                      <NumericInput
                         id="ts-tp2"
-                        type="number"
-                        step="0.1"
+                        step={0.1}
                         min={0.1}
                         value={localEmaTouchSettings.tp2Multiplier}
-                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, tp2Multiplier: Math.max(0.1, Number(e.target.value || '2.5')) }))}
+                        onChange={(n) => setLocalEmaTouchSettings((p) => ({ ...p, tp2Multiplier: Math.max(0.1, n) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
                     <div>
                       <label htmlFor="ts-tp3" className="block text-sm text-gray-700 mb-1">TP3 ATR Multiplier</label>
-                      <input
+                      <NumericInput
                         id="ts-tp3"
-                        type="number"
-                        step="0.1"
+                        step={0.1}
                         min={0.1}
                         value={localEmaTouchSettings.tp3Multiplier}
-                        onChange={(e) => setLocalEmaTouchSettings((p) => ({ ...p, tp3Multiplier: Math.max(0.1, Number(e.target.value || '4.0')) }))}
+                        onChange={(n) => setLocalEmaTouchSettings((p) => ({ ...p, tp3Multiplier: Math.max(0.1, n) }))}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
