@@ -3,10 +3,10 @@ import { Trash2, Settings } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 import { formatPrice } from '../../../utils/formatters';
+import NumericInput from '../../ui/NumericInput.jsx';
 import { useChartStore } from '../stores/useChartStore';
 import { useSplitChartStore } from '../stores/useSplitChartStore';
 import { calculateRSI, calculateEMA, calculateSMA, calculateBollingerBands } from '../utils/indicators';
-import NumericInput from '../../ui/NumericInput.jsx';
 
 // MA colors by index (stable references for hook dependencies)
 const MA_COLORS_BY_INDEX = {
