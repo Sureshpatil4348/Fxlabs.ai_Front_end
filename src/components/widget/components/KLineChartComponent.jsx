@@ -6102,7 +6102,7 @@ export const KLineChartComponent = ({
           {/* MA Enhanced: MA values table (top-right, no header) */}
           {isFullscreen && settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
             <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '80px' }}>
-              <div className="pointer-events-none">
+              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     {maTableData.map((row) => {
@@ -6134,7 +6134,7 @@ export const KLineChartComponent = ({
               className="absolute right-2 z-40 pointer-events-none"
               style={{ right: '80px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
             >
-              <div className="pointer-events-none">
+              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     {(() => {
@@ -6170,7 +6170,7 @@ export const KLineChartComponent = ({
                   : (settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? '80px' : '2px'
               }}
             >
-              <div className="pointer-events-none">
+              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     <tr>
@@ -6204,7 +6204,7 @@ export const KLineChartComponent = ({
                 })()
               }}
             >
-              <div className="pointer-events-none">
+              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
                 <table className="text-[11px] text-gray-700">
                   <tbody>
                     {(() => {

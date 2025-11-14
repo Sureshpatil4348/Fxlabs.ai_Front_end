@@ -4,6 +4,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Features
 
+### Indicator Table Styling
+
+- All KLineChart indicator tables rendered at the top-right (e.g., Bollinger Bands Pro, Moving Average Pro, SuperTrend Pro, ORB Enhanced) now use a carded container with rounded corners, subtle shadow, and slight blur for improved readability without obstructing the chart.
+- This styling is consistent across on-chart overlays and below-chart panes (ATR Pro, MACD Pro), ensuring a cohesive UI.
+
 ### KLineChart Indicator Presets
 
 The KLineChart component now includes a sophisticated preset system for quickly applying groups of technical indicators.
