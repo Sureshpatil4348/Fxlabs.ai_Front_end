@@ -64,8 +64,44 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
     toggleIndicator(key);
   };
 
-  // Quick-access timeframes are 1m, 5m, 15m; remaining in dropdown
+  // Quick-access timeframes default: 1m, 5m, 15m; remaining in dropdown
   const _timeframes = ['1m', '5m', '15m'];
+  const DEFAULT_QUICK_TFS = ['1m', '5m', '15m'];
+  const DEFAULT_MORE_TFS = ['30m', '1h', '4h', '1d', '1w'];
+
+  // Dynamic quick and more lists to support swapping 15m with a selected "More" timeframe
+  const [quickTimeframes, setQuickTimeframes] = useState(DEFAULT_QUICK_TFS);
+  const [moreTimeframes, setMoreTimeframes] = useState(DEFAULT_MORE_TFS);
+  const [swappedFromMore, setSwappedFromMore] = useState(null); // tracks which timeframe replaced 15m
+
+  const isSwapped = swappedFromMore !== null;
+
+  const resetQuickTimeframes = () => {
+    setQuickTimeframes(DEFAULT_QUICK_TFS);
+    setMoreTimeframes(DEFAULT_MORE_TFS);
+    setSwappedFromMore(null);
+  };
+
+  const swapFifteenWith = (tf) => {
+    // If user selects 15m from dropdown, revert to defaults
+    if (tf === '15m') {
+      resetQuickTimeframes();
+      return;
+    }
+    // Move selected tf to the 3rd quick slot, move 15m into more list
+    setQuickTimeframes(['1m', '5m', tf]);
+    setMoreTimeframes((prev) => {
+      const withoutSelected = prev.filter((t) => t !== tf);
+      // Ensure 15m exists in the more list when swapped
+      if (!withoutSelected.includes('15m')) withoutSelected.unshift('15m');
+      // If previously swapped, also ensure the previous is present in More (it should already be, but guard anyway)
+      if (swappedFromMore && !withoutSelected.includes(swappedFromMore)) {
+        withoutSelected.push(swappedFromMore);
+      }
+      return withoutSelected;
+    });
+    setSwappedFromMore(tf);
+  };
   // Comprehensive timezone list + Auto(System)
   const [timezones, setTimezones] = useState(() => listTimezonesWithOffsets(new Date()));
   const systemTz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
@@ -207,10 +243,16 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
           <div className="flex items-center">
             {/* Quick Timeframe Buttons - Premium Style */}
           <div className="flex items-center gap-1 bg-white">
-              {['1m', '5m', '15m'].map((tf) => (
+              {quickTimeframes.map((tf) => (
               <button
                 key={tf}
                   onClick={() => {
+                    // If user clicks 1m or 5m, restore default quick list and move previous More back
+                    if (tf === '1m' || tf === '5m') {
+                      if (isSwapped) {
+                        resetQuickTimeframes();
+                      }
+                    }
                     setTimeframe(tf);
                     setActiveTimeframe(tf);
                   }}
@@ -229,7 +271,7 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
               <button
                 onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
                 className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 flex items-center gap-1 ${
-                  showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(settings.timeframe)
+                  showMoreTimeframesDropdown || moreTimeframes.includes(settings.timeframe)
                     ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white rounded-lg'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
@@ -243,10 +285,16 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
               {/* More Timeframes Dropdown Menu */}
               {showMoreTimeframesDropdown && (
                 <div className="absolute top-full left-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999] overflow-hidden">
-                  {['30m', '1h', '4h', '1d', '1w'].map((tf) => (
+                  {moreTimeframes.map((tf) => (
                     <button
                       key={tf}
                       onClick={() => {
+                        // Dropdown selection logic swaps the 3rd quick slot with selection, moving 15m into More.
+                        if (tf === '15m') {
+                          resetQuickTimeframes();
+                        } else {
+                          swapFifteenWith(tf);
+                        }
                         setTimeframe(tf);
                         setActiveTimeframe(tf);
                         setShowMoreTimeframesDropdown(false);

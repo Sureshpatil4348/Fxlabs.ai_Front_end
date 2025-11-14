@@ -148,6 +148,14 @@ When in split mode:
 - All drawing tools (trend lines, fibonacci, rectangles, positions, etc.) remain fully functional on both charts.
 - Each chart maintains its own independent set of drawings.
 
+### Timeframe Selector Behavior
+
+- Default quick selections show `1m`, `5m`, `15m`, plus a `More` dropdown.
+- Selecting any timeframe from `More` swaps it into the third quick slot, and moves `15m` into the `More` list.
+- Selecting `1m` or `5m` restores the default quick selections (`1m`, `5m`, `15m`) and returns the previously swapped timeframe back into `More`.
+- If `15m` appears inside `More` (after a swap) and is selected, the quick selections revert to the default.
+- Behavior is consistent in both split and non‑split modes since the header controls the active timeframe globally.
+
 ### Seamless Loading on Pair/Timeframe Change
 
 - Changing the currency pair or timeframe now shows the same loader overlay used on first page load: "Loading Trading Chart...".
