@@ -241,6 +241,7 @@ export const KLineChartComponent = ({
   const overlaySaveTimerRef = useRef(null);
   const lastSavedOverlayCountRef = useRef(-1); // Track last saved count (-1 = not initialized yet)
   const isInitialMountRef = useRef(true); // Track if this is the first mount
+  const justRemovedOverlayRef = useRef(false); // Track if we just removed an overlay (allow saving 0)
   
   // Sync local MA settings when opening the modal
   useEffect(() => {
@@ -3506,6 +3507,8 @@ export const KLineChartComponent = ({
       if (typeof originalRemoveOverlay === 'function') {
         chart.removeOverlay = function(...args) {
           console.log('💾 [WRAPPER] removeOverlay called');
+          // CRITICAL: Set flag to allow saving 0 overlays (user intentionally deleted)
+          justRemovedOverlayRef.current = true;
           const result = originalRemoveOverlay.apply(this, args);
           // Trigger save after overlay is removed
           setTimeout(() => {
@@ -3621,6 +3624,7 @@ export const KLineChartComponent = ({
         let successCount = 0;
         persistedOverlays.forEach((overlayData, index) => {
           try {
+            console.log(`💾 [DEBUG] Restoring overlay ${index + 1}:`, overlayData.name, 'Styles:', overlayData.styles);
             // Restore overlay with its original configuration
             // The overlay points already contain timestamps, so they will be anchored correctly
             if (typeof chart.createOverlay === 'function') {
@@ -3637,7 +3641,7 @@ export const KLineChartComponent = ({
                 extendRight: overlayData.extendRight,
               });
               successCount++;
-              console.log(`💾 Restored overlay ${index + 1}/${persistedOverlays.length}:`, overlayData.name, restored);
+              console.log(`💾 Restored overlay ${index + 1}/${persistedOverlays.length}:`, overlayData.name, 'Result ID:', restored);
             }
           } catch (err) {
             console.error('💾 Failed to restore overlay:', overlayData.name, err, 'Data:', overlayData);
@@ -3659,9 +3663,10 @@ export const KLineChartComponent = ({
     const timeframe = settings?.timeframe;
     if (!symbol || !timeframe) return;
     
-    // CRITICAL: Reset counter for new symbol/timeframe to read from persisted data
+    // CRITICAL: Reset counter and flags for new symbol/timeframe to read from persisted data
     console.log('💾 [INIT] Resetting lastSavedCount for new symbol/timeframe:', symbol, timeframe);
     lastSavedOverlayCountRef.current = -1;
+    justRemovedOverlayRef.current = false;
 
     // Debounced save function
     const saveOverlays = () => {
@@ -3731,22 +3736,26 @@ export const KLineChartComponent = ({
         });
 
         // Serialize overlays for storage
-        const serializedOverlays = userDrawnOverlays.map((overlay) => ({
-          name: overlay.name,
-          points: overlay.points,
-          styles: overlay.styles,
-          lock: overlay.lock,
-          visible: overlay.visible,
-          zLevel: overlay.zLevel,
-          mode: overlay.mode,
-          modeSensitivity: overlay.modeSensitivity,
-          extendLeft: overlay.extendLeft,
-          extendRight: overlay.extendRight,
-        }));
+        const serializedOverlays = userDrawnOverlays.map((overlay) => {
+          console.log('💾 [DEBUG] Serializing overlay:', overlay.name, 'Styles:', overlay.styles);
+          return {
+            name: overlay.name,
+            points: overlay.points,
+            styles: overlay.styles,
+            lock: overlay.lock,
+            visible: overlay.visible,
+            zLevel: overlay.zLevel,
+            mode: overlay.mode,
+            modeSensitivity: overlay.modeSensitivity,
+            extendLeft: overlay.extendLeft,
+            extendRight: overlay.extendRight,
+          };
+        });
 
         // CRITICAL: Don't overwrite with fewer overlays (prevents data loss during chart updates)
         const currentCount = serializedOverlays.length;
         const lastCount = lastSavedOverlayCountRef.current;
+        const justRemoved = justRemovedOverlayRef.current;
         
         // Initialize lastCount from persisted data on first save attempt
         if (lastCount === -1) {
@@ -3754,14 +3763,21 @@ export const KLineChartComponent = ({
           lastSavedOverlayCountRef.current = persistedCount;
           console.log('💾 [PROTECTION] Initialized lastSavedCount from localStorage:', persistedCount);
           
-          // If trying to save 0 but we have persisted data, BLOCK IT!
-          if (currentCount === 0 && persistedCount > 0) {
+          // If trying to save 0 but we have persisted data, BLOCK IT (unless user just deleted)
+          if (currentCount === 0 && persistedCount > 0 && !justRemoved) {
             console.warn('💾 [PROTECTION] BLOCKING save on initial mount - would overwrite', persistedCount, 'persisted overlays with 0!');
             return;
           }
-        } else if (currentCount === 0 && lastCount > 0) {
+        } else if (currentCount === 0 && lastCount > 0 && !justRemoved) {
+          // Allow saving 0 if user just deleted an overlay
           console.warn('💾 [PROTECTION] Skipping save - would overwrite', lastCount, 'overlays with 0 (likely during chart update)');
           return;
+        }
+
+        // Clear the removal flag after checking
+        if (justRemoved) {
+          console.log('💾 [PROTECTION] Allowing save after intentional removal (justRemoved flag set)');
+          justRemovedOverlayRef.current = false;
         }
 
         lastSavedOverlayCountRef.current = currentCount;
@@ -5064,7 +5080,8 @@ export const KLineChartComponent = ({
         overlays.forEach(overlay => {
           chartRef.current.removeOverlay(overlay.id);
         });
-        // CRITICAL: Set to 0 to allow saving empty state (user intentionally cleared)
+        // CRITICAL: Set flag to allow saving empty state (user intentionally cleared all)
+        justRemovedOverlayRef.current = true;
         lastSavedOverlayCountRef.current = 0;
         console.log('📈 All drawings cleared, allowing save of empty state');
       } catch (error) {
