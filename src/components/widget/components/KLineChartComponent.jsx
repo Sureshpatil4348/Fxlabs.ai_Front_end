@@ -25,6 +25,7 @@ export const KLineChartComponent = ({
   isFullscreen = false,
   chartIndex = 1,
 }) => {
+  const isMainChart = chartIndex === 1;
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const [error, setError] = useState(null);
@@ -224,17 +225,16 @@ export const KLineChartComponent = ({
     });
   }, [showEmaTouchSettings, settings?.indicatorSettings?.emaTouch]);
   
-  // Get the setters from the appropriate store based on chartIndex
+  // Get the setters from the correct store based on chartIndex
   const mainChartStore = useChartStore();
   const splitChartStore = useSplitChartStore();
-  const isMainChart = chartIndex === 1;
-  const currentChartStore = isMainChart ? mainChartStore : splitChartStore;
   
-  // Get setKLineChartRef from the appropriate store
-  const setKLineChartRef = currentChartStore.setKLineChartRef;
+  // Store ref in the correct store based on chart index
+  const storeForRef = isMainChart ? mainChartStore : splitChartStore;
+  const setKLineChartRef = storeForRef.setKLineChartRef;
   
-  // Get other store methods (always from main store since settings are global)
-  const { toggleIndicator, isWorkspaceHidden, updateIndicatorSettings } = mainChartStore;
+  // Always use main store for global settings
+  const { toggleIndicator, isWorkspaceHidden, updateIndicatorSettings, setActiveChartIndex } = mainChartStore;
   
   // Sync local MA settings when opening the modal
   useEffect(() => {
@@ -4924,6 +4924,9 @@ export const KLineChartComponent = ({
           tabIndex={0}
           onClick={(e) => {
             try {
+              // Set this chart as active for drawing tools
+              setActiveChartIndex(chartIndex);
+              
               const chart = chartRef.current;
               const container = chartContainerRef.current;
               if (!chart || !container) return;

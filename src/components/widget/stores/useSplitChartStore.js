@@ -23,7 +23,7 @@ export const useSplitChartStore = create((set) => ({
   currentPage: 1,
   hasMoreHistory: true,
   isLoadingHistory: false,
-  // KLine chart ref (not persisted)
+  // KLine chart ref for split chart (not persisted)
   klineChartRef: null,
 
   // Actions
@@ -88,8 +88,8 @@ export const useSplitChartStore = create((set) => ({
     hasMoreHistory: true, 
     isLoadingHistory: false 
   }),
-
-  // KLine chart ref actions
+  
+  // KLine chart ref action
   setKLineChartRef: (ref) => {
     console.log('📊 SplitChartStore: Setting KLine chart ref');
     set({ klineChartRef: ref });

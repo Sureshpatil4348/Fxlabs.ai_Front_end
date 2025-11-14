@@ -153,6 +153,8 @@ export const useChartStore = create(
       hiddenIndicatorsSnapshot: null,
       // KLine chart ref (not persisted)
       klineChartRef: null,
+      // Active chart index in split mode (1 = main chart, 2 = split chart)
+      activeChartIndex: 1,
       // Pagination state
       currentPage: 1,
       hasMoreHistory: true,
@@ -378,6 +380,12 @@ export const useChartStore = create(
       setKLineChartRef: (ref) => {
         console.log('📊 ChartStore: Setting KLine chart ref');
         set({ klineChartRef: ref });
+      },
+      
+      // Active chart tracking
+      setActiveChartIndex: (index) => {
+        console.log('📊 ChartStore: Setting active chart index =', index);
+        set({ activeChartIndex: index });
       },
 
       // Workspace visibility actions

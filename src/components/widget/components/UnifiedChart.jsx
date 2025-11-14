@@ -764,7 +764,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                         style={{ top: 0, left: 0, right: 0, bottom: 0 }}
                     >
                         <EnhancedCandlestickChart
-                            key={`enhanced-candlestick-${currentSymbol}-${currentTimeframe}`}
+                            key={`enhanced-candlestick-${currentSymbol}-${currentTimeframe}-${chartIndex}`}
                             candles={displayCandles}
                             indicators={indicators}
                             settings={{...settings, symbol: currentSymbol, timeframe: currentTimeframe, indicators: currentIndicators}}
