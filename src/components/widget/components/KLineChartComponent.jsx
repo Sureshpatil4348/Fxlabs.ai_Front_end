@@ -1007,6 +1007,7 @@ export const KLineChartComponent = ({
         });
       }
       // Register EMA_TOUCH_ENH (BB signals + ATR targets + Entry) — on chart
+      // NOTE: This indicator (Trend Strategy) is kept for future use but removed from dropdown options
       if (Array.isArray(supported) && !supported.includes('EMA_TOUCH_ENH')) {
         registerIndicator({
           name: 'EMA_TOUCH_ENH',

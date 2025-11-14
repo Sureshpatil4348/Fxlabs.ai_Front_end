@@ -16,7 +16,8 @@ function TradingChart() {
   const errorTimeoutRef = useRef(null);
 
   // Indicator groups and limits (same as in TradingViewHeader)
-  const ON_CHART_KEYS = ['emaTouch', 'bbPro', 'maEnhanced', 'orbEnhanced', 'stEnhanced', 'srEnhanced'];
+  // Note: 'emaTouch' (Trend Strategy) implementation is kept for future use but removed from dropdown
+  const ON_CHART_KEYS = ['bbPro', 'maEnhanced', 'orbEnhanced', 'stEnhanced', 'srEnhanced'];
   const BELOW_CHART_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
   const ON_CHART_LIMIT = 3;
   const BELOW_CHART_LIMIT = 2;

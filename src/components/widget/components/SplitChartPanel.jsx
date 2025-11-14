@@ -40,7 +40,8 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
     : (settings.splitChart?.indicators || settings.indicators);
 
   // Indicator groups and limits
-  const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+  // Note: 'emaTouch' (Trend Strategy) implementation is kept for future use but removed from dropdown
+  const ON_CHART_KEYS = ['bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
   const BELOW_CHART_KEYS = ['rsiEnhanced','atrEnhanced','macdEnhanced'];
   const ON_CHART_LIMIT = 3;
   const BELOW_CHART_LIMIT = 2;
@@ -258,15 +259,6 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
                 </div>
                 <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${currentIndicators.rsiEnhanced ? 'bg-emerald-500' : 'bg-gray-300'}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentIndicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">Trend Strategy</p>
-                </div>
-                <button onClick={() => handleToggleIndicator('emaTouch')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${currentIndicators.emaTouch ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentIndicators.emaTouch ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
 
