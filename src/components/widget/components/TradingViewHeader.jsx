@@ -26,6 +26,28 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
   const moreTimeframesDropdownRef = useRef(null);
   const indicatorsPanelRef = useRef(null);
 
+  // Handle Split button click: if not fullscreen, first enter fullscreen then enable split
+  const handleSplitClick = () => {
+    // If already in split mode, just toggle it off/on based on current state
+    if (settings.isSplitMode) {
+      toggleSplitMode();
+      return;
+    }
+    // When not in fullscreen, enter fullscreen first, then enable split mode
+    if (!isFullscreen && typeof onFullscreenToggle === 'function') {
+      try {
+        onFullscreenToggle();
+      } catch (_) { /* noop */ }
+      // Defer enabling split to ensure fullscreen layout has mounted
+      setTimeout(() => {
+        try { toggleSplitMode(); } catch (_) { /* noop */ }
+      }, 0);
+      return;
+    }
+    // Already fullscreen: enable split immediately
+    toggleSplitMode();
+  };
+
   // Indicator groups and limits
   // Note: 'emaTouch' (Trend Strategy) implementation is kept for future use but removed from dropdown
   const ON_CHART_KEYS = ['bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
@@ -335,22 +357,21 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
                   </div>
         )}
 
-        {/* Right Section - Split/Unsplit + Timezone + Fullscreen */}
+        {/* Right Section - Split/Unsplit + Timezone + Fullscreen */
+        }
         <div className="flex items-center ml-auto">
-          {/* Split/Unsplit Button - only visible in fullscreen */}
-          {isFullscreen && (
-            <>
-              <button
-                onClick={toggleSplitMode}
-                className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded"
-                title={settings.isSplitMode ? "Exit Split View" : "Split Graph View"}
-              >
-                <span>{settings.isSplitMode ? 'Unsplit' : 'Split'}</span>
-              </button>
-              {/* Vertical Separator */}
-              <div className="h-6 w-px bg-gray-300 mx-2"></div>
-            </>
-          )}
+          {/* Split/Unsplit Button - now visible in both modes */}
+          <>
+            <button
+              onClick={handleSplitClick}
+              className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded"
+              title={settings.isSplitMode ? "Exit Split View" : (isFullscreen ? "Split Graph View" : "Go Fullscreen & Split")}
+            >
+              <span>{settings.isSplitMode ? 'Unsplit' : 'Split'}</span>
+            </button>
+            {/* Vertical Separator */}
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
+          </>
 
           {/* Premium Timezone Dropdown */}
           <div className="flex items-center space-x-2">
