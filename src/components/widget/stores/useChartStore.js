@@ -148,6 +148,8 @@ export const useChartStore = create(
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
+      // Persisted chart overlays (drawings) by symbol-timeframe key
+      persistedOverlays: {},
       // KLine drawing tool pending selection (arms on first chart click)
       pendingKLineTool: null,
       // Workspace visibility state
@@ -161,6 +163,8 @@ export const useChartStore = create(
       currentPage: 1,
       hasMoreHistory: true,
       isLoadingHistory: false,
+      // Fullscreen state (persisted)
+      isFullscreen: false,
 
       // Actions
       setCandles: (candles) => set((state) => ({
@@ -375,7 +379,19 @@ export const useChartStore = create(
       
       clearAllDrawings: () => {
         console.log('🎨 ChartStore: Clearing all drawings');
-        set({ drawings: [], activeDrawingTool: null, pendingKLineTool: null });
+        set((state) => {
+          // Also clear persisted overlays for current symbol-timeframe
+          const key = `${state.settings.symbol}_${state.settings.timeframe}`;
+          const newPersistedOverlays = { ...state.persistedOverlays };
+          delete newPersistedOverlays[key];
+          
+          return {
+            drawings: [],
+            activeDrawingTool: null,
+            pendingKLineTool: null,
+            persistedOverlays: newPersistedOverlays
+          };
+        });
       },
 
       // Pending KLine tool controls
@@ -556,12 +572,76 @@ export const useChartStore = create(
           }
         }));
       },
+
+      // Persisted overlays actions
+      saveOverlaysForSymbol: (symbol, timeframe, overlays) => {
+        const key = `${symbol}_${timeframe}`;
+        console.log('💾 ChartStore: Saving overlays for', symbol, timeframe, overlays.length);
+        console.log('💾 [DEBUG] Key:', key, 'Overlays:', overlays);
+        set((state) => {
+          const newState = {
+            persistedOverlays: {
+              ...state.persistedOverlays,
+              [key]: overlays
+            }
+          };
+          console.log('💾 [DEBUG] New persistedOverlays state:', newState.persistedOverlays);
+          
+          // CRITICAL: Check if it's actually in localStorage after a short delay
+          setTimeout(() => {
+            const stored = localStorage.getItem('tradingview-chart-storage');
+            console.log('💾 [DEBUG] localStorage check:', stored ? 'EXISTS' : 'MISSING');
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored);
+                console.log('💾 [DEBUG] localStorage.persistedOverlays keys:', Object.keys(parsed.state?.persistedOverlays || {}));
+                console.log('💾 [DEBUG] localStorage has key', key, '?', !!parsed.state?.persistedOverlays?.[key]);
+              } catch (e) {
+                console.error('💾 [DEBUG] Failed to parse localStorage:', e);
+              }
+            }
+          }, 100);
+          
+          return newState;
+        });
+      },
+
+      getOverlaysForSymbol: (symbol, timeframe) => {
+        const state = useChartStore.getState();
+        const key = `${symbol}_${timeframe}`;
+        const overlays = state.persistedOverlays[key] || [];
+        console.log('💾 [DEBUG] getOverlaysForSymbol:', { key, found: overlays.length, allKeys: Object.keys(state.persistedOverlays || {}) });
+        return overlays;
+      },
+
+      clearOverlaysForSymbol: (symbol, timeframe) => {
+        console.log('💾 ChartStore: Clearing overlays for', symbol, timeframe);
+        set((state) => {
+          const key = `${symbol}_${timeframe}`;
+          const newPersistedOverlays = { ...state.persistedOverlays };
+          delete newPersistedOverlays[key];
+          return { persistedOverlays: newPersistedOverlays };
+        });
+      },
+
+      // Fullscreen state actions
+      setFullscreen: (isFullscreen) => {
+        console.log('💾 ChartStore: Setting fullscreen to', isFullscreen);
+        set({ isFullscreen: Boolean(isFullscreen) });
+      },
+
+      toggleFullscreen: () => {
+        console.log('💾 ChartStore: Toggling fullscreen');
+        set((state) => ({ isFullscreen: !state.isFullscreen }));
+      },
     }),
     {
       name: 'tradingview-chart-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        settings: state.settings
+        settings: state.settings,
+        persistedOverlays: state.persistedOverlays,
+        isFullscreen: state.isFullscreen
       }),
       onRehydrateStorage: () => (_state) => {
         if (_state) {
@@ -569,7 +649,9 @@ export const useChartStore = create(
             symbol: _state.settings.symbol,
             timeframe: _state.settings.timeframe,
             chartType: _state.settings.chartType,
-            indicators: _state.settings.indicators
+            indicators: _state.settings.indicators,
+            isFullscreen: _state.isFullscreen,
+            overlayKeys: Object.keys(_state.persistedOverlays || {})
           });
           // If timezone wasn't previously set, ensure we apply system timezone automatically
           try {
@@ -620,3 +702,5 @@ export const selectIsLoading = (state) => state.isLoading;
 export const selectIsConnected = (state) => state.isConnected;
 export const selectError = (state) => state.error;
 export const selectDailyChangeData = (state) => state.dailyChangeData;
+export const selectIsFullscreen = (state) => state.isFullscreen;
+export const selectPersistedOverlays = (state) => state.persistedOverlays;

@@ -10,9 +10,8 @@ import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
 
 function TradingChart() {
-  const { settings, toggleGrid, setIndicatorsPreset, toggleSplitMode } = useChartStore();
+  const { settings, toggleGrid, setIndicatorsPreset, toggleSplitMode, isFullscreen, toggleFullscreen } = useChartStore();
   const [activePreset, setActivePreset] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const errorTimeoutRef = useRef(null);
 
@@ -62,7 +61,7 @@ function TradingChart() {
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === 'Escape' && isFullscreen) {
-        setIsFullscreen(false);
+        toggleFullscreen();
       }
     };
 
@@ -70,7 +69,7 @@ function TradingChart() {
     return () => {
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [isFullscreen]);
+  }, [isFullscreen, toggleFullscreen]);
 
   // Prevent body scroll when fullscreen is active
   useEffect(() => {
@@ -186,7 +185,7 @@ function TradingChart() {
   const renderWidgetContent = () => (
     <div className="h-full bg-white flex flex-col overflow-hidden border border-gray-200 shadow-lg rounded-lg">
       {/* Header */}
-      <TradingViewHeader onFullscreenToggle={() => setIsFullscreen(!isFullscreen)} isFullscreen={isFullscreen} />
+      <TradingViewHeader onFullscreenToggle={toggleFullscreen} isFullscreen={isFullscreen} />
       
       {/* Main Content with Sidebar */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
@@ -344,14 +343,14 @@ function TradingChart() {
           onClick={(e) => {
             // Close on backdrop click (but not on widget content)
             if (e.target === e.currentTarget) {
-              setIsFullscreen(false);
+              toggleFullscreen();
             }
           }}
         >
           {/* Close Button */}
           <button
             type="button"
-            onClick={() => setIsFullscreen(false)}
+            onClick={toggleFullscreen}
             className="absolute top-4 right-4 p-3 rounded-lg bg-white/90 text-gray-700 hover:bg-white shadow-lg z-[20000] transition-all hover:scale-110"
             aria-label="Close fullscreen"
             title="Close (Esc)"

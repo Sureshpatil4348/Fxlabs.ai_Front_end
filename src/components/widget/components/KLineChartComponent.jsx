@@ -234,7 +234,13 @@ export const KLineChartComponent = ({
   const setKLineChartRef = storeForRef.setKLineChartRef;
   
   // Always use main store for global settings
-  const { toggleIndicator, isWorkspaceHidden, updateIndicatorSettings, setActiveChartIndex } = mainChartStore;
+  const { toggleIndicator, isWorkspaceHidden, updateIndicatorSettings, setActiveChartIndex, saveOverlaysForSymbol, getOverlaysForSymbol } = mainChartStore;
+  
+  // Overlay persistence state
+  const overlayRestoreTriggeredRef = useRef(false);
+  const overlaySaveTimerRef = useRef(null);
+  const lastSavedOverlayCountRef = useRef(-1); // Track last saved count (-1 = not initialized yet)
+  const isInitialMountRef = useRef(true); // Track if this is the first mount
   
   // Sync local MA settings when opening the modal
   useEffect(() => {
@@ -3391,6 +3397,29 @@ export const KLineChartComponent = ({
         }
       });
 
+      // ===== CRITICAL: Install overlay wrapper BEFORE handleDrawingToolChange is defined =====
+      // This ensures the closure captures our wrapped version, not the original
+      console.log('💾 [DEBUG] Installing overlay wrapper EARLY (before handleDrawingToolChange)');
+      const originalCreateOverlayEarly = chart.createOverlay;
+      if (typeof originalCreateOverlayEarly === 'function') {
+        chart.createOverlay = function(...args) {
+          console.log('💾 [WRAPPER] createOverlay called with args:', args);
+          const result = originalCreateOverlayEarly.apply(this, args);
+          console.log('💾 [WRAPPER] createOverlay result:', result);
+          // Trigger save after overlay is created
+          setTimeout(() => {
+            if (overlaySaveTimerRef.current) clearTimeout(overlaySaveTimerRef.current);
+            overlaySaveTimerRef.current = setTimeout(() => {
+              console.log('💾 [WRAPPER] Dispatching kline-overlay-changed event');
+              const saveEvent = new CustomEvent('kline-overlay-changed');
+              window.dispatchEvent(saveEvent);
+            }, 500);
+          }, 100);
+          return result;
+        };
+        console.log('💾 [DEBUG] Wrapper installed EARLY - handleDrawingToolChange will now use wrapped version');
+      }
+
       // Drawing tool handler: start interactive overlay creation
       // Drawing tools should ONLY work on the main candle pane, not on indicator panes below
       const handleDrawingToolChange = (toolType) => {
@@ -3472,13 +3501,24 @@ export const KLineChartComponent = ({
       };
       chart._closeConfirmModal = () => setConfirmModal(null);
 
-      // Configure chart options for better auto-scaling
-      chart.setOptions({
-        // Auto-scale to visible data range
-        yAxis: {
-          autoMinMax: true, // Automatically adjust min/max based on visible data
-        }
-      });
+      // Wrap removeOverlay to trigger persistence saves (done here since it's not used in closures above)
+      const originalRemoveOverlay = chart.removeOverlay;
+      if (typeof originalRemoveOverlay === 'function') {
+        chart.removeOverlay = function(...args) {
+          console.log('💾 [WRAPPER] removeOverlay called');
+          const result = originalRemoveOverlay.apply(this, args);
+          // Trigger save after overlay is removed
+          setTimeout(() => {
+            if (overlaySaveTimerRef.current) clearTimeout(overlaySaveTimerRef.current);
+            overlaySaveTimerRef.current = setTimeout(() => {
+              console.log('💾 [WRAPPER] Dispatching kline-overlay-changed event (after removal)');
+              const saveEvent = new CustomEvent('kline-overlay-changed');
+              window.dispatchEvent(saveEvent);
+            }, 500);
+          }, 100);
+          return result;
+        };
+      }
 
           // Handle resize - FORCE FULL WIDTH
           const handleResize = () => {
@@ -3504,6 +3544,15 @@ export const KLineChartComponent = ({
       setTimeout(() => handleResize(), 100);
 
       console.log('📈 K-line chart initialized successfully');
+
+      // Configure chart options for better auto-scaling
+      // IMPORTANT: This is done AFTER all critical setup (drawing tools, etc) so if it fails, chart still works
+      chart.setOptions({
+        // Auto-scale to visible data range
+        yAxis: {
+          autoMinMax: true, // Automatically adjust min/max based on visible data
+        }
+      });
 
       return () => {
         window.removeEventListener('resize', handleResize);
@@ -3533,6 +3582,228 @@ export const KLineChartComponent = ({
       setIsInitialLoad(false);
     }
   }, [settings.showGrid, setKLineChartRef, settings.timezone, shouldSuppressError]); // Include timezone for initial setup
+
+  // Restore persisted overlays (drawings) when chart is initialized and has data
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !candles || candles.length === 0) {
+      overlayRestoreTriggeredRef.current = false;
+      return;
+    }
+
+    // Only restore once per symbol-timeframe combination
+    if (overlayRestoreTriggeredRef.current) return;
+    overlayRestoreTriggeredRef.current = true;
+
+    try {
+      const symbol = settings?.symbol;
+      const timeframe = settings?.timeframe;
+      if (!symbol || !timeframe) return;
+
+      const persistedOverlays = getOverlaysForSymbol(symbol, timeframe);
+      
+      // CRITICAL: Initialize the counter from persisted data to prevent overwriting
+      const persistedCount = persistedOverlays?.length || 0;
+      if (lastSavedOverlayCountRef.current === -1) {
+        lastSavedOverlayCountRef.current = persistedCount;
+        console.log('💾 [INIT] Set lastSavedCount to', persistedCount, 'from persisted data');
+      }
+      
+      if (!persistedOverlays || persistedOverlays.length === 0) {
+        console.log('💾 No persisted overlays to restore for', symbol, timeframe);
+        return;
+      }
+
+      console.log('💾 Restoring', persistedOverlays.length, 'overlays for', symbol, timeframe, 'Details:', persistedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
+
+      // Small delay to ensure chart is fully initialized with data
+      setTimeout(() => {
+        let successCount = 0;
+        persistedOverlays.forEach((overlayData, index) => {
+          try {
+            // Restore overlay with its original configuration
+            // The overlay points already contain timestamps, so they will be anchored correctly
+            if (typeof chart.createOverlay === 'function') {
+              const restored = chart.createOverlay({
+                name: overlayData.name,
+                points: overlayData.points,
+                styles: overlayData.styles,
+                lock: overlayData.lock,
+                visible: overlayData.visible !== false,
+                zLevel: overlayData.zLevel,
+                mode: overlayData.mode,
+                modeSensitivity: overlayData.modeSensitivity,
+                extendLeft: overlayData.extendLeft,
+                extendRight: overlayData.extendRight,
+              });
+              successCount++;
+              console.log(`💾 Restored overlay ${index + 1}/${persistedOverlays.length}:`, overlayData.name, restored);
+            }
+          } catch (err) {
+            console.error('💾 Failed to restore overlay:', overlayData.name, err, 'Data:', overlayData);
+          }
+        });
+        console.log(`💾 Successfully restored ${successCount}/${persistedOverlays.length} overlays`);
+      }, 300);
+    } catch (err) {
+      console.error('💾 Error restoring overlays:', err);
+    }
+  }, [candles, settings?.symbol, settings?.timeframe, getOverlaysForSymbol]);
+
+  // Save overlays when they are created, modified, or deleted
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    const symbol = settings?.symbol;
+    const timeframe = settings?.timeframe;
+    if (!symbol || !timeframe) return;
+    
+    // CRITICAL: Reset counter for new symbol/timeframe to read from persisted data
+    console.log('💾 [INIT] Resetting lastSavedCount for new symbol/timeframe:', symbol, timeframe);
+    lastSavedOverlayCountRef.current = -1;
+
+    // Debounced save function
+    const saveOverlays = () => {
+      try {
+        // Try multiple methods to get overlays
+        let overlays = [];
+        
+        if (typeof chart.getOverlays === 'function') {
+          overlays = chart.getOverlays();
+          console.log('💾 [DEBUG] Got overlays via getOverlays():', overlays);
+        } else if (typeof chart.getAllOverlays === 'function') {
+          overlays = chart.getAllOverlays();
+          console.log('💾 [DEBUG] Got overlays via getAllOverlays():', overlays);
+        } else {
+          console.error('💾 [DEBUG] No overlay getter method available!');
+        }
+        
+        // Also check if overlays might be in a different location
+        console.log('💾 [DEBUG] Chart structure check:', {
+          hasOverlayStore: !!chart._overlayStore,
+          hasOverlays: !!chart._overlays,
+          overlayStoreType: typeof chart._overlayStore,
+          overlaysType: typeof chart._overlays
+        });
+
+        console.log('💾 [DEBUG] Raw overlays from chart:', overlays);
+        console.log('💾 [DEBUG] Overlay count:', Array.isArray(overlays) ? overlays.length : 'not an array');
+
+        if (!Array.isArray(overlays)) {
+          console.warn('💾 [DEBUG] getOverlays() did not return an array');
+          return;
+        }
+
+        // Log all overlays for debugging
+        overlays.forEach((overlay, idx) => {
+          console.log(`💾 [DEBUG] Overlay ${idx}:`, {
+            name: overlay?.name,
+            id: overlay?.id,
+            locked: overlay?.locked,
+            points: overlay?.points?.length || 0,
+            paneId: overlay?.paneId
+          });
+        });
+
+        // Filter out programmatically created overlays (indicators, labels, etc.)
+        // Only save user-drawn overlays
+        const userDrawnOverlays = overlays.filter((overlay) => {
+          if (!overlay) {
+            console.log('💾 [DEBUG] Filtered: null overlay');
+            return false;
+          }
+          const name = overlay.name || '';
+          // Exclude system-generated overlays (like labels from indicators)
+          const isSystemGenerated = 
+            name.toLowerCase().includes('label') ||
+            name.toLowerCase().includes('marker') ||
+            overlay.locked === true ||
+            overlay.id?.includes('_system_');
+          
+          if (isSystemGenerated) {
+            console.log('💾 [DEBUG] Filtered system overlay:', name, 'locked:', overlay.locked);
+          } else {
+            console.log('💾 [DEBUG] Keeping user overlay:', name);
+          }
+          
+          return !isSystemGenerated;
+        });
+
+        // Serialize overlays for storage
+        const serializedOverlays = userDrawnOverlays.map((overlay) => ({
+          name: overlay.name,
+          points: overlay.points,
+          styles: overlay.styles,
+          lock: overlay.lock,
+          visible: overlay.visible,
+          zLevel: overlay.zLevel,
+          mode: overlay.mode,
+          modeSensitivity: overlay.modeSensitivity,
+          extendLeft: overlay.extendLeft,
+          extendRight: overlay.extendRight,
+        }));
+
+        // CRITICAL: Don't overwrite with fewer overlays (prevents data loss during chart updates)
+        const currentCount = serializedOverlays.length;
+        const lastCount = lastSavedOverlayCountRef.current;
+        
+        // Initialize lastCount from persisted data on first save attempt
+        if (lastCount === -1) {
+          const persistedCount = getOverlaysForSymbol(symbol, timeframe)?.length || 0;
+          lastSavedOverlayCountRef.current = persistedCount;
+          console.log('💾 [PROTECTION] Initialized lastSavedCount from localStorage:', persistedCount);
+          
+          // If trying to save 0 but we have persisted data, BLOCK IT!
+          if (currentCount === 0 && persistedCount > 0) {
+            console.warn('💾 [PROTECTION] BLOCKING save on initial mount - would overwrite', persistedCount, 'persisted overlays with 0!');
+            return;
+          }
+        } else if (currentCount === 0 && lastCount > 0) {
+          console.warn('💾 [PROTECTION] Skipping save - would overwrite', lastCount, 'overlays with 0 (likely during chart update)');
+          return;
+        }
+
+        lastSavedOverlayCountRef.current = currentCount;
+        saveOverlaysForSymbol(symbol, timeframe, serializedOverlays);
+        console.log('💾 Saved', serializedOverlays.length, 'overlays for', symbol, timeframe, 'Details:', serializedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
+      } catch (err) {
+        console.error('💾 Error saving overlays:', err);
+      }
+    };
+
+    // Trigger save when overlays change (debounced)
+    const debouncedSave = () => {
+      if (overlaySaveTimerRef.current) {
+        clearTimeout(overlaySaveTimerRef.current);
+      }
+      overlaySaveTimerRef.current = setTimeout(saveOverlays, 1000);
+    };
+
+    // Listen for overlay changes (triggered by wrapped createOverlay/removeOverlay)
+    const handleOverlayChange = () => {
+      console.log('💾 Overlay changed, triggering save...');
+      debouncedSave();
+    };
+
+    window.addEventListener('kline-overlay-changed', handleOverlayChange);
+
+    // Also save periodically to catch any modifications (move, resize, style changes)
+    const periodicSaveInterval = setInterval(() => {
+      debouncedSave();
+    }, 5000); // Save every 5 seconds
+
+    // Also save on symbol/timeframe change (cleanup)
+    return () => {
+      if (overlaySaveTimerRef.current) {
+        clearTimeout(overlaySaveTimerRef.current);
+      }
+      window.removeEventListener('kline-overlay-changed', handleOverlayChange);
+      clearInterval(periodicSaveInterval);
+      // Final save when unmounting or changing pairs
+      saveOverlays();
+    };
+  }, [settings?.symbol, settings?.timeframe, saveOverlaysForSymbol]);
 
   // Apply cursor mode (crosshair, pointer, grab) for KLine chart
   // - Crosshair: enable chart crosshair and set cursor to crosshair
@@ -4793,7 +5064,9 @@ export const KLineChartComponent = ({
         overlays.forEach(overlay => {
           chartRef.current.removeOverlay(overlay.id);
         });
-        console.log('📈 All drawings cleared');
+        // CRITICAL: Set to 0 to allow saving empty state (user intentionally cleared)
+        lastSavedOverlayCountRef.current = 0;
+        console.log('📈 All drawings cleared, allowing save of empty state');
       } catch (error) {
         console.warn('📈 Error clearing drawings:', error);
       }

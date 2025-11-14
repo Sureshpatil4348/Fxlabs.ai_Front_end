@@ -8,6 +8,30 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Features
 
+### State Persistence
+
+All chart state is automatically persisted to localStorage and restored on page reload or browser tab reopen.
+
+**What's Persisted:**
+- **Currency Pair & Timeframe**: Selected symbol and timeframe automatically restored
+- **Indicators**: All active indicators and their configurations persist across sessions
+- **Drawings & Overlays**: User-drawn objects (trend lines, fibonacci retracements, rectangles, positions, annotations) are saved per symbol-timeframe combination
+- **Fullscreen State**: Fullscreen mode preference is remembered
+- **Chart Settings**: Grid visibility, timezone, cursor type, and all other preferences
+
+**Drawings Persistence Details:**
+- Drawings are anchored to timestamps, not visual positions
+- When you draw on historical candles and return hours/days later, drawings remain on the exact candles where you placed them
+- Automatic saving occurs 2 seconds after last modification (debounced)
+- Separate drawing storage for each symbol-timeframe pair (e.g., EURUSD 1h drawings won't appear on EURUSD 4h)
+- Programmatically generated overlays (indicator labels, markers) are excluded from persistence
+
+**Benefits:**
+- Seamless experience across browser sessions
+- No manual save/export required
+- Drawings always appear on correct candles regardless of time elapsed
+- Independent state per chart configuration
+
 ### Indicator Table Styling
 
 - All KLineChart indicator tables rendered at the top-right (e.g., Bollinger Bands Pro, Moving Average Pro, SuperTrend Pro, ORB Enhanced) now use a carded container with rounded corners, subtle shadow, and slight blur for improved readability without obstructing the chart. Their position has been nudged slightly left for better visual balance.
