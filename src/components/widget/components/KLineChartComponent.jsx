@@ -4922,7 +4922,7 @@ export const KLineChartComponent = ({
           role="application"
           aria-label="Trading chart with drawing tools"
           tabIndex={0}
-          onMouseDownCapture={(e) => {
+          onMouseDownCapture={(_e) => {
             // If a tool is pending, arm it on THIS chart before the
             // underlying KLine canvas processes the event. This ensures
             // the same click becomes the 1st point of the overlay.

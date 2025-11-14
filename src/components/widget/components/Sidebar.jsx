@@ -12,7 +12,7 @@ export const Sidebar = () => {
     setIndicatorsPreset,
     isWorkspaceHidden,
     setWorkspaceHidden,
-    activeChartIndex
+    activeChartIndex: _activeChartIndex
   } = useChartStore();
   
   const { klineChartRef: splitChartRef } = useSplitChartStore();
