@@ -157,6 +157,17 @@ When in split mode:
 - If `15m` appears inside `More` (after a swap) and is selected, the quick selections revert to the default.
 - Behavior is consistent in both split and non‑split modes since the header controls the active timeframe globally.
 
+### Breakout Strategy (ORB) Settings Validation
+
+- Saving ORB settings validates the Opening Candle time against the active timeframe to ensure a real candle boundary exists.
+- Rules by timeframe:
+  - `1m`: any minute is valid
+  - `5m`/`15m`/`30m`: minute must be a multiple of 5/15/30 respectively (e.g., 0,5,10…)
+  - `1h`: minute must be `0`
+  - `4h`: hour must be one of `0,4,8,12,16,20` and minute must be `0`
+  - `1d` and `1w`: hour must be `0` and minute must be `0`
+- If the input is not aligned, an inline error appears: “Please choose an opening candle hour / minute which is multiple of <timeframe> …” and the settings are not saved.
+
 ### Seamless Loading on Pair/Timeframe Change
 
 - Changing the currency pair or timeframe now shows the same loader overlay used on first page load: "Loading Trading Chart...".

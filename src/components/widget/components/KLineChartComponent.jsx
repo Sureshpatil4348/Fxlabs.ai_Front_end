@@ -121,6 +121,7 @@ export const KLineChartComponent = ({
     orPeriod: 1,
     targetRR: 4.0,
   }));
+  const [orbValidationError, setOrbValidationError] = useState('');
 
   // SuperTrend - Pro (ST Enhanced) UI state
   const [showStSettings, setShowStSettings] = useState(false);
@@ -281,7 +282,63 @@ export const KLineChartComponent = ({
       orPeriod: Math.max(1, Number(cfg.orPeriod) || 1),
       targetRR: Math.max(0.5, Number(cfg.targetRR) || 4.0),
     });
+    setOrbValidationError('');
   }, [showOrbSettings, settings?.indicatorSettings?.orbEnhanced]);
+
+  // Helper: validate ORB opening time alignment against current timeframe
+  const validateOrbOpeningTime = useCallback((timeframe, hour, minute) => {
+    const tf = String(timeframe || '').toLowerCase();
+    const h = Math.max(0, Math.min(23, Number(hour) || 0));
+    const m = Math.max(0, Math.min(59, Number(minute) || 0));
+
+    // Minute-based frames
+    if (tf === '1m') return { valid: true };
+    if (tf === '5m' || tf === '15m' || tf === '30m') {
+      const step = tf === '5m' ? 5 : tf === '15m' ? 15 : 30;
+      if (m % step !== 0) {
+        return {
+          valid: false,
+          message: `Please choose an opening candle hour / minute which is multiple of ${tf} (minute must be a multiple of ${step}).`
+        };
+      }
+      return { valid: true };
+    }
+
+    // Hour-based frames
+    if (tf === '1h') {
+      if (m !== 0) {
+        return {
+          valid: false,
+          message: 'Please choose an opening candle hour / minute which is multiple of 1h (minute must be 0).'
+        };
+      }
+      return { valid: true };
+    }
+    if (tf === '4h') {
+      const validHour = h % 4 === 0;
+      if (!validHour || m !== 0) {
+        return {
+          valid: false,
+          message: 'Please choose an opening candle hour / minute which is multiple of 4h (hour must be 0,4,8,12,16,20 and minute must be 0).'
+        };
+      }
+      return { valid: true };
+    }
+
+    // Day/Week frames
+    if (tf === '1d' || tf === '1w') {
+      if (h !== 0 || m !== 0) {
+        return {
+          valid: false,
+          message: `Please choose an opening candle hour / minute which is multiple of ${tf} (hour must be 0 and minute must be 0).`
+        };
+      }
+      return { valid: true };
+    }
+
+    // Unknown timeframe: default to permissive but safe minute alignment (no error)
+    return { valid: true };
+  }, []);
 
   // Sync local ST settings when opening the modal
   useEffect(() => {
@@ -6043,7 +6100,10 @@ export const KLineChartComponent = ({
                         min={0}
                         max={23}
                         value={localOrbSettings.startHour}
-                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, startHour: Math.max(0, Math.min(23, parseInt(e.target.value || '9', 10))) }))}
+                        onChange={(e) => {
+                          setOrbValidationError('');
+                          setLocalOrbSettings((p) => ({ ...p, startHour: Math.max(0, Math.min(23, parseInt(e.target.value || '9', 10))) }));
+                        }}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6055,7 +6115,10 @@ export const KLineChartComponent = ({
                         min={0}
                         max={59}
                         value={localOrbSettings.startMinute}
-                        onChange={(e) => setLocalOrbSettings((p) => ({ ...p, startMinute: Math.max(0, Math.min(59, parseInt(e.target.value || '15', 10))) }))}
+                        onChange={(e) => {
+                          setOrbValidationError('');
+                          setLocalOrbSettings((p) => ({ ...p, startMinute: Math.max(0, Math.min(59, parseInt(e.target.value || '15', 10))) }));
+                        }}
                         className="w-full p-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -6105,6 +6168,13 @@ export const KLineChartComponent = ({
                         orPeriod: Math.max(1, Number(localOrbSettings.orPeriod) || 1),
                         targetRR: Math.max(0.5, Number(localOrbSettings.targetRR) || 4.0),
                       };
+                      const tf = settings?.timeframe || '5m';
+                      const { valid, message } = validateOrbOpeningTime(tf, payload.startHour, payload.startMinute);
+                      if (!valid) {
+                        setOrbValidationError(message || 'Invalid opening candle time for the selected timeframe.');
+                        return;
+                      }
+                      setOrbValidationError('');
                       try { updateIndicatorSettings('orbEnhanced', payload); } catch (_) {}
                       setShowOrbSettings(false);
                     }}
@@ -6112,6 +6182,9 @@ export const KLineChartComponent = ({
                     Save
                   </button>
                 </div>
+                {orbValidationError ? (
+                  <div className="mt-2 text-sm text-red-600">{orbValidationError}</div>
+                ) : null}
               </div>
             </div>
           )}
