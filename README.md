@@ -163,6 +163,11 @@ When in split mode:
   - `1d` and `1w`: hour must be `0` and minute must be `0`
 - If the input is not aligned, an inline error appears: “Please choose an opening candle hour / minute which is multiple of <timeframe> …” and the settings are not saved.
 
+### KLine Position & ORB TP/SL Labels
+
+- Long and Short Position tools still render their risk/reward rectangles and handles, but the inline `SL xxx` / `TP xxx` price text inside those rectangles has been removed for a cleaner, less cluttered view. The external Stop/Target badges outside the rectangles remain unchanged.
+- The ORB Enhanced breakout indicator keeps its colored TP/SL rectangles at the right edge of the chart, but no longer displays the white `TP xxx` / `SL xxx` text inside those boxes.
+
 ### Seamless Loading on Pair/Timeframe Change
 
 - Changing the currency pair or timeframe now shows a centered loader (using the same icon and text styling as the AI News Analysis loader) with the message:

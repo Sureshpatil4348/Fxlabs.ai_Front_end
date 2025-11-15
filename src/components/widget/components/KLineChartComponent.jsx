@@ -1522,7 +1522,6 @@ export const KLineChartComponent = ({
                   const metrics = ctx.measureText(tpText);
                   ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
                   ctx.fillStyle = '#ffffff';
-                  ctx.fillText(tpText, labelX, y);
                 }
 
                 // Buy SL label
@@ -1533,7 +1532,6 @@ export const KLineChartComponent = ({
                   const metrics = ctx.measureText(slText);
                   ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
                   ctx.fillStyle = '#ffffff';
-                  ctx.fillText(slText, labelX, y);
                 }
 
                 // Sell TP label
@@ -1544,7 +1542,6 @@ export const KLineChartComponent = ({
                   const metrics = ctx.measureText(tpText);
                   ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
                   ctx.fillStyle = '#ffffff';
-                  ctx.fillText(tpText, labelX, y);
                 }
 
                 // Sell SL label
@@ -1555,7 +1552,6 @@ export const KLineChartComponent = ({
                   const metrics = ctx.measureText(slText);
                   ctx.fillRect(labelX - 2, y - 12, metrics.width + padding, 16);
                   ctx.fillStyle = '#ffffff';
-                  ctx.fillText(slText, labelX, y);
                 }
               }
             }
@@ -2065,30 +2061,6 @@ export const KLineChartComponent = ({
             },
             styles: { color: '#ef4444', size: 1 },
           });
-          figures.push({
-            type: 'text',
-            attrs: {
-              x: xLeft + 4,
-              y: stopY - 6,
-              text: (() => {
-                try {
-                  if (typeof chart?.convertFromPixel === 'function') {
-                    const p = chart.convertFromPixel({ x: xLeft, y: stopY });
-                    const v = Number(p?.value);
-                    if (Number.isFinite(v)) return `SL ${formatPrice(v)}`;
-                  }
-                } catch (_) { /* ignore */ }
-                return 'SL';
-              })(),
-              align: 'left',
-              baseline: 'bottom',
-            },
-            styles: {
-              backgroundColor: 'transparent',
-              borderSize: 0,
-              text: { color: '#dc2626', size: 11, weight: '600' },
-            },
-          });
           
           // Risk-side badges (above red rectangle)
           // entryVal already resolved above in this block
@@ -2437,31 +2409,6 @@ export const KLineChartComponent = ({
             },
             styles: { color: '#ef4444', size: 1 },
           });
-          figures.push({
-            type: 'text',
-            attrs: {
-              x: xLeft + 4,
-              y: stopY + 12,
-              text: (() => {
-                if (typeof overlay?.stopValue === 'number') return `SL ${formatPrice(overlay.stopValue)}`;
-                try {
-                  if (typeof chart?.convertFromPixel === 'function') {
-                    const p = chart.convertFromPixel({ x: xLeft, y: stopY });
-                    const v = Number(p?.value);
-                    if (Number.isFinite(v)) return `SL ${formatPrice(v)}`;
-                  }
-                } catch (_) { /* ignore */ }
-                return 'SL';
-              })(),
-              align: 'left',
-              baseline: 'top',
-            },
-            styles: {
-              backgroundColor: 'transparent',
-              borderSize: 0,
-              text: { color: '#dc2626', size: 11, weight: '600' },
-            },
-          });
           
           // Risk-side badges (below red rectangle)
           const entryVal = Number(pts?.[0]?.value);
@@ -2558,31 +2505,6 @@ export const KLineChartComponent = ({
             type: 'circle',
             attrs: { x: xRight, y: c0.y, r: POSITION_HANDLE_RADIUS_PX },
             styles: { style: 'stroke_fill', color: '#ffffff', borderColor: '#2962FF', borderSize: 1 }
-          });
-          figures.push({
-            type: 'text',
-            attrs: {
-              x: xLeft + 4,
-              y: yTP - 6,
-              text: (() => {
-                if (typeof overlay?.targetValue === 'number') return `TP ${formatPrice(overlay.targetValue)}`;
-                try {
-                  if (typeof chart?.convertFromPixel === 'function') {
-                    const p = chart.convertFromPixel({ x: xLeft, y: yTP });
-                    const v = Number(p?.value);
-                    if (Number.isFinite(v)) return `TP ${formatPrice(v)}`;
-                  }
-                } catch (_) { /* ignore */ }
-                return 'TP';
-              })(),
-              align: 'left',
-              baseline: 'bottom',
-            },
-            styles: {
-              backgroundColor: 'transparent',
-              borderSize: 0,
-              text: { color: '#047857', size: 11, weight: '600' },
-            },
           });
           // Reward-side badge (above green rectangle)
           const entryVal2 = Number(pts?.[0]?.value);
