@@ -10,6 +10,7 @@ import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay, formatPrice, formatPercentage, formatRsi, getRsiColor } from '../utils/formatters';
+import { useChartStore } from './widget/stores/useChartStore';
 
 // Utility function to clamp values within min/max bounds
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
@@ -17,8 +18,37 @@ const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
   const { symbol, rsi, price, change } = pair;
 
+  const openInKLineChart = (symbolInput) => {
+    try {
+      let next = String(symbolInput || '').trim();
+      if (!next) return;
+      next = next.replace(/[\/\s]/g, '').toUpperCase();
+      if (next.endsWith('M')) next = next.slice(0, -1);
+      if (next.endsWith('m')) next = next.slice(0, -1);
+      if (!next) return;
+      const chartStore = useChartStore.getState();
+      chartStore.setSymbol(next);
+      try { chartStore.setWorkspaceHidden(false); } catch (_e) { /* ignore */ }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to open symbol in KLine chart:', symbolInput, e);
+    }
+  };
+
   return (
-    <tr className={`hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer ${isInWishlist ? 'bg-gray-100 dark:bg-slate-600' : ''}`} onClick={() => onAddToWishlist(symbol)}>
+    <tr
+      className={`hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer ${isInWishlist ? 'bg-gray-100 dark:bg-slate-600' : ''}`}
+      role="button"
+      tabIndex={0}
+      onClick={() => { openInKLineChart(symbol); onAddToWishlist(symbol); }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openInKLineChart(symbol);
+          onAddToWishlist(symbol);
+        }
+      }}
+    >
       <td className="px-2 py-1 text-[13px] font-medium text-[#19235d] dark:text-slate-100 text-center">
         {formatSymbolDisplay(symbol)}
       </td>

@@ -11,6 +11,12 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Numeric inputs: All key number fields now allow fully clearing the value while typing; if left empty, the value commits as 0 on blur. This prevents jumpy defaults and makes editing smoother.
 - KLineCharts: Top-right on‑chart indicator tables (e.g., MA Pro, ORB, BB Pro, ST Pro) now render side‑by‑side in a single flex container from right → left. This prevents overlap when multiple on‑chart tables are enabled simultaneously.
 
+### Quick Open (Trending + RSI)
+
+- Pairs in Trending Pairs and RSI Tracker are now clickable. Clicking a pair sets that symbol in the KLine trading widget immediately.
+- Symbols are normalized automatically (e.g., strips trailing "m"/"M") before opening in the chart.
+- Accessibility: rows are keyboard-activatable via Enter/Space.
+
 ### ATR Percentage Mode (KLineCharts)
 
 - ATR Enhanced now displays strictly as percentage of close (ATR%).
