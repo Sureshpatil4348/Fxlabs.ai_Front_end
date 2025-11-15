@@ -47,8 +47,9 @@ All chart state is automatically persisted to localStorage and restored on page 
 
 ### KLineChart Loading Experience
 
-- The initial KLineChart loading overlay now uses a clean white background to better blend with the surrounding layout.
-- Loading text (`Preparing Trading Chart / Please wait`) has been removed so users see only a subtle spinner while data is fetched.
+- While initial candles are loading, the KLineChart now renders placeholder x/y axes using arbitrary time and price values so the chart frame is visible immediately.
+- During this phase, no candlesticks are drawn (their bodies, borders, wicks, and price marks are hidden), and a subtle spinner is shown in the center without occluding the axes.
+- Once real candle data arrives, the axes automatically update to the correct time/price ranges and candlesticks become visible with the normal styling.
 
 ### KLineChart Indicator Presets
 

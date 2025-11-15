@@ -16,6 +16,31 @@ const MA_COLORS_BY_INDEX = {
   4: '#9C27B0',
 };
 
+// Placeholder K-line data used to render axes while real candles are loading.
+// Uses arbitrary timestamps and flat prices so only axes/grid are visible.
+const PLACEHOLDER_KLINE_DATA = (() => {
+  const baseTimestamp = 1700000000000; // Arbitrary fixed point in time (ms)
+  const intervalMs = 60 * 1000; // 1 minute spacing
+  const basePrice = 1.0;
+  const bars = [];
+
+  for (let i = 0; i < 30; i += 1) {
+    const timestamp = baseTimestamp + (i * intervalMs);
+    const price = basePrice + ((i - 15) * 0.0001);
+
+    bars.push({
+      timestamp,
+      open: price,
+      high: price,
+      low: price,
+      close: price,
+      volume: 0,
+    });
+  }
+
+  return bars;
+})();
+
 export const KLineChartComponent = ({
   candles = [],
   settings = {},
@@ -4316,6 +4341,63 @@ export const KLineChartComponent = ({
     }
   }, [candles, isInitialLoad, isLoadingHistory, markProgrammaticScroll, hasMoreHistory, onLoadMoreHistory, shouldSuppressError]);
 
+  // While initial data is loading, render placeholder axes with hidden candles.
+  useEffect(() => {
+    const chart = chartRef.current;
+    const hasRealCandles = Array.isArray(candles) && candles.length > 0;
+
+    if (!chart) return;
+
+    try {
+      if (!hasRealCandles && isInitialLoad) {
+        // Apply placeholder data so x/y axes can render using any time/price values.
+        chart.applyNewData(PLACEHOLDER_KLINE_DATA);
+
+        // Hide candlestick bodies, borders, wicks, and price marks during loading.
+        chart.setStyles({
+          candle: {
+            bar: {
+              upColor: 'rgba(0,0,0,0)',
+              downColor: 'rgba(0,0,0,0)',
+              noChangeColor: 'rgba(0,0,0,0)',
+              upBorderColor: 'rgba(0,0,0,0)',
+              downBorderColor: 'rgba(0,0,0,0)',
+              noChangeBorderColor: 'rgba(0,0,0,0)',
+              upWickColor: 'rgba(0,0,0,0)',
+              downWickColor: 'rgba(0,0,0,0)',
+              noChangeWickColor: 'rgba(0,0,0,0)',
+            },
+            priceMark: {
+              show: false,
+            },
+          },
+        });
+      } else if (hasRealCandles) {
+        // Restore visible candlesticks and price marks once real data is available.
+        chart.setStyles({
+          candle: {
+            bar: {
+              upColor: '#10b981',
+              downColor: '#ef4444',
+              noChangeColor: '#888888',
+              upBorderColor: '#10b981',
+              downBorderColor: '#ef4444',
+              noChangeBorderColor: '#888888',
+              upWickColor: '#10b981',
+              downWickColor: '#ef4444',
+              noChangeWickColor: '#888888',
+            },
+            priceMark: {
+              show: true,
+            },
+          },
+        });
+      }
+    } catch (_) {
+      // Optional API differences - best-effort styling.
+    }
+  }, [candles, isInitialLoad]);
+
   // Handle indicator visibility changes
   useEffect(() => {
     if (!chartRef.current) return;
@@ -5891,9 +5973,9 @@ export const KLineChartComponent = ({
         >
           {/* Initial loading spinner - simplified with white background */}
           {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
               <div
-                className="text-center"
+                className="inline-flex items-center justify-center rounded-full bg-white shadow-md p-3 text-center"
                 role="status"
                 aria-live="polite"
               >
