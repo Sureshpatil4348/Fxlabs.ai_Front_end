@@ -16,6 +16,11 @@ All chart state is automatically persisted to localStorage and restored on page 
 - **Workspace Visibility**: Hide/Unhide All button state persists - if you hide all indicators and reload, they stay hidden
 - **Chart Settings**: Grid visibility, timezone, cursor type, and all other preferences
 
+**Default KLineChart Configuration (on first load):**
+- **Default Currency Pair**: `EUR/USD` (`EURUSD`)
+- **Default Timeframe**: `15m`
+- **Default Cursor for Drawing Tools**: `Pointer`
+
 **Drawings Persistence Details:**
 - Drawings are anchored to timestamps, not visual positions
 - When you draw on historical candles and return hours/days later, drawings remain on the exact candles where you placed them

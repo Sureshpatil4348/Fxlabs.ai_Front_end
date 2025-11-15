@@ -8,9 +8,9 @@ const SYSTEM_TIMEZONE = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().re
 
 const defaultSettings = {
   symbol: 'EURUSD',
-  timeframe: '1h',
+  timeframe: '15m',
   chartType: 'candlestick',
-  cursorType: 'crosshair',
+  cursorType: 'pointer',
   // Auto-detect system timezone by default
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
@@ -100,7 +100,7 @@ const defaultSettings = {
   // Initially matches main chart settings
   splitChart: {
     symbol: 'EURUSD',
-    timeframe: '1h',
+    timeframe: '15m',
     indicators: {
       rsiEnhanced: true,
       emaTouch: false,
