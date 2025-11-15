@@ -10,6 +10,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Split Mode UI: Indicator dropdown and currency pair selector now match non-split styling (removed unintended borders/rounded styles in split panel controls) for visual consistency.
 - Numeric inputs: All key number fields now allow fully clearing the value while typing; if left empty, the value commits as 0 on blur. This prevents jumpy defaults and makes editing smoother.
 - KLineCharts: Top-right on‑chart indicator tables (e.g., MA Pro, ORB, BB Pro, ST Pro) now render side‑by‑side in a single flex container from right → left. This prevents overlap when multiple on‑chart tables are enabled simultaneously.
+- KLineCharts: Initial loading shimmer now also keys off the live candle set (and chart ref) so it consistently appears while data is empty in production builds (e.g., Netlify), matching the Currency Strength Meter skeleton behavior.
 
 ### Quick Open (Trending + RSI)
 

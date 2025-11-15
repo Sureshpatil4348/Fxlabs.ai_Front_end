@@ -5911,7 +5911,7 @@ export const KLineChartComponent = ({
           }}
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
-          {(isInitialLoad || (!chartRef.current && !error)) && (
+          {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
             <div className="absolute inset-0 z-10 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
               <div className="h-full w-full flex flex-col space-y-3">
                 {/* Top controls skeleton (symbol, timeframe, actions) */}
