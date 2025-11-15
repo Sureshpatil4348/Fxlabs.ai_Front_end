@@ -1,8 +1,8 @@
 import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
 import { Settings, Trash2 } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import loadingVideo from '../../../assets/videos/Growing cash jar.mp4';
 
+import loadingVideo from '../../../assets/videos/Growing cash jar.mp4';
 import { formatPrice } from '../../../utils/formatters';
 import NumericInput from '../../ui/NumericInput.jsx';
 import { useChartStore } from '../stores/useChartStore';
@@ -6021,7 +6021,6 @@ export const KLineChartComponent = ({
                 muted
                 playsInline
                 className="w-48 h-48 object-contain"
-                role="status"
                 aria-live="polite"
                 aria-label="Loading chart"
               />
