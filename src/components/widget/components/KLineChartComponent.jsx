@@ -5297,7 +5297,7 @@ export const KLineChartComponent = ({
     // Jump to latest and re-enable auto-follow
     chart.scrollToRealTime(150);
     isAutoFollowRef.current = true;
-  }, []);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
 
   const _exportDrawings = useCallback(() => {
     if (chartRef.current) {
