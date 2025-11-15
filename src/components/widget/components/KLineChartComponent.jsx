@@ -6508,165 +6508,148 @@ export const KLineChartComponent = ({
             </div>
           )}
 
-          {/* MA Enhanced: MA values table (top-right, no header) */}
-          {isFullscreen && settings?.indicators?.maEnhanced && !isWorkspaceHidden && maTableData.length > 0 && (
-            <div className="absolute top-2 right-2 z-40 pointer-events-none" style={{ right: '88px' }}>
-              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
-                <table className="text-[11px] text-gray-700">
-                  <tbody>
-                    {maTableData.map((row) => {
-                      const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
-                      return (
-                        <tr key={`${row.index}-${row.period}`}>
-                          <td className="px-2 py-1 whitespace-nowrap">
-                            <span
-                              className="inline-block w-2 h-2 rounded-full mr-1 align-middle"
-                              style={{ backgroundColor: row.color }}
-                            />
-                            <span className="align-middle">{row.type} {row.period}</span>
-                          </td>
-                          <td className="px-2 py-1 text-right whitespace-nowrap">
-                            {row.value != null ? formatPrice(row.value, pricePrecision) : '--'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* Top-right indicator tables container (side-by-side, no overlap) */}
+          {(() => {
+            if (!isFullscreen || isWorkspaceHidden) return null;
+            const items = [];
 
-          {/* BB Pro: Bollinger Bands table (top-right, no header) */}
-          {isFullscreen && settings?.indicators?.bbPro && !isWorkspaceHidden && bbProStats && (
-            <div
-              className="absolute right-2 z-40 pointer-events-none"
-              style={{ right: '88px', top: settings?.indicators?.maEnhanced ? '80px' : '2px' }}
-            >
-              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
-                <table className="text-[11px] text-gray-700">
-                  <tbody>
-                    {(() => {
-                      const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
-                      const rows = [
-                        { label: 'Upper Band', value: bbProStats.upper != null ? formatPrice(bbProStats.upper, pricePrecision) : '--' },
-                        { label: 'Middle (SMA)', value: bbProStats.middle != null ? formatPrice(bbProStats.middle, pricePrecision) : '--' },
-                        { label: 'Lower Band', value: bbProStats.lower != null ? formatPrice(bbProStats.lower, pricePrecision) : '--' },
-                        { label: '%B Position', value: bbProStats.percentB != null ? `${bbProStats.percentB.toFixed(2)}%` : '--' },
-                        { label: 'Bandwidth', value: bbProStats.bandwidth != null ? `${bbProStats.bandwidth.toFixed(2)}%` : '--' },
-                      ];
-                      return rows.map((r) => (
+            // MA Enhanced: values table
+            if (settings?.indicators?.maEnhanced && maTableData.length > 0) {
+              items.push(
+                <div key="ma-table" className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                  <table className="text-[11px] text-gray-700">
+                    <tbody>
+                      {maTableData.map((row) => {
+                        const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+                        return (
+                          <tr key={`${row.index}-${row.period}`}>
+                            <td className="px-2 py-1 whitespace-nowrap">
+                              <span className="inline-block w-2 h-2 rounded-full mr-1 align-middle" style={{ backgroundColor: row.color }} />
+                              <span className="align-middle">{row.type} {row.period}</span>
+                            </td>
+                            <td className="px-2 py-1 text-right whitespace-nowrap">
+                              {row.value != null ? formatPrice(row.value, pricePrecision) : '--'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            }
+
+            // BB Pro: bands table
+            if (settings?.indicators?.bbPro && bbProStats) {
+              const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+              const rows = [
+                { label: 'Upper Band', value: bbProStats.upper != null ? formatPrice(bbProStats.upper, pricePrecision) : '--' },
+                { label: 'Middle (SMA)', value: bbProStats.middle != null ? formatPrice(bbProStats.middle, pricePrecision) : '--' },
+                { label: 'Lower Band', value: bbProStats.lower != null ? formatPrice(bbProStats.lower, pricePrecision) : '--' },
+                { label: '%B Position', value: bbProStats.percentB != null ? `${bbProStats.percentB.toFixed(2)}%` : '--' },
+                { label: 'Bandwidth', value: bbProStats.bandwidth != null ? `${bbProStats.bandwidth.toFixed(2)}%` : '--' },
+              ];
+              items.push(
+                <div key="bbpro-table" className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                  <table className="text-[11px] text-gray-700">
+                    <tbody>
+                      {rows.map((r) => (
                         <tr key={r.label}>
                           <td className="px-2 py-1 whitespace-nowrap">{r.label}</td>
                           <td className="px-2 py-1 text-right whitespace-nowrap">{r.value}</td>
                         </tr>
-                      ));
-                    })()}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            }
 
-          {/* SuperTrend - Pro: Trend & Trend Bars table (top-right) */}
-          {isFullscreen && settings?.indicators?.stEnhanced && !isWorkspaceHidden && stStats && (
-            <div
-              className="absolute right-2 z-40 pointer-events-none"
-              style={{
-                right: '88px',
-                top: (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
-                  ? '158px'
-                  : (settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? '80px' : '2px'
-              }}
-            >
-              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
-                <table className="text-[11px] text-gray-700">
-                  <tbody>
-                    <tr>
-                      <td className="px-2 py-1 whitespace-nowrap">Trend</td>
-                      <td className="px-2 py-1 text-right whitespace-nowrap" style={{ backgroundColor: stStats.lastTrendUp ? 'rgba(38,166,154,0.20)' : 'rgba(239,83,80,0.20)' }}>
-                        {stStats.lastTrendUp ? 'BULLISH ▲' : 'BEARISH ▼'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-2 py-1 whitespace-nowrap">Trend Bars</td>
-                      <td className="px-2 py-1 text-right whitespace-nowrap">{stStats.trendBars} bars</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+            // SuperTrend - Pro: mini table
+            if (settings?.indicators?.stEnhanced && stStats) {
+              items.push(
+                <div key="st-table" className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                  <table className="text-[11px] text-gray-700">
+                    <tbody>
+                      <tr>
+                        <td className="px-2 py-1 whitespace-nowrap">Trend</td>
+                        <td className="px-2 py-1 text-right whitespace-nowrap" style={{ backgroundColor: stStats.lastTrendUp ? 'rgba(38,166,154,0.20)' : 'rgba(239,83,80,0.20)' }}>
+                          {stStats.lastTrendUp ? 'BULLISH ▲' : 'BEARISH ▼'}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-2 py-1 whitespace-nowrap">Trend Bars</td>
+                        <td className="px-2 py-1 text-right whitespace-nowrap">{stStats.trendBars} bars</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              );
+            }
 
-          {/* ORB Enhanced: Opening Range Breakout table (top-right) */}
-          {isFullscreen && settings?.indicators?.orbEnhanced && !isWorkspaceHidden && orbStats && (
-            <div
-              className="absolute right-2 z-40 pointer-events-none"
-              style={{
-                right: '88px',
-                top: (() => {
-                  const base = (settings?.indicators?.maEnhanced && settings?.indicators?.bbPro)
-                    ? 158
-                    : ((settings?.indicators?.maEnhanced || settings?.indicators?.bbPro) ? 80 : 2);
-                  const stOffset = settings?.indicators?.stEnhanced ? 78 : 0;
-                  return `${base + stOffset}px`;
-                })()
-              }}
-            >
-              <div className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
-                <table className="text-[11px] text-gray-700">
-                  <tbody>
-                    {(() => {
-                      const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
-                      const tfIcon = orbStats.isSuitableTimeframe ? '✓' : '⚠';
-                      const tfText = `${tfIcon} ${String(settings?.timeframe || '').toUpperCase()}`;
-                      const rows = [
-                        { label: 'Timeframe', value: tfText, cellBg: orbStats.isSuitableTimeframe ? 'rgba(38,166,154,0.20)' : 'rgba(255,165,0,0.20)' },
-                        { label: 'Range High', value: orbStats.openingHigh != null ? formatPrice(orbStats.openingHigh, pricePrecision) : '--' },
-                        { label: 'Range Low', value: orbStats.openingLow != null ? formatPrice(orbStats.openingLow, pricePrecision) : '--' },
-                        { label: 'Range Size', value: orbStats.rangeSize != null ? formatPrice(orbStats.rangeSize, pricePrecision) : '--' },
-                        { label: 'Trade Status', value: (() => {
-                          if (orbStats.buyTaken) {
-                            if (orbStats.buyTPHit) return 'BUY TP HIT';
-                            if (orbStats.buySLHit) return 'BUY SL HIT';
-                            return 'BUY ACTIVE';
-                          }
-                          if (orbStats.sellTaken) {
-                            if (orbStats.sellTPHit) return 'SELL TP HIT';
-                            if (orbStats.sellSLHit) return 'SELL SL HIT';
-                            return 'SELL ACTIVE';
-                          }
-                          return 'Waiting';
-                        })(), cellBg: (() => {
-                          if (orbStats.buyTaken) {
-                            if (orbStats.buyTPHit) return 'rgba(38,166,154,0.30)';
-                            if (orbStats.buySLHit) return 'rgba(239,83,80,0.30)';
-                            return 'rgba(38,166,154,0.20)';
-                          }
-                          if (orbStats.sellTaken) {
-                            if (orbStats.sellTPHit) return 'rgba(239,83,80,0.30)';
-                            if (orbStats.sellSLHit) return 'rgba(38,166,154,0.30)';
-                            return 'rgba(239,83,80,0.20)';
-                          }
-                          return undefined;
-                        })() },
-                        { label: 'Entry', value: (orbStats.buyTaken && orbStats.buyEntry != null) ? formatPrice(orbStats.buyEntry, pricePrecision) : (orbStats.sellTaken && orbStats.sellEntry != null) ? formatPrice(orbStats.sellEntry, pricePrecision) : '--' },
-                        { label: 'Target', value: (orbStats.buyTaken && orbStats.buyTP != null) ? formatPrice(orbStats.buyTP, pricePrecision) : (orbStats.sellTaken && orbStats.sellTP != null) ? formatPrice(orbStats.sellTP, pricePrecision) : '--' },
-                        { label: 'Stop Loss', value: (orbStats.buyTaken && orbStats.buySL != null) ? formatPrice(orbStats.buySL, pricePrecision) : (orbStats.sellTaken && orbStats.sellSL != null) ? formatPrice(orbStats.sellSL, pricePrecision) : '--' },
-                        { label: 'Risk:Reward', value: `1:${(Number(orbStats.targetRR) || 0).toFixed(1)}` },
-                      ];
-                      return rows.map((r) => (
+            // ORB Enhanced: breakout stats table
+            if (settings?.indicators?.orbEnhanced && orbStats) {
+              const pricePrecision = String(settings?.symbol || '').includes('JPY') ? 3 : 5;
+              const tfIcon = orbStats.isSuitableTimeframe ? '✓' : '⚠';
+              const tfText = `${tfIcon} ${String(settings?.timeframe || '').toUpperCase()}`;
+              const rows = [
+                { label: 'Timeframe', value: tfText, cellBg: orbStats.isSuitableTimeframe ? 'rgba(38,166,154,0.20)' : 'rgba(255,165,0,0.20)' },
+                { label: 'Range High', value: orbStats.openingHigh != null ? formatPrice(orbStats.openingHigh, pricePrecision) : '--' },
+                { label: 'Range Low', value: orbStats.openingLow != null ? formatPrice(orbStats.openingLow, pricePrecision) : '--' },
+                { label: 'Range Size', value: orbStats.rangeSize != null ? formatPrice(orbStats.rangeSize, pricePrecision) : '--' },
+                { label: 'Trade Status', value: (() => {
+                  if (orbStats.buyTaken) {
+                    if (orbStats.buyTPHit) return 'BUY TP HIT';
+                    if (orbStats.buySLHit) return 'BUY SL HIT';
+                    return 'BUY ACTIVE';
+                  }
+                  if (orbStats.sellTaken) {
+                    if (orbStats.sellTPHit) return 'SELL TP HIT';
+                    if (orbStats.sellSLHit) return 'SELL SL HIT';
+                    return 'SELL ACTIVE';
+                  }
+                  return 'Waiting';
+                })(), cellBg: (() => {
+                  if (orbStats.buyTaken) {
+                    if (orbStats.buyTPHit) return 'rgba(38,166,154,0.30)';
+                    if (orbStats.buySLHit) return 'rgba(239,83,80,0.30)';
+                    return 'rgba(38,166,154,0.20)';
+                  }
+                  if (orbStats.sellTaken) {
+                    if (orbStats.sellTPHit) return 'rgba(239,83,80,0.30)';
+                    if (orbStats.sellSLHit) return 'rgba(38,166,154,0.30)';
+                    return 'rgba(239,83,80,0.20)';
+                  }
+                  return undefined;
+                })() },
+                { label: 'Entry', value: (orbStats.buyTaken && orbStats.buyEntry != null) ? formatPrice(orbStats.buyEntry, pricePrecision) : (orbStats.sellTaken && orbStats.sellEntry != null) ? formatPrice(orbStats.sellEntry, pricePrecision) : '--' },
+                { label: 'Target', value: (orbStats.buyTaken && orbStats.buyTP != null) ? formatPrice(orbStats.buyTP, pricePrecision) : (orbStats.sellTaken && orbStats.sellTP != null) ? formatPrice(orbStats.sellTP, pricePrecision) : '--' },
+                { label: 'Stop Loss', value: (orbStats.buyTaken && orbStats.buySL != null) ? formatPrice(orbStats.buySL, pricePrecision) : (orbStats.sellTaken && orbStats.sellSL != null) ? formatPrice(orbStats.sellSL, pricePrecision) : '--' },
+                { label: 'Risk:Reward', value: `1:${(Number(orbStats.targetRR) || 0).toFixed(1)}` },
+              ];
+              items.push(
+                <div key="orb-table" className="pointer-events-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                  <table className="text-[11px] text-gray-700">
+                    <tbody>
+                      {rows.map((r) => (
                         <tr key={r.label}>
                           <td className="px-2 py-1 whitespace-nowrap">{r.label}</td>
                           <td className="px-2 py-1 text-right whitespace-nowrap" style={r.cellBg ? { backgroundColor: r.cellBg } : undefined}>{r.value}</td>
                         </tr>
-                      ));
-                    })()}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            }
+
+            if (items.length === 0) return null;
+            return (
+              <div className="absolute top-2 z-40 pointer-events-none flex flex-row-reverse gap-2" style={{ right: '88px' }}>
+                {items}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Overlay Controls - centered above bottom panel */}
           <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '32px', zIndex: 50, pointerEvents: 'none' }}>
