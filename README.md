@@ -2,41 +2,6 @@
 
 A comprehensive forex trading dashboard with real-time market data, RSI analysis, currency strength meters, and AI-powered news analysis.
 
-## Recent Fixes
-
-- Dashboard header: On the Dashboard page, the header aligns to the same horizontal margins as the main content (`px-2 sm:px-3`) for consistent edge spacing.
-- Dashboard header elevation reduced on Dashboard only: lowered from `shadow-2xl` to `shadow-md` to match other widgets (e.g., Trending Pairs), leaving non-dashboard pages unchanged.
-- **Drawing Tools Sidebar Scrollbar**: Scrollbar now auto-hides on Windows (matches Mac behavior) - only visible on hover/scroll, improving UI cleanliness.
-- Split Mode UI: Indicator dropdown and currency pair selector now match non-split styling (removed unintended borders/rounded styles in split panel controls) for visual consistency.
-- Numeric inputs: All key number fields now allow fully clearing the value while typing; if left empty, the value commits as 0 on blur. This prevents jumpy defaults and makes editing smoother.
-- KLineCharts: Top-right on‑chart indicator tables (e.g., MA Pro, ORB, BB Pro, ST Pro) now render side‑by‑side in a single flex container from right → left. This prevents overlap when multiple on‑chart tables are enabled simultaneously.
-- KLineCharts: Initial loading shimmer now also keys off the live candle set (and chart ref) so it consistently appears while data is empty in production builds (e.g., Netlify), matching the Currency Strength Meter skeleton behavior.
-- KLineCharts: Initial loader shimmer now renders a gray-only candlestick-style skeleton (with long wicks and strongly varying candle heights) that forms a smooth wave from the upper-left, down through the middle, and back up toward the upper-right of the chart, while removing placeholder buttons and below-chart blocks and using an ultra‑light (near‑white in light mode, very soft gray in dark mode) chart background so the loading state closely matches a real trading candlestick chart.
-- KLineCharts: Breakout Strategy (ORB) indicator and the “Buy / Sell Signal” preset now default to an opening candle at 09:00 with a 1:2 risk:reward ratio for their breakout calculations.
-- Landing page: Advanced Analysis Technology section now embeds the FxLabs explainer YouTube video (`https://youtu.be/KJKwtTWY2xk`) instead of the temporary Lottie animation, using a plain, borderless iframe with softly rounded corners (no card border or shadow).
-- **Background Data Loading Protection**: During background loading of past candles (after initial page load), chart control buttons (zoom in/out, pan left/right, reload) and chart interactions (dragging, scrolling) are disabled. When users attempt to interact during loading, an error toast appears at the top-center with message "Please wait while loading past data" for 3 seconds. The chart remains fully visible with no overlay, ensuring users can view the current data while historical data loads.
-
-### Quick Open (Trending + RSI)
-
-- Pairs in Trending Pairs and RSI Tracker are now clickable. Clicking a pair sets that symbol in the KLine trading widget immediately.
-- Symbols are normalized automatically (e.g., strips trailing "m"/"M") before opening in the chart.
-- Accessibility: rows are keyboard-activatable via Enter/Space.
-- If you click the pair that’s already active in the KLine chart, nothing happens (no reload, no flicker).
-
-### ATR Percentage Mode (KLineCharts)
-
-- ATR Enhanced now displays strictly as percentage of close (ATR%).
-- Indicator line, pane label, and stats table use percentage values only.
-- Axis values may compact very small decimals; values are already scaled to percent to improve readability.
-- No toggle exists for raw ATR — percentage mode is always on by design.
-
-## Numeric Input Behavior
-
-- You can delete the entire value in any updated numeric field and type a new value freely.
-- If you clear a field and leave it empty (blur), the app treats it as `0`.
-- This is powered by a shared `NumericInput` component (`src/components/ui/NumericInput.jsx`) that ensures consistent UX without side effects.
-- We applied this behavior across alert configs, global RSI settings, RSI correlation settings, and key KLineChart indicator settings.
-
 ## Features
 
 ### State Persistence
