@@ -16,17 +16,18 @@ const MA_COLORS_BY_INDEX = {
   4: '#9C27B0',
 };
 
-// Placeholder K-line data used to render axes while real candles are loading.
+// Helper to build placeholder K-line data used to render axes while real candles are loading.
 // Uses arbitrary timestamps and flat prices so only axes/grid are visible.
-const PLACEHOLDER_KLINE_DATA = (() => {
+const createPlaceholderKlineData = (barCount = 60) => {
+  const safeCount = Math.max(30, Math.floor(barCount));
   const baseTimestamp = 1700000000000; // Arbitrary fixed point in time (ms)
   const intervalMs = 60 * 1000; // 1 minute spacing
   const basePrice = 1.0;
   const bars = [];
 
-  for (let i = 0; i < 30; i += 1) {
+  for (let i = 0; i < safeCount; i += 1) {
     const timestamp = baseTimestamp + (i * intervalMs);
-    const price = basePrice + ((i - 15) * 0.0001);
+    const price = basePrice + ((i - safeCount / 2) * 0.0001);
 
     bars.push({
       timestamp,
@@ -39,7 +40,7 @@ const PLACEHOLDER_KLINE_DATA = (() => {
   }
 
   return bars;
-})();
+};
 
 export const KLineChartComponent = ({
   candles = [],
@@ -4350,8 +4351,20 @@ export const KLineChartComponent = ({
 
     try {
       if (!hasRealCandles && isInitialLoad) {
-        // Apply placeholder data so x/y axes can render using any time/price values.
-        chart.applyNewData(PLACEHOLDER_KLINE_DATA);
+        // Derive a placeholder bar count that roughly fills the current viewport width.
+        let barCount = 60;
+        try {
+          const container = chartContainerRef.current;
+          const width = container?.clientWidth || 600;
+          const barSpace = typeof chart.getBarSpace === 'function' ? chart.getBarSpace() : null;
+          const barWidth = barSpace && typeof barSpace.bar === 'number' && barSpace.bar > 0 ? barSpace.bar : 6;
+          barCount = Math.max(30, Math.ceil(width / barWidth) + 10); // extra buffer for smooth feel
+        } catch (_) {
+          // Fallback to default barCount if any measurement fails.
+        }
+
+        // Apply placeholder data so x/y axes can render using any time/price values across the full width.
+        chart.applyNewData(createPlaceholderKlineData(barCount));
 
         // Hide candlestick bodies, borders, wicks, and price marks during loading.
         chart.setStyles({
