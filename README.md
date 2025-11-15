@@ -20,6 +20,7 @@ All chart state is automatically persisted to localStorage and restored on page 
 - **Default Currency Pair**: `EUR/USD` (`EURUSD`)
 - **Default Timeframe**: `15m`
 - **Default Cursor for Drawing Tools**: `Pointer`
+- **Default Indicators**: None enabled by default
 
 **Drawings Persistence Details:**
 - Drawings are anchored to timestamps, not visual positions

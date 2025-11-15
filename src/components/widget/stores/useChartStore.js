@@ -86,7 +86,7 @@ const defaultSettings = {
   },
   indicators: {
     // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
-    rsiEnhanced: true,
+    rsiEnhanced: false,
     emaTouch: false,
     atrEnhanced: false,
     bbPro: false,
@@ -102,7 +102,7 @@ const defaultSettings = {
     symbol: 'EURUSD',
     timeframe: '15m',
     indicators: {
-      rsiEnhanced: true,
+      rsiEnhanced: false,
       emaTouch: false,
       atrEnhanced: false,
       bbPro: false,
