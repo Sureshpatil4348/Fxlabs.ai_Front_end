@@ -1,13 +1,13 @@
 import { TrendingUp } from "lucide-react";
 import React, { useMemo, useState, useEffect } from "react";
 
+import useMarketCacheStore from "../store/useMarketCacheStore";
+import useRSITrackerStore from "../store/useRSITrackerStore";
 import {
     formatSymbolDisplay,
     formatPrice,
     formatPercentage,
 } from "../utils/formatters";
-import useMarketCacheStore from "../store/useMarketCacheStore";
-import useRSITrackerStore from "../store/useRSITrackerStore";
 import { useChartStore } from "./widget/stores/useChartStore";
 
 // Shimmer Skeleton for Trending Pairs
