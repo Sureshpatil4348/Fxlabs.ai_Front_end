@@ -1,6 +1,7 @@
 import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
-import { RefreshCw, Settings, Trash2 } from 'lucide-react';
+import { Settings, Trash2 } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import loadingVideo from '../../../assets/videos/Growing cash jar.mp4';
 
 import { formatPrice } from '../../../utils/formatters';
 import NumericInput from '../../ui/NumericInput.jsx';
@@ -6010,16 +6011,20 @@ export const KLineChartComponent = ({
           }}
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
-          {/* Initial loading spinner - simplified with white background */}
+          {/* Initial loading spinner */}
           {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-              <div
-                className="inline-flex items-center justify-center rounded-full bg-white shadow-md p-3 text-center"
+              <video
+                src={loadingVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-48 h-48 object-contain"
                 role="status"
                 aria-live="polite"
-              >
-                <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto" />
-              </div>
+                aria-label="Loading chart"
+              />
             </div>
           )}
           
