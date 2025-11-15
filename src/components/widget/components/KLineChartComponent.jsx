@@ -4435,7 +4435,7 @@ export const KLineChartComponent = ({
     } catch (_) {
       // Optional API differences - best-effort styling.
     }
-  }, [candles, isInitialLoad]);
+  }, [candles, isInitialLoad, settings.showGrid]);
 
   // Handle indicator visibility changes
   useEffect(() => {
