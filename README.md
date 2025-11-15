@@ -12,6 +12,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - KLineCharts: Top-right on‑chart indicator tables (e.g., MA Pro, ORB, BB Pro, ST Pro) now render side‑by‑side in a single flex container from right → left. This prevents overlap when multiple on‑chart tables are enabled simultaneously.
 - KLineCharts: Initial loading shimmer now also keys off the live candle set (and chart ref) so it consistently appears while data is empty in production builds (e.g., Netlify), matching the Currency Strength Meter skeleton behavior.
 - KLineCharts: Initial loader shimmer now renders a gray-only candlestick-style skeleton (with long wicks and strongly varying candle heights) that forms a smooth wave from the upper-left, down through the middle, and back up toward the upper-right of the chart, while removing placeholder buttons and below-chart blocks and using an ultra‑light (near‑white in light mode, very soft gray in dark mode) chart background so the loading state closely matches a real trading candlestick chart.
+- Landing page: Advanced Analysis Technology section now embeds the FxLabs explainer YouTube video (`https://youtu.be/KJKwtTWY2xk`) instead of the temporary Lottie animation, using a plain, borderless iframe with softly rounded corners (no card border or shadow).
 
 ### Quick Open (Trending + RSI)
 

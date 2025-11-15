@@ -1,4 +1,3 @@
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import {
   Grid3x3,
   Wallet,
@@ -87,48 +86,20 @@ const VideoExplanationSection = () => {
 
           {/* Video Column */}
           <div className="w-full lg:w-1/2">
-            <div className="relative bg-white/50 dark:bg-[#19235d]/50 backdrop-blur-xl border border-white/30 dark:border-[#19235d]/30 rounded-3xl shadow-2xl overflow-hidden p-2">
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50"></div>
-              
+            <div className="relative overflow-hidden rounded-lg">
               {/* Video Container */}
-              <div className="relative bg-[#19235d] rounded-2xl overflow-hidden aspect-video">
-                {/* 
-                  ⚠️ TEMPORARY: YouTube video hidden, showing Lottie animation instead
-                  TODO: Restore YouTube embed when ready
-                  Original video: https://www.youtube.com/embed/1CcpagwYKNQ
-                */}
-                {/* <iframe 
+              <div className="relative aspect-video">
+                <iframe 
                   width="100%" 
                   height="100%" 
-                  src="https://www.youtube.com/embed/1CcpagwYKNQ" 
-                  title="FxLabs Prime Algo Analysis System" 
+                  src="https://www.youtube.com/embed/KJKwtTWY2xk" 
+                  title="FxLabs Advanced Analysis Technology" 
                   frameBorder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen 
                   className="aspect-video w-full h-full"
-                ></iframe> */}
-                
-                {/* Temporary Lottie Animation */}
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#19235d] to-[#19235d]">
-                  <DotLottieReact
-                    src="https://lottie.host/75587a54-4960-4ae1-9cc6-e85a70741c59/lvgTVE0ecb.lottie"
-                    loop
-                    autoplay
-                  />
-                </div>
+                ></iframe>
               </div>
-
-              {/* 
-                ⚠️ TEMPORARY: Live Demo badge hidden along with YouTube video
-                TODO: Restore badge when YouTube video is restored
-              */}
-              {/* <div className="absolute top-6 left-6 bg-white/90 dark:bg-[#19235d]/90 backdrop-blur-sm border border-white/30 dark:border-[#19235d]/30 rounded-full px-4 py-2 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                  <span className="text-sm font-semibold text-[#19235d] dark:text-white">Live Demo</span>
-                </div>
-              </div> */}
             </div>
           </div>
         </div>
