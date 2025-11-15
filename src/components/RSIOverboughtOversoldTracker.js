@@ -27,6 +27,11 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
       if (next.endsWith('m')) next = next.slice(0, -1);
       if (!next) return;
       const chartStore = useChartStore.getState();
+      const current = (chartStore?.settings?.symbol || '').toUpperCase();
+      if (current === next) {
+        // Already showing; do nothing
+        return;
+      }
       chartStore.setSymbol(next);
       try { chartStore.setWorkspaceHidden(false); } catch (_e) { /* ignore */ }
     } catch (e) {

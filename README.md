@@ -16,6 +16,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Pairs in Trending Pairs and RSI Tracker are now clickable. Clicking a pair sets that symbol in the KLine trading widget immediately.
 - Symbols are normalized automatically (e.g., strips trailing "m"/"M") before opening in the chart.
 - Accessibility: rows are keyboard-activatable via Enter/Space.
+- If you click the pair that’s already active in the KLine chart, nothing happens (no reload, no flicker).
 
 ### ATR Percentage Mode (KLineCharts)
 
