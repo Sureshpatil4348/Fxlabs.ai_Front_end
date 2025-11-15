@@ -311,6 +311,20 @@
 }
 
 /* Shimmer Animation for Loading State */
+@keyframes kline-linear-loader-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.kline-linear-loader-bar {
+  transform-origin: left center;
+  animation: kline-linear-loader-progress 4s linear forwards;
+}
+
 @keyframes shimmer {
   0% {
     opacity: 0.3;
