@@ -5978,7 +5978,7 @@ export const KLineChartComponent = ({
             <div className="absolute inset-0 z-10 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
               <div className="h-full w-full flex flex-col">
                 {/* Main chart skeleton: gray candlestick-style shimmer */}
-                <div className="flex-1 relative rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                <div className="flex-1 relative rounded-lg bg-white dark:bg-gray-500 overflow-hidden">
                   <div className="absolute inset-0 shimmer-bg opacity-60" />
                   <div className="absolute inset-3 flex flex-col">
                     <div className="flex-1 flex items-stretch justify-between gap-[3px]">
