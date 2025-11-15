@@ -5889,20 +5889,15 @@ export const KLineChartComponent = ({
           }}
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
-          {/* Initial loading spinner */}
+          {/* Initial loading spinner - simplified with white background */}
           {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
               <div
                 className="text-center"
                 role="status"
                 aria-live="polite"
               >
-                <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-slate-400 text-sm">
-                  Preparing Trading Chart
-                  <br />
-                  Please wait
-                </p>
+                <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto" />
               </div>
             </div>
           )}

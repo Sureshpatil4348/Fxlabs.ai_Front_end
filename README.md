@@ -45,6 +45,11 @@ All chart state is automatically persisted to localStorage and restored on page 
 - All KLineChart indicator tables rendered at the top-right (e.g., Bollinger Bands Pro, Moving Average Pro, SuperTrend Pro, ORB Enhanced) now use a carded container with rounded corners, subtle shadow, and slight blur for improved readability without obstructing the chart. Their position has been nudged slightly left for better visual balance.
 - This styling is consistent across on-chart overlays and below-chart panes (ATR Pro, MACD Pro), ensuring a cohesive UI.
 
+### KLineChart Loading Experience
+
+- The initial KLineChart loading overlay now uses a clean white background to better blend with the surrounding layout.
+- Loading text (`Preparing Trading Chart / Please wait`) has been removed so users see only a subtle spinner while data is fetched.
+
 ### KLineChart Indicator Presets
 
 The KLineChart component now includes a sophisticated preset system for quickly applying groups of technical indicators.
