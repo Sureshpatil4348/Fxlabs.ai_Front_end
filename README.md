@@ -4,7 +4,6 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Fixes
 
-- **KLineChart Loading Shimmer**: Fixed shimmer animation appearing as white screen in production (Netlify). Updated skeleton loader to match Currency Strength Meter pattern with proper background colors (`bg-white dark:bg-[#0b122f]`) and individual shimmer overlays, ensuring consistent visibility across all environments.
 - Dashboard header: On the Dashboard page, the header aligns to the same horizontal margins as the main content (`px-2 sm:px-3`) for consistent edge spacing.
 - Dashboard header elevation reduced on Dashboard only: lowered from `shadow-2xl` to `shadow-md` to match other widgets (e.g., Trending Pairs), leaving non-dashboard pages unchanged.
 - **Drawing Tools Sidebar Scrollbar**: Scrollbar now auto-hides on Windows (matches Mac behavior) - only visible on hover/scroll, improving UI cleanliness.
