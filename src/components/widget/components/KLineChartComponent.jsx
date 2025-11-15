@@ -32,6 +32,9 @@ export const KLineChartComponent = ({
   const [error, setError] = useState(null);
   const [_currentOHLC, setCurrentOHLC] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isInitialBackgroundLoadComplete, setIsInitialBackgroundLoadComplete] = useState(false);
+  const isLoadingHistoryRef = useRef(false);
+  const [loadingBlockMessage, setLoadingBlockMessage] = useState(null);
 
   // Helper: check if error should be suppressed from UI (but still logged)
   const shouldSuppressError = useCallback((err) => {
@@ -3970,6 +3973,26 @@ export const KLineChartComponent = ({
     }
   }, [settings.timezone]);
 
+  // Track initial background loading completion
+  useEffect(() => {
+    // Track the loading state changes
+    if (isLoadingHistory) {
+      isLoadingHistoryRef.current = true;
+    } else if (isLoadingHistoryRef.current && !isLoadingHistory) {
+      // Loading just completed
+      // Mark initial background load as complete after first load cycle
+      setIsInitialBackgroundLoadComplete(true);
+      console.log('📊 Initial background loading complete, chart interactions enabled');
+    }
+  }, [isLoadingHistory]);
+
+  // Reset initial background load state when symbol/timeframe changes
+  useEffect(() => {
+    setIsInitialBackgroundLoadComplete(false);
+    isLoadingHistoryRef.current = false;
+    console.log('📊 Symbol/timeframe changed, resetting background load state');
+  }, [settings?.symbol, settings?.timeframe]);
+
   // Handle scroll/zoom events for pagination
   useEffect(() => {
     if (!chartRef.current || !onLoadMoreHistory) return;
@@ -5182,8 +5205,19 @@ export const KLineChartComponent = ({
     }
   }, []);
 
+  // Helper to show loading block message
+  const showLoadingBlockMessage = useCallback(() => {
+    setLoadingBlockMessage('Please wait while loading past data');
+    setTimeout(() => setLoadingBlockMessage(null), 3000);
+  }, []);
+
   // Overlay control handlers
   const handleZoomIn = useCallback(() => {
+    // Block interaction during initial background loading
+    if (!isInitialBackgroundLoadComplete && isLoadingHistory) {
+      showLoadingBlockMessage();
+      return;
+    }
     const chart = chartRef.current;
     const el = chartContainerRef.current;
     if (!chart || !el) return;
@@ -5191,9 +5225,14 @@ export const KLineChartComponent = ({
     const height = el.clientHeight || 0;
     // Zoom in around center
     chart.zoomAtCoordinate(1.2, { x: width / 2, y: height / 2 }, 120);
-  }, []);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
 
   const handleZoomOut = useCallback(() => {
+    // Block interaction during initial background loading
+    if (!isInitialBackgroundLoadComplete && isLoadingHistory) {
+      showLoadingBlockMessage();
+      return;
+    }
     const chart = chartRef.current;
     const el = chartContainerRef.current;
     if (!chart || !el) return;
@@ -5201,9 +5240,14 @@ export const KLineChartComponent = ({
     const height = el.clientHeight || 0;
     // Zoom out around center
     chart.zoomAtCoordinate(0.83, { x: width / 2, y: height / 2 }, 120);
-  }, []);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
 
   const handleScrollLeft = useCallback(() => {
+    // Block interaction during initial background loading
+    if (!isInitialBackgroundLoadComplete && isLoadingHistory) {
+      showLoadingBlockMessage();
+      return;
+    }
     const chart = chartRef.current;
     if (!chart) return;
     let step = 160; // px fallback
@@ -5215,9 +5259,14 @@ export const KLineChartComponent = ({
     } catch (_e) { /* ignore */ }
     chart.scrollByDistance(-step, 120);
     isAutoFollowRef.current = false;
-  }, []);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
 
   const handleScrollRight = useCallback(() => {
+    // Block interaction during initial background loading
+    if (!isInitialBackgroundLoadComplete && isLoadingHistory) {
+      showLoadingBlockMessage();
+      return;
+    }
     const chart = chartRef.current;
     if (!chart) return;
     let step = 160; // px fallback
@@ -5229,9 +5278,14 @@ export const KLineChartComponent = ({
     } catch (_e) { /* ignore */ }
     chart.scrollByDistance(step, 120);
     isAutoFollowRef.current = false;
-  }, []);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
 
   const handleReload = useCallback(() => {
+    // Block interaction during initial background loading
+    if (!isInitialBackgroundLoadComplete && isLoadingHistory) {
+      showLoadingBlockMessage();
+      return;
+    }
     const chart = chartRef.current;
     if (!chart) return;
     try {
@@ -5299,7 +5353,9 @@ export const KLineChartComponent = ({
             right: '0',
             top: '0',
             padding: '0',
-            margin: '0'
+            margin: '0',
+            // Block pointer events when loading history during initial background load
+            pointerEvents: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 'none' : 'auto'
           }}
           role="application"
           aria-label="Trading chart with drawing tools"
@@ -5911,6 +5967,7 @@ export const KLineChartComponent = ({
           }}
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
+          {/* Initial loading spinner */}
           {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
               <div
@@ -5928,6 +5985,18 @@ export const KLineChartComponent = ({
             </div>
           )}
           
+        {/* Loading Block Message Toast */}
+        {loadingBlockMessage && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[60] animate-fade-in">
+            <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span className="font-medium text-sm">{loadingBlockMessage}</span>
+            </div>
+          </div>
+        )}
+
         {/* MACD - Pro Settings Modal */}
         {showMacdSettings && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
@@ -6632,7 +6701,14 @@ export const KLineChartComponent = ({
 
           {/* Overlay Controls - centered above bottom panel */}
           <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '32px', zIndex: 50, pointerEvents: 'none' }}>
-            <div className="flex items-center gap-3" style={{ pointerEvents: 'auto' }}>
+            <div 
+              className="flex items-center gap-3" 
+              style={{ 
+                pointerEvents: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 'none' : 'auto',
+                opacity: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 0.5 : 1,
+                cursor: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 'not-allowed' : 'pointer'
+              }}
+            >
               {/* Zoom out card */}
               <button
                 type="button"
