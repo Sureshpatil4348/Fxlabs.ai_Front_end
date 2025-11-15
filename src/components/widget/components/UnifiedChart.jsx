@@ -254,12 +254,13 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     // Load more historical data (pagination)
     // removed loadMoreHistory; background preloader now fetches slices inline
 
-    // Background preloading: after initial page is ready, wait 2s, then sequentially load up to 20 pages total
+    // Background preloading: after initial page is ready, wait 2s,
+    // then fetch a single older batch (up to 1000 candles)
     useEffect(() => {
         // Only start after we have at least the first page
         if (currentPage >= 1 && hasMoreHistory && !backgroundPreloadStartedRef.current) {
             const sessionId = preloadSessionRef.current;
-            const MAX_TOTAL_PAGES = 4;
+            const MAX_TOTAL_PAGES = 2; // 1 initial page + 1 preload batch
 
             const timer = setTimeout(() => {
                 // Mark started only when the timer actually fires to avoid premature cancellation on re-renders
@@ -282,7 +283,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                                 const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
                                   currentSymbol,
                                   currentTimeframe,
-                                  { limit: 500, before: olderCursorRef.current }
+                                  { limit: 1000, before: olderCursorRef.current }
                                 );
                                 if (slice.length > 0) {
                                     // Merge candles and recalc indicators using latest store data
