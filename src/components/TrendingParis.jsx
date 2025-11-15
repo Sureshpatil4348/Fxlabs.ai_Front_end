@@ -64,8 +64,8 @@ const TrendingPairs = () => {
     const isConnected = useRSITrackerStore((state) => state.isConnected);
 
     const rows = useMemo(() => {
-        return (Array.isArray(trendingSymbols) ? trendingSymbols : []).map(
-            (symbol) => {
+        return (Array.isArray(trendingSymbols) ? trendingSymbols : [])
+            .map((symbol) => {
                 // Fix symbol case - trending symbols come as 'ETHUSDM' but data uses 'ETHUSDm'
                 let key = symbol;
                 if (key.toUpperCase().endsWith("M")) {
@@ -83,8 +83,8 @@ const TrendingPairs = () => {
                         : 0;
 
                 return { symbol, price, change: dailyPct };
-            }
-        );
+            })
+            .filter((row) => row.price != null);
     }, [trendingSymbols, pricingBySymbol]);
 
     const openInKLineChart = (symbolInput) => {
