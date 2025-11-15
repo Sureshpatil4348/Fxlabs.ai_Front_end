@@ -50,6 +50,7 @@ All chart state is automatically persisted to localStorage and restored on page 
 - While initial candles are loading, the KLineChart now renders placeholder x/y axes using arbitrary time and price values so the chart frame is visible immediately.
 - During this phase, no candlesticks are drawn (their bodies, borders, wicks, and price marks are hidden), and a subtle spinner is shown in the center without occluding the axes.
 - Once real candle data arrives, the axes automatically update to the correct time/price ranges and candlesticks become visible with the normal styling.
+- Grid configuration (horizontal and vertical lines) is explicitly preserved during loading state transitions to ensure consistent rendering across development and production builds.
 
 ### KLineChart Indicator Presets
 

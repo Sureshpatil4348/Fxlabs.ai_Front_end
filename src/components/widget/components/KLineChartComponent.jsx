@@ -4367,7 +4367,20 @@ export const KLineChartComponent = ({
         chart.applyNewData(createPlaceholderKlineData(barCount));
 
         // Hide candlestick bodies, borders, wicks, and price marks during loading.
+        // IMPORTANT: Preserve grid configuration to ensure vertical lines render in production
         chart.setStyles({
+          grid: {
+            horizontal: { 
+              show: settings.showGrid !== false,
+              color: '#e5e7eb',
+              size: 1
+            },
+            vertical: { 
+              show: settings.showGrid !== false,
+              color: '#e5e7eb',
+              size: 1
+            }
+          },
           candle: {
             bar: {
               upColor: 'rgba(0,0,0,0)',
@@ -4387,7 +4400,20 @@ export const KLineChartComponent = ({
         });
       } else if (hasRealCandles) {
         // Restore visible candlesticks and price marks once real data is available.
+        // IMPORTANT: Preserve grid configuration to ensure vertical lines render in production
         chart.setStyles({
+          grid: {
+            horizontal: { 
+              show: settings.showGrid !== false,
+              color: '#e5e7eb',
+              size: 1
+            },
+            vertical: { 
+              show: settings.showGrid !== false,
+              color: '#e5e7eb',
+              size: 1
+            }
+          },
           candle: {
             bar: {
               upColor: '#10b981',
