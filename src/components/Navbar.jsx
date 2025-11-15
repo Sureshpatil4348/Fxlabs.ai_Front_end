@@ -36,7 +36,7 @@ const Navbar = ({ activeTab, onChangeTab }) => {
       
       <header className={`fixed z-50 transition-all duration-300 ${isOnDashboard ? 'top-4 left-0 right-0' : 'top-4 left-4 right-4'}`}>
         <div className={isOnDashboard ? 'px-2 sm:px-3' : 'max-w-7xl mx-auto'}>
-          <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-black/10">
+          <div className={`bg-white/80 backdrop-blur-xl border border-white/20 rounded-full ${isOnDashboard ? 'shadow-md' : 'shadow-2xl'} shadow-black/10`}>
             <div className="px-4 sm:px-6 lg:px-8 relative">
               <div className="flex justify-between items-center h-[45px] sm:h-[55px] gap-2 sm:gap-4 lg:gap-8">
                 {/* Logo Section - Raw Logo */}
