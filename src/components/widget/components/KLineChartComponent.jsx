@@ -16,6 +16,69 @@ const MA_COLORS_BY_INDEX = {
   4: '#9C27B0',
 };
 
+// Candlestick-style shimmer skeleton configuration for initial loading state
+// Precomputed deterministic series so the loader always looks like a plausible candlestick chart.
+const KLINE_SKELETON_CANDLES = (() => {
+  const length = 40;
+  const candles = [];
+  let price = 0.8; // 0 = bottom, 1 = top of chart area
+
+  for (let i = 0; i < length; i += 1) {
+    const t = i / Math.max(1, length - 1);
+    // Broad wave so the series starts high (left), dips, then ends high (right)
+    const trendWave = Math.cos(t * Math.PI * 2);
+    const baseTrend = 0.72 + (trendWave * 0.26); // ~0.46 .. 0.98
+
+    // Lightweight deterministic noise so candles don't look too smooth
+    const lcg = (i * 9301 + 49297) % 233280;
+    const rand = lcg / 233280;
+    const noise = (rand - 0.5) * 0.22;
+
+    const target = Math.min(0.96, Math.max(0.14, baseTrend + noise));
+    const move = target - price;
+    const directionUp = move >= 0;
+    const absMove = Math.abs(move);
+
+    // Body size reflects move size, but clamped to a realistic band
+    const bodySize = Math.max(0.04, Math.min(0.18, (absMove * 1.6) + 0.03));
+
+    let bodyTop;
+    let bodyBottom;
+    if (directionUp) {
+      bodyBottom = price - (bodySize * 0.35);
+      bodyTop = bodyBottom + bodySize;
+    } else {
+      bodyTop = price + (bodySize * 0.35);
+      bodyBottom = bodyTop - bodySize;
+    }
+
+    const wickExtraTop = 0.03 + (absMove * 0.45);
+    const wickExtraBottom = 0.025 + (absMove * 0.3);
+
+    let high = bodyTop + wickExtraTop;
+    let low = bodyBottom - wickExtraBottom;
+
+    // Clamp within chart bounds
+    if (high > 0.98) high = 0.98;
+    if (low < 0.02) low = 0.02;
+
+    // Ensure body stays inside the wick after clamping
+    if (bodyTop > high - 0.01) bodyTop = high - 0.01;
+    if (bodyBottom < low + 0.01) bodyBottom = low + 0.01;
+
+    candles.push({
+      bodyTop,
+      bodyBottom,
+      high,
+      low,
+    });
+
+    price = target;
+  }
+
+  return candles;
+})();
+
 export const KLineChartComponent = ({
   candles = [],
   settings = {},
@@ -5913,37 +5976,41 @@ export const KLineChartComponent = ({
         >
           {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
             <div className="absolute inset-0 z-10 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
-              <div className="h-full w-full flex flex-col space-y-3">
-                {/* Top controls skeleton (symbol, timeframe, actions) */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
-                    <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
-                    <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
-                    <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
-                    <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full shimmer-text"></div>
-                  </div>
-                </div>
-
-                {/* Main chart skeleton */}
+              <div className="h-full w-full flex flex-col">
+                {/* Main chart skeleton: gray candlestick-style shimmer */}
                 <div className="flex-1 relative rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                  <div className="absolute inset-0 shimmer-bg"></div>
-                  <div className="absolute bottom-3 left-3 right-3 space-y-1">
-                    <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
-                    <div className="h-3 w-5/6 bg-gray-200 dark:bg-gray-700 rounded shimmer-text"></div>
-                  </div>
-                </div>
+                  <div className="absolute inset-0 shimmer-bg opacity-60" />
+                  <div className="absolute inset-3 flex flex-col">
+                    <div className="flex-1 flex items-stretch justify-between gap-[3px]">
+                      {KLINE_SKELETON_CANDLES.map((shape, index) => {
+                        const { bodyTop, bodyBottom, high, low } = shape;
+                        const wickTopPct = (1 - high) * 100;
+                        const wickHeightPct = (high - low) * 100;
+                        const bodyTopPct = (1 - bodyTop) * 100;
+                        const bodyHeightPct = (bodyTop - bodyBottom) * 100;
 
-                {/* Below-chart panes skeleton (e.g., RSI / ATR / MACD) */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                      <div className="absolute inset-0 shimmer-bg"></div>
+                        return (
+                          <div
+                            key={index}
+                            className="relative flex-1"
+                          >
+                            <div
+                              className="absolute left-1/2 -translate-x-1/2 w-px bg-gray-300 dark:bg-gray-700 shimmer-text"
+                              style={{ top: `${wickTopPct}%`, height: `${wickHeightPct}%` }}
+                            />
+                            <div
+                              className="absolute left-1/2 -translate-x-1/2 w-[4px] rounded-sm shimmer-text bg-gray-300 dark:bg-gray-500"
+                              style={{ top: `${bodyTopPct}%`, height: `${bodyHeightPct}%` }}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
+                    <div className="mt-3 space-y-1">
+                      <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded shimmer-text" />
+                      <div className="h-3 w-5/6 bg-gray-200 dark:bg-gray-700 rounded shimmer-text" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
