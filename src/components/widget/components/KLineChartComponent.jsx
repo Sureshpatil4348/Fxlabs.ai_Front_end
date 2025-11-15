@@ -1,5 +1,5 @@
 import { init, registerOverlay, registerIndicator, getSupportedIndicators } from 'klinecharts';
-import { Settings, Trash2 } from 'lucide-react';
+import { RefreshCw, Settings, Trash2 } from 'lucide-react';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 import { formatPrice } from '../../../utils/formatters';
@@ -5987,10 +5987,12 @@ export const KLineChartComponent = ({
           {/* Initial loading spinner - simplified with white background */}
           {(!error && (isInitialLoad || !chartRef.current || !candles || candles.length === 0)) && (
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-              <div className="w-2/5 max-w-sm px-4" role="status" aria-live="polite">
-                <div className="h-1.5 rounded-full bg-gray-200 overflow-hidden shadow-sm">
-                  <div className="kline-linear-loader-bar h-full bg-blue-300" />
-                </div>
+              <div
+                className="inline-flex items-center justify-center rounded-full bg-white shadow-md p-3 text-center"
+                role="status"
+                aria-live="polite"
+              >
+                <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto" />
               </div>
             </div>
           )}
