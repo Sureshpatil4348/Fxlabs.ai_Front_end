@@ -4,6 +4,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Recent Fixes
 
+- Dashboard header: On the Dashboard page, the header bar now spans the full viewport width (edge-to-edge) for a fully dynamic layout.
 - **Drawing Tools Sidebar Scrollbar**: Scrollbar now auto-hides on Windows (matches Mac behavior) - only visible on hover/scroll, improving UI cleanliness.
 - Split Mode UI: Indicator dropdown and currency pair selector now match non-split styling (removed unintended borders/rounded styles in split panel controls) for visual consistency.
 - Numeric inputs: All key number fields now allow fully clearing the value while typing; if left empty, the value commits as 0 on blur. This prevents jumpy defaults and makes editing smoother.
