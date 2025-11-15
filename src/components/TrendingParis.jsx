@@ -1,14 +1,14 @@
 import { TrendingUp } from "lucide-react";
 import React, { useMemo, useState, useEffect } from "react";
 
-import useMarketCacheStore from "../store/useMarketCacheStore";
-import useRSITrackerStore from "../store/useRSITrackerStore";
-import { useChartStore } from "./widget/stores/useChartStore";
 import {
     formatSymbolDisplay,
     formatPrice,
     formatPercentage,
 } from "../utils/formatters";
+import useMarketCacheStore from "../store/useMarketCacheStore";
+import useRSITrackerStore from "../store/useRSITrackerStore";
+import { useChartStore } from "./widget/stores/useChartStore";
 
 // Shimmer Skeleton for Trending Pairs
 const TrendingPairsSkeleton = () => (
@@ -91,7 +91,7 @@ const TrendingPairs = () => {
         try {
             let next = String(symbolInput || "").trim();
             if (!next) return;
-            next = next.replace(/[\/\s]/g, "").toUpperCase();
+            next = next.replace(/[/\s]/g, "").toUpperCase();
             if (next.endsWith("M")) next = next.slice(0, -1);
             // Also handle lowercase just in case
             if (next.endsWith("m")) next = next.slice(0, -1);

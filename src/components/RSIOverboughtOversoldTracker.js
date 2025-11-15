@@ -22,7 +22,7 @@ const PairRow = ({ pair, onAddToWishlist, isInWishlist, settings }) => {
     try {
       let next = String(symbolInput || '').trim();
       if (!next) return;
-      next = next.replace(/[\/\s]/g, '').toUpperCase();
+      next = next.replace(/[/\s]/g, '').toUpperCase();
       if (next.endsWith('M')) next = next.slice(0, -1);
       if (next.endsWith('m')) next = next.slice(0, -1);
       if (!next) return;
