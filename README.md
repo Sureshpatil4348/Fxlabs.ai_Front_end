@@ -21,6 +21,7 @@ All chart state is automatically persisted to localStorage and restored on page 
 - **Default Timeframe**: `15m`
 - **Default Cursor for Drawing Tools**: `Pointer`
 - **Default Indicators**: None enabled by default
+- **Initial REST History Load**: 1000 candles on first fetch; background preloading of additional past data is temporarily disabled (older-history preloading logic remains in code for future re-enable)
 
 **Drawings Persistence Details:**
 - Drawings are anchored to timestamps, not visual positions

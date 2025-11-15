@@ -87,8 +87,8 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
         : (settings.splitChart?.indicators || settings.indicators);
 
     // Determine how many initial bars to load.
-    // Business rule: always fetch 150 candles via REST `limit` param.
-    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 150, []);
+    // Business rule: always fetch 1000 candles via REST `limit` param.
+    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 1000, []);
 
     const { pricingBySymbol } = useMarketCacheStore();
     // Cursors for OHLC keyset pagination
@@ -255,12 +255,17 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     // removed loadMoreHistory; background preloader now fetches slices inline
 
     // Background preloading: after initial page is ready, wait 2s,
-    // then fetch a single older batch (up to 1000 candles)
+    // then fetch additional older batches (up to 1000 candles each).
+    // NOTE: BACKGROUND_PRELOAD_BATCHES is currently 0, so we intentionally
+    // do NOT fetch any extra past data in the background while keeping
+    // the implementation intact for future re-enable.
     useEffect(() => {
+        const BACKGROUND_PRELOAD_BATCHES = 0; // 0 = no background batches (temporary)
+        const MAX_TOTAL_PAGES = 1 + BACKGROUND_PRELOAD_BATCHES; // 1 initial page + N preload batches
+
         // Only start after we have at least the first page
         if (currentPage >= 1 && hasMoreHistory && !backgroundPreloadStartedRef.current) {
             const sessionId = preloadSessionRef.current;
-            const MAX_TOTAL_PAGES = 2; // 1 initial page + 1 preload batch
 
             const timer = setTimeout(() => {
                 // Mark started only when the timer actually fires to avoid premature cancellation on re-renders
@@ -397,12 +402,12 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
       } catch (_) { /* fallback: main store ignores extra args */ setCandles([]); }
 
             try {
-                // Figure out how many bars to fetch initially (fixed at 150)
+                // Figure out how many bars to fetch initially (fixed at 1000)
                 const desiredBars = getInitialBarsForTimeframe(
                     currentTimeframe
                 );
-                // Always request 150 candles per REST call
-                const LIMIT_PER_CALL = 150;
+                // Always request 1000 candles per REST call
+                const LIMIT_PER_CALL = 1000;
                 const combined = [];
                 let before = null; // no cursor -> most recent slice
                 let hasMoreOlder = true;
@@ -481,7 +486,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                 console.log("✅ Candles set in store, length:", sliced.length);
 
                 // Update pagination counters to reflect how many pages we fetched
-                setCurrentPage(Math.ceil(combined.length / 150));
+                setCurrentPage(Math.max(1, Math.ceil(combined.length / LIMIT_PER_CALL)));
                 setHasMoreHistory(Boolean(olderCursorRef.current));
 
                 // Calculate indicators
