@@ -121,9 +121,9 @@ export const KLineChartComponent = ({
   const [showOrbSettings, setShowOrbSettings] = useState(false);
   const [localOrbSettings, setLocalOrbSettings] = useState(() => ({
     startHour: 9,
-    startMinute: 15,
+    startMinute: 0,
     orPeriod: 1,
-    targetRR: 4.0,
+    targetRR: 2.0,
   }));
   const [orbValidationError, setOrbValidationError] = useState('');
 
@@ -282,9 +282,9 @@ export const KLineChartComponent = ({
     const cfg = settings?.indicatorSettings?.orbEnhanced || {};
     setLocalOrbSettings({
       startHour: Math.max(0, Math.min(23, Number(cfg.startHour) || 9)),
-      startMinute: Math.max(0, Math.min(59, Number(cfg.startMinute) || 15)),
+      startMinute: Math.max(0, Math.min(59, Number(cfg.startMinute) || 0)),
       orPeriod: Math.max(1, Number(cfg.orPeriod) || 1),
-      targetRR: Math.max(0.5, Number(cfg.targetRR) || 4.0),
+      targetRR: Math.max(0.5, Number(cfg.targetRR) || 2.0),
     });
     setOrbValidationError('');
   }, [showOrbSettings, settings?.indicatorSettings?.orbEnhanced]);
@@ -549,9 +549,9 @@ export const KLineChartComponent = ({
       if (!Array.isArray(candles) || candles.length === 0) return null;
       const cfg = settings?.indicatorSettings?.orbEnhanced || {};
       const h = Math.max(0, Math.min(23, Number(cfg.startHour) || 9));
-      const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 15));
+      const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 0));
       const _orPeriod = Math.max(1, Number(cfg.orPeriod) || 1);
-      const rr = Math.max(0.5, Number(cfg.targetRR) || 4.0);
+      const rr = Math.max(0.5, Number(cfg.targetRR) || 2.0);
       // timeframe suitability (<= 60 minutes)
       const tf = String(settings?.timeframe || '1h');
       const toMinutes = (tfStr) => {
@@ -4595,9 +4595,9 @@ export const KLineChartComponent = ({
           }
           const orbCfg = settings?.indicatorSettings?.orbEnhanced || {};
           const startHour = Math.max(0, Math.min(23, Number(orbCfg.startHour) || 9));
-          const startMinute = Math.max(0, Math.min(59, Number(orbCfg.startMinute) || 15));
+          const startMinute = Math.max(0, Math.min(59, Number(orbCfg.startMinute) || 0));
           const orPeriod = Math.max(1, Number(orbCfg.orPeriod) || 1);
-          const targetRR = Math.max(0.5, Number(orbCfg.targetRR) || 4.0);
+          const targetRR = Math.max(0.5, Number(orbCfg.targetRR) || 2.0);
           const indicatorArg = { name: 'ORB_ENH', calcParams: [startHour, startMinute, orPeriod, targetRR] };
           chartRef.current.createIndicator(indicatorArg, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: ORB Enhanced overlay added to candle pane (markers only)');
@@ -4887,8 +4887,8 @@ export const KLineChartComponent = ({
       // Compute breakouts for up to 30 previous days (including most recent day)
       const cfg = settings?.indicatorSettings?.orbEnhanced || {};
       const h = Math.max(0, Math.min(23, Number(cfg.startHour) || 9));
-      const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 15));
-      const rr = Math.max(0.5, Number(cfg.targetRR) || 4.0);
+      const m = Math.max(0, Math.min(59, Number(cfg.startMinute) || 0));
+      const rr = Math.max(0.5, Number(cfg.targetRR) || 2.0);
       const dl = Array.isArray(candles) ? candles : (typeof chart.getDataList === 'function' ? chart.getDataList() : []);
       if (!Array.isArray(dl) || dl.length === 0) return;
 
@@ -6239,9 +6239,9 @@ export const KLineChartComponent = ({
                     onClick={() => {
                       const payload = {
                         startHour: Math.max(0, Math.min(23, Number(localOrbSettings.startHour) || 9)),
-                        startMinute: Math.max(0, Math.min(59, Number(localOrbSettings.startMinute) || 15)),
+                        startMinute: Math.max(0, Math.min(59, Number(localOrbSettings.startMinute) || 0)),
                         orPeriod: Math.max(1, Number(localOrbSettings.orPeriod) || 1),
-                        targetRR: Math.max(0.5, Number(localOrbSettings.targetRR) || 4.0),
+                        targetRR: Math.max(0.5, Number(localOrbSettings.targetRR) || 2.0),
                       };
                       const tf = settings?.timeframe || '5m';
                       const { valid, message } = validateOrbOpeningTime(tf, payload.startHour, payload.startMinute);

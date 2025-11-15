@@ -73,9 +73,9 @@ const defaultSettings = {
     orbEnhanced: {
       // Opening Range Breakout - Enhanced settings
       startHour: 9,
-      startMinute: 15,
+      startMinute: 0,
       orPeriod: 1, // number of bars to form opening range
-      targetRR: 4.0, // Risk:Reward ratio
+      targetRR: 2.0, // Risk:Reward ratio
     }
     ,
     stEnhanced: {
