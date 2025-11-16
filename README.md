@@ -11,7 +11,7 @@ All chart state is automatically persisted to localStorage and restored on page 
 **What's Persisted:**
 - **Currency Pair & Timeframe**: Selected symbol and timeframe automatically restored
 - **Indicators**: All active indicators and their configurations persist across sessions
-- **Drawings & Overlays**: User-drawn objects (trend lines, fibonacci retracements, rectangles, positions, annotations) are saved per symbol-timeframe combination
+- **Drawings & Overlays**: User-drawn objects (trend lines, fibonacci retracements, rectangles, positions, annotations) are saved per symbol (persist across timeframe changes, but not across pair changes)
 - **Fullscreen State**: Fullscreen mode preference is remembered
 - **Workspace Visibility**: Hide/Unhide All button state persists - if you hide all indicators and reload, they stay hidden
 - **Chart Settings**: Grid visibility, timezone, cursor type, and all other preferences
@@ -27,8 +27,10 @@ All chart state is automatically persisted to localStorage and restored on page 
 - Drawings are anchored to timestamps, not visual positions
 - When you draw on historical candles and return hours/days later, drawings remain on the exact candles where you placed them
 - Automatic saving occurs 2 seconds after last modification (debounced)
-- Separate drawing storage for each symbol-timeframe-chart combination (e.g., EURUSD 1h chart 1 drawings won't appear on EURUSD 1h chart 2 in split mode)
-- **Split Mode Support**: Each chart in split mode maintains its own independent drawing storage - chart 1 and chart 2 drawings persist separately
+- **Timeframe-Independent Storage**: Drawings are stored per symbol-chart combination (NOT per timeframe)
+  - Drawings persist when changing timeframes on the same pair (e.g., EURUSD 1m → EURUSD 1h keeps drawings)
+  - Drawings do NOT transfer when changing pairs (e.g., EURUSD → GBPUSD clears drawings)
+- **Split Mode Support**: Each chart in split mode maintains its own independent drawing storage - chart 1 and chart 2 drawings persist separately per symbol
 - **Hide/Show State**: Hidden drawings persist in their hidden state - if you hide a drawing and reload, it stays hidden
 - **All Modifications Persist**: Color changes, text edits, style updates, visibility toggles all trigger automatic saves
 - Programmatically generated overlays (indicator labels, markers) are excluded from persistence

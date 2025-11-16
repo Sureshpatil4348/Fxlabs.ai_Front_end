@@ -380,8 +380,8 @@ export const useChartStore = create(
       clearAllDrawings: () => {
         console.log('🎨 ChartStore: Clearing all drawings');
         set((state) => {
-          // Also clear persisted overlays for current symbol-timeframe
-          const key = `${state.settings.symbol}_${state.settings.timeframe}`;
+          // Also clear persisted overlays for current symbol (timeframe-agnostic)
+          const key = `${state.settings.symbol}_chart${state.activeChartIndex || 1}`;
           const newPersistedOverlays = { ...state.persistedOverlays };
           delete newPersistedOverlays[key];
           
@@ -574,9 +574,12 @@ export const useChartStore = create(
       },
 
       // Persisted overlays actions
+      // NOTE: Drawings are stored per SYMBOL and CHART INDEX only (not timeframe)
+      // This allows drawings to persist when switching timeframes on the same pair
       saveOverlaysForSymbol: (symbol, timeframe, overlays, chartIndex = 1) => {
-        const key = `${symbol}_${timeframe}_chart${chartIndex}`;
-        console.log('💾 ChartStore: Saving overlays for', symbol, timeframe, 'chart', chartIndex, overlays.length);
+        // Remove timeframe from key so drawings persist across timeframe changes
+        const key = `${symbol}_chart${chartIndex}`;
+        console.log('💾 ChartStore: Saving overlays for', symbol, '(timeframe-agnostic)', 'chart', chartIndex, overlays.length);
         console.log('💾 [DEBUG] Key:', key, 'Overlays:', overlays);
         set((state) => {
           const newState = {
@@ -608,16 +611,18 @@ export const useChartStore = create(
 
       getOverlaysForSymbol: (symbol, timeframe, chartIndex = 1) => {
         const state = useChartStore.getState();
-        const key = `${symbol}_${timeframe}_chart${chartIndex}`;
+        // Remove timeframe from key so drawings persist across timeframe changes
+        const key = `${symbol}_chart${chartIndex}`;
         const overlays = state.persistedOverlays[key] || [];
         console.log('💾 [DEBUG] getOverlaysForSymbol:', { key, chartIndex, found: overlays.length, allKeys: Object.keys(state.persistedOverlays || {}) });
         return overlays;
       },
 
       clearOverlaysForSymbol: (symbol, timeframe, chartIndex = 1) => {
-        console.log('💾 ChartStore: Clearing overlays for', symbol, timeframe, 'chart', chartIndex);
+        console.log('💾 ChartStore: Clearing overlays for', symbol, '(timeframe-agnostic)', 'chart', chartIndex);
         set((state) => {
-          const key = `${symbol}_${timeframe}_chart${chartIndex}`;
+          // Remove timeframe from key so drawings persist across timeframe changes
+          const key = `${symbol}_chart${chartIndex}`;
           const newPersistedOverlays = { ...state.persistedOverlays };
           delete newPersistedOverlays[key];
           return { persistedOverlays: newPersistedOverlays };

@@ -3627,6 +3627,7 @@ export const KLineChartComponent = ({
   }, [settings.showGrid, setKLineChartRef, settings.timezone, shouldSuppressError]); // Include timezone for initial setup
 
   // Restore persisted overlays (drawings) when chart is initialized and has data
+  // NOTE: Drawings are stored per SYMBOL (not timeframe), so they persist when changing timeframes
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !candles || candles.length === 0) {
@@ -3634,7 +3635,7 @@ export const KLineChartComponent = ({
       return;
     }
 
-    // Only restore once per symbol-timeframe combination
+    // Only restore once per symbol (drawings persist across timeframe changes)
     if (overlayRestoreTriggeredRef.current) return;
     overlayRestoreTriggeredRef.current = true;
 
@@ -3653,11 +3654,11 @@ export const KLineChartComponent = ({
       }
       
       if (!persistedOverlays || persistedOverlays.length === 0) {
-        console.log('💾 No persisted overlays to restore for', symbol, timeframe, 'chart', chartIndex);
+        console.log('💾 No persisted overlays to restore for', symbol, '(timeframe-agnostic)', 'chart', chartIndex);
         return;
       }
 
-      console.log('💾 Restoring', persistedOverlays.length, 'overlays for', symbol, timeframe, 'chart', chartIndex, 'Details:', persistedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
+      console.log('💾 Restoring', persistedOverlays.length, 'overlays for', symbol, '(timeframe-agnostic)', 'chart', chartIndex, 'Details:', persistedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
 
       // Small delay to ensure chart is fully initialized with data
       setTimeout(() => {
@@ -3689,6 +3690,7 @@ export const KLineChartComponent = ({
   }, [candles, settings?.symbol, settings?.timeframe, chartIndex, getOverlaysForSymbol]);
 
   // Save overlays when they are created, modified, or deleted
+  // NOTE: Drawings are stored per SYMBOL (not timeframe), so they persist when changing timeframes
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
@@ -3697,8 +3699,8 @@ export const KLineChartComponent = ({
     const timeframe = settings?.timeframe;
     if (!symbol || !timeframe) return;
     
-    // CRITICAL: Reset counter and flags for new symbol/timeframe to read from persisted data
-    console.log('💾 [INIT] Resetting lastSavedCount for', symbol, timeframe, 'chart', chartIndex);
+    // CRITICAL: Reset counter and flags when symbol or timeframe changes to read fresh persisted data
+    console.log('💾 [INIT] Resetting lastSavedCount for', symbol, '(timeframe-agnostic)', 'chart', chartIndex);
     lastSavedOverlayCountRef.current = -1;
     justRemovedOverlayRef.current = false;
 
@@ -3826,7 +3828,7 @@ export const KLineChartComponent = ({
 
         lastSavedOverlayCountRef.current = currentCount;
         saveOverlaysForSymbol(symbol, timeframe, serializedOverlays, chartIndex);
-        console.log('💾 Saved', serializedOverlays.length, 'overlays for', symbol, timeframe, 'chart', chartIndex, 'Details:', serializedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
+        console.log('💾 Saved', serializedOverlays.length, 'overlays for', symbol, '(timeframe-agnostic)', 'chart', chartIndex, 'Details:', serializedOverlays.map(o => ({ name: o.name, points: o.points?.length || 0 })));
       } catch (err) {
         console.error('💾 Error saving overlays:', err);
       }
