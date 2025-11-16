@@ -165,6 +165,7 @@ When in split mode:
 - Selecting `1m` or `5m` restores the default quick selections (`1m`, `5m`, `15m`) and returns the previously swapped timeframe back into `More`.
 - If `15m` appears inside `More` (after a swap) and is selected, the quick selections revert to the default.
 - Behavior is consistent in both split and non‑split modes since the header controls the active timeframe globally.
+- Clicking the currently active timeframe (from the quick buttons or More dropdown) now leaves the chart state untouched so it does not trigger redundant reloads.
 
 ### Breakout Strategy (ORB) Settings Validation
 

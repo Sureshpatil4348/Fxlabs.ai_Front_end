@@ -124,6 +124,30 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
     });
     setSwappedFromMore(tf);
   };
+
+  const handleQuickTimeframeSelect = (tf) => {
+    if (settings.timeframe === tf) return;
+    if ((tf === '1m' || tf === '5m') && isSwapped) {
+      resetQuickTimeframes();
+    }
+    setTimeframe(tf);
+    setActiveTimeframe(tf);
+  };
+
+  const handleMoreTimeframeSelect = (tf) => {
+    if (settings.timeframe === tf) {
+      setShowMoreTimeframesDropdown(false);
+      return;
+    }
+    if (tf === '15m') {
+      resetQuickTimeframes();
+    } else {
+      swapFifteenWith(tf);
+    }
+    setTimeframe(tf);
+    setActiveTimeframe(tf);
+    setShowMoreTimeframesDropdown(false);
+  };
   // Comprehensive timezone list + Auto(System)
   const [timezones, setTimezones] = useState(() => listTimezonesWithOffsets(new Date()));
   const systemTz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
@@ -268,16 +292,7 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
               {quickTimeframes.map((tf) => (
               <button
                 key={tf}
-                  onClick={() => {
-                    // If user clicks 1m or 5m, restore default quick list and move previous More back
-                    if (tf === '1m' || tf === '5m') {
-                      if (isSwapped) {
-                        resetQuickTimeframes();
-                      }
-                    }
-                    setTimeframe(tf);
-                    setActiveTimeframe(tf);
-                  }}
+                  onClick={() => handleQuickTimeframeSelect(tf)}
                   className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
                     settings.timeframe === tf
                       ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
@@ -310,17 +325,7 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
                   {moreTimeframes.map((tf) => (
                     <button
                       key={tf}
-                      onClick={() => {
-                        // Dropdown selection logic swaps the 3rd quick slot with selection, moving 15m into More.
-                        if (tf === '15m') {
-                          resetQuickTimeframes();
-                        } else {
-                          swapFifteenWith(tf);
-                        }
-                        setTimeframe(tf);
-                        setActiveTimeframe(tf);
-                        setShowMoreTimeframesDropdown(false);
-                      }}
+                      onClick={() => handleMoreTimeframeSelect(tf)}
                       className={`w-full text-left px-3 py-2 text-[13px] font-medium transition-all ${
                         settings.timeframe === tf
                           ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white'
