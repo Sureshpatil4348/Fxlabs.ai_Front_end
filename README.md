@@ -156,9 +156,10 @@ When in split mode:
 
 **Drawing Tools in Split Mode:**
 - Drawing tools work independently per chart.
-- Selecting a tool queues it as “pending”. The first chart you click arms the tool on that chart only (single-use per selection), preventing duplicate actions across both charts.
+- Selecting a tool queues it as "pending". The first chart you click arms the tool on that chart only (single-use per selection), preventing duplicate actions across both charts.
 - All drawing tools (trend lines, fibonacci, rectangles, positions, etc.) remain fully functional on both charts.
 - Each chart maintains its own independent set of drawings.
+- **Per-Chart Clear in Split Mode**: When clicking the "Clear All" button in the sidebar while in split mode, a confirmation modal appears in EACH chart simultaneously. Each modal allows you to independently clear that specific chart's drawings and indicators, enabling per-chart workspace management.
 
 ### Timeframe Selector Behavior
 
