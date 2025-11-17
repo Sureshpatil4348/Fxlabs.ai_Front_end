@@ -9,6 +9,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 - Subscription status checks now distinguish between actual subscription expiry and transient network issues.
 - Network or connectivity errors during background checks no longer log users out or show the "Your subscription has ended" modal; they are logged and the user session is preserved.
 
+### CI Linting Configuration
+
+- The Netlify deploy workflow (`.github/workflows/deploy-to-netlify.yml`) runs ESLint in CI with `import/order` disabled, so import ordering does not block deployments while other rules still run with `--max-warnings=0`.
+
 ### State Persistence
 
 All chart state is automatically persisted to localStorage and restored on page reload or browser tab reopen.

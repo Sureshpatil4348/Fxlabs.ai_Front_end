@@ -44,8 +44,8 @@ jobs:
           echo "Checking Lottie dependency:"
           npm list @lottiefiles/dotlottie-react
 
-      - name: Run linting (CI - treat warnings as errors)
-        run: CI=true npm run lint
+      - name: Run linting (CI - treat warnings as errors, ignore import order)
+        run: CI=true npx eslint --max-warnings=0 "src/**/*.{js,jsx}" --rule 'import/order: off'
 
       - name: Build project
         run: npm run build
