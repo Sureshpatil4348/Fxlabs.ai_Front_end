@@ -4,6 +4,11 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Features
 
+### Subscription & Network Resilience
+
+- Subscription status checks now distinguish between actual subscription expiry and transient network issues.
+- Network or connectivity errors during background checks no longer log users out or show the "Your subscription has ended" modal; they are logged and the user session is preserved.
+
 ### State Persistence
 
 All chart state is automatically persisted to localStorage and restored on page reload or browser tab reopen.

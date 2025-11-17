@@ -7,6 +7,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabaseClient";
 import { resolveEdgeFunctionName } from "../utils/resolveFunctionName";
+import { isNetworkError } from "../utils/isNetworkError";
 
 const LoginModal = ({ isOpen, onClose }) => {
     const [email, setEmail] = useState("");
@@ -70,19 +71,29 @@ const LoginModal = ({ isOpen, onClose }) => {
                             });
 
                         if (subCheckError) {
-                            console.error(
-                                "Subscription check error:",
-                                subCheckError
+                            if (isNetworkError(subCheckError)) {
+                                console.warn(
+                                    "Subscription check skipped at login due to network error:",
+                                    subCheckError
+                                );
+                            } else {
+                                console.error(
+                                    "Subscription check error:",
+                                    subCheckError
+                                );
+                                setSubscriptionExpired(true);
+                                await supabase.auth.signOut();
+                                navigate("/");
+                                setError(
+                                    "We could not verify your subscription. Please try again."
+                                );
+                                return;
+                            }
+                        } else if (!subCheckData) {
+                            console.warn(
+                                "Subscription check returned no data at login. Proceeding without expiration."
                             );
-                            // Treat as expired/unverifiable: sign out and show global modal
-                            setSubscriptionExpired(true);
-                            await supabase.auth.signOut();
-                            navigate("/");
-                            return;
-                        }
-
-                        if (
-                            !subCheckData ||
+                        } else if (
                             subCheckData.subscription_status === "expired"
                         ) {
                             setSubscriptionExpired(true);
