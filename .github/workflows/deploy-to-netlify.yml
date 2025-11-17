@@ -45,7 +45,17 @@ jobs:
           npm list @lottiefiles/dotlottie-react
 
       - name: Run linting (CI - treat warnings as errors, ignore import order)
-        run: CI=true npx eslint --max-warnings=0 "src/**/*.{js,jsx}" --rule 'import/order: off'
+        run: |
+          cat > .eslintrc.ci.json << 'EOF'
+          {
+            "extends": [".eslintrc.json"],
+            "rules": {
+              "import/order": "off"
+            }
+          }
+          EOF
+          CI=true npx eslint --max-warnings=0 --config .eslintrc.ci.json "src/**/*.{js,jsx}"
+          rm -f .eslintrc.ci.json
 
       - name: Build project
         run: npm run build
