@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 
+import { isNetworkError } from "../utils/isNetworkError";
 import { useAuth } from "../auth/AuthProvider";
 import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabaseClient";
 import { resolveEdgeFunctionName } from "../utils/resolveFunctionName";
-import { isNetworkError } from "../utils/isNetworkError";
 
 const LoginModal = ({ isOpen, onClose }) => {
     const [email, setEmail] = useState("");

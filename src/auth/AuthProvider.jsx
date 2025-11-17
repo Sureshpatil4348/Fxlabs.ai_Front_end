@@ -7,9 +7,9 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { isNetworkError } from "../utils/isNetworkError";
 import { supabase } from "../lib/supabaseClient";
 import { resolveEdgeFunctionName } from "../utils/resolveFunctionName";
-import { isNetworkError } from "../utils/isNetworkError";
 
 const AuthContext = createContext({});
 
