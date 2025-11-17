@@ -1,44 +1,43 @@
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { Calendar, FileText, Users, Zap } from 'lucide-react';
 import React from 'react';
+
+import earningImage from '../earning-and-spending-money-in-internet-concept.svg';
 
 const CommunitySection = () => {
   const benefits = [
     {
       icon: Users,
       title: 'Private Community',
-      description: 'Direct access to experienced traders',
+      description: 'Direct access to experienced traders within the community of the best forex trading platform.',
     },
     {
       icon: Calendar,
       title: 'Monthly Live Webinars',
-      description: 'Learn advanced strategies',
+      description: 'Learn advanced strategies powered by AI-based forex trading platforms.',
     },
     {
       icon: FileText,
       title: 'Market Analysis Reports',
-      description: 'Weekly insights on major pairs',
+      description: 'Weekly insights on major pairs, enhanced by advanced AI forex trading software.',
     },
     {
       icon: Zap,
       title: 'System Updates',
-      description: 'Get all future upgrades',
+      description: 'Get all future upgrades and enhancements to keep your Top forex trading platform operating at peak performance.',
     },
   ];
 
   return (
     <section id="community" className="py-14 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
       <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
-          <div className="w-full lg:w-1/2 text-center lg:text-left">
+        <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12">
+          <div className="w-full lg:w-1/2 flex flex-col text-center lg:text-left">
             <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-[#19235d] dark:text-white">
-              Join 250+ <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 bg-clip-text text-transparent">Successful Traders</span>
+              Join The Community of <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 bg-clip-text text-transparent">Pro Traders </span>
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+           
 
-            </p>
-
-            <div className="bg-white/50 dark:bg-[#19235d]/50 rounded-2xl p-6 mb-8 backdrop-blur-sm border border-gray-200/50 dark:border-[#19235d]/50">
+            <div className="bg-white/50 dark:bg-[#19235d]/50 rounded-2xl p-6 mb-8 backdrop-blur-sm border border-gray-200/50 dark:border-[#19235d]/50 flex-grow">
               <h3 className="text-2xl font-bold mb-6 text-[#19235d] dark:text-white">What You Get:</h3>
               <ul className="space-y-4 text-left">
                 {benefits.map((benefit, index) => {
@@ -57,7 +56,7 @@ const CommunitySection = () => {
               </ul>
             </div>
             
-            <div className="mt-auto">
+            <div>
               <a
                 href="https://t.me/fxlabsprime"
                 target="_blank"
@@ -70,16 +69,11 @@ const CommunitySection = () => {
           </div>
 
           <div className="w-full lg:w-1/2 flex justify-center items-center">
-            <div style={{
-              width: '100%',
-              maxWidth: '800px',
-              height: 'auto',
-              aspectRatio: '1'
-            }}>
-              <DotLottieReact
-                src="https://lottie.host/5a79a930-30e7-402c-a2cb-1ddd8325a9e3/7FWWM1AIto.lottie"
-                loop
-                autoplay
+            <div className="w-full max-w-[600px] lg:max-w-full">
+              <img 
+                src={earningImage} 
+                alt="Join the Community of Pro Traders Forex Trading Platform" 
+                className="w-full h-auto hidden md:block"
               />
             </div>
           </div>

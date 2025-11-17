@@ -6,19 +6,19 @@ import { useTheme } from '../contexts/ThemeContext'
 
 const testimonials = [
   {
-    quote: 'FxLabs Prime gives our macro and quant teams a single view of the market. We&apos;ve cut mis-trades by 30% and improved execution alignment across desks.',
-    name: 'Global Macro Lead',
-    firm: 'Tier-1 Prop Fund'
+    quote: 'FxLabs Prime unifies my 7-in-1 indicator analysis so every timeframe agrees, making it the best forex trading platform for precise execution.',
+    name: 'Muzamil A.',
+    firm: 'Professional Trader'
   },
   {
-    quote: 'The AI news engine flagged a policy shift two minutes before the wire. That early edge let us reposition ahead of the market — a difference worth millions.',
-    name: 'Head of FX Trading',
-    firm: 'International Bank'
+    quote: 'Real-time news and smart alerts from this Top forex trading platform hit my inbox before the market moves, so I never miss high-impact events.',
+    name: 'Marcus.',
+    firm: 'Prop Trader'
   },
   {
-    quote: 'From onboarding to first live trade took just 6 days. Compliance reports plugged straight into our system — no friction, no delays.',
-    name: 'Chief Investment Officer',
-    firm: 'Family Office'
+    quote: 'Smart money management tools and currency strength data keep my trading disciplined and confident across sessions.',
+    name: 'Prajwla Naik.',
+    firm: 'Portfolio Manager'
   }
 ]
 
@@ -35,12 +35,9 @@ const SuccessStories = () => {
               Results
             </div>
             <h2 className={`text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl ${isDarkMode ? 'text-white' : 'text-[#19235d]'}`}>
-              Trusted by desks moving billions every day
+              Hear From Our Users: Success with the Best AI Trading Tools
             </h2>
           </div>
-          <p className={`max-w-xl text-base leading-relaxed sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-[#19235d]'}`}>
-            Elite teams across FX, commodities and crypto rely on FxLabs Prime for decisive, real-time intelligence. Here&apos;s how they describe the shift.
-          </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">

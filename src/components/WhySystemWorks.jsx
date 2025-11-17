@@ -12,25 +12,25 @@ const WhySystemWorks = () => {
       id: 1,
       icon: Bot,
       title: "AI First Approach",
-      description: "Have an AI first approach to Analysis to maximize your profits"
+      description: "Having an AI-based best forex trading platforms approach to analysis to maximize your profits."
     },
     {
       id: 2,
       icon: TrendingUp,
       title: "Adapts to All Markets",
-      description: "Uses AI to adapt to all markets and identify trends and opportunities"
+      description: "Uses artificial intelligence for forex trading to adapt to all markets and identify trends and opportunities."
     },
     {
       id: 3,
       icon: Shield,
-      title: "All in one Analysis platform",
-      description: "All in one Analysis platform to maximize your profits"
+      title: "All-in-One Analysis Platform",
+      description: "An all-in-one analysis platform powered by AI forex trading software to maximize your profits."
     },
     {
       id: 4,
       icon: Monitor,
       title: "Signal Alerts",
-      description: "Get instant notifications for high-impact news events and indicator signals directly via email"
+      description: "Get instant notifications for high-impact news events and indicator signals directly via email from the Top forex trading platform."
     }
   ]
 
@@ -58,7 +58,7 @@ const WhySystemWorks = () => {
           </h2>
           
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Built by traders, for traders - with features that actually matter
+            Built by traders, for traders—with features that actually matter. This design philosophy is what makes us the best forex trading platform.
           </p>
         </div>
 

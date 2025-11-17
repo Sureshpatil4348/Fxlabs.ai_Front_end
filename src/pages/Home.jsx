@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthProvider'
 import AfterPurchaseSection from '../components/AfterPurchaseSection'
 import AutomationAlertsSection from '../components/AutomationAlert'
 import CommunitySection from '../components/CommunitySection'
+import CTASection from '../components/CTASection'
 import FAQSection from '../components/FAQSection'
 // import GetInTouchSection from '../components/GetInTouchSection'
 import HeroSection from '../components/HeroSection'
@@ -12,6 +13,7 @@ import InteractiveFooter from '../components/InteractiveFooter'
 import Navbar from '../components/Navbar'
 import PsychologicalBenefitsSection from '../components/PsychologicalBenefitsSection'
 import SubscriptionSection from '../components/SubscriptionSection'
+import SuccessStories from '../components/SuccessStories'
 import TradingToolsShowcase from '../components/TradingToolsShowcase'
 import VideoExplanationSection from '../components/VideoExplanationSection'
 import WhySystemWorks from '../components/WhySystemWorks'
@@ -226,6 +228,11 @@ const Home = () => {
           <AutomationAlertsSection />
         </div>
 
+        {/* Testimonials Section */}
+        <div id="testimonials">
+          <SuccessStories />
+        </div>
+
 
 
         {/* Psychological Benefits Section */}
@@ -233,12 +240,16 @@ const Home = () => {
           <PsychologicalBenefitsSection />
         </div>
 
-          {/* Why System Works Section */}
-          <div id="why-system-works">
-            <WhySystemWorks />
-          </div>
+        {/* CTA Section */}
+        <div id="cta">
+          <CTASection />
+        </div>
 
-       
+        {/* Why System Works Section */}
+        <div id="why-system-works">
+          <WhySystemWorks />
+        </div>
+
 
         {/* Video Explanation Section */}
         <div id="video-explanation">

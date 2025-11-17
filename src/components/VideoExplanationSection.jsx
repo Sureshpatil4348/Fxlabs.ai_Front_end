@@ -11,22 +11,22 @@ const VideoExplanationSection = () => {
     {
       icon: Grid3x3,
       title: "Multi-Time Frame Analysis",
-      description: "Analyze the market from multiple time frames to identify trends and opportunities"
+      description: "Analyze the market from multiple time frames to identify trends and opportunities—a fundamental feature of the Top forex trading platform."
     },
     {
       icon: Wallet,
       title: "Smart money management",
-      description: "Use Lotsize calculator to calculate the optimal lot size for your account"
+      description: "Use the lot size calculator to calculate the optimal lot size for your account, an essential risk control provided by the best forex trading platform."
     },
     {
       icon: TrendingUp,
       title: "News Alerts",
-      description: "Get instant notifications for high-impact news events and indicator signals directly via email"
+      description: "Get instant notifications for high-impact news events and indicator signals directly via email, ensuring you leverage the power of artificial intelligence for forex trading."
     },
     {
       icon: Shield,
       title: "Analysis View Integration",
-      description: "Access professional-grade charting tools with no software installation required. Trade directly from your browser with real-time data."
+      description: "Access professional-grade charting tools with no software installation required. Trade directly from your browser with real-time data, a seamless experience from leading AI-based forex trading platforms."
     }
   ];
 
@@ -57,7 +57,7 @@ const VideoExplanationSection = () => {
           </h2>
           
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Years of refinement through thousands of trades. Here&apos;s what makes it different from everything else you&apos;ve tried.
+            Years of refinement through thousands of trades. Here&apos;s what makes this AI forex trading software different from everything else you&apos;ve tried.
           </p>
         </div>
 

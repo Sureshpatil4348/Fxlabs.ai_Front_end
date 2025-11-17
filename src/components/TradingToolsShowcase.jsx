@@ -21,26 +21,26 @@ import {
     const tools = [
       {
         id: 0,
-        icon: LineChart,
-        name: "TradingView Pro",
-        title: "Professional Charting",
-        description: "Access advanced TradingView charts directly in your browser. No downloads, no installations - just professional-grade trading tools at your fingertips.",
+        icon: Activity,
+        name: "6-in-1 Analysis",
+        title: "6-in-1 Indicator Analysis",
+        description: "Get comprehensive market analysis with 6-7 powerful indicators working across multiple timeframes simultaneously. This is a core benefit of utilizing AI forex trading software.",
         features: [
-          "Real-time price data across all markets",
-          "50+ technical indicators and drawing tools",
-          "Multiple timeframe analysis",
-          "Custom watchlists and alerts",
-          "Mobile responsive design"
+          "RSI, MACD, Ichimoku, and more",
+          "Multi-timeframe correlation",
+          "Automated signal generation",
+          "Customizable thresholds",
+          "Heatmap visualization"
         ],
-        gradient: "from-blue-500 to-cyan-500",
-        bgGradient: "from-blue-500/10 to-cyan-500/10"
+        gradient: "from-orange-500 to-red-500",
+        bgGradient: "from-orange-500/10 to-red-500/10"
       },
       {
         id: 1,
         icon: Newspaper,
-        name: "Live News Feed",
+        name: "Market News",
         title: "Real-Time Market News",
-        description: "Stay informed with aggregated news from top financial sources. Never miss market-moving events that could impact your trades.",
+        description: "Stay informed with aggregated news from top financial sources. Never miss market-moving events that could impact your trades, a key feature of the Top forex trading platform.",
         features: [
           "Breaking news from trusted sources",
           "Economic calendar integration",
@@ -53,42 +53,10 @@ import {
       },
       {
         id: 2,
-        icon: Gauge,
-        name: "Currency Strength",
-        title: "Advanced Currency Strength Meter",
-        description: "Identify the strongest and weakest currencies in real-time. Make smarter trading decisions based on currency correlation and strength.",
-        features: [
-          "Real-time strength calculations",
-          "8 major currency pairs tracked",
-          "Visual strength indicators",
-          "Historical strength data",
-          "Correlation matrix analysis"
-        ],
-        gradient: "from-purple-500 to-pink-500",
-        bgGradient: "from-purple-500/10 to-pink-500/10"
-      },
-      {
-        id: 3,
-        icon: Activity,
-        name: "Multi-Indicator Dashboard",
-        title: "6-in-1 Indicator Analysis",
-        description: "Get comprehensive market analysis with 6-7 powerful indicators working across multiple timeframes simultaneously.",
-        features: [
-          "RSI, MACD, Ichimoku, and more",
-          "Multi-timeframe correlation",
-          "Automated signal generation",
-          "Customizable thresholds",
-          "Heatmap visualization"
-        ],
-        gradient: "from-orange-500 to-red-500",
-        bgGradient: "from-orange-500/10 to-red-500/10"
-      },
-      {
-        id: 4,
         icon: Calculator,
-        name: "Trading Calculators",
+        name: "Risk Tools",
         title: "Professional Risk Management Tools",
-        description: "Calculate position sizes, risk, stop-loss, and take-profit levels for Forex, Crypto, and Commodities with precision.",
+        description: "Calculate position sizes, risk, stop-loss, and take-profit levels for Forex, Crypto, and Commodities with precision, powered by artificial intelligence for forex trading.",
         features: [
           "Position size calculator",
           "Risk/reward calculator",
@@ -100,11 +68,43 @@ import {
         bgGradient: "from-cyan-500/10 to-blue-500/10"
       },
       {
+        id: 3,
+        icon: Gauge,
+        name: "Currency Strength",
+        title: "Advanced Currency Strength Meter",
+        description: "Identify the strongest and weakest currencies in real-time. Make smarter trading decisions based on currency correlation and strength using AI-based best forex trading platforms.",
+        features: [
+          "Real-time strength calculations",
+          "8 major currency pairs tracked",
+          "Visual strength indicators",
+          "Historical strength data",
+          "Correlation matrix analysis"
+        ],
+        gradient: "from-purple-500 to-pink-500",
+        bgGradient: "from-purple-500/10 to-pink-500/10"
+      },
+      {
+        id: 4,
+        icon: LineChart,
+        name: "TradingView Pro",
+        title: "Professional Charting",
+        description: "Access advanced TradingView charts directly in your browser. No downloads, no installations—just professional-grade trading tools at your fingertips. This ensures the best experience from the Top forex trading platform.",
+        features: [
+          "Real-time price data across all markets",
+          "50+ technical indicators and drawing tools",
+          "Multiple timeframe analysis",
+          "Custom watchlists and alerts",
+          "Mobile responsive design"
+        ],
+        gradient: "from-blue-500 to-cyan-500",
+        bgGradient: "from-blue-500/10 to-cyan-500/10"
+      },
+      {
         id: 5,
         icon: Globe,
         name: "Market Sessions",
         title: "Global Trading Sessions Tracker",
-        description: "Track all major trading sessions worldwide. Know when markets open, close, and overlap for optimal trading times.",
+        description: "Track all major trading sessions worldwide. Know when markets open, close, and overlap for optimal trading times, a critical capability for any AI forex trading software.",
         features: [
           "London, New York, Tokyo, Sydney sessions",
           "Real-time session status",
@@ -170,7 +170,7 @@ import {
             </h2>
             
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Discover our premium suite of professional trading tools. Each tool is designed to give you the edge you need in today&apos;s fast-paced markets.
+              Discover our premium suite of professional trading tools. Each tool is designed to give you the edge you need in today&apos;s fast-paced markets. With the best forex trading platform, access AI-powered analysis and specialized tools to enhance your trading strategy and achieve a competitive advantage.
             </p>
           </div>
   

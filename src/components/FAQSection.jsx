@@ -6,39 +6,27 @@ const FAQSection = () => {
   const faqData = [
     {
       question: "What is FxLabs Prime?",
-      answer: "FxLabs Prime is a smart trading tool. It helps you see market signals, news impact, and analysis in one place. We do not trade for you. You use our tools to make your own trading choices."
+      answer: "FxLabs Prime is a smart trading tool designed to be the best forex trading platform for analysis. It uses artificial intelligence for forex trading to help you see precise market signals, high-impact news, and confluence analysis in one place. We do not trade for you; you use our advanced AI forex trading software and tools to make your own informed trading choices."
     },
     {
-      question: "On which email id i will receive the alerts?",
-      answer: "You will receive the alerts to the registered mail id"
+      question: "On which email ID will I receive the alerts from the Top forex trading platform?",
+      answer: "You will receive the instant notifications and alerts to the registered email ID associated with your Top forex trading platform account."
     },
     {
-      question: "How can I start using FxLabs Prime?",
-      answer: "Just sign up on our website, choose a plan (Free, Quarterly, or Yearly), and pay online. After payment, you will get login details by email."
+      question: "What level of support and assistance is included after I purchase the Top forex trading platform?",
+      answer: "When you choose our Top forex trading platform, you receive immediate value, including instant access to your system, a link to our private Telegram community for direct communication with experienced traders, and step-by-step setup assistance to get you trading within minutes."
     },
     {
-      question: "Can I use FxLabs Prime on my phone?",
-      answer: "Yes. FxLabs Prime works on mobile, tablet, and computer. You only need internet and a browser to use it."
+      question: "Is the Multi-Time Frame Analysis feature powered by artificial intelligence for forex trading adaptable to all market conditions?",
+      answer: "Yes. The core advantage of using artificial intelligence for forex trading is its adaptability. Our AI-based forex trading platforms continuously analyze complex data patterns to identify trends and opportunities, making the system effective and responsive across all market conditions, whether ranging or trending."
     },
     {
-      question: "What if my payment fails?",
-      answer: "If payment fails, you will not get access. Try again or use another card/bank method. If money was taken but no access is given, contact our support team."
-    },
-    {
-      question: "Do you give refunds?",
-      answer: "No refunds for normal use. Refunds are only given if:\n\n1.You paid twice by mistake.\n\n2.There was a system error and you could not use the service."
-    },
-    {
-      question: "Is my data safe with FxLabs Prime?",
-      answer: "Yes. We use strong security, encryption, and do not sell your data. Your info is safe and private."
-    },
-    {
-      question: "What happens if I cancel my plan?",
-      answer: "If you cancel, your plan will stop auto-renew. You can still use it until the end of the period you paid for, but no money will be returned."
+      question: "Can I calculate my lot size and manage risk with the smart money management tools on this Top forex trading platform?",
+      answer: "Absolutely. Risk management is essential on the best forex trading platform. Our platform includes a precise Lotsize calculator and offers automated summaries with stop-loss guidance, ensuring disciplined risk control, which is a hallmark of the Top forex trading platform."
     }
   ];
 
-  // Show only first 2 FAQs on mobile by default, all on desktop
+  // Show only first 2 FAQs by default
   const visibleFaqs = showAllFaqs ? faqData : faqData.slice(0, 2);
 
   return (
@@ -60,29 +48,22 @@ const FAQSection = () => {
           ))}
         </div>
 
-        {/* Show More/Less button - only visible on mobile */}
-        <div className="md:hidden mt-6 text-center">
+        {/* Show More/Less button */}
+        <div className="mt-8 text-center">
           <button
             onClick={() => setShowAllFaqs(!showAllFaqs)}
-            className="inline-flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition duration-300 font-medium text-sm"
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 text-white px-8 py-3 rounded-full font-semibold text-base shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-105 transition-all duration-300"
           >
-            {showAllFaqs ? 'Show Less' : 'Show More'}
-            <i className={`ml-1 text-sm transition-transform duration-300 ${showAllFaqs ? 'rotate-180' : ''}`}>
-              ▼
-            </i>
+            {showAllFaqs ? 'Show Less' : 'Show More FAQs'}
+            <svg 
+              className={`w-5 h-5 transition-transform duration-300 ${showAllFaqs ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
-        </div>
-        
-        <div className="mt-8 md:mt-12 text-center">
-          <p className="text-lg md:text-xl mb-4 md:mb-6 text-[#19235d] dark:text-white transition-colors duration-300">Still have questions?</p>
-          <a 
-            href="https://t.me/Fxlabs_prime" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition duration-300"
-          >
-            <i className="fab fa-telegram mr-2 text-xl"></i> Ask on Telegram
-          </a>
         </div>
       </div>
     </section>
