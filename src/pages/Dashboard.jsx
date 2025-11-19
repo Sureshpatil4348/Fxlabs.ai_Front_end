@@ -51,23 +51,26 @@
     }, [user?.id])
 
   // Initialize default alerts for first-time users
+  // TEMPORARILY DISABLED - wrapped in if (false) block
   React.useEffect(() => {
-    if (user?.id && !defaultAlertsInitializedRef.current) {
-      defaultAlertsInitializedRef.current = true;
-      console.log('[Dashboard] Checking if user needs default alerts initialization...');
-      
-      defaultAlertsService.checkAndInitialize()
-        .then(result => {
-          if (result.initialized) {
-            console.log('[Dashboard] ✓ Default alerts initialized for first-time user');
-            console.log('[Dashboard] Initialization results:', result.results);
-          } else {
-            console.log('[Dashboard] User already has alerts or initialization skipped');
-          }
-        })
-        .catch(error => {
-          console.error('[Dashboard] Failed to initialize default alerts:', error);
-        });
+    if (false) { // Temporarily disabled - remove this condition to re-enable
+      if (user?.id && !defaultAlertsInitializedRef.current) {
+        defaultAlertsInitializedRef.current = true;
+        console.log('[Dashboard] Checking if user needs default alerts initialization...');
+        
+        defaultAlertsService.checkAndInitialize()
+          .then(result => {
+            if (result.initialized) {
+              console.log('[Dashboard] ✓ Default alerts initialized for first-time user');
+              console.log('[Dashboard] Initialization results:', result.results);
+            } else {
+              console.log('[Dashboard] User already has alerts or initialization skipped');
+            }
+          })
+          .catch(error => {
+            console.error('[Dashboard] Failed to initialize default alerts:', error);
+          });
+      }
     }
   }, [user?.id])
 
