@@ -6,22 +6,22 @@ const AfterPurchaseSection = () => {
     {
       icon: Download,
       title: 'Instant Access',
-      description: "You'll receive login details to start using your system immediately",
+      description: "You'll receive login details to start using your system immediately."
     },
     {
       icon: MessageCircle,
       title: 'Telegram Support',
-      description: "you will receive the link to join our private community group",
+      description: "You will receive the link to join our private community group for the Top forex trading platform.",
     },
     {
       icon: Settings,
       title: 'Setup Assistance',
-      description: 'Follow our step-by-step guide or get personal help',
+      description: 'Follow our step-by-step guide or get personal help to quickly set up your AI forex trading software.',
     },
     {
       icon: Rocket,
       title: 'Start Trading',
-      description: 'Be up and running within 2 minutes on your preferred Device',
+      description: 'Be up and running within 2 minutes on your preferred device, leveraging artificial intelligence for forex trading.',
     },
   ];
 
@@ -36,7 +36,7 @@ const AfterPurchaseSection = () => {
             </div>
           </div>
           <div className="p-8 md:p-10 md:w-2/3">
-            <h3 className="text-2xl font-bold mb-6 text-[#19235d] dark:text-white text-center md:text-left">After You Purchase:</h3>
+            <h3 className="text-2xl font-bold mb-6 text-[#19235d] dark:text-white text-center md:text-left">After You Purchase the Best Forex Trading Platform:</h3>
             <ol className="space-y-4">
               {steps.map((step, index) => (
                 <li key={index} className="flex items-start">

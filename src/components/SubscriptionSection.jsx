@@ -231,7 +231,7 @@ const SubscriptionSection = () => {
           </h2>
 
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            All plans include every feature. Choose based on your commitment level and save more with longer subscriptions.
+            All plans include every feature of the best forex trading platform. Choose based on your commitment level and save more with longer subscriptions.
           </p>
         </div>
 

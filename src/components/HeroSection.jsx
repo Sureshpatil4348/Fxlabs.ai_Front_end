@@ -210,7 +210,7 @@ const HeroSection = () => {
 
             {/* Subheadline */}
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-              Experience seamless, all-in-one Analysis intelligence—every tool and insight you need, unified in a single world-class platform.
+              Experience seamless, all-in-one Forex Trading Analysis intelligence—every tool and insight you need, unified in a single world-class platform.
             </p>
 
             {/* Premium Feature Highlights */}
