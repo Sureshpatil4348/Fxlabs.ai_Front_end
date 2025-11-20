@@ -3149,7 +3149,7 @@ export const KLineChartComponent = ({
           }
 
           // Use common extension ratios
-          const ratios = [0.618, 1.0, 1.272, 1.618, 2.0, 2.618];
+          const ratios = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618, 2.0, 2.618];
 
           // Leg AB in price and pixels
           const v0 = Number(points?.[0]?.value);
