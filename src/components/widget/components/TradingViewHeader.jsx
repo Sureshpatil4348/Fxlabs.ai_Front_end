@@ -294,7 +294,7 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
                   // best-effort; ignore if store not ready
                 }
               }}
-              className="px-2 py-1 text-[13px] font-medium bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="px-2 py-1 text-[13px] font-medium text-gray-700 bg-transparent border-none focus:outline-none cursor-pointer"
             >
               <option value="candlestick">Candlestick</option>
               <option value="line">Line</option>

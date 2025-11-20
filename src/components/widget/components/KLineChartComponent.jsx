@@ -3320,8 +3320,8 @@ export const KLineChartComponent = ({
         },
         // Force main price series to use full width
         candle: {
-          // Use candlesticks by default; switch to area (close-only line) when chartType is 'line'
-          type: settings.chartType === 'line' ? 'area' : 'candle_solid',
+          // Default to candlesticks; line mode styling is applied later once real data is available
+          type: 'candle_solid',
           upColor: '#10b981',
           downColor: '#ef4444',
           noChangeColor: '#888888',
