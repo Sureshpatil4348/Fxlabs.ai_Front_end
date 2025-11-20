@@ -282,23 +282,25 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
             )}
           </div>
 
-          {/* Chart Type Dropdown (Candlestick / Line) */}
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
+          {/* Chart Type Switch (Candlestick / Line) */}
           <div className="ml-2">
-            <select
-              value={settings.chartType || 'candlestick'}
-              onChange={(e) => {
-                const value = e.target.value === 'line' ? 'line' : 'candlestick';
+            <button
+              onClick={() => {
+                const currentType = settings.chartType || 'candlestick';
+                const newType = currentType === 'line' ? 'candlestick' : 'line';
                 try {
-                  setChartType(value);
+                  setChartType(newType);
                 } catch (_) {
                   // best-effort; ignore if store not ready
                 }
               }}
-              className="px-2 py-1 text-[13px] font-medium text-gray-700 bg-transparent border-none focus:outline-none cursor-pointer"
+              className="px-2 py-1 text-[13px] font-medium text-gray-700 bg-transparent hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              <option value="candlestick">Candlestick</option>
-              <option value="line">Line</option>
-            </select>
+              {settings.chartType === 'line' ? 'Line' : 'Candlestick'}
+            </button>
           </div>
 
           {/* Vertical Separator */}
