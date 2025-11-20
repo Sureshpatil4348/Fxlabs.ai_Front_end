@@ -173,6 +173,13 @@ export const UniversalDrawingTools = ({
         const levels = meta.retracementLevels ? Object.entries(meta.retracementLevels) : [];
         const fibonacciLines = levels.map(([level, price]) => {
           const levelSvg = chartToSvg(start.time, price);
+          
+          // Custom colors for specific levels
+          let levelColor = color;
+          const numericLevel = parseFloat(level);
+          if ([0.136, 0.236].includes(numericLevel)) levelColor = '#E91E63'; // Pink
+          else if ([0.786, 0.854].includes(numericLevel)) levelColor = '#F44336'; // Red
+
           return (
             <line
               key={`${meta.id}-level-${level}`}
@@ -180,7 +187,7 @@ export const UniversalDrawingTools = ({
               y1={levelSvg.y}
               x2={svg2.x}
               y2={levelSvg.y}
-              stroke={color}
+              stroke={levelColor}
               strokeWidth={1}
               opacity={opacity * 0.7}
               strokeDasharray="2,2"

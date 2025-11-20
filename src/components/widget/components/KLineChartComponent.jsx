@@ -2989,14 +2989,31 @@ export const KLineChartComponent = ({
         const texts = [];
         // Get color from overlay styles, fallback to default
         const lineColor = overlay?.styles?.line?.color || overlay?.color || '#9C27B0';
+        
+        // Custom colors for specific levels as requested
+        // Levels: 13.60 (pink), 23.60 (pink), 38.20, 50.00, 61.80, 78.60 (red), 85.40 (red)
+        const fibConfig = [
+          { percent: 1, color: null },
+          { percent: 0.854, color: '#F44336' }, // Red
+          { percent: 0.786, color: '#F44336' }, // Red
+          { percent: 0.618, color: null },
+          { percent: 0.500, color: null },
+          { percent: 0.382, color: null },
+          { percent: 0.236, color: '#E91E63' }, // Pink
+          { percent: 0.136, color: '#E91E63' }, // Pink
+          { percent: 0, color: null }
+        ];
+
         if (c1 && Number.isFinite(points?.[0]?.value) && Number.isFinite(points?.[1]?.value)) {
-          const percents = [1, 0.786, 0.618, 0.5, 0.382, 0.236, 0];
           const endX = (bounding && typeof bounding.width === 'number') ? bounding.width : Math.max(c0.x || 0, c1.x || 0);
           const startX = Math.min(c0.x || 0, c1.x || 0);
           const yDif = c0.y - c1.y;
           const valueDif = (points[0].value ?? 0) - (points[1].value ?? 0);
+          
+          // Group lines by color to create separate primitives
+          const linesByColor = {};
 
-          percents.forEach((percent) => {
+          fibConfig.forEach(({ percent, color }) => {
             const y = c1.y + yDif * percent;
             const rawValue = ((points[1].value ?? 0) + valueDif * percent);
             let displayValue = String(rawValue);
@@ -3007,9 +3024,28 @@ export const KLineChartComponent = ({
             } catch (_e) {
               displayValue = rawValue.toFixed(precision);
             }
-            lines.push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
-            texts.push({ x: startX, y, text: `${displayValue} (${(percent * 100).toFixed(1)}%)`, baseline: 'bottom' });
+            
+            const levelColor = color || lineColor;
+            if (!linesByColor[levelColor]) {
+              linesByColor[levelColor] = [];
+            }
+            
+            linesByColor[levelColor].push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
+            texts.push({ x: startX, y, text: `${displayValue} (${(percent * 100).toFixed(2)}%)`, baseline: 'bottom' });
           });
+
+          // Create line primitives for each color group
+          const linePrimitives = Object.entries(linesByColor).map(([color, attrs]) => ({
+            type: 'line',
+            attrs: attrs,
+            styles: { size: 1, color: color }
+          }));
+
+          return [
+            { type: 'line', attrs: preview, styles: { size: 1, style: 'dash', color: lineColor } },
+            ...linePrimitives,
+            { type: 'text', isCheckEvent: false, attrs: texts },
+          ];
         }
 
         return [

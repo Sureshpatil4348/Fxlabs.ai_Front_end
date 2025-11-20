@@ -35,10 +35,12 @@ export const DRAWING_TOOL_CONFIGS = {
 // Fibonacci retracement levels
 export const FIBONACCI_LEVELS = {
   '0.000': 0.000,
+  '0.136': 0.136,
   '0.236': 0.236,
   '0.382': 0.382,
   '0.500': 0.500,
   '0.618': 0.618,
   '0.786': 0.786,
+  '0.854': 0.854,
   '1.000': 1.000
 };
