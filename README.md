@@ -123,6 +123,10 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 - Green badge: “Target: mm (nn%)”.
 - This reduces on-chart clutter and applies to both long and short position tools.
 
+### Fibonacci Tools Visualization
+
+- Fibonacci Retracement and Extension tools now display percentage levels and price values aligned to the rightmost edge of the chart for better visibility and reduced visual clutter on the chart body.
+
 ### Split Mode (KLine Chart)
 
 The KLineChart now supports a split mode feature that allows you to view two independent charts side-by-side. This is particularly useful for comparing different currency pairs or timeframes simultaneously.
@@ -201,7 +205,7 @@ When in split mode:
 - Changing the currency pair or timeframe now shows a centered loader (using the same icon and text styling as the AI News Analysis loader) with the message:
   - `Preparing Trading Chart`
   - `Please wait`
-  replacing the previous shimmer-based skeleton overlay.
+  - replacing the previous shimmer-based skeleton overlay.
 - Old candles are cleared immediately on selection change so no broken/half-baked candles appear.
 - While the initial REST fetch is in progress, live WebSocket updates are temporarily ignored to prevent partial bar rendering; they resume automatically once loading completes.
 - Applies to both single and split mode. Each split chart independently shows the loader and manages its own data flow.

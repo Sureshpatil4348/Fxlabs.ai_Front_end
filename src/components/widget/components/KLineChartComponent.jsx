@@ -3031,7 +3031,7 @@ export const KLineChartComponent = ({
             }
             
             linesByColor[levelColor].push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
-            texts.push({ x: startX, y, text: `${displayValue} (${(percent * 100).toFixed(2)}%)`, baseline: 'bottom' });
+            texts.push({ x: endX, y, text: `${displayValue} (${(percent * 100).toFixed(2)}%)`, baseline: 'bottom', align: 'right' });
           });
 
           // Create line primitives for each color group
@@ -3180,7 +3180,7 @@ export const KLineChartComponent = ({
 
             const y = c2.y + deltaY * r;
             lines.push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
-            texts.push({ x: startX, y, text: `${displayValue} (${(r * 100).toFixed(1)}%)`, baseline: 'bottom' });
+            texts.push({ x: endX, y, text: `${displayValue} (${(r * 100).toFixed(1)}%)`, baseline: 'bottom', align: 'right' });
           });
 
           return [
