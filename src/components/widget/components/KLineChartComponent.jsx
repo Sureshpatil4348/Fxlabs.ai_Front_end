@@ -3318,9 +3318,10 @@ export const KLineChartComponent = ({
             show: false
           }
         },
-        // Force candlesticks to use full width
+        // Force main price series to use full width
         candle: {
-          type: 'candle_solid',
+          // Use candlesticks by default; switch to area (close-only line) when chartType is 'line'
+          type: settings.chartType === 'line' ? 'area' : 'candle_solid',
           upColor: '#10b981',
           downColor: '#ef4444',
           noChangeColor: '#888888',
@@ -4349,6 +4350,7 @@ export const KLineChartComponent = ({
   useEffect(() => {
     const chart = chartRef.current;
     const hasRealCandles = Array.isArray(candles) && candles.length > 0;
+    const isLineMode = settings.chartType === 'line';
 
     if (!chart) return;
 
@@ -4402,7 +4404,7 @@ export const KLineChartComponent = ({
           },
         });
       } else if (hasRealCandles) {
-        // Restore visible candlesticks and price marks once real data is available.
+        // Restore visible main price series and price marks once real data is available.
         // IMPORTANT: Preserve grid configuration to ensure vertical lines render in production
         chart.setStyles({
           grid: {
@@ -4418,6 +4420,8 @@ export const KLineChartComponent = ({
             }
           },
           candle: {
+            // Switch between candlestick and area (close-only line) based on chartType
+            type: isLineMode ? 'area' : 'candle_solid',
             bar: {
               upColor: '#10b981',
               downColor: '#ef4444',
@@ -4438,7 +4442,7 @@ export const KLineChartComponent = ({
     } catch (_) {
       // Optional API differences - best-effort styling.
     }
-  }, [candles, isInitialLoad, settings.showGrid]);
+  }, [candles, isInitialLoad, settings.showGrid, settings.chartType]);
 
   // Handle indicator visibility changes
   useEffect(() => {

@@ -52,6 +52,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     
     const store = isMainChart ? mainChartStore : splitChartStore;
     const settings = mainChartStore.settings; // Settings always come from main store
+    const isKLineMode = settings.chartType === "candlestick" || settings.chartType === "line";
     
     const {
         candles,
@@ -148,18 +149,17 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
 
     // Get candles for display based on chart type
     const displayCandles = useMemo(() => {
-        if (settings.chartType === "candlestick") {
-            // Candlestick: use all candles (with pagination)
-            return candles;
-        } else {
-            // Line chart: only use the most recent 500 candles
-            const maxLineChartCandles = 500;
-            if (candles.length > maxLineChartCandles) {
-                return candles.slice(-maxLineChartCandles);
-            }
+        if (isKLineMode) {
+            // KLine modes (candlestick / line) use the same candle stream
             return candles;
         }
-    }, [candles, settings.chartType]);
+        // Non-KLine modes (if added in future) can still limit data for performance
+        const maxLineChartCandles = 500;
+        if (candles.length > maxLineChartCandles) {
+            return candles.slice(-maxLineChartCandles);
+        }
+        return candles;
+    }, [candles, isKLineMode]);
 
     // Format data for Recharts with proper indicator alignment (optimized)
     const chartData = useMemo(() => {
@@ -244,12 +244,12 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
 
     // Refresh line chart when switching to line chart type
     useEffect(() => {
-        if (settings.chartType !== "candlestick") {
+        if (!isKLineMode) {
             console.log("📊 Refreshing line chart area...");
-            // Force re-render of line chart components
+            // Force re-render of line chart components for non-KLine modes
             setLineChartKey((prev) => prev + 1);
         }
-    }, [settings.chartType]);
+    }, [isKLineMode]);
 
     // Load more historical data (pagination)
     // removed loadMoreHistory; background preloader now fetches slices inline
@@ -717,7 +717,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     // Initialize wishlist WebSocket (temporarily disabled to fix main chart)
 
     // For candlestick (KLineChart), let the inner component handle its own initial loader
-    if (isLoading && settings.chartType !== "candlestick") {
+    if (isLoading && !isKLineMode) {
         return (
             <div className="flex-1 bg-white flex items-start justify-center pt-16 h-full">
                 <div className="text-center">
@@ -747,12 +747,12 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
             {/* Chart Container: candlestick uses container-sized chart, others can scroll */}
             <div
                 className={`unified-chart-container ${
-                    settings.chartType === "candlestick"
+                    isKLineMode
                         ? "flex-1 relative overflow-hidden"
                         : "flex-1 overflow-y-auto"
                 }`}
                 style={
-                    settings.chartType === "candlestick"
+                    isKLineMode
                         ? { minHeight: 0 }
                         : {
                               minHeight: 0,
@@ -763,7 +763,7 @@ export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
                           }
                 }
             >
-                {settings.chartType === "candlestick" ? (
+                {isKLineMode ? (
                     // Show Enhanced Candlestick Chart with drawing tools, sized to container
                     <div
                         className="absolute"

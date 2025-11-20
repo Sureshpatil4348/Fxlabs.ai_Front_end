@@ -14,7 +14,8 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
     toggleIndicator,
     setSplitChartSymbol,
     setSplitChartTimeframe,
-    toggleSplitChartIndicator
+    toggleSplitChartIndicator,
+    setChartType,
   } = useChartStore();
 
   const [showSymbolSearch, setShowSymbolSearch] = useState(false);
@@ -152,6 +153,25 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
+
+          {/* Chart Type Dropdown (Candlestick / Line) */}
+          <div className="ml-2">
+            <select
+              value={settings.chartType || 'candlestick'}
+              onChange={(e) => {
+                const value = e.target.value === 'line' ? 'line' : 'candlestick';
+                try {
+                  setChartType(value);
+                } catch (_) {
+                  // best-effort; ignore if store not ready
+                }
+              }}
+              className="px-2 py-1 text-[13px] font-medium bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="candlestick">Candlestick</option>
+              <option value="line">Line</option>
+            </select>
+          </div>
 
           {/* Vertical Separator */}
           <div className="h-6 w-px bg-gray-300"></div>

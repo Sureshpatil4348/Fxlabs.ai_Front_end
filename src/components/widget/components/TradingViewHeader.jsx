@@ -9,7 +9,7 @@ import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
 export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) => {
-  const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone, toggleSplitMode } = useChartStore();
+  const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone, toggleSplitMode, setChartType } = useChartStore();
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef(null);
   const [_activeTimeframe, setActiveTimeframe] = useState('1m');
@@ -280,6 +280,25 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
                 </svg>
               </button>
             )}
+          </div>
+
+          {/* Chart Type Dropdown (Candlestick / Line) */}
+          <div className="ml-2">
+            <select
+              value={settings.chartType || 'candlestick'}
+              onChange={(e) => {
+                const value = e.target.value === 'line' ? 'line' : 'candlestick';
+                try {
+                  setChartType(value);
+                } catch (_) {
+                  // best-effort; ignore if store not ready
+                }
+              }}
+              className="px-2 py-1 text-[13px] font-medium bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="candlestick">Candlestick</option>
+              <option value="line">Line</option>
+            </select>
           </div>
 
           {/* Vertical Separator */}

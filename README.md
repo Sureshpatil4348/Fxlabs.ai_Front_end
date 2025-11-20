@@ -28,6 +28,7 @@ All chart state is automatically persisted to localStorage and restored on page 
 **Default KLineChart Configuration (on first load):**
 - **Default Currency Pair**: `EUR/USD` (`EURUSD`)
 - **Default Timeframe**: `15m`
+- **Default Chart Type**: `Candlestick` (toggleable to `Line` via the chart-type dropdown next to the pair selector; line mode renders a close-price line while preserving all existing tools, drawings, zooming and split-mode behavior)
 - **Default Cursor for Drawing Tools**: `Pointer`
 - **Default Indicators**: None enabled by default
 - **Initial REST History Load**: 1000 candles on first fetch; background preloading of additional past data is temporarily disabled (older-history preloading logic remains in code for future re-enable)

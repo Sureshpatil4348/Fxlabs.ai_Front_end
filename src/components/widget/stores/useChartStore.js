@@ -9,6 +9,8 @@ const SYSTEM_TIMEZONE = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().re
 const defaultSettings = {
   symbol: 'EURUSD',
   timeframe: '15m',
+  // Primary price series type for the main chart
+  // Allowed values: 'candlestick' | 'line'
   chartType: 'candlestick',
   cursorType: 'pointer',
   // Auto-detect system timezone by default
@@ -277,9 +279,9 @@ export const useChartStore = create(
       },
       
       setChartType: (chartType) => {
-        // Lock to candlestick mode only
-        const nextType = 'candlestick';
-        console.log('💾 ChartStore: Setting chartType to', chartType, '-> enforced as', nextType);
+        // Normalize chart type to supported values
+        const nextType = chartType === 'line' ? 'line' : 'candlestick';
+        console.log('💾 ChartStore: Setting chartType to', chartType, '-> normalized as', nextType);
         set((state) => ({
           settings: {
             ...state.settings,
@@ -666,8 +668,8 @@ export const useChartStore = create(
               const tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
               _state.settings.timezone = tz;
             }
-            // Enforce candlestick-only mode on rehydrate
-            if (_state.settings.chartType !== 'candlestick') {
+            // Normalize chart type on rehydrate (support 'candlestick' and 'line' only)
+            if (_state.settings.chartType !== 'candlestick' && _state.settings.chartType !== 'line') {
               _state.settings.chartType = 'candlestick';
             }
             // Ensure split mode settings exist (migration for existing users)
