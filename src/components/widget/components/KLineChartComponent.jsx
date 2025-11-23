@@ -2991,7 +2991,7 @@ export const KLineChartComponent = ({
         const lineColor = overlay?.styles?.line?.color || overlay?.color || '#9C27B0';
         
         // Custom colors for specific levels as requested
-        // Levels: 13.60 (pink), 23.60 (pink), 38.20, 50.00, 61.80, 78.60 (red), 85.40 (red)
+        // Levels: 14.60 (pink), 23.60 (pink), 38.20, 50.00, 61.80, 78.60 (red), 85.40 (red)
         const fibConfig = [
           { percent: 1, color: null },
           { percent: 0.854, color: '#F44336' }, // Red
@@ -3000,7 +3000,7 @@ export const KLineChartComponent = ({
           { percent: 0.500, color: null },
           { percent: 0.382, color: null },
           { percent: 0.236, color: '#E91E63' }, // Pink
-          { percent: 0.136, color: '#E91E63' }, // Pink
+          { percent: 0.146, color: '#E91E63' }, // Pink
           { percent: 0, color: null }
         ];
 

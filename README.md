@@ -127,6 +127,7 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 ### Fibonacci Tools Visualization
 
 - Fibonacci Retracement and Extension tools now display percentage levels and price values aligned to the rightmost edge of the chart for better visibility and reduced visual clutter on the chart body.
+- The custom Fibonacci Retracement configuration uses levels including 14.60%, 23.60%, 38.20%, 50.00%, 61.80%, 78.60%, and 85.40%, with 14.60% and 23.60% styled as highlighted levels.
 
 ### Split Mode (KLine Chart)
 
