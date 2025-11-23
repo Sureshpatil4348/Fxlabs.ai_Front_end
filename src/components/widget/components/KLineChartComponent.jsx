@@ -4474,6 +4474,16 @@ export const KLineChartComponent = ({
             },
           },
         });
+
+        if (isLineMode) {
+          chart.setStyles({
+            candle: {
+              area: {
+                backgroundColor: 'transparent',
+              },
+            },
+          });
+        }
       }
     } catch (_) {
       // Optional API differences - best-effort styling.
