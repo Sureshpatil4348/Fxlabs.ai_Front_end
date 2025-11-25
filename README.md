@@ -72,8 +72,8 @@ All chart state is automatically persisted to localStorage and restored on page 
 
 ### KLineChart Bottom Controls Auto-Hide
 
-- The bottom zoom/pan/reload controls (`+`, `-`, left/right arrows, reload) remain visible while you interact with the chart, then fade out after 5 seconds of inactivity.
-- Moving the mouse or hovering anywhere over the KLine chart immediately brings these controls back and restarts the 5-second timer.
+- The bottom zoom/pan/reload controls (`+`, `-`, left/right arrows, reload) are hidden by default and appear when you move the mouse over the center-bottom region of the chart where they sit.
+- Once visible, these controls fade out after 3 seconds of inactivity; moving the mouse within this bottom-center area brings them back and restarts the 3-second timer (mouse movement elsewhere on the chart no longer reveals them).
 
 ### KLineChart Indicator Presets
 
