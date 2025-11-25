@@ -3141,11 +3141,6 @@ export const KLineChartComponent = ({
             precision = 5;
           }
 
-          const coordsForWidth = [c0, c1, c2].filter(Boolean);
-          const width = (bounding && typeof bounding.width === 'number')
-            ? bounding.width
-            : Math.max(0, Math.max(...coordsForWidth.map(c => c.x || 0)) + 1);
-
           // Guide lines visible during drawing
           const guideLines = [];
           if (c0 && c1) {
@@ -3172,9 +3167,12 @@ export const KLineChartComponent = ({
           const deltaPrice = (Number.isFinite(v1) && Number.isFinite(v0)) ? (v1 - v0) : 0;
           const deltaY = (c1.y - c0.y);
 
-          // Start drawing to the right of the rightmost anchor
-          const startX = Math.max(c0.x, c1.x, c2.x);
-          const endX = width;
+          // Extension lines span horizontally between second and third anchors
+          const rawX1 = c1.x || 0;
+          const rawX2 = c2.x || 0;
+          const startX = Math.min(rawX1, rawX2);
+          const endX = Math.max(rawX1, rawX2);
+          const labelOffsetPx = 6;
 
           const lines = [];
           const texts = [];
@@ -3194,7 +3192,13 @@ export const KLineChartComponent = ({
 
             const y = c2.y + deltaY * r;
             lines.push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
-            texts.push({ x: endX, y, text: `${displayValue} (${(r * 100).toFixed(1)}%)`, baseline: 'bottom', align: 'right' });
+            texts.push({
+              x: endX + labelOffsetPx,
+              y,
+              text: `${displayValue} (${(r * 100).toFixed(1)}%)`,
+              baseline: 'bottom',
+              align: 'left'
+            });
           });
 
           return [
