@@ -3010,8 +3010,11 @@ export const KLineChartComponent = ({
         ];
 
         if (c1 && Number.isFinite(points?.[0]?.value) && Number.isFinite(points?.[1]?.value)) {
-          const endX = (bounding && typeof bounding.width === 'number') ? bounding.width : Math.max(c0.x || 0, c1.x || 0);
-          const startX = Math.min(c0.x || 0, c1.x || 0);
+          const rawX0 = c0.x || 0;
+          const rawX1 = c1.x || 0;
+          const startX = Math.min(rawX0, rawX1);
+          const endX = Math.max(rawX0, rawX1);
+          const labelOffsetPx = 6;
           const yDif = c0.y - c1.y;
           const valueDif = (points[0].value ?? 0) - (points[1].value ?? 0);
           
@@ -3036,7 +3039,13 @@ export const KLineChartComponent = ({
             }
             
             linesByColor[levelColor].push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
-            texts.push({ x: endX, y, text: `${displayValue} (${(percent * 100).toFixed(2)}%)`, baseline: 'bottom', align: 'right' });
+            texts.push({
+              x: endX + labelOffsetPx,
+              y,
+              text: `${displayValue} (${(percent * 100).toFixed(2)}%)`,
+              baseline: 'bottom',
+              align: 'left'
+            });
           });
 
           // Create line primitives for each color group
