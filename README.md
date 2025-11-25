@@ -16,6 +16,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ### Linting Configuration
 
 - ESLint `import/order` rule is disabled project-wide (`.eslintrc.json`) to prevent import ordering from blocking builds and deployments while other rules still enforce code quality with `--max-warnings=0`.
+- Overlay callback signatures now prefix intentionally unused parameters with `_` to comply with the `no-unused-vars` rule pattern while keeping type/shape compatibility with the KLineChart library.
 
 ### State Persistence
 

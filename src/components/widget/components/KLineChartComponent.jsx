@@ -2951,7 +2951,7 @@ export const KLineChartComponent = ({
       needDefaultPointFigure: true,
       needDefaultXAxisFigure: true,
       needDefaultYAxisFigure: true,
-      createPointFigures: ({ chart, coordinates, bounding, overlay, yAxis }) => {
+      createPointFigures: ({ chart, coordinates, _bounding, overlay, yAxis }) => {
         const points = overlay?.points || [];
         if (!Array.isArray(points) || points.length === 0) return [];
 
@@ -3104,7 +3104,7 @@ export const KLineChartComponent = ({
       needDefaultPointFigure: true,
       needDefaultXAxisFigure: true,
       needDefaultYAxisFigure: true,
-      createPointFigures: ({ chart, coordinates, bounding, overlay, yAxis }) => {
+      createPointFigures: ({ chart, coordinates, _bounding, overlay, yAxis }) => {
         try {
           const points = overlay?.points || [];
           if (!Array.isArray(points) || points.length === 0) return [];
