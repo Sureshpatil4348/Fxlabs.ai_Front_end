@@ -180,6 +180,7 @@ When in split mode:
 ### Timeframe Selector Behavior
 
 - Default quick selections show `1m`, `5m`, `15m`, plus a `More` dropdown.
+- The `More` dropdown includes `30m`, `1h`, `4h`, `1d`, `1w`, and `1mo` (1 Month), matching the backend timeframes (`1M,5M,15M,30M,1H,4H,1D,1W,1MN`).
 - Selecting any timeframe from `More` swaps it into the third quick slot, and moves `15m` into the `More` list.
 - Selecting `1m` or `5m` restores the default quick selections (`1m`, `5m`, `15m`) and returns the previously swapped timeframe back into `More`.
 - If `15m` appears inside `More` (after a swap) and is selected, the quick selections revert to the default.

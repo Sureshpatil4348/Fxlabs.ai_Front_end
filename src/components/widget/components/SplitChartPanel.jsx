@@ -199,7 +199,7 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
               <button
                 onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
                 className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 flex items-center gap-1 ${
-                  showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(currentTimeframe)
+                  showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w', '1mo'].includes(currentTimeframe)
                     ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white rounded-lg'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
@@ -213,7 +213,7 @@ export const SplitChartPanel = ({ chartIndex = 1 }) => {
               {/* More Timeframes Dropdown Menu */}
               {showMoreTimeframesDropdown && (
                 <div className="absolute top-full left-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999] overflow-hidden">
-                  {['30m', '1h', '4h', '1d', '1w'].map((tf) => (
+                  {['30m', '1h', '4h', '1d', '1w', '1mo'].map((tf) => (
                     <button
                       key={tf}
                       onClick={() => handleTimeframeSelect(tf)}

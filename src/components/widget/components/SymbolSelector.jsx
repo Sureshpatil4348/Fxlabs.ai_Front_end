@@ -46,6 +46,7 @@ const TIMEFRAMES = [
   { value: '4h', label: '4 Hours' },
   { value: '1d', label: '1 Day' },
   { value: '1w', label: '1 Week' },
+  { value: '1mo', label: '1 Month' },
 ];
 
 export const SymbolSelector = () => {

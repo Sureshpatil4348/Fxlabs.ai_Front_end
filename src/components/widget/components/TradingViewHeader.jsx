@@ -89,7 +89,7 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
   // Quick-access timeframes default: 1m, 5m, 15m; remaining in dropdown
   const _timeframes = ['1m', '5m', '15m'];
   const DEFAULT_QUICK_TFS = ['1m', '5m', '15m'];
-  const DEFAULT_MORE_TFS = ['30m', '1h', '4h', '1d', '1w'];
+  const DEFAULT_MORE_TFS = ['30m', '1h', '4h', '1d', '1w', '1mo'];
 
   // Dynamic quick and more lists to support swapping 15m with a selected "More" timeframe
   const [quickTimeframes, setQuickTimeframes] = useState(DEFAULT_QUICK_TFS);

@@ -582,7 +582,10 @@ export const KLineChartComponent = ({
       // timeframe suitability (<= 60 minutes)
       const tf = String(settings?.timeframe || '1h');
       const toMinutes = (tfStr) => {
-        const match = /^([0-9]+)([mhdw])$/i.exec(tfStr.trim());
+        const normalized = String(tfStr || '').trim().toLowerCase();
+        // Explicitly treat 1-month timeframe as a long frame (> 60 minutes)
+        if (normalized === '1mo') return 60 * 24 * 30;
+        const match = /^([0-9]+)([mhdw])$/i.exec(normalized);
         if (!match) return 60; // default 60m
         const n = parseInt(match[1], 10);
         const u = match[2].toLowerCase();
@@ -4949,7 +4952,10 @@ export const KLineChartComponent = ({
       // timeframe suitability (<= 60 minutes)
       const tf = String(settings?.timeframe || '1h');
       const toMinutes = (tfStr) => {
-        const match = /^([0-9]+)([mhdw])$/i.exec(tfStr.trim());
+        const normalized = String(tfStr || '').trim().toLowerCase();
+        // Explicitly treat 1-month timeframe as a long frame (> 60 minutes)
+        if (normalized === '1mo') return 60 * 24 * 30;
+        const match = /^([0-9]+)([mhdw])$/i.exec(normalized);
         if (!match) return 60; // default 60m
         const n = parseInt(match[1], 10);
         const u = match[2].toLowerCase();
