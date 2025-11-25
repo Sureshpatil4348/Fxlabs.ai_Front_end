@@ -1,9 +1,11 @@
 import { 
   Bell,
-  Sliders as _Sliders
+  Sliders as _Sliders,
+  Maximize2,
+  X
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-
+import { createPortal } from 'react-dom';
 
 import HeatmapIndicatorTrackerAlertConfig from './HeatmapIndicatorTrackerAlertConfig';
 import HeatmapTrackerAlertConfig from './HeatmapTrackerAlertConfig';
@@ -194,6 +196,7 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   const [_indicatorWeight, _setIndicatorWeight] = useState('equal');
   const [currentSymbol, setCurrentSymbol] = useState(selectedSymbol);
   const [isSymbolDropdownOpen, setIsSymbolDropdownOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Track initial loading state
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -278,6 +281,19 @@ const MultiIndicatorHeatmap = ({ selectedSymbol = 'EURUSDm' }) => {
   // Add this state
 const [hasAutoSubscribed, setHasAutoSubscribed] = useState(false);
 const symbolDropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (!isDialogOpen) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsDialogOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDialogOpen]);
 
   // Close symbol dropdown on outside click
   useEffect(() => {
@@ -504,10 +520,9 @@ useEffect(() => {
   const indicators = ['EMA21', 'EMA50', 'EMA200', 'MACD', 'RSI', 'UTBOT', 'ICHIMOKU'];
   
   // Component rendering with trading style
-  
-  return (
-    <>
-    <div className="h-full flex flex-col" style={{position: 'relative'}} key={`heatmap-${tradingStyle}`}>
+
+  const renderContent = ({ hideFullscreenButton = false, hideInnerTitle = false } = {}) => (
+    <div className="h-full flex flex-col" style={{ position: 'relative' }} key={`heatmap-${tradingStyle}`}>
       {/* Header */}
       <div className="mb-0.5 px-2">
         {/* Top Row - Title with Dropdowns, and Controls */}
@@ -515,10 +530,12 @@ useEffect(() => {
         <div className="widget-header flex flex-wrap items-start justify-between gap-1 mb-0.5">
           {/* Title with Dropdowns (mobile: stacked, desktop: inline) */}
           <div className="flex flex-col md:flex-row md:items-center md:flex-wrap gap-1 md:space-x-2 flex-1 min-w-0">
-            <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
-              <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
-              Quantum Analysis
-            </CardTitle>
+            {!hideInnerTitle && (
+              <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
+                <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
+                Quantum Analysis
+              </CardTitle>
+            )}
             
             {/* Dropdowns row */}
             <div className="flex items-center space-x-2 gap-1 md:space-x-0.5">
@@ -659,6 +676,17 @@ useEffect(() => {
                   <Bell className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
                 </button>
               </div>
+            )}
+            {!hideFullscreenButton && (
+              <button
+                type="button"
+                onClick={() => setIsDialogOpen(true)}
+                className="ml-0.5 p-1.5 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
+                title="Open Quantum Analysis fullscreen"
+                aria-label="Open Quantum Analysis fullscreen"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
@@ -1222,16 +1250,56 @@ useEffect(() => {
       </div>
       </div>
     </div>
-    
-    {/* Heatmap Alert Configuration Modal - Outside widget for proper z-index */}
-    <HeatmapTrackerAlertConfig 
-      isOpen={showAlertConfig} 
-      onClose={handleAlertConfigClose} 
-    />
-    <HeatmapIndicatorTrackerAlertConfig
-      isOpen={showIndicatorAlertConfig}
-      onClose={handleIndicatorConfigClose}
-    />
+  );
+
+  return (
+    <>
+      {renderContent()}
+      {isDialogOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9000] flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quantum-analysis-dialog-title"
+          >
+            <div className="bg-white dark:bg-[#0b122f] rounded-xl shadow-2xl w-full max-w-6xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                <div className="flex items-center">
+                  <img src={quantImage} alt="Quantum" className="w-5 h-5 mr-2 flex-shrink-0" />
+                  <h3
+                    id="quantum-analysis-dialog-title"
+                    className="text-base sm:text-lg font-semibold text-[#19235d] dark:text-slate-100"
+                  >
+                    Quantum Analysis
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#19235d] dark:text-slate-100 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 rounded-md"
+                  aria-label="Close Quantum Analysis dialog"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-3 sm:p-4">
+                {renderContent({ hideFullscreenButton: true, hideInnerTitle: true })}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      {/* Heatmap Alert Configuration Modal - Outside widget for proper z-index */}
+      <HeatmapTrackerAlertConfig 
+        isOpen={showAlertConfig} 
+        onClose={handleAlertConfigClose} 
+      />
+      <HeatmapIndicatorTrackerAlertConfig
+        isOpen={showIndicatorAlertConfig}
+        onClose={handleIndicatorConfigClose}
+      />
     </>
   );
 };

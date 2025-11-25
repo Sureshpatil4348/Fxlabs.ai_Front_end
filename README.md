@@ -4,6 +4,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Features
 
+### Tools Fullscreen Modals
+
+- The **Lot Size Calculator** and **Quantum Analysis (Multi Indicator Heatmap)** widgets in the Dashboard tools tab now include fullscreen buttons that open nearly fullscreen modals, mirroring the AI News Analysis widget behavior while keeping content properly resized.
+
 ### Subscription & Network Resilience
 
 - Subscription status checks now distinguish between actual subscription expiry and transient network issues.
