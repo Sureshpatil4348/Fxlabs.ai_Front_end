@@ -5652,32 +5652,91 @@ export const KLineChartComponent = ({
                     return;
                   }
 
-                  // Fibonacci Retracement (right-only): test distance to each horizontal level
+                  // Fibonacci Retracement (right-only): test distance to each horizontal level,
+                  // the main diagonal leg, and both anchor points
                   if (name === 'fibonacciRightLine' && c1 && c2 && Number.isFinite(pts?.[0]?.value) && Number.isFinite(pts?.[1]?.value)) {
-                    const containerW = (chartContainerRef.current?.clientWidth || 0);
                     const startX = Math.min(c1.x, c2.x);
-                    const endX = containerW;
+                    const endX = Math.max(c1.x, c2.x);
                     const yDif = c1.y - c2.y;
                     const percents = [1, 0.786, 0.618, 0.5, 0.382, 0.236, 0];
+
+                    // Horizontal retracement levels
                     percents.forEach((p) => {
                       const y = c2.y + yDif * p;
                       const res = distancePointToSegment(clickX, clickY, startX, y, endX, y);
-                      if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: Math.min(Math.max(clickX, startX), endX), cy: y };
+                      if (res.dist < best.dist) {
+                        best = {
+                          dist: res.dist,
+                          overlay: ov,
+                          cx: Math.min(Math.max(clickX, startX), endX),
+                          cy: y,
+                        };
+                      }
+                    });
+
+                    // Diagonal leg between the two anchors
+                    if (typeof c1.x === 'number' && typeof c1.y === 'number' && typeof c2.x === 'number' && typeof c2.y === 'number') {
+                      const diag = distancePointToSegment(clickX, clickY, c1.x, c1.y, c2.x, c2.y);
+                      if (diag.dist < best.dist) {
+                        best = { dist: diag.dist, overlay: ov, cx: diag.cx, cy: diag.cy };
+                      }
+                    }
+
+                    // Anchor points where the user clicked originally
+                    [c1, c2].forEach((anchor) => {
+                      if (!anchor || typeof anchor.x !== 'number' || typeof anchor.y !== 'number') return;
+                      const dist = Math.hypot(clickX - anchor.x, clickY - anchor.y);
+                      if (dist < best.dist) {
+                        best = { dist, overlay: ov, cx: anchor.x, cy: anchor.y };
+                      }
                     });
                     return;
                   }
 
-                  // Trend-based Fibonacci Extension (right-only): distance to each projected level
+                  // Trend-based Fibonacci Extension (right-only): distance to each projected level,
+                  // guide diagonals between anchors, and the three anchor points
                   if (name === 'fibonacciTrendExtensionRight' && c1 && c2 && c3 && Number.isFinite(pts?.[0]?.value) && Number.isFinite(pts?.[1]?.value) && Number.isFinite(pts?.[2]?.value)) {
-                    const containerW = (chartContainerRef.current?.clientWidth || 0);
-                    const startX = Math.max(c1.x, c2.x, c3.x);
-                    const endX = containerW;
+                    // Horizontal extension levels span between the second and third anchors
+                    const startX = Math.min(c2.x, c3.x);
+                    const endX = Math.max(c2.x, c3.x);
                     const deltaY = (c2.y - c1.y);
                     const ratios = [0.618, 1.0, 1.272, 1.618, 2.0, 2.618];
+
+                    // Horizontal extension levels projected from the third anchor
                     ratios.forEach((r) => {
                       const y = c3.y + deltaY * r;
                       const res = distancePointToSegment(clickX, clickY, startX, y, endX, y);
-                      if (res.dist < best.dist) best = { dist: res.dist, overlay: ov, cx: Math.min(Math.max(clickX, startX), endX), cy: y };
+                      if (res.dist < best.dist) {
+                        best = {
+                          dist: res.dist,
+                          overlay: ov,
+                          cx: Math.min(Math.max(clickX, startX), endX),
+                          cy: y,
+                        };
+                      }
+                    });
+
+                    // Diagonal guide legs between anchors: A→B and B→C
+                    const guideSegments = [
+                      [c1, c2],
+                      [c2, c3],
+                    ];
+                    guideSegments.forEach(([from, to]) => {
+                      if (!from || !to) return;
+                      if (typeof from.x !== 'number' || typeof from.y !== 'number' || typeof to.x !== 'number' || typeof to.y !== 'number') return;
+                      const res = distancePointToSegment(clickX, clickY, from.x, from.y, to.x, to.y);
+                      if (res.dist < best.dist) {
+                        best = { dist: res.dist, overlay: ov, cx: res.cx, cy: res.cy };
+                      }
+                    });
+
+                    // Anchor points A, B, C where the user clicked
+                    [c1, c2, c3].forEach((anchor) => {
+                      if (!anchor || typeof anchor.x !== 'number' || typeof anchor.y !== 'number') return;
+                      const dist = Math.hypot(clickX - anchor.x, clickY - anchor.y);
+                      if (dist < best.dist) {
+                        best = { dist, overlay: ov, cx: anchor.x, cy: anchor.y };
+                      }
                     });
                     return;
                   }

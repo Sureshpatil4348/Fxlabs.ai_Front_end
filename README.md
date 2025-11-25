@@ -137,6 +137,7 @@ The KLineChart component now includes a sophisticated preset system for quickly 
 
 - Fibonacci Retracement tool now draws horizontal level segments only between the two selected anchor points, with price and percentage labels rendered just to the right of this range for clearer association with the drawn leg. Fibonacci Extension tool draws its projected levels horizontally between the second and third anchor points, with their price and percentage labels rendered just to the right of that extension span.
 - The custom Fibonacci Retracement configuration uses levels including 14.60%, 23.60%, 38.20%, 50.00%, 61.80%, 78.60%, and 85.40%, with 14.60% and 23.60% styled as highlighted levels.
+- For both Fibonacci Retracement and Trend Extension drawings, clicking on any horizontal level line, the diagonal anchor-leg lines, or directly on the anchor points now consistently selects the overlay and opens the color and delete panel.
 
 ### Split Mode (KLine Chart)
 
