@@ -5491,7 +5491,6 @@ export const KLineChartComponent = ({
           aria-label="Trading chart with drawing tools"
           tabIndex={0}
           onMouseEnter={handleChartPointerActivity}
-          onMouseMove={handleChartPointerActivity}
           onMouseDownCapture={(_e) => {
             // If a tool is pending, arm it on THIS chart before the
             // underlying KLine canvas processes the event. This ensures
@@ -5948,6 +5947,7 @@ export const KLineChartComponent = ({
           }}
           onMouseMove={(e) => {
             try {
+              handleChartPointerActivity();
               const drag = positionDragRef.current;
                 const chart = chartRef.current;
                 const container = chartContainerRef.current;
