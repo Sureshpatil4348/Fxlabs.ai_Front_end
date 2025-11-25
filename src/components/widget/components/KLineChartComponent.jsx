@@ -80,6 +80,8 @@ export const KLineChartComponent = ({
   const DRAG_THRESHOLD_PX = 5; // Minimum pixels to move before drag activates
   // Circle handle radius for risk/reward resize
   const POSITION_HANDLE_RADIUS_PX = 7;
+  const [areOverlayControlsVisible, setAreOverlayControlsVisible] = useState(true);
+  const overlayControlsHideTimerRef = useRef(null);
   // RSI enhanced UI state
   const [_rsiValue, setRsiValue] = useState(null);
   const [_rsiStatus, setRsiStatus] = useState('NEUTRAL');
@@ -5313,6 +5315,32 @@ export const KLineChartComponent = ({
     setTimeout(() => setLoadingBlockMessage(null), 3000);
   }, []);
 
+  const scheduleOverlayControlsHide = useCallback(() => {
+    if (overlayControlsHideTimerRef.current) {
+      clearTimeout(overlayControlsHideTimerRef.current);
+    }
+    overlayControlsHideTimerRef.current = setTimeout(() => {
+      setAreOverlayControlsVisible(false);
+    }, 5000);
+  }, []);
+
+  const handleChartPointerActivity = useCallback(() => {
+    setAreOverlayControlsVisible(true);
+    scheduleOverlayControlsHide();
+  }, [scheduleOverlayControlsHide]);
+
+  useEffect(() => {
+    if (!isInitialBackgroundLoadComplete && isLoadingHistory) {
+      return;
+    }
+    scheduleOverlayControlsHide();
+    return () => {
+      if (overlayControlsHideTimerRef.current) {
+        clearTimeout(overlayControlsHideTimerRef.current);
+      }
+    };
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, scheduleOverlayControlsHide]);
+
   // Overlay control handlers
   const handleZoomIn = useCallback(() => {
     // Block interaction during initial background loading
@@ -5462,6 +5490,8 @@ export const KLineChartComponent = ({
           role="application"
           aria-label="Trading chart with drawing tools"
           tabIndex={0}
+          onMouseEnter={handleChartPointerActivity}
+          onMouseMove={handleChartPointerActivity}
           onMouseDownCapture={(_e) => {
             // If a tool is pending, arm it on THIS chart before the
             // underlying KLine canvas processes the event. This ensures
@@ -6802,11 +6832,13 @@ export const KLineChartComponent = ({
           {/* Overlay Controls - centered above bottom panel */}
           <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: '32px', zIndex: 50, pointerEvents: 'none' }}>
             <div 
-              className="flex items-center gap-3" 
+              className="flex items-center gap-3 transition-opacity duration-200" 
               style={{ 
-                pointerEvents: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 'none' : 'auto',
-                opacity: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 0.5 : 1,
-                cursor: (!isInitialBackgroundLoadComplete && isLoadingHistory) ? 'not-allowed' : 'pointer'
+                pointerEvents: (!isInitialBackgroundLoadComplete && isLoadingHistory) || !areOverlayControlsVisible ? 'none' : 'auto',
+                opacity: areOverlayControlsVisible
+                  ? ((!isInitialBackgroundLoadComplete && isLoadingHistory) ? 0.5 : 1)
+                  : 0,
+                cursor: (!isInitialBackgroundLoadComplete && isLoadingHistory) || !areOverlayControlsVisible ? 'default' : 'pointer'
               }}
             >
               {/* Zoom out card */}

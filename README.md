@@ -65,6 +65,11 @@ All chart state is automatically persisted to localStorage and restored on page 
 - Once real candle data arrives, the axes automatically update to the correct time/price ranges and candlesticks become visible with the normal styling.
 - Grid configuration (horizontal and vertical lines) is explicitly preserved during loading state transitions to ensure consistent rendering across development and production builds.
 
+### KLineChart Bottom Controls Auto-Hide
+
+- The bottom zoom/pan/reload controls (`+`, `-`, left/right arrows, reload) remain visible while you interact with the chart, then fade out after 5 seconds of inactivity.
+- Moving the mouse or hovering anywhere over the KLine chart immediately brings these controls back and restarts the 5-second timer.
+
 ### KLineChart Indicator Presets
 
 The KLineChart component now includes a sophisticated preset system for quickly applying groups of technical indicators.
