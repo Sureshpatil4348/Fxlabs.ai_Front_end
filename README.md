@@ -63,6 +63,10 @@ All chart state is automatically persisted to localStorage and restored on page 
 - All KLineChart indicator tables rendered at the top-right (e.g., Bollinger Bands Pro, Moving Average Pro, SuperTrend Pro, ORB Enhanced) now use a carded container with rounded corners, subtle shadow, and slight blur for improved readability without obstructing the chart. Their position has been nudged slightly left for better visual balance.
 - This styling is consistent across on-chart overlays and below-chart panes (ATR Pro, MACD Pro), ensuring a cohesive UI.
 
+### ATR Pro Stats Display
+
+- The KLineChart ATR Pro pane’s top-right stats table now shows **Current ATR** in pips instead of percentage, while volatility and trend classifications continue to rely on the internal percent-of-close ATR calculations.
+
 ### KLineChart Loading Experience
 
 - While initial candles are loading, the KLineChart now renders placeholder x/y axes using arbitrary time and price values so the chart frame is visible immediately.
