@@ -14,7 +14,7 @@ class DefaultAlertsService {
    * Default alerts created:
    * - RSI Tracker: 4H timeframe, overbought 70, oversold 30
    * - Currency Strength Alert: 4H timeframe
-   * - Quantum Analysis (Heatmap): EUR/USD, XAU/USD, BTC/USD, scalper, buy 70, sell 70
+   * - Quantum Analysis (Heatmap): EUR/USD, XAU/USD, OIL/USD, BTC/USD, scalper, buy 70, sell 70
    * 
    * @returns {Promise<{success: boolean, results: Object}>}
    */
@@ -63,7 +63,7 @@ class DefaultAlertsService {
       try {
         console.log('[DefaultAlertsService] Creating default Quantum Analysis alert...');
         await heatmapTrackerAlertService.saveAlert({
-          pairs: ['EURUSD', 'XAUUSD', 'BTCUSD'],
+          pairs: ['EURUSD', 'XAUUSD', 'USOIL', 'BTCUSD'],
           tradingStyle: 'scalper',
           buyThreshold: 70,
           sellThreshold: 70,
@@ -137,4 +137,3 @@ class DefaultAlertsService {
 
 const defaultAlertsService = new DefaultAlertsService();
 export default defaultAlertsService;
-

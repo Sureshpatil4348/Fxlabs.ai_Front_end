@@ -4,6 +4,10 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 
 ## Features
 
+### Instrument Coverage
+
+- Supports all major Forex pairs, key commodities (including Gold `XAU/USD` and Crude Oil `OIL/USD` via `USOILm`), and core crypto pairs across the dashboard (Hero cards, RSI Tracker, Currency Strength, Trending Pairs, Lot Size calculator, and footer ticker).
+
 ### Tools Fullscreen Modals
 
 - The **Lot Size Calculator** and **Quantum Analysis (Multi Indicator Heatmap)** widgets in the Dashboard tools tab now include fullscreen buttons that open nearly fullscreen modals, mirroring the AI News Analysis widget behavior while keeping content properly resized.

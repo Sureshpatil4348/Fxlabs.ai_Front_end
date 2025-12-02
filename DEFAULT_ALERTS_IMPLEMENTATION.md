@@ -30,7 +30,7 @@ Three alerts are automatically created for first-time users:
 - **Status**: Active
 
 #### Quantum Analysis (Heatmap) Alert
-- **Monitored Pairs**: EUR/USD, XAU/USD, BTC/USD
+- **Monitored Pairs**: EUR/USD, XAU/USD, OIL/USD, BTC/USD
 - **Trading Style**: Scalper
 - **Buy Threshold**: 70
 - **Sell Threshold**: 70
@@ -186,7 +186,7 @@ To verify the implementation works correctly:
 4. ✅ Verify three alerts are created in database:
    - RSI Tracker (4H, OB:70, OS:30)
    - Currency Strength (4H)
-   - Quantum Analysis (EUR/USD, XAU/USD, BTC/USD, Scalper, 70/70)
+   - Quantum Analysis (EUR/USD, XAU/USD, OIL/USD, BTC/USD, Scalper, 70/70)
 5. ✅ Verify user_profiles.default_alerts_initialized = true
 
 ### Returning User Test (Respecting Preferences)
@@ -243,4 +243,3 @@ Edit `src/services/userProfileService.js` for user profile logic, or `src/servic
 ## Conclusion
 
 This implementation provides a seamless, intelligent, and robust system for initializing first-time users with helpful default alerts. It respects user preferences, handles errors gracefully, and creates an excellent first impression while showcasing the platform's core value proposition.
-

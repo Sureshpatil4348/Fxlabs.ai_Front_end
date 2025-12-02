@@ -23,7 +23,8 @@ const CORRELATION_PAIRS = {
     ['USDJPY', 'GBPUSD'],
     ['USDCAD', 'AUDUSD'],
     ['USDCHF', 'AUDUSD'],
-    ['XAUUSD', 'USDJPY']  // Gold-USDJPY moderately negative
+    ['XAUUSD', 'USDJPY'],  // Gold-USDJPY moderately negative
+    ['USOIL', 'USDJPY']    // Oil-USDJPY moderately negative
   ],
   positive: [
     ['EURUSD', 'GBPUSD'],
@@ -32,10 +33,13 @@ const CORRELATION_PAIRS = {
     ['GBPUSD', 'AUDUSD'],
     ['AUDUSD', 'NZDUSD'],
     ['USDCHF', 'USDJPY'],
-    ['XAUUSD', 'XAGUSD'],  // Gold-Silver very high positive
-    ['XAUUSD', 'EURUSD'],  // Gold-EUR moderately positive (safe-haven vs USD)
-    ['BTCUSD', 'ETHUSD'],  // Crypto very high positive
-    ['BTCUSD', 'XAUUSD']   // BTC-Gold weak/moderate positive
+    ['XAUUSD', 'XAGUSD'],   // Gold-Silver very high positive
+    ['XAUUSD', 'EURUSD'],   // Gold-EUR moderately positive (safe-haven vs USD)
+    ['USOIL', 'EURUSD'],    // Oil-EUR moderately positive (risk correlations)
+    ['USOIL', 'XAGUSD'],    // Oil-Silver positive correlation
+    ['BTCUSD', 'ETHUSD'],   // Crypto very high positive
+    ['BTCUSD', 'XAUUSD'],   // BTC-Gold weak/moderate positive
+    ['BTCUSD', 'USOIL']     // BTC-Oil weak/moderate positive
   ]
 };
 

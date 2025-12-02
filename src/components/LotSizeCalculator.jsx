@@ -61,12 +61,31 @@ const LotSizeCalculator = () => {
       },
       commodities: {
         name: 'Commodities',
-        pairs: PRECIOUS_METALS_PAIRS.map(pair => ({
-          symbol: toBrokerSymbol(pair),
-          pipValue: pair === 'XAUUSD' ? 100 : 50,
-          contractSize: pair === 'XAUUSD' ? 100 : 5000,
-          displayName: pair === 'XAUUSD' ? 'Gold (XAU/USD)' : 'Silver (XAG/USD)'
-        })),
+        pairs: PRECIOUS_METALS_PAIRS.map(pair => {
+          if (pair === 'XAUUSD') {
+            return {
+              symbol: toBrokerSymbol(pair),
+              pipValue: 100,
+              contractSize: 100,
+              displayName: 'Gold (XAU/USD)'
+            };
+          }
+          if (pair === 'XAGUSD') {
+            return {
+              symbol: toBrokerSymbol(pair),
+              pipValue: 50,
+              contractSize: 5000,
+              displayName: 'Silver (XAG/USD)'
+            };
+          }
+          // Default configuration for additional commodities like USOIL
+          return {
+            symbol: toBrokerSymbol(pair),
+            pipValue: 10,
+            contractSize: 1000,
+            displayName: 'Crude Oil (OIL/USD)'
+          };
+        }),
         stopLossUnit: 'price difference',
         resultUnit: 'contracts'
       },

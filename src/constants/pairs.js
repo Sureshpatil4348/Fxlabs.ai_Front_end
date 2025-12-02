@@ -16,8 +16,9 @@ export const EXTENDED_PAIRS = [
   'NZDCAD', 'NZDCHF', 'NZDJPY'
 ];
 
-// Precious Metals pairs - sorted alphabetically
+// Commodities & Precious Metals pairs - sorted alphabetically
 export const PRECIOUS_METALS_PAIRS = [
+  'USOIL',   // Crude Oil
   'XAGUSD',  // Silver
   'XAUUSD'   // Gold
 ];
@@ -50,4 +51,3 @@ export function fromBrokerSymbol(symbol = '') {
   if (!s) return s;
   return s.endsWith(BROKER_SUFFIX) ? s.slice(0, -BROKER_SUFFIX.length) : s;
 }
-

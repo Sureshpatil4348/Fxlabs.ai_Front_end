@@ -61,9 +61,10 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
       // CHF Crosses (1)
       'CHFJPY': 'Swiss Franc / Japanese Yen',
       
-      // Precious Metals (2)
+      // Commodities & Precious Metals
       'XAUUSD': 'Gold / U.S. Dollar',
       'XAGUSD': 'Silver / U.S. Dollar',
+      'USOIL': 'Crude Oil / U.S. Dollar',
       
       // Cryptocurrencies (2)
       'BTCUSD': 'Bitcoin / U.S. Dollar',
@@ -74,7 +75,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
 
   // Helper function to get symbol type
   const getSymbolType = (symbol) => {
-    if (PRECIOUS_METALS_PAIRS.includes(symbol)) return 'precious metal';
+    if (PRECIOUS_METALS_PAIRS.includes(symbol)) return 'commodity';
     if (CRYPTO_PAIRS.includes(symbol)) return 'cryptocurrency';
     return 'forex';
   };
@@ -106,7 +107,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
       symbol,
       description: getSymbolDescription(symbol),
       source: getSymbolSource(symbol),
-      type: 'precious metal'
+      type: 'commodity'
     })),
     Crypto: CRYPTO_PAIRS.map(symbol => ({
       symbol,

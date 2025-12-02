@@ -20,8 +20,9 @@ const EXTENDED_PAIRS = [
   'NZDCADm', 'NZDCHFm', 'NZDJPYm'
 ];
 
-// Precious Metals pairs - sorted alphabetically
+// Commodities & Precious Metals pairs - sorted alphabetically
 const PRECIOUS_METALS_PAIRS = [
+  'USOILm',  // Crude Oil
   'XAGUSDm',  // Silver
   'XAUUSDm'   // Gold
 ];

@@ -16,13 +16,15 @@ const HeroSection = () => {
   const { ticksBySymbol, pricingBySymbol, quantumBySymbol } = useMarketCacheStore()
   const [eurChangePct, setEurChangePct] = useState(null)
   const [xauChangePct, setXauChangePct] = useState(null)
+  const [usOilChangePct, setUsOilChangePct] = useState(null)
   const [_isFreeTrialOpen, _setIsFreeTrialOpen] = useState(false)
   
   const [_marketTrend] = useState('Bearish')
 
-  // Quantum analysis data for EUR/USD and XAU/USD
+  // Quantum analysis data for EUR/USD, XAU/USD, and OIL/USD
   const [eurQuantum, setEurQuantum] = useState(null)
   const [xauQuantum, setXauQuantum] = useState(null)
+  const [usOilQuantum, setUsOilQuantum] = useState(null)
 
   // Ensure live connection for hero pricing
   useEffect(() => {
@@ -37,11 +39,12 @@ const HeroSection = () => {
       try {
         const cacheStore = useMarketCacheStore.getState()
         // Use the ensureSubscriptionsForTrending method to subscribe
-        cacheStore.ensureSubscriptionsForTrending(['EURUSDm', 'XAUUSDm'])
+        cacheStore.ensureSubscriptionsForTrending(['EURUSDm', 'XAUUSDm', 'USOILm'])
         
-        // Hydrate quantum data for both symbols
+        // Hydrate quantum data for all symbols
         cacheStore.hydrateQuantumForSymbol('EURUSDm')
         cacheStore.hydrateQuantumForSymbol('XAUUSDm')
+        cacheStore.hydrateQuantumForSymbol('USOILm')
       } catch (error) {
         // Silent error handling
       }
@@ -55,6 +58,7 @@ const HeroSection = () => {
     // Get pricing data from pricingBySymbol
     const eurPricing = pricingBySymbol?.get('EURUSDm')
     const xauPricing = pricingBySymbol?.get('XAUUSDm')
+    const usOilPricing = pricingBySymbol?.get('USOILm')
     
     // Use pricing data for daily change percentage
     if (eurPricing && typeof eurPricing.daily_change_pct === 'number') {
@@ -64,12 +68,17 @@ const HeroSection = () => {
     if (xauPricing && typeof xauPricing.daily_change_pct === 'number') {
       setXauChangePct(xauPricing.daily_change_pct)
     }
+
+    if (usOilPricing && typeof usOilPricing.daily_change_pct === 'number') {
+      setUsOilChangePct(usOilPricing.daily_change_pct)
+    }
   }, [ticksBySymbol, pricingBySymbol])
 
-  // Track quantum analysis data for EUR/USD and XAU/USD
+  // Track quantum analysis data for EUR/USD, XAU/USD, and OIL/USD
   useEffect(() => {
     const eurQuantumData = quantumBySymbol?.get('EURUSDm')
     const xauQuantumData = quantumBySymbol?.get('XAUUSDm')
+    const usOilQuantumData = quantumBySymbol?.get('USOILm')
     
     if (eurQuantumData) {
       setEurQuantum(eurQuantumData)
@@ -77,6 +86,10 @@ const HeroSection = () => {
     
     if (xauQuantumData) {
       setXauQuantum(xauQuantumData)
+    }
+
+    if (usOilQuantumData) {
+      setUsOilQuantum(usOilQuantumData)
     }
   }, [quantumBySymbol])
 
@@ -383,6 +396,56 @@ const HeroSection = () => {
                             <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
                             <div className="w-full bg-gray-200 dark:bg-[#19235d] rounded-full h-1.5">
                               <div className="bg-[#03c05d] h-1.5 rounded-full transition-all duration-500" style={{width: `${successProbability}%`}}></div>
+                            </div>
+                            <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">{Math.round(successProbability)}%</div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-1.5">
+                              <div className="w-3.5 h-3.5 bg-[#03c05d] rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">✓</span>
+                              </div>
+                              <span className={`${trendColor} text-xs sm:text-sm font-medium`}>{trendText}</span>
+                            </div>
+                            <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span>Just now</span>
+                            </div>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
+
+                {/* USOIL Analysis Card */}
+                <div className="bg-gray-50 dark:bg-[#19235d] rounded-2xl p-3 sm:p-4 border border-[#03c05d]/20 shadow-lg">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#03c05d]/20 rounded-full flex items-center justify-center">
+                        <span className="text-[#19235d] dark:text-white font-bold text-sm">OIL</span>
+                      </div>
+                      <div>
+                        <div className="text-[#19235d] dark:text-white font-semibold text-sm sm:text-base">Crude Oil vs US Dollar</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatSymbolDisplay('USOILm')}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[#19235d] dark:text-white font-bold text-base sm:text-lg">
+                        <LivePrice symbol="USOILm" precision={2} />
+                      </div>
+                      <ChangeBadge value={usOilChangePct} />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5 sm:space-y-2">
+                    {(() => {
+                      const { successProbability, trendText, trendColor } = getQuantumAnalysis(usOilQuantum)
+                      return (
+                        <>
+                          <div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-0.5">Success Probability</div>
+                            <div className="w-full bg-gray-200 dark:bg-[#19235d] rounded-full h-1.5">
+                              <div className="bg-[#03c05d] h-1.5 rounded-full transition-all duration-500" style={{ width: `${successProbability}%` }}></div>
                             </div>
                             <div className="text-[#03c05d] text-xs sm:text-sm mt-0.5">{Math.round(successProbability)}%</div>
                           </div>
