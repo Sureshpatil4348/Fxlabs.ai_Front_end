@@ -29,6 +29,11 @@ export const CRYPTO_PAIRS = [
   'ETHUSD'  // Ethereum
 ];
 
+// Index symbols (OHLC-only indices exposed to KLineChart via REST / WebSocket)
+export const INDEX_PAIRS = [
+  'DXY' // U.S. Dollar Index (DXYm on broker)
+];
+
 // All supported pairs for UI selection
 export const SUPPORTED_PAIRS = [
   ...CORE_PAIRS,

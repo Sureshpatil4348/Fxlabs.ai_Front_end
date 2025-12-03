@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS } from '../../../constants/pairs';
+import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS, INDEX_PAIRS } from '../../../constants/pairs';
 import { formatSymbolDisplay } from '../../../utils/formatters';
 
 const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _currentSymbol }) => {
@@ -69,12 +69,16 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
       // Cryptocurrencies (2)
       'BTCUSD': 'Bitcoin / U.S. Dollar',
       'ETHUSD': 'Ethereum / U.S. Dollar',
+
+      // Indices
+      'DXY': 'U.S. Dollar Index',
     };
     return descriptions[symbol] || symbol;
   };
 
   // Helper function to get symbol type
   const getSymbolType = (symbol) => {
+    if (INDEX_PAIRS.includes(symbol)) return 'index';
     if (PRECIOUS_METALS_PAIRS.includes(symbol)) return 'commodity';
     if (CRYPTO_PAIRS.includes(symbol)) return 'cryptocurrency';
     return 'forex';
@@ -86,8 +90,8 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
     return sources[Math.floor(Math.random() * sources.length)];
   };
 
-  // All available symbols from the system (32 total)
-  const ALL_SYMBOLS = [...CORE_PAIRS, ...EXTENDED_PAIRS, ...PRECIOUS_METALS_PAIRS, ...CRYPTO_PAIRS];
+  // All available symbols from the system (forex, commodities, crypto, indices)
+  const ALL_SYMBOLS = [...CORE_PAIRS, ...EXTENDED_PAIRS, ...PRECIOUS_METALS_PAIRS, ...CRYPTO_PAIRS, ...INDEX_PAIRS];
   
   // Generate symbols data from constants with proper categorization
   const symbolsData = {
@@ -109,6 +113,12 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
       source: getSymbolSource(symbol),
       type: 'commodity'
     })),
+    Index: INDEX_PAIRS.map(symbol => ({
+      symbol,
+      description: getSymbolDescription(symbol),
+      source: getSymbolSource(symbol),
+      type: 'index'
+    })),
     Crypto: CRYPTO_PAIRS.map(symbol => ({
       symbol,
       description: getSymbolDescription(symbol),
@@ -117,7 +127,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _cu
     })),
   };
 
-  const categories = ['All', 'Forex', 'Commodity', 'Crypto'];
+  const categories = ['All', 'Forex', 'Commodity', 'Index', 'Crypto'];
 
   // Focus search input when modal opens
   useEffect(() => {

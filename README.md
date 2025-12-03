@@ -7,6 +7,7 @@ A comprehensive forex trading dashboard with real-time market data, RSI analysis
 ### Instrument Coverage
 
 - Supports all major Forex pairs, key commodities (including Gold `XAU/USD` and Crude Oil `OIL/USD` via `USOILm`), and core crypto pairs across the dashboard (Hero cards, RSI Tracker, Currency Strength, Trending Pairs, Lot Size calculator, and footer ticker).
+- The advanced KLine trading chart additionally supports the **U.S. Dollar Index (DXY)** as an index instrument, using `/api/ohlc` for historical candles and `ohlc_updates` from WebSocket v2 for live closed-bar updates (no tick or indicator coverage is required for DXY elsewhere in the app).
 
 ### Tools Fullscreen Modals
 
