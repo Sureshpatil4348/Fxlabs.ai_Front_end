@@ -14,71 +14,6 @@ const SubscriptionSection = () => {
     const isEmbeddedStripeEnabled =
         (process.env.REACT_APP_ENABLE_EMBEDDED_STRIPE || "false") === "true";
 
-    const _handleStripeCheckout = async (plan) => {
-        try {
-            setLoadingPlanId(plan.id);
-            console.log("Initiating Stripe Checkout for plan:", plan.id);
-
-            const functionUrl =
-                process.env
-                    .REACT_APP_SUPABASE_STRIPE_CREATE_CHECKOUT_FUNCTION_URL;
-            const authToken = process.env.REACT_APP_SUPABASE_ANON_KEY;
-
-            //   console.log('Debug: Environment Variables Check', {
-            //     functionUrl: functionUrl ? 'Defined' : 'Undefined',
-            //     authToken: authToken ? 'Defined' : 'Undefined',
-            //     planId3M: process.env.REACT_APP_STRIPE_PLAN_ID_3M,
-            //     planId1Y: process.env.REACT_APP_STRIPE_PLAN_ID_1Y
-            //   })
-
-            let payload = {};
-
-            if (plan.id === "quarterly") {
-                payload = {
-                    planId: process.env.REACT_APP_STRIPE_PLAN_ID_3M,
-                };
-            } else if (plan.id === "yearly") {
-                payload = {
-                    planId: process.env.REACT_APP_STRIPE_PLAN_ID_1Y,
-                };
-            }
-
-            //   console.log('Debug: Sending Payload:', payload)
-
-            // Using fetch directly to use the specific URL and Auth token from env vars
-            const response = await fetch(functionUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${authToken}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            //   console.log('Debug: Response Status:', response.status)
-            //   console.log('Debug: Response Headers:', [...response.headers.entries()])
-
-            const data = await response.json();
-            //   console.log('Debug: Response Data:', data)
-
-            if (!response.ok) {
-                throw new Error(data.error || "Network response was not ok");
-            }
-
-            if (data?.sessionUrl) {
-                // console.log('Debug: Redirecting to:', data.sessionUrl)
-                // Redirect user to the generated Stripe Checkout URL
-                window.location.href = data.sessionUrl;
-            } else {
-                console.error("No checkout URL returned from API", data);
-            }
-        } catch (error) {
-            console.error("Error creating checkout session:", error);
-        } finally {
-            setLoadingPlanId(null);
-        }
-    };
-
     // Fetch user's IP and location information
     useEffect(() => {
         if (isEmbeddedStripeEnabled) return;
@@ -94,20 +29,9 @@ const SubscriptionSection = () => {
                 );
                 const data = await response.json();
 
-                console.log("📍 User Location Data:", {
-                    ip: data.ip,
-                    country: data.country,
-                    country_code: data.country_code,
-                    country_name: data.country_name,
-                    region: data.region,
-                    city: data.city,
-                    timezone: data.timezone,
-                    currency: data.currency,
-                    currency_name: data.currency_name,
-                    languages: data.languages,
-                    org: data.org,
-                    asn: data.asn,
-                });
+                if (process.env.NODE_ENV === "development") {
+                    console.log("📍 User Location:", data.country_code);
+                }
 
                 setUserLocation(data);
 
@@ -133,7 +57,12 @@ const SubscriptionSection = () => {
                     );
                     const fallbackData = await fallbackResponse.json();
 
-                    console.log("📍 Fallback Location Data:", fallbackData);
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(
+                            "📍 Fallback Location:",
+                            fallbackData.country
+                        );
+                    }
                     setUserLocation(fallbackData);
 
                     if (fallbackData.country === "IN") {
@@ -343,17 +272,19 @@ const SubscriptionSection = () => {
     const gridWidthClass = isTwoPlans ? "max-w-4xl" : "max-w-7xl";
 
     // Debug logging
-    console.log("🔍 Debug Info:", {
-        _userLocation,
-        isIndianUser,
-        pricingPlansCount: pricingPlans.length,
-        pricingPlans: pricingPlans.map((p) => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-        })),
-        timestamp: new Date().toISOString(),
-    });
+    if (process.env.NODE_ENV === "development") {
+        console.log("🔍 Debug Info:", {
+            userCountry: _userLocation?.country_code,
+            isIndianUser,
+            pricingPlansCount: pricingPlans.length,
+            pricingPlans: pricingPlans.map((p) => ({
+                id: p.id,
+                name: p.name,
+                price: p.price,
+            })),
+            timestamp: new Date().toISOString(),
+        });
+    }
 
     return (
         <section className="py-12 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
