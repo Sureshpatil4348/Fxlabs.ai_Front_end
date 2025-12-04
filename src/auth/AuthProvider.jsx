@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { isNetworkError } from "../utils/isNetworkError";
 import { supabase } from "../lib/supabaseClient";
 import { resolveEdgeFunctionName } from "../utils/resolveFunctionName";
 
@@ -101,14 +102,41 @@ export const AuthProvider = ({ children }) => {
                                     : undefined
                             );
 
-                        // Treat any error or missing data as expired
-                        if (
-                            subCheckError ||
-                            !subCheckData ||
-                            subCheckData.subscription_status === "expired"
-                        ) {
+                        if (subCheckError) {
+                            if (isNetworkError(subCheckError)) {
+                                console.warn(
+                                    "Subscription check skipped due to network error:",
+                                    subCheckError
+                                );
+                                return;
+                            }
+
+                            if (subCheckError.status === 401) {
+                                console.warn(
+                                    "Session unauthorized during subscription check. Signing out."
+                                );
+                                await supabase.auth.signOut();
+                                navigate("/");
+                                return;
+                            }
+
+                            console.error(
+                                "Subscription check failed with non-network error:",
+                                subCheckError
+                            );
+                            return;
+                        }
+
+                        if (!subCheckData) {
                             console.warn(
-                                "Subscription expired or unverifiable. Logging out."
+                                "Subscription check returned no data. Skipping expiration handling."
+                            );
+                            return;
+                        }
+
+                        if (subCheckData.subscription_status === "expired") {
+                            console.warn(
+                                "Subscription expired according to server. Logging out."
                             );
                             setSubscriptionExpired(true);
                             await supabase.auth.signOut();

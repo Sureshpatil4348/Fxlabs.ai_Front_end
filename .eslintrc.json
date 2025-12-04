@@ -27,14 +27,7 @@
     "no-console": "off",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
-    "import/order": [
-      "error",
-      {
-        "groups": [["builtin", "external"], ["internal", "parent", "sibling", "index"]],
-        "newlines-between": "always",
-        "alphabetize": { "order": "asc", "caseInsensitive": true }
-      }
-    ],
+    "import/order": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": ["error", { "additionalHooks": "" }],
     "no-empty-pattern": "off"

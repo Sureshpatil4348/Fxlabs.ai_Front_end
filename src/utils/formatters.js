@@ -1,6 +1,8 @@
 // Utility functions for formatting data in the FxLabs Prime dashboard
 
-export const formatPrice = (price, precision = 5) => {
+export const DEFAULT_PRICE_DECIMALS = 5;
+
+export const formatPrice = (price, precision = DEFAULT_PRICE_DECIMALS) => {
   if (typeof price !== 'number' || isNaN(price)) return '0.00000';
   return price.toFixed(precision);
 };
@@ -34,6 +36,10 @@ export const formatCurrency = (currency) => {
 export const formatSymbolDisplay = (symbol) => {
   // Remove 'm' suffix and format as currency pair
   const cleanSymbol = String(symbol || '').replace(/m$/i, '');
+  if (cleanSymbol.toUpperCase() === 'USOIL') {
+    // Special-case mapping for Crude Oil
+    return 'OIL/USD';
+  }
   if (cleanSymbol.length === 6) {
     return `${cleanSymbol.slice(0, 3)}/${cleanSymbol.slice(3)}`;
   }

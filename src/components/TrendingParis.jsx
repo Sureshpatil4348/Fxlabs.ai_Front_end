@@ -8,6 +8,7 @@ import {
     formatPrice,
     formatPercentage,
 } from "../utils/formatters";
+import { useChartStore } from "./widget/stores/useChartStore";
 
 // Shimmer Skeleton for Trending Pairs
 const TrendingPairsSkeleton = () => (
@@ -63,8 +64,8 @@ const TrendingPairs = () => {
     const isConnected = useRSITrackerStore((state) => state.isConnected);
 
     const rows = useMemo(() => {
-        return (Array.isArray(trendingSymbols) ? trendingSymbols : []).map(
-            (symbol) => {
+        return (Array.isArray(trendingSymbols) ? trendingSymbols : [])
+            .map((symbol) => {
                 // Fix symbol case - trending symbols come as 'ETHUSDM' but data uses 'ETHUSDm'
                 let key = symbol;
                 if (key.toUpperCase().endsWith("M")) {
@@ -82,9 +83,32 @@ const TrendingPairs = () => {
                         : 0;
 
                 return { symbol, price, change: dailyPct };
-            }
-        );
+            })
+            .filter((row) => row.price != null);
     }, [trendingSymbols, pricingBySymbol]);
+
+    const openInKLineChart = (symbolInput) => {
+        try {
+            let next = String(symbolInput || "").trim();
+            if (!next) return;
+            next = next.replace(/[/\s]/g, "").toUpperCase();
+            if (next.endsWith("M")) next = next.slice(0, -1);
+            // Also handle lowercase just in case
+            if (next.endsWith("m")) next = next.slice(0, -1);
+            if (!next) return;
+            const chartStore = useChartStore.getState();
+            const current = (chartStore?.settings?.symbol || "").toUpperCase();
+            if (current === next) {
+                // Already showing; do nothing
+                return;
+            }
+            chartStore.setSymbol(next);
+            try { chartStore.setWorkspaceHidden(false); } catch (_e) { /* ignore */ }
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to open symbol in KLine chart:", symbolInput, e);
+        }
+    };
     
     // End initial loading after data is available or timeout
     useEffect(() => {
@@ -146,7 +170,16 @@ const TrendingPairs = () => {
                             {rows.slice(0, 12).map((row) => (
                                 <tr
                                     key={row.symbol}
-                                    className="hover:bg-gray-50 dark:hover:bg-slate-700"
+                                    className="hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer"
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => openInKLineChart(row.symbol)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            openInKLineChart(row.symbol);
+                                        }
+                                    }}
                                 >
                                     <td className="px-2 py-1 text-[13px] font-medium text-[#19235d] dark:text-slate-100 text-center">
                                         {formatSymbolDisplay(row.symbol)}

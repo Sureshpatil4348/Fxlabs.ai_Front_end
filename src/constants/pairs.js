@@ -16,8 +16,9 @@ export const EXTENDED_PAIRS = [
   'NZDCAD', 'NZDCHF', 'NZDJPY'
 ];
 
-// Precious Metals pairs - sorted alphabetically
+// Commodities & Precious Metals pairs - sorted alphabetically
 export const PRECIOUS_METALS_PAIRS = [
+  'USOIL',   // Crude Oil
   'XAGUSD',  // Silver
   'XAUUSD'   // Gold
 ];
@@ -26,6 +27,11 @@ export const PRECIOUS_METALS_PAIRS = [
 export const CRYPTO_PAIRS = [
   'BTCUSD', // Bitcoin
   'ETHUSD'  // Ethereum
+];
+
+// Index symbols (OHLC-only indices exposed to KLineChart via REST / WebSocket)
+export const INDEX_PAIRS = [
+  'DXY' // U.S. Dollar Index (DXYm on broker)
 ];
 
 // All supported pairs for UI selection
@@ -50,4 +56,3 @@ export function fromBrokerSymbol(symbol = '') {
   if (!s) return s;
   return s.endsWith(BROKER_SUFFIX) ? s.slice(0, -BROKER_SUFFIX.length) : s;
 }
-

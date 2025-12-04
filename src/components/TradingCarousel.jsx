@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 
+import { formatPrice } from '../utils/formatters'
+
 const TradingCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
@@ -340,7 +342,7 @@ const TradingCarousel = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-gray-400">Current Price</span>
                           <span className="text-white font-mono text-lg">
-                            {chart.data[chart.data.length - 1].y.toFixed(4)}
+                            {formatPrice(Number(chart.data[chart.data.length - 1].y))}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">

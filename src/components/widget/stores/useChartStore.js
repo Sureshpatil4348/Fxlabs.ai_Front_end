@@ -1,32 +1,119 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+import { useSplitChartStore } from './useSplitChartStore';
+
 // Resolve system timezone once on load; fallback to 'UTC'
 const SYSTEM_TIMEZONE = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
 
 const defaultSettings = {
-  symbol: 'BTCUSDT',
-  timeframe: '1h',
+  symbol: 'EURUSD',
+  timeframe: '15m',
+  // Primary price series type for the main chart
+  // Allowed values: 'candlestick' | 'line'
   chartType: 'candlestick',
-  cursorType: 'crosshair',
+  cursorType: 'pointer',
   // Auto-detect system timezone by default
   timezone: SYSTEM_TIMEZONE,
   showGrid: true,
+  // Split mode settings
+  isSplitMode: false,
+  // Per-indicator configuration
+  indicatorSettings: {
+    rsiEnhanced: {
+      length: 14,
+      source: 'close', // one of: close, open, high, low, hl2, hlc3, ohlc4
+      overbought: 70,
+      oversold: 30,
+      rsiLineColor: '#2962FF',
+      showMidline: true,
+      midlineColor: 'rgba(128,128,128,0.5)',
+      obLineColor: 'rgba(242,54,69,0.6)',
+      osLineColor: 'rgba(8,153,129,0.6)',
+      obFillColor: 'rgba(242,54,69,0.1)',
+      osFillColor: 'rgba(8,153,129,0.1)'
+    }
+    ,
+    atrEnhanced: {
+      // ATR - Pro settings
+      length: 14,
+      smoothingMethod: 'RMA', // 'RMA' | 'SMA' | 'EMA' | 'WMA'
+      atrLineColor: '#2962FF',
+    }
+    ,
+    emaTouch: {
+      // Trend Strategy (BB + ATR Targets) configurable params
+      bbLength: 20,
+      bbStdDev: 2.0,
+      atrLength: 14,
+      tp1Multiplier: 1.0,
+      tp2Multiplier: 2.5,
+      tp3Multiplier: 4.0,
+    }
+    ,
+    bbPro: {
+      // Bollinger Bands - Pro settings
+      length: 20,
+      source: 'close', // close|open|high|low|hl2|hlc3|ohlc4
+      stdDev: 2.0,
+    }
+    ,
+    maEnhanced: {
+      // Moving Average - Pro settings
+      maType: 'EMA', // 'EMA' | 'SMA'
+      source: 'close', // close|open|high|low|hl2|hlc3|ohlc4
+      ma1Enabled: true,
+      ma1Length: 9,
+      ma2Enabled: true,
+      ma2Length: 21,
+      ma3Enabled: true,
+      ma3Length: 50,
+      ma4Enabled: false,
+      ma4Length: 100,
+    }
+    ,
+    orbEnhanced: {
+      // Opening Range Breakout - Enhanced settings
+      startHour: 9,
+      startMinute: 0,
+      orPeriod: 1, // number of bars to form opening range
+      targetRR: 2.0, // Risk:Reward ratio
+    }
+    ,
+    stEnhanced: {
+      // SuperTrend - Pro settings
+      atrPeriod: 10,
+      atrMultiplier: 3.0,
+    }
+  },
   indicators: {
-    ema20: true,
-    ema200: true,
-    rsi: true,
-    macd: true,
-    atr: false,
-    sma50: false,
-    sma100: false,
-    bollinger: false,
-    stoch: false,
-    williams: false,
-    cci: false,
-    obv: false,
-    vwap: false,
-    change24h: true,
+    // RSI Enhanced, EMA Touch, ATR Enhanced, BB Pro, MA Enhanced, ORB Enhanced, ST Enhanced, SR Enhanced, MACD Enhanced
+    rsiEnhanced: false,
+    emaTouch: false,
+    atrEnhanced: false,
+    bbPro: false,
+    maEnhanced: false,
+    orbEnhanced: false,
+    stEnhanced: false,
+    srEnhanced: false,
+    macdEnhanced: false,
+  },
+  // Split chart settings (for the second chart in split mode)
+  // Initially matches main chart settings
+  splitChart: {
+    symbol: 'EURUSD',
+    timeframe: '15m',
+    indicators: {
+      rsiEnhanced: false,
+      emaTouch: false,
+      atrEnhanced: false,
+      bbPro: false,
+      maEnhanced: false,
+      orbEnhanced: false,
+      stEnhanced: false,
+      srEnhanced: false,
+      macdEnhanced: false,
+    }
   }
 };
 
@@ -35,21 +122,19 @@ export const useChartStore = create(
     (set) => ({
       // Initial state
       candles: [],
+      // Tracks which symbol/timeframe the current candles belong to
+      candlesMeta: null,
       indicators: {
-        ema20: [],
-        ema200: [],
-        rsi: [],
-        macd: [],
-        atr: [],
-        sma50: [],
-        sma100: [],
-        bollinger: [],
-        stoch: [],
-        williams: [],
-        cci: [],
-        obv: [],
-        vwap: [],
-        change24h: [],
+        // Keep indicators map minimal; legacy keys will be ignored
+        rsiEnhanced: [],
+        emaTouch: [],
+        atrEnhanced: [],
+        bbPro: [],
+        maEnhanced: [],
+        orbEnhanced: [],
+        stEnhanced: [],
+        srEnhanced: [],
+        macdEnhanced: [],
       },
       dailyChangeData: {
         symbol: null,
@@ -65,15 +150,32 @@ export const useChartStore = create(
       // Drawing tools state
       activeDrawingTool: null,
       drawings: [],
+      // Persisted chart overlays (drawings) by symbol-timeframe key
+      persistedOverlays: {},
+      // KLine drawing tool pending selection (arms on first chart click)
+      pendingKLineTool: null,
+      // Workspace visibility state
+      isWorkspaceHidden: false,
+      hiddenIndicatorsSnapshot: null,
       // KLine chart ref (not persisted)
       klineChartRef: null,
+      // Active chart index in split mode (1 = main chart, 2 = split chart)
+      activeChartIndex: 1,
       // Pagination state
       currentPage: 1,
       hasMoreHistory: true,
       isLoadingHistory: false,
+      // Fullscreen state (persisted)
+      isFullscreen: false,
 
       // Actions
-      setCandles: (candles) => set({ candles }),
+      setCandles: (candles) => set((state) => ({
+        candles,
+        candlesMeta: {
+          symbol: state.settings.symbol,
+          timeframe: state.settings.timeframe,
+        }
+      })),
       
 
 
@@ -109,6 +211,23 @@ export const useChartStore = create(
           }
         }));
       },
+
+      // Update per-indicator settings (partial patch)
+      updateIndicatorSettings: (key, partial) => {
+        console.log('💾 ChartStore: Updating indicator settings', key, partial);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            indicatorSettings: {
+              ...state.settings.indicatorSettings,
+              [key]: {
+                ...(state.settings.indicatorSettings?.[key] || {}),
+                ...(partial || {})
+              }
+            }
+          }
+        }));
+      },
       
       setIndicatorsPreset: (indicatorsConfig) => {
         console.log('💾 ChartStore: Setting indicators preset', indicatorsConfig);
@@ -129,7 +248,15 @@ export const useChartStore = create(
           settings: {
             ...state.settings,
             symbol
-          }
+          },
+          // Immediately enter loading state and clear existing candles to avoid stale display
+          candles: [],
+          candlesMeta: null,
+          isLoading: true,
+          error: null,
+          currentPage: 1,
+          hasMoreHistory: true,
+          isLoadingHistory: false,
         }));
       },
       
@@ -139,16 +266,26 @@ export const useChartStore = create(
           settings: {
             ...state.settings,
             timeframe
-          }
+          },
+          // Immediately enter loading state and clear existing candles to avoid stale display
+          candles: [],
+          candlesMeta: null,
+          isLoading: true,
+          error: null,
+          currentPage: 1,
+          hasMoreHistory: true,
+          isLoadingHistory: false,
         }));
       },
       
       setChartType: (chartType) => {
-        console.log('💾 ChartStore: Setting chartType to', chartType);
+        // Normalize chart type to supported values
+        const nextType = chartType === 'line' ? 'line' : 'candlestick';
+        console.log('💾 ChartStore: Setting chartType to', chartType, '-> normalized as', nextType);
         set((state) => ({
           settings: {
             ...state.settings,
-            chartType
+            chartType: nextType
           }
         }));
       },
@@ -191,21 +328,17 @@ export const useChartStore = create(
       
       resetChart: () => set({
         candles: [],
+        candlesMeta: null,
         indicators: {
-          ema20: [],
-          ema200: [],
-          rsi: [],
-          macd: [],
-          atr: [],
-          sma50: [],
-          sma100: [],
-          bollinger: [],
-          stoch: [],
-          williams: [],
-          cci: [],
-          obv: [],
-          vwap: [],
-          change24h: [],
+          rsiEnhanced: [],
+          emaTouch: [],
+          atrEnhanced: [],
+          bbPro: [],
+          maEnhanced: [],
+          orbEnhanced: [],
+          stEnhanced: [],
+          srEnhanced: [],
+          macdEnhanced: [],
         },
         dailyChangeData: {
           symbol: null,
@@ -248,13 +381,53 @@ export const useChartStore = create(
       
       clearAllDrawings: () => {
         console.log('🎨 ChartStore: Clearing all drawings');
-        set({ drawings: [], activeDrawingTool: null });
+        set((state) => {
+          // Also clear persisted overlays for current symbol (timeframe-agnostic)
+          const key = `${state.settings.symbol}_chart${state.activeChartIndex || 1}`;
+          const newPersistedOverlays = { ...state.persistedOverlays };
+          delete newPersistedOverlays[key];
+          
+          return {
+            drawings: [],
+            activeDrawingTool: null,
+            pendingKLineTool: null,
+            persistedOverlays: newPersistedOverlays
+          };
+        });
+      },
+
+      // Pending KLine tool controls
+      setPendingKLineTool: (tool) => {
+        console.log('📌 ChartStore: Set pending KLine tool =', tool);
+        set({ pendingKLineTool: tool || null });
+      },
+      clearPendingKLineTool: () => {
+        console.log('📌 ChartStore: Clear pending KLine tool');
+        set({ pendingKLineTool: null });
       },
       
       // KLine chart ref actions
       setKLineChartRef: (ref) => {
         console.log('📊 ChartStore: Setting KLine chart ref');
         set({ klineChartRef: ref });
+      },
+      
+      // Active chart tracking
+      setActiveChartIndex: (index) => {
+        console.log('📊 ChartStore: Setting active chart index =', index);
+        set({ activeChartIndex: index });
+      },
+
+      // Workspace visibility actions
+      setWorkspaceHidden: (hidden) => {
+        console.log('📊 ChartStore: Setting workspace hidden =', hidden);
+        set({ isWorkspaceHidden: Boolean(hidden) });
+      },
+      setHiddenIndicatorsSnapshot: (snapshot) => {
+        // Shallow clone only expected; keys are booleans
+        const snap = snapshot && typeof snapshot === 'object' ? { ...snapshot } : null;
+        console.log('📊 ChartStore: Updating hidden indicators snapshot', snap);
+        set({ hiddenIndicatorsSnapshot: snap });
       },
       
       // Daily change data actions
@@ -314,12 +487,169 @@ export const useChartStore = create(
         hasMoreHistory: true, 
         isLoadingHistory: false 
       }),
+
+      // Split mode actions
+      toggleSplitMode: () => {
+        console.log('💾 ChartStore: Toggling split mode');
+        set((state) => {
+          const willEnableSplitMode = !state.settings.isSplitMode;
+          
+          // When enabling split mode, initialize split chart with current main chart settings
+          if (willEnableSplitMode) {
+            return {
+              settings: {
+                ...state.settings,
+                isSplitMode: true,
+                splitChart: {
+                  symbol: state.settings.symbol,
+                  timeframe: state.settings.timeframe,
+                  indicators: { ...state.settings.indicators }
+                }
+              }
+            };
+          }
+          
+          // When disabling, just toggle the flag
+          return {
+            settings: {
+              ...state.settings,
+              isSplitMode: false
+            }
+          };
+        });
+      },
+
+      setSplitChartSymbol: (symbol) => {
+        console.log('💾 ChartStore: Setting split chart symbol to', symbol);
+        // Immediately clear split chart data and enter loading state to avoid stale/partial candles
+        try {
+          const split = useSplitChartStore.getState();
+          split.resetPagination();
+          split.setCandles([], symbol, (useChartStore.getState().settings.splitChart?.timeframe || useChartStore.getState().settings.timeframe));
+          split.setLoading(true);
+        } catch (_e) { /* ignore if store not ready */ }
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            splitChart: {
+              ...state.settings.splitChart,
+              symbol
+            }
+          }
+        }));
+      },
+
+      setSplitChartTimeframe: (timeframe) => {
+        console.log('💾 ChartStore: Setting split chart timeframe to', timeframe);
+        // Immediately clear split chart data and enter loading state to avoid stale/partial candles
+        try {
+          const split = useSplitChartStore.getState();
+          split.resetPagination();
+          split.setCandles([], (useChartStore.getState().settings.splitChart?.symbol || useChartStore.getState().settings.symbol), timeframe);
+          split.setLoading(true);
+        } catch (_e) { /* ignore if store not ready */ }
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            splitChart: {
+              ...state.settings.splitChart,
+              timeframe
+            }
+          }
+        }));
+      },
+
+      toggleSplitChartIndicator: (indicator) => {
+        console.log('💾 ChartStore: Toggling split chart indicator', indicator);
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            splitChart: {
+              ...state.settings.splitChart,
+              indicators: {
+                ...state.settings.splitChart.indicators,
+                [indicator]: !state.settings.splitChart.indicators[indicator]
+              }
+            }
+          }
+        }));
+      },
+
+      // Persisted overlays actions
+      // NOTE: Drawings are stored per SYMBOL and CHART INDEX only (not timeframe)
+      // This allows drawings to persist when switching timeframes on the same pair
+      saveOverlaysForSymbol: (symbol, timeframe, overlays, chartIndex = 1) => {
+        // Remove timeframe from key so drawings persist across timeframe changes
+        const key = `${symbol}_chart${chartIndex}`;
+        console.log('💾 ChartStore: Saving overlays for', symbol, '(timeframe-agnostic)', 'chart', chartIndex, overlays.length);
+        console.log('💾 [DEBUG] Key:', key, 'Overlays:', overlays);
+        set((state) => {
+          const newState = {
+            persistedOverlays: {
+              ...state.persistedOverlays,
+              [key]: overlays
+            }
+          };
+          console.log('💾 [DEBUG] New persistedOverlays state:', newState.persistedOverlays);
+          
+          // CRITICAL: Check if it's actually in localStorage after a short delay
+          setTimeout(() => {
+            const stored = localStorage.getItem('tradingview-chart-storage');
+            console.log('💾 [DEBUG] localStorage check:', stored ? 'EXISTS' : 'MISSING');
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored);
+                console.log('💾 [DEBUG] localStorage.persistedOverlays keys:', Object.keys(parsed.state?.persistedOverlays || {}));
+                console.log('💾 [DEBUG] localStorage has key', key, '?', !!parsed.state?.persistedOverlays?.[key]);
+              } catch (e) {
+                console.error('💾 [DEBUG] Failed to parse localStorage:', e);
+              }
+            }
+          }, 100);
+          
+          return newState;
+        });
+      },
+
+      getOverlaysForSymbol: (symbol, timeframe, chartIndex = 1) => {
+        const state = useChartStore.getState();
+        // Remove timeframe from key so drawings persist across timeframe changes
+        const key = `${symbol}_chart${chartIndex}`;
+        const overlays = state.persistedOverlays[key] || [];
+        console.log('💾 [DEBUG] getOverlaysForSymbol:', { key, chartIndex, found: overlays.length, allKeys: Object.keys(state.persistedOverlays || {}) });
+        return overlays;
+      },
+
+      clearOverlaysForSymbol: (symbol, timeframe, chartIndex = 1) => {
+        console.log('💾 ChartStore: Clearing overlays for', symbol, '(timeframe-agnostic)', 'chart', chartIndex);
+        set((state) => {
+          // Remove timeframe from key so drawings persist across timeframe changes
+          const key = `${symbol}_chart${chartIndex}`;
+          const newPersistedOverlays = { ...state.persistedOverlays };
+          delete newPersistedOverlays[key];
+          return { persistedOverlays: newPersistedOverlays };
+        });
+      },
+
+      // Fullscreen state actions
+      setFullscreen: (isFullscreen) => {
+        console.log('💾 ChartStore: Setting fullscreen to', isFullscreen);
+        set({ isFullscreen: Boolean(isFullscreen) });
+      },
+
+      toggleFullscreen: () => {
+        console.log('💾 ChartStore: Toggling fullscreen');
+        set((state) => ({ isFullscreen: !state.isFullscreen }));
+      },
     }),
     {
       name: 'tradingview-chart-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        settings: state.settings
+        settings: state.settings,
+        persistedOverlays: state.persistedOverlays,
+        isFullscreen: state.isFullscreen,
+        isWorkspaceHidden: state.isWorkspaceHidden
       }),
       onRehydrateStorage: () => (_state) => {
         if (_state) {
@@ -327,13 +657,42 @@ export const useChartStore = create(
             symbol: _state.settings.symbol,
             timeframe: _state.settings.timeframe,
             chartType: _state.settings.chartType,
-            indicators: _state.settings.indicators
+            indicators: _state.settings.indicators,
+            isFullscreen: _state.isFullscreen,
+            isWorkspaceHidden: _state.isWorkspaceHidden,
+            overlayKeys: Object.keys(_state.persistedOverlays || {})
           });
           // If timezone wasn't previously set, ensure we apply system timezone automatically
           try {
             if (!_state.settings.timezone) {
               const tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
               _state.settings.timezone = tz;
+            }
+            // Normalize chart type on rehydrate (support 'candlestick' and 'line' only)
+            if (_state.settings.chartType !== 'candlestick' && _state.settings.chartType !== 'line') {
+              _state.settings.chartType = 'candlestick';
+            }
+            // Ensure split mode settings exist (migration for existing users)
+            if (!_state.settings.isSplitMode) {
+              _state.settings.isSplitMode = false;
+            }
+            if (!_state.settings.splitChart) {
+              // Initialize split chart with same settings as main chart
+              _state.settings.splitChart = {
+                symbol: _state.settings.symbol || 'EURUSD',
+                timeframe: _state.settings.timeframe || '1h',
+                indicators: { ...(_state.settings.indicators || {
+                  rsiEnhanced: true,
+                  emaTouch: false,
+                  atrEnhanced: false,
+                  bbPro: false,
+                  maEnhanced: false,
+                  orbEnhanced: false,
+                  stEnhanced: false,
+                  srEnhanced: false,
+                  macdEnhanced: false,
+                })}
+              };
             }
           } catch (_e) {
             // noop
@@ -352,3 +711,6 @@ export const selectIsLoading = (state) => state.isLoading;
 export const selectIsConnected = (state) => state.isConnected;
 export const selectError = (state) => state.error;
 export const selectDailyChangeData = (state) => state.dailyChangeData;
+export const selectIsFullscreen = (state) => state.isFullscreen;
+export const selectPersistedOverlays = (state) => state.persistedOverlays;
+export const selectIsWorkspaceHidden = (state) => state.isWorkspaceHidden;

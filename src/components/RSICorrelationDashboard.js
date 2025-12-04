@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import RSICorrelationAlertConfig from './RSICorrelationAlertConfig';
+import NumericInput from './ui/NumericInput.jsx';
 import { useAuth } from '../auth/AuthProvider';
 import rsiCorrelationAlertService from '../services/rsiCorrelationAlertService';
 import userStateService from '../services/userStateService';
@@ -613,13 +614,12 @@ const RSICorrelationDashboard = () => {
                     <label htmlFor="rsi-period-input" className="block text-sm font-medium text-gray-700 mb-1">
                       RSI Period
                     </label>
-                    <input
+                    <NumericInput
                       id="rsi-period-input"
-                      type="number"
-                      min="2"
-                      max="50"
+                      min={2}
+                      max={50}
                       value={localSettings.rsiPeriod}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiPeriod: parseInt(e.target.value) }))}
+                      onChange={(n) => setLocalSettings(prev => ({ ...prev, rsiPeriod: n }))}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -629,13 +629,12 @@ const RSICorrelationDashboard = () => {
                     <label htmlFor="rsi-overbought-input" className="block text-sm font-medium text-gray-700 mb-1">
                       Overbought Level
                     </label>
-                    <input
+                    <NumericInput
                       id="rsi-overbought-input"
-                      type="number"
-                      min="50"
-                      max="90"
+                      min={50}
+                      max={90}
                       value={localSettings.rsiOverbought}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOverbought: parseInt(e.target.value) }))}
+                      onChange={(n) => setLocalSettings(prev => ({ ...prev, rsiOverbought: n }))}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -645,13 +644,12 @@ const RSICorrelationDashboard = () => {
                     <label htmlFor="rsi-oversold-input" className="block text-sm font-medium text-gray-700 mb-1">
                       Oversold Level
                     </label>
-                    <input
+                    <NumericInput
                       id="rsi-oversold-input"
-                      type="number"
-                      min="10"
-                      max="50"
+                      min={10}
+                      max={50}
                       value={localSettings.rsiOversold}
-                      onChange={(e) => setLocalSettings(prev => ({ ...prev, rsiOversold: parseInt(e.target.value) }))}
+                      onChange={(n) => setLocalSettings(prev => ({ ...prev, rsiOversold: n }))}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>

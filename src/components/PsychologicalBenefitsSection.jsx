@@ -15,7 +15,7 @@ const PsychologicalBenefitsSection = () => {
             </div>
             <h3 className="text-sm sm:text-xl font-bold text-center mb-2 sm:mb-4 text-[#19235d] dark:text-white transition-colors duration-300">Reduce Emotional Trading</h3>
             <p className="hidden sm:block text-[#19235d] dark:text-gray-300 text-center text-sm sm:text-base transition-colors duration-300">
-              Automation removes impulsive decisions and emotional responses that often lead to trading losses.
+              Automation removes impulsive decisions and emotional responses that often lead to trading losses. This is a core advantage of the best forex trading platform.
             </p>
           </div>
           <div className="bg-white dark:bg-[#19235d] rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300 flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]">
@@ -24,7 +24,7 @@ const PsychologicalBenefitsSection = () => {
             </div>
             <h3 className="text-sm sm:text-xl font-bold text-center mb-2 sm:mb-4 text-[#19235d] dark:text-white transition-colors duration-300">Enhance Discipline</h3>
             <p className="hidden sm:block text-[#19235d] dark:text-gray-300 text-center text-sm sm:text-base transition-colors duration-300">
-              Predefined strategies enforce consistent trading behavior and keep you aligned with your long-term goals.
+              Predefined strategies enforce consistent trading behavior and keep you aligned with your long-term goals, a key benefit of AI-based best forex trading platforms.
             </p>
           </div>
           <div className="bg-white dark:bg-[#19235d] rounded-2xl shadow-lg p-4 sm:p-6 md:p-7 feature-card transition-colors duration-300 col-span-2 sm:col-span-2 md:col-span-1 justify-self-center flex flex-col items-center justify-center min-h-[200px] sm:min-h-[220px] md:min-h-[240px]">
@@ -33,7 +33,7 @@ const PsychologicalBenefitsSection = () => {
             </div>
             <h3 className="text-sm sm:text-xl font-bold text-center mb-2 sm:mb-4 text-[#19235d] dark:text-white transition-colors duration-300">Build Confidence</h3>
             <p className="hidden sm:block text-[#19235d] dark:text-gray-300 text-center text-sm sm:text-base transition-colors duration-300">
-              Transparent operations and real-time data foster trust in the system and your trading approach.
+              Transparent operations and real-time data foster trust in the system and your trading approach, making this one of the features of a Top forex trading platform.
             </p>
           </div>
         </div>

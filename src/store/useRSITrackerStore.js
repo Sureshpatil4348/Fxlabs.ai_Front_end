@@ -54,8 +54,8 @@ const useRSITrackerStore = create(
         'GBPJPYm', 'GBPCHFm', 'GBPAUDm', 'GBPCADm', 'GBPNZDm',
         'AUDJPYm', 'AUDCHFm', 'AUDCADm', 'AUDNZDm',
         'CADJPYm', 'CADCHFm', 'CHFJPYm', 'NZDJPYm', 'NZDCHFm', 'NZDCADm',
-        // Precious Metals
-        'XAUUSDm', 'XAGUSDm',
+        // Commodities & Precious Metals
+        'USOILm', 'XAUUSDm', 'XAGUSDm',
         // Cryptocurrencies
         'BTCUSDm', 'ETHUSDm'
       ],

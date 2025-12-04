@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import userStateService from '../services/userStateService';
 import useBaseMarketStore from '../store/useBaseMarketStore';
 import useMarketStore from '../store/useMarketStore';
+import NumericInput from './ui/NumericInput.jsx';
 
 const GlobalSettingsPanel = () => {
   const { globalSettings, rsiSettings, strengthSettings, updateGlobalSettings, updateRsiSettings, updateStrengthSettings, timeframes } = useMarketStore();
@@ -187,13 +188,12 @@ const GlobalSettingsPanel = () => {
                     <label htmlFor="rsi-overbought" className="block text-sm font-medium text-green-700 mb-1">
                       Overbought
                     </label>
-                    <input
+                    <NumericInput
                       id="rsi-overbought"
-                      type="number"
-                      min="60"
-                      max="90"
+                      min={60}
+                      max={90}
                       value={localSettings.rsiOverbought}
-                      onChange={(e) => setLocalSettings({...localSettings, rsiOverbought: parseInt(e.target.value)})}
+                      onChange={(n) => setLocalSettings({ ...localSettings, rsiOverbought: n })}
                       className="input-field w-full"
                     />
                   </div>
@@ -201,13 +201,12 @@ const GlobalSettingsPanel = () => {
                     <label htmlFor="rsi-oversold" className="block text-sm font-medium text-green-700 mb-1">
                       Oversold
                     </label>
-                    <input
+                    <NumericInput
                       id="rsi-oversold"
-                      type="number"
-                      min="10"
-                      max="40"
+                      min={10}
+                      max={40}
                       value={localSettings.rsiOversold}
-                      onChange={(e) => setLocalSettings({...localSettings, rsiOversold: parseInt(e.target.value)})}
+                      onChange={(n) => setLocalSettings({ ...localSettings, rsiOversold: n })}
                       className="input-field w-full"
                     />
                   </div>

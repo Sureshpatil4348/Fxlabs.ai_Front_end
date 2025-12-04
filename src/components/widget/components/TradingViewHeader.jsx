@@ -1,3 +1,4 @@
+import { Maximize2 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -7,8 +8,10 @@ import { listTimezonesWithOffsets } from '../../../utils/marketHoursEngine';
 import { watchlistService } from '../services/watchlistService';
 import { useChartStore } from '../stores/useChartStore';
 
-export const TradingViewHeader = () => {
-  const { settings, setSymbol, setTimeframe, _setChartType, _setCursorType, toggleIndicator, setTimezone } = useChartStore();
+export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) => {
+  const { settings, setSymbol, setTimeframe, _setCursorType, toggleIndicator, setTimezone, toggleSplitMode, setChartType } = useChartStore();
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimerRef = useRef(null);
   const [_activeTimeframe, setActiveTimeframe] = useState('1m');
   const [showIndicators, setShowIndicators] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -21,9 +24,130 @@ export const TradingViewHeader = () => {
   const timezoneDropdownRef = useRef(null);
   const indicatorsButtonRef = useRef(null);
   const moreTimeframesDropdownRef = useRef(null);
+  const indicatorsPanelRef = useRef(null);
 
-  // Quick-access timeframes are 1m, 5m, 15m; remaining in dropdown
+  // Handle Split button click: if not fullscreen, first enter fullscreen then enable split
+  const handleSplitClick = () => {
+    // If already in split mode, just toggle it off/on based on current state
+    if (settings.isSplitMode) {
+      toggleSplitMode();
+      return;
+    }
+    // When not in fullscreen, enter fullscreen first, then enable split mode
+    if (!isFullscreen && typeof onFullscreenToggle === 'function') {
+      try {
+        onFullscreenToggle();
+      } catch (_) { /* noop */ }
+      // Defer enabling split to ensure fullscreen layout has mounted
+      setTimeout(() => {
+        try { toggleSplitMode(); } catch (_) { /* noop */ }
+      }, 0);
+      return;
+    }
+    // Already fullscreen: enable split immediately
+    toggleSplitMode();
+  };
+
+  // Indicator groups and limits
+  // Note: 'emaTouch' (Trend Strategy) implementation is kept for future use but removed from dropdown
+  const ON_CHART_KEYS = ['bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+  const BELOW_CHART_KEYS = ['rsiEnhanced','atrEnhanced','macdEnhanced'];
+  const ON_CHART_LIMIT = 3;
+  const BELOW_CHART_LIMIT = 2;
+
+  const showToast = (msg) => {
+    try { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); } catch (_) {}
+    setToastMessage(msg);
+    toastTimerRef.current = setTimeout(() => setToastMessage(''), 2000);
+  };
+
+  const countActive = (keys) => keys.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
+  const activeOnChart = countActive(ON_CHART_KEYS);
+  const activeBelowChart = countActive(BELOW_CHART_KEYS);
+  const totalActiveIndicators = activeOnChart + activeBelowChart;
+
+  const handleToggleIndicator = (key) => {
+    const isOn = !!settings.indicators?.[key];
+    if (isOn) {
+      toggleIndicator(key);
+      return;
+    }
+    if (ON_CHART_KEYS.includes(key)) {
+      if (activeOnChart >= ON_CHART_LIMIT) {
+        showToast(`Limit reached: max ${ON_CHART_LIMIT} on-chart indicators`);
+        return;
+      }
+    } else if (BELOW_CHART_KEYS.includes(key)) {
+      if (activeBelowChart >= BELOW_CHART_LIMIT) {
+        showToast(`Limit reached: max ${BELOW_CHART_LIMIT} below-chart indicators`);
+        return;
+      }
+    }
+    toggleIndicator(key);
+  };
+
+  // Quick-access timeframes default: 1m, 5m, 15m; remaining in dropdown
   const _timeframes = ['1m', '5m', '15m'];
+  const DEFAULT_QUICK_TFS = ['1m', '5m', '15m'];
+  const DEFAULT_MORE_TFS = ['30m', '1h', '4h', '1d', '1w', '1mo'];
+
+  // Dynamic quick and more lists to support swapping 15m with a selected "More" timeframe
+  const [quickTimeframes, setQuickTimeframes] = useState(DEFAULT_QUICK_TFS);
+  const [moreTimeframes, setMoreTimeframes] = useState(DEFAULT_MORE_TFS);
+  const [swappedFromMore, setSwappedFromMore] = useState(null); // tracks which timeframe replaced 15m
+
+  const isSwapped = swappedFromMore !== null;
+
+  const resetQuickTimeframes = () => {
+    setQuickTimeframes(DEFAULT_QUICK_TFS);
+    setMoreTimeframes(DEFAULT_MORE_TFS);
+    setSwappedFromMore(null);
+  };
+
+  const swapFifteenWith = (tf) => {
+    // If user selects 15m from dropdown, revert to defaults
+    if (tf === '15m') {
+      resetQuickTimeframes();
+      return;
+    }
+    // Move selected tf to the 3rd quick slot, move 15m into more list
+    setQuickTimeframes(['1m', '5m', tf]);
+    setMoreTimeframes((prev) => {
+      const withoutSelected = prev.filter((t) => t !== tf);
+      // Ensure 15m exists in the more list when swapped
+      if (!withoutSelected.includes('15m')) withoutSelected.unshift('15m');
+      // If previously swapped, also ensure the previous is present in More (it should already be, but guard anyway)
+      if (swappedFromMore && !withoutSelected.includes(swappedFromMore)) {
+        withoutSelected.push(swappedFromMore);
+      }
+      return withoutSelected;
+    });
+    setSwappedFromMore(tf);
+  };
+
+  const handleQuickTimeframeSelect = (tf) => {
+    if (settings.timeframe === tf) return;
+    if ((tf === '1m' || tf === '5m') && isSwapped) {
+      resetQuickTimeframes();
+    }
+    setTimeframe(tf);
+    setActiveTimeframe(tf);
+  };
+
+  const handleMoreTimeframeSelect = (tf) => {
+    if (settings.timeframe === tf) {
+      setShowMoreTimeframesDropdown(false);
+      return;
+    }
+    if (tf === '15m') {
+      resetQuickTimeframes();
+    } else {
+      swapFifteenWith(tf);
+    }
+    setTimeframe(tf);
+    setActiveTimeframe(tf);
+    setShowMoreTimeframesDropdown(false);
+  };
   // Comprehensive timezone list + Auto(System)
   const [timezones, setTimezones] = useState(() => listTimezonesWithOffsets(new Date()));
   const systemTz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
@@ -48,12 +172,20 @@ export const TradingViewHeader = () => {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      // Close Indicators only if click is outside BOTH the button container AND the portal panel
+      const clickedOutsideIndicators = (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        (!indicatorsPanelRef.current || !indicatorsPanelRef.current.contains(event.target))
+      );
+      if (clickedOutsideIndicators) {
         setShowIndicators(false);
       }
+      // Close timezone dropdown on outside click
       if (timezoneDropdownRef.current && !timezoneDropdownRef.current.contains(event.target)) {
         setShowTimezoneDropdown(false);
       }
+      // Close more timeframes dropdown on outside click
       if (moreTimeframesDropdownRef.current && !moreTimeframesDropdownRef.current.contains(event.target)) {
         setShowMoreTimeframesDropdown(false);
       }
@@ -115,16 +247,16 @@ export const TradingViewHeader = () => {
 
   return (
     <>
-    <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-200 px-4 py-2 h-11 shadow-sm">
+    <div className="bg-white border-b border-gray-200 px-3 py-2 h-11 shadow-sm">
       <div className="flex items-center justify-between h-full">
-        {/* Left Section - Symbol Selector */}
-        <div className="flex items-center space-x-3">
+        {/* Left Section - Conditionally rendered based on split mode */}
+        {!settings.isSplitMode && (
+        <div className="flex items-center">
           {/* Symbol Search Button */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Symbol:</span>
+          <div className="flex items-center">
             <button
               onClick={() => setShowSymbolSearch(true)}
-              className="px-2 py-1 border border-gray-300 rounded text-[10px] font-medium bg-white hover:border-gray-400 hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
+              className="px-2 py-1 text-[13px] font-medium bg-white hover:bg-gray-50 transition-colors min-w-[80px] flex items-center justify-between"
             >
               <span>{settings.symbol ? formatSymbolDisplay(settings.symbol) : 'Select Symbol'}</span>
               <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,8 +264,8 @@ export const TradingViewHeader = () => {
               </svg>
             </button>
             
-            {/* Watchlist Star Button - Premium Style */}
-            {settings.symbol && (
+            {/* Watchlist Star Button - Premium Style - Hidden from UI */}
+            {false && settings.symbol && (
               <button
                 onClick={handleWatchlistToggle}
                 className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
@@ -150,24 +282,41 @@ export const TradingViewHeader = () => {
             )}
           </div>
 
-          
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
+          {/* Chart Type Switch (Candlestick / Line) */}
+          <div className="ml-2">
+            <button
+              onClick={() => {
+                const currentType = settings.chartType || 'candlestick';
+                const newType = currentType === 'line' ? 'candlestick' : 'line';
+                try {
+                  setChartType(newType);
+                } catch (_) {
+                  // best-effort; ignore if store not ready
+                }
+              }}
+              className="px-2 py-1 text-[13px] font-medium text-gray-700 bg-transparent hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              {settings.chartType === 'line' ? 'Line' : 'Candlestick'}
+            </button>
+          </div>
+
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
 
           {/* Timeframe Buttons + Dropdown */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Timeframe:</span>
-            
+          <div className="flex items-center">
             {/* Quick Timeframe Buttons - Premium Style */}
-          <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
-              {['1m', '5m', '15m'].map((tf) => (
+          <div className="flex items-center gap-1 bg-white">
+              {quickTimeframes.map((tf) => (
               <button
                 key={tf}
-                  onClick={() => {
-                    setTimeframe(tf);
-                    setActiveTimeframe(tf);
-                  }}
-                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 ${
+                  onClick={() => handleQuickTimeframeSelect(tf)}
+                  className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
                     settings.timeframe === tf
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-105'
+                      ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -179,9 +328,9 @@ export const TradingViewHeader = () => {
             <div className="relative" ref={moreTimeframesDropdownRef}>
               <button
                 onClick={() => setShowMoreTimeframesDropdown(!showMoreTimeframesDropdown)}
-                className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1 ${
-                  showMoreTimeframesDropdown || ['30m', '1h', '4h', '1d', '1w'].includes(settings.timeframe)
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 flex items-center gap-1 ${
+                  showMoreTimeframesDropdown || moreTimeframes.includes(settings.timeframe)
+                    ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white rounded-lg'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
@@ -194,17 +343,13 @@ export const TradingViewHeader = () => {
               {/* More Timeframes Dropdown Menu */}
               {showMoreTimeframesDropdown && (
                 <div className="absolute top-full left-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999] overflow-hidden">
-                  {['30m', '1h', '4h', '1d', '1w'].map((tf) => (
+                  {moreTimeframes.map((tf) => (
                     <button
                       key={tf}
-                      onClick={() => {
-                        setTimeframe(tf);
-                        setActiveTimeframe(tf);
-                        setShowMoreTimeframesDropdown(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-all ${
+                      onClick={() => handleMoreTimeframeSelect(tf)}
+                      className={`w-full text-left px-3 py-2 text-[13px] font-medium transition-all ${
                         settings.timeframe === tf
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                          ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
@@ -217,22 +362,18 @@ export const TradingViewHeader = () => {
           </div>
           </div>
 
+          {/* Vertical Separator */}
+          <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
           {/* Indicators Button */}
           <div className="relative" ref={dropdownRef}>
             <button 
               ref={indicatorsButtonRef}
               onClick={handleIndicatorsToggle}
-              className={`px-3 py-1.5 text-xs rounded flex items-center space-x-0.5 transition-colors ${
-                showIndicators 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1"
             >
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
-              <span>Indicators</span>
-              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span>Indicators{totalActiveIndicators > 0 ? ` ( ${totalActiveIndicators} )` : ''}</span>
+              <svg className={`w-3 h-3 transition-transform ${showIndicators ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
@@ -240,40 +381,33 @@ export const TradingViewHeader = () => {
           </div>
 
                   </div>
+        )}
 
-        {/* Right Section - Split Graph + Timezone */}
-        <div className="flex items-center space-x-3">
-          {/* Split Graph Button - Premium */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Split:</span>
+        {/* Right Section - Split/Unsplit + Timezone + Fullscreen */
+        }
+        <div className="flex items-center ml-auto">
+          {/* Split/Unsplit Button - now visible in both modes */}
+          <>
             <button
-              className="group px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-[10px] font-semibold hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-1.5"
-              title="Split Graph View"
+              onClick={handleSplitClick}
+              className="px-3 py-1.5 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded"
+              title={settings.isSplitMode ? "Exit Split View" : (isFullscreen ? "Split Graph View" : "Go Fullscreen & Split")}
             >
-              <svg className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-              </svg>
-              <svg className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <span>{settings.isSplitMode ? 'Unsplit' : 'Split'}</span>
             </button>
-          </div>
+            {/* Vertical Separator */}
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
+          </>
 
           {/* Premium Timezone Dropdown */}
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-gray-700 tracking-wide">Timezone:</span>
             <div className="relative" ref={timezoneDropdownRef}>
               <button
                 onClick={() => setShowTimezoneDropdown(!showTimezoneDropdown)}
-                className="group px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-[10px] font-semibold hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md min-w-[120px] flex items-center justify-between gap-2"
+                className="px-3 py-1.5 bg-white text-[13px] font-medium hover:bg-blue-50 transition-all duration-200 min-w-[120px] flex items-center gap-1"
               >
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-gray-700 group-hover:text-blue-700 transition-colors">{`${getCurrentTimezoneInfo().label} (GMT${getCurrentTimezoneInfo().gmt})`}</span>
-                </div>
-                <svg className="w-3 h-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="text-gray-700">{`GMT${getCurrentTimezoneInfo().gmt}`}</span>
+                <svg className={`w-3 h-3 transition-transform ${showTimezoneDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
@@ -281,13 +415,13 @@ export const TradingViewHeader = () => {
               {/* Premium Timezone Dropdown Panel */}
               {showTimezoneDropdown && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-[9999] overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-gray-200">
+                  <div className="bg-white px-4 py-3 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <h3 className="text-sm font-bold text-gray-900">Select Timezone</h3>
+                        <h3 className="text-sm font-bold text-gray-900">Timezone</h3>
                       </div>
                       <button
                         onClick={() => setShowTimezoneDropdown(false)}
@@ -307,7 +441,7 @@ export const TradingViewHeader = () => {
                       onClick={() => handleTimezoneSelect(systemTzItem.value)}
                       className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
                         settings.timezone === systemTzItem.value
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-[1.02]'
+                          ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-md transform scale-[1.02]'
                           : 'hover:bg-gray-50 text-gray-700'
                       }`}
                     >
@@ -331,7 +465,7 @@ export const TradingViewHeader = () => {
                         onClick={() => handleTimezoneSelect(timezone.value)}
                         className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
                           settings.timezone === timezone.value
-                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-[1.02]'
+                            ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-md transform scale-[1.02]'
                             : 'hover:bg-gray-50 text-gray-700'
                         }`}
                       >
@@ -372,6 +506,19 @@ export const TradingViewHeader = () => {
               )}
             </div>
           </div>
+
+          {/* Fullscreen Button */}
+          {onFullscreenToggle && (
+            <button
+              type="button"
+              onClick={onFullscreenToggle}
+              className="p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors ml-2"
+              title="Fullscreen"
+              aria-label="Toggle fullscreen"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -385,13 +532,14 @@ export const TradingViewHeader = () => {
       />
 
       {/* Portal-based Indicators Dropdown */}
-      {showIndicators && createPortal(
+      {false && showIndicators && createPortal(
         <div 
           className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
           style={{
             top: dropdownPosition.top,
             right: dropdownPosition.right
           }}
+          ref={indicatorsPanelRef}
         >
           <div className="p-3">
             <div className="flex items-center justify-between mb-3">
@@ -461,24 +609,24 @@ export const TradingViewHeader = () => {
                 </button>
               </div>
 
-              {/* RSI */}
+              {/* RSI - Pro */}
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-0.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
                   <div>
-                    <p className="text-xs font-medium text-gray-900">RSI</p>
-                    <p className="text-xs text-gray-500">Relative Strength Index (14-period)</p>
+                    <p className="text-xs font-medium text-gray-900">RSI - Pro</p>
+                    <p className="text-xs text-gray-500">Clean RSI (14) — OB/OS panel</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => toggleIndicator('rsi')}
+                  onClick={() => toggleIndicator('rsiEnhanced')}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.indicators.rsi ? 'bg-blue-600' : 'bg-gray-300'
+                    settings.indicators.rsiEnhanced ? 'bg-blue-400' : 'bg-gray-300'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.indicators.rsi ? 'translate-x-6' : 'translate-x-1'
+                      settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -747,6 +895,135 @@ export const TradingViewHeader = () => {
                 </span>
               </div>
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* New minimal Indicators panel (RSI Enhanced + EMA Touch + ATR Enhanced + BB Pro + MA Enhanced + ORB Enhanced + ST Enhanced + SR Enhanced + MACD Enhanced) */}
+      {showIndicators && createPortal(
+        <div 
+          className="fixed w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[15000]"
+          style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
+          ref={indicatorsPanelRef}
+        >
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900">Technical Indicators</h3>
+              <button onClick={() => setShowIndicators(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-2 overflow-y-auto relative" style={{ maxHeight: '400px', scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6', scrollBehavior: 'smooth' }}>
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">RSI - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('rsiEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.rsiEnhanced ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.rsiEnhanced ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">Bollinger Bands - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('bbPro')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.indicators.bbPro ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.indicators.bbPro ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">ATR - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('atrEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.indicators.atrEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.indicators.atrEnhanced ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Moving Average - Pro */}
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">Moving Average - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('maEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.indicators.maEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.indicators.maEnhanced ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Breakout Strategy */}
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">Breakout Strategy</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('orbEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.indicators.orbEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.indicators.orbEnhanced ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Super Trend - Pro */}
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">Super Trend - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('stEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.indicators.stEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.indicators.stEnhanced ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Support/Resistance Enhanced */}
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">Support Resitance - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.indicators.srEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.indicators.srEnhanced ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              {/* MACD - Pro (below chart) */}
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center">
+                  <p className="text-xs font-medium text-gray-900">MACD - Pro</p>
+                </div>
+                <button onClick={() => handleToggleIndicator('macdEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.indicators.macdEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.indicators.macdEnhanced ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            {toastMessage && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-2 px-3 py-1.5 rounded-md bg-gray-900 text-white text-[13px] shadow-md">
+                {toastMessage}
+              </div>
+            )}
           </div>
         </div>,
         document.body

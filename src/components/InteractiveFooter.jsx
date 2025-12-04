@@ -14,7 +14,8 @@ const InteractiveFooter = () => {
     GBPUSD: { ask: 1.2650, bid: 1.2648, spread: 0.0002 },
     USDJPY: { ask: 149.25, bid: 149.23, spread: 0.02 },
     USDCHF: { ask: 0.8750, bid: 0.8748, spread: 0.0002 },
-    XAUUSD: { ask: 2025.50, bid: 2025.30, spread: 0.20 }
+    XAUUSD: { ask: 2025.50, bid: 2025.30, spread: 0.20 },
+    USOIL: { ask: 78.50, bid: 78.40, spread: 0.10 }
   })
   
   const scrollToSection = (sectionId) => {
@@ -29,7 +30,7 @@ const InteractiveFooter = () => {
     let mounted = true
     let pollTimer = null
 
-    const BASE_PAIRS = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'XAUUSD']
+    const BASE_PAIRS = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'XAUUSD', 'USOIL']
     const REQUEST_SYMBOLS = BASE_PAIRS.map((p) => `${p}m`)
 
     const mapResponseToState = (res) => {
@@ -166,6 +167,22 @@ const InteractiveFooter = () => {
                 </span>
               </div>
             </div>
+            {/* OIL/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="USOIL">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xs font-bold text-orange-800 dark:text-orange-300 transition-colors duration-300">Oil</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-[#19235d] dark:text-white transition-colors duration-300">OIL/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USOIL?.ask || 0, 2)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USOIL?.bid || 0, 2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.USOIL?.spread || 0, 2)}
+                </span>
+              </div>
+            </div>
             
             {/* Duplicate Set for Seamless Loop */}
             {/* EUR/USD */}
@@ -245,6 +262,22 @@ const InteractiveFooter = () => {
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
                   {loading ? '0.0' : formatPrice(forexData.XAUUSD?.spread || 0, 2)}
+                </span>
+              </div>
+            </div>
+            {/* OIL/USD */}
+            <div className="ticker-item flex items-center mx-2 md:mx-6" data-pair="USOIL">
+              <div className="w-5 h-5 md:w-6 md:h-6 mr-1 md:mr-2 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xs font-bold text-orange-800 dark:text-orange-300 transition-colors duration-300">Oil</div>
+              <div className="flex items-center text-sm md:text-base">
+                <span className="font-semibold mr-1 md:mr-2 text-[#19235d] dark:text-white transition-colors duration-300">OIL/USD</span>
+                <span className="ask-value text-green-600 dark:text-green-400 transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USOIL?.ask || 0, 2)}
+                </span>
+                <span className="text-gray-400 dark:text-gray-500 mx-1 md:mx-2 bid-value transition-colors duration-300">
+                  {loading ? '0.0000' : formatPrice(forexData.USOIL?.bid || 0, 2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 spread-value hidden sm:inline transition-colors duration-300">
+                  {loading ? '0.0' : formatPrice(forexData.USOIL?.spread || 0, 2)}
                 </span>
               </div>
             </div>

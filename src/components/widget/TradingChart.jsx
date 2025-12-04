@@ -1,231 +1,368 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { X, Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
+import { SplitChartPanel } from './components/SplitChartPanel.jsx';
 import { TradingViewHeader } from './components/TradingViewHeader.jsx';
 import { UnifiedChart } from './components/UnifiedChart';
 import { useChartStore } from './stores/useChartStore';
 
 function TradingChart() {
-  const { settings, toggleGrid, setIndicatorsPreset } = useChartStore();
-  const [showPresetDropdown, setShowPresetDropdown] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const presetDropdownRef = useRef(null);
-  const presetButtonRef = useRef(null);
+  const { settings, toggleGrid, setIndicatorsPreset, toggleSplitMode, isFullscreen, toggleFullscreen } = useChartStore();
+  const [activePreset, setActivePreset] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const errorTimeoutRef = useRef(null);
 
-  // Carefully selected indicator presets (2-3 pairs only)
+  // Indicator groups and limits (same as in TradingViewHeader)
+  // Note: 'emaTouch' (Trend Strategy) implementation is kept for future use but removed from dropdown
+  const ON_CHART_KEYS = ['bbPro', 'maEnhanced', 'orbEnhanced', 'stEnhanced', 'srEnhanced'];
+  const BELOW_CHART_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+  const ON_CHART_LIMIT = 3;
+  const BELOW_CHART_LIMIT = 2;
+
+  // Carefully selected indicator presets (respecting limits: 3 on-chart, 2 below-chart)
   const indicatorPresets = [
     {
-      id: 'trend-momentum',
-      name: 'Trend + Momentum',
-      description: 'EMA 20/200 + RSI + MACD',
+      id: 'moneytize',
+      name: 'Moneytize',
+      description: 'Moving Average Pro + RSI - Pro + MACD - Pro',
       icon: '📈',
-      indicators: {
-        ema20: true,
-        ema200: true,
-        rsi: true,
-        macd: true,
-        atr: false,
-        sma50: false,
-        sma100: false,
-        bollinger: false,
-        stoch: false,
-        williams: false,
-        cci: false,
-        obv: false,
-        vwap: false,
-        change24h: true,
-      }
+      indicators: ['maEnhanced', 'rsiEnhanced', 'macdEnhanced']
     },
     {
-      id: 'volatility-volume',
-      name: 'Volatility + Volume',
-      description: 'Bollinger Bands + VWAP + ATR',
+      id: 'trend-scalper',
+      name: 'Trend Scalper',
+      description: 'Super Trend - Pro + MACD - Pro',
       icon: '🌊',
-      indicators: {
-        ema20: false,
-        ema200: false,
-        rsi: false,
-        macd: false,
-        atr: true,
-        sma50: false,
-        sma100: false,
-        bollinger: true,
-        stoch: false,
-        williams: false,
-        cci: false,
-        obv: false,
-        vwap: true,
-        change24h: true,
-      }
+      indicators: ['stEnhanced', 'macdEnhanced']
     },
     {
-      id: 'complete-analysis',
-      name: 'Complete Analysis',
-      description: 'EMA 20 + RSI + MACD + Bollinger + VWAP',
+      id: 'buy-sell-signal',
+      name: 'Buy / Sell Signal',
+      description: 'Breakout Strategy + ATR - Pro',
       icon: '🎯',
-      indicators: {
-        ema20: true,
-        ema200: false,
-        rsi: true,
-        macd: true,
-        atr: false,
-        sma50: false,
-        sma100: false,
-        bollinger: true,
-        stoch: false,
-        williams: false,
-        cci: false,
-        obv: false,
-        vwap: true,
-        change24h: true,
-      }
+      indicators: ['orbEnhanced', 'atrEnhanced']
     }
   ];
 
-  // Close dropdown when clicking outside
+  const showError = (msg) => {
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    setErrorMessage(msg);
+    errorTimeoutRef.current = setTimeout(() => setErrorMessage(''), 3000);
+  };
+
+  // Check if a preset is currently active
+  const isPresetActive = (preset) => {
+    return preset.indicators.every((ind) => settings.indicators?.[ind]);
+  };
+
+  // Handle Escape key to close fullscreen
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (presetDropdownRef.current && !presetDropdownRef.current.contains(event.target)) {
-        setShowPresetDropdown(false);
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        toggleFullscreen();
       }
     };
 
-    if (showPresetDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
+    window.addEventListener('keydown', handleEscape);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleEscape);
     };
-  }, [showPresetDropdown]);
+  }, [isFullscreen, toggleFullscreen]);
 
-  const calculateDropdownPosition = () => {
-    if (presetButtonRef.current) {
-      const rect = presetButtonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.top + window.scrollY - 4,
-        left: rect.left + window.scrollX
-      });
+  // Prevent body scroll when fullscreen is active
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
-  };
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
+
+  // Auto-disable split mode when exiting fullscreen
+  useEffect(() => {
+    if (!isFullscreen && settings.isSplitMode) {
+      toggleSplitMode();
+    }
+  }, [isFullscreen, settings.isSplitMode, toggleSplitMode]);
+
+  // Clear active preset if manually changed indicators break the preset
+  useEffect(() => {
+    if (activePreset) {
+      const currentPreset = indicatorPresets.find(p => p.id === activePreset);
+      if (currentPreset && !isPresetActive(currentPreset)) {
+        // Preset is no longer fully active (user manually changed indicators)
+        setActivePreset(null);
+      }
+    }
+  }, [settings.indicators]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePresetSelect = (preset) => {
-    setIndicatorsPreset(preset.indicators);
-    setShowPresetDropdown(false);
-  };
+    const presetIsActive = activePreset === preset.id;
 
-  const handlePresetToggle = () => {
-    if (!showPresetDropdown) {
-      calculateDropdownPosition();
+    if (presetIsActive) {
+      // Clicking active preset: remove only preset indicators, keeping extras
+      const updates = {};
+      preset.indicators.forEach((ind) => {
+        if (settings.indicators?.[ind]) {
+          updates[ind] = false;
+        }
+      });
+      setIndicatorsPreset(updates);
+      setActivePreset(null);
+      console.log(`❌ Preset "${preset.name}": removed all indicators`);
+      return;
     }
-    setShowPresetDropdown(!showPresetDropdown);
+
+    // Calculate the final desired state
+    // Step 1: Start with current indicator state
+    const finalState = { ...settings.indicators };
+
+    // Step 2: If switching from another preset, turn off those indicators
+    if (activePreset && activePreset !== preset.id) {
+      const previousPreset = indicatorPresets.find(p => p.id === activePreset);
+      if (previousPreset) {
+        previousPreset.indicators.forEach((ind) => {
+          finalState[ind] = false;
+        });
+        console.log(`🔄 Switching: removing "${previousPreset.name}" indicators`);
+      }
+    }
+
+    // Step 3: Turn on all indicators from the new preset
+    preset.indicators.forEach((ind) => {
+      finalState[ind] = true;
+    });
+
+    // Step 4: Count current and final state
+    const currentOnChart = ON_CHART_KEYS.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
+    const currentBelowChart = BELOW_CHART_KEYS.reduce((acc, k) => acc + (settings.indicators?.[k] ? 1 : 0), 0);
+    const finalOnChart = ON_CHART_KEYS.reduce((acc, k) => acc + (finalState[k] ? 1 : 0), 0);
+    const finalBelowChart = BELOW_CHART_KEYS.reduce((acc, k) => acc + (finalState[k] ? 1 : 0), 0);
+
+    // Step 5: Check limits based on FINAL state with descriptive messages
+    if (finalOnChart > ON_CHART_LIMIT) {
+      showError(`Cannot apply "${preset.name}" preset: You currently have ${currentOnChart} on-chart indicator${currentOnChart !== 1 ? 's' : ''}. Adding this preset would result in ${finalOnChart} indicators, exceeding the limit of ${ON_CHART_LIMIT}. Please disable some indicators first.`);
+      return;
+    }
+
+    if (finalBelowChart > BELOW_CHART_LIMIT) {
+      showError(`Cannot apply "${preset.name}" preset: You currently have ${currentBelowChart} below-chart indicator${currentBelowChart !== 1 ? 's' : ''}. Adding this preset would result in ${finalBelowChart} indicators, exceeding the limit of ${BELOW_CHART_LIMIT}. Please disable some indicators first.`);
+      return;
+    }
+
+    // Step 6: Apply all changes atomically
+    const updates = {};
+    preset.indicators.forEach((ind) => {
+      updates[ind] = true;
+    });
+    
+    // Also remove previous preset indicators if switching
+    if (activePreset && activePreset !== preset.id) {
+      const previousPreset = indicatorPresets.find(p => p.id === activePreset);
+      if (previousPreset) {
+        previousPreset.indicators.forEach((ind) => {
+          updates[ind] = false;
+        });
+      }
+    }
+    
+    // Apply new preset indicators (these will override the false values if there's overlap)
+    preset.indicators.forEach((ind) => {
+      updates[ind] = true;
+    });
+
+    setIndicatorsPreset(updates);
+    setActivePreset(preset.id);
+    console.log(`✅ Preset "${preset.name}": applied (on-chart: ${finalOnChart}/${ON_CHART_LIMIT}, below-chart: ${finalBelowChart}/${BELOW_CHART_LIMIT})`);
   };
 
-  return (
-    <ErrorBoundary>
-      <div className="h-screen bg-white flex flex-col overflow-hidden border border-gray-200 shadow-lg rounded-lg">
-        {/* Header */}
-        <TradingViewHeader />
+  // Render the main widget content
+  const renderWidgetContent = () => (
+    <div className="h-full bg-white flex flex-col overflow-hidden border border-gray-200 shadow-lg rounded-lg">
+      {/* Header */}
+      <TradingViewHeader onFullscreenToggle={toggleFullscreen} isFullscreen={isFullscreen} />
+      
+      {/* Main Content with Sidebar */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* Left Sidebar - always visible */}
+        <Sidebar />
         
-        {/* Main Content with Sidebar */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left Sidebar */}
-          <Sidebar />
-          
-          {/* Chart Area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-hidden">
-              <UnifiedChart />
+        {/* Chart Area */}
+        {!settings.isSplitMode ? (
+          // Normal single chart view
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <UnifiedChart isFullscreen={isFullscreen} />
             </div>
             
             {/* Bottom Bar */}
-            <div className="flex-shrink-0 bg-gray-50 border-t border-gray-200 px-3 py-1">
-              <div className="flex items-center justify-between">
-                {/* Left Side - Session & Preset */}
-                <div className="flex items-center space-x-2">
-                  
-                  
-                  {/* Preset Dropdown */}
-                  <div className="relative" ref={presetDropdownRef}>
-                    <button 
-                      ref={presetButtonRef}
-                      onClick={handlePresetToggle}
-                      className={`flex items-center space-x-1 px-2 py-1 border rounded text-xs transition-colors ${
-                        showPresetDropdown 
-                          ? 'bg-blue-50 border-blue-300 text-blue-700' 
-                          : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-                      }`}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span>Preset</span>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
+            <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1 relative">
+            {/* Error Message Toast */}
+            {errorMessage && (
+              <div className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 z-[10000]">
+                <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm max-w-md">
+                  {errorMessage}
+                </div>
+              </div>
+            )}
 
+            <div className="flex items-center justify-between">
+              {/* Left Side - Preset Buttons */}
+              <div className="flex items-center">
+                <div className="flex items-center gap-1 bg-white">
+                  {indicatorPresets.map((preset, index) => (
+                    <React.Fragment key={preset.id}>
+                      {index > 0 && <div className="h-6 w-px bg-gray-300 mx-2"></div>}
+                      <button
+                        onClick={() => handlePresetSelect(preset)}
+                        className={`px-2.5 py-1 text-[13px] font-medium transition-all duration-200 ${
+                          activePreset === preset.id
+                            ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white transform scale-105 rounded-lg'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                        title={preset.description}
+                      >
+                        {preset.name}
+                      </button>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Side - Alert & Grid */}
+              <div className="flex items-center space-x-2">
+                {/* NOTE: Alert button temporarily hidden */}
+                {false && (
+                  <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
+                    <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                  </button>
+                )}
+                <button 
+                  onClick={toggleGrid}
+                  className={`p-2 transition-colors duration-300 group ${
+                    settings.showGrid 
+                      ? 'text-emerald-600' 
+                      : 'text-gray-400 hover:text-emerald-600'
+                  }`}
+                  title="Grid"
+                >
+                  <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          </div>
+        ) : (
+          // Split mode - side-by-side charts with bottom panel
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 flex gap-2 overflow-hidden">
+              {/* Left Chart */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden border-r border-gray-200">
+                <SplitChartPanel chartIndex={1} />
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <UnifiedChart isFullscreen={isFullscreen} chartIndex={1} />
+                </div>
+              </div>
+
+              {/* Right Chart */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                <SplitChartPanel chartIndex={2} />
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <UnifiedChart isFullscreen={isFullscreen} chartIndex={2} />
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Bar - same as normal mode but preset buttons hidden */}
+            <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 py-1 relative">
+              {/* Error Message Toast */}
+              {errorMessage && (
+                <div className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 z-[10000]">
+                  <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm max-w-md">
+                    {errorMessage}
                   </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                {/* Left Side - Empty in split mode (preset buttons hidden) */}
+                <div className="flex items-center">
+                  {/* Preset buttons hidden in split mode */}
                 </div>
 
                 {/* Right Side - Alert & Grid */}
-                <div className="flex items-center space-x-2">
-                  <button className="flex items-center space-x-1 px-2 py-1 bg-white border border-gray-300 rounded text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4.828 7l2.586 2.586a2 2 0 002.828 0L12.828 7H4.828zM4.828 17H12l-2.586-2.586a2 2 0 00-2.828 0L4.828 17z" />
-                    </svg>
-                    <span>Alert</span>
-                  </button>
+                <div className="flex items-center space-x-2 ml-auto">
+                  {/* NOTE: Alert button temporarily hidden */}
+                  {false && (
+                    <button className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-300 group" title="Alert">
+                      <Bell className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                  )}
                   <button 
                     onClick={toggleGrid}
-                    className={`flex items-center space-x-1 px-2 py-1 border rounded text-xs transition-colors ${
+                    className={`p-2 transition-colors duration-300 group ${
                       settings.showGrid 
-                        ? 'bg-white border-emerald-500 text-emerald-700 hover:bg-gray-50' 
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                        ? 'text-emerald-600' 
+                        : 'text-gray-400 hover:text-emerald-600'
                     }`}
+                    title="Grid"
                   >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
-                    <span>Grid</span>
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
+    </div>
+  );
 
-      {/* Portal-based Preset Dropdown */}
-      {showPresetDropdown && createPortal(
-        <div 
-          className="fixed w-64 bg-white rounded-md shadow-lg border border-gray-200 z-[9999]"
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            transform: 'translateY(-100%)'
+  return (
+    <ErrorBoundary>
+      {/* Normal view */}
+      {!isFullscreen && renderWidgetContent()}
+
+      {/* Fullscreen Modal */}
+      {isFullscreen && createPortal(
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events
+        <div
+          className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label="TradingView chart fullscreen"
+          onClick={(e) => {
+            // Close on backdrop click (but not on widget content)
+            if (e.target === e.currentTarget) {
+              toggleFullscreen();
+            }
           }}
         >
-          <div className="p-2">
-            <div className="space-y-1">
-              {indicatorPresets.map((preset) => (
-                <button
-                  key={preset.id}
-                  onClick={() => handlePresetSelect(preset)}
-                  className="w-full text-left p-2 rounded hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm">{preset.icon}</span>
-                    <div className="flex-1">
-                      <div className="text-xs font-medium text-gray-900">{preset.name}</div>
-                      <div className="text-xs text-gray-500">{preset.description}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="absolute top-4 right-4 p-3 rounded-lg bg-white/90 text-gray-700 hover:bg-white shadow-lg z-[20000] transition-all hover:scale-110"
+            aria-label="Close fullscreen"
+            title="Close (Esc)"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Fullscreen Widget Container */}
+          <div className="w-full h-full flex items-center justify-center p-4">
+            <div className="w-full h-full max-w-[100vw] max-h-[100vh]">
+              {renderWidgetContent()}
             </div>
           </div>
         </div>,

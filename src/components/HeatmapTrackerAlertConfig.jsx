@@ -2,6 +2,7 @@ import { Bell, Check, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import heatmapTrackerAlertService from '../services/heatmapTrackerAlertService';
+import NumericInput from './ui/NumericInput.jsx';
 import useRSITrackerStore from '../store/useRSITrackerStore';
 import { formatSymbolDisplay } from '../utils/formatters';
 
@@ -149,14 +150,13 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
 
               <div>
                 <label htmlFor="heatmap-tracker-threshold" className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Threshold (%)</label>
-                <input 
-                  id="heatmap-tracker-threshold" 
-                  type="number" 
-                  min="0" 
-                  max="100" 
-                  value={form.threshold} 
-                  onChange={(e) => setForm({ ...form, threshold: parseInt(e.target.value) })} 
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                <NumericInput
+                  id="heatmap-tracker-threshold"
+                  min={0}
+                  max={100}
+                  value={form.threshold}
+                  onChange={(n) => setForm({ ...form, threshold: n })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-[#19235d] text-[#19235d] dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -180,5 +180,4 @@ const HeatmapTrackerAlertConfig = ({ isOpen, onClose }) => {
 };
 
 export default HeatmapTrackerAlertConfig;
-
 

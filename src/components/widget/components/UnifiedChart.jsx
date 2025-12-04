@@ -17,13 +17,22 @@ import {
 import { EnhancedCandlestickChart } from "./EnhancedCandlestickChart";
 import { UniversalDrawingTools } from "./UniversalDrawingTools";
 import useMarketCacheStore from "../../../store/useMarketCacheStore";
-import { realMarketService } from "../services/realMarketService";
+import { RealMarketService } from "../services/realMarketService";
 import { useChartStore } from "../stores/useChartStore";
+import { useSplitChartStore } from "../stores/useSplitChartStore";
 import { calculateAllIndicators } from "../utils/indicators";
 
-export const UnifiedChart = () => {
+export const UnifiedChart = ({ isFullscreen = false, chartIndex = 1 }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const [lineChartKey, setLineChartKey] = useState(0); // Key to force re-render
+    const isMainChart = chartIndex === 1;
+
+    // Create a dedicated service instance for this chart to avoid conflicts
+    const marketServiceRef = useRef(null);
+    if (!marketServiceRef.current) {
+        marketServiceRef.current = new RealMarketService();
+    }
+    const realMarketService = marketServiceRef.current;
 
     // Throttle state for real-time tick updates (avoid per-tick re-renders)
     const tickThrottleLastEmitRef = useRef(0);
@@ -37,10 +46,17 @@ export const UnifiedChart = () => {
         return Number.isFinite(val) && val >= 0 ? val : 0;
     }, []);
 
+    // Use different stores based on chart index
+    const mainChartStore = useChartStore();
+    const splitChartStore = useSplitChartStore();
+    
+    const store = isMainChart ? mainChartStore : splitChartStore;
+    const settings = mainChartStore.settings; // Settings always come from main store
+    const isKLineMode = settings.chartType === "candlestick" || settings.chartType === "line";
+    
     const {
         candles,
         indicators,
-        settings,
         isLoading,
         error,
         currentPage,
@@ -58,15 +74,29 @@ export const UnifiedChart = () => {
         setLoadingHistory,
         prependCandles,
         resetPagination,
-    } = useChartStore();
+    } = store;
+
+    // Get current settings based on chart index (with fallbacks matching main chart)
+    const currentSymbol = isMainChart 
+        ? settings.symbol 
+        : (settings.splitChart?.symbol || settings.symbol);
+    const currentTimeframe = isMainChart 
+        ? settings.timeframe 
+        : (settings.splitChart?.timeframe || settings.timeframe);
+    const currentIndicators = isMainChart 
+        ? settings.indicators 
+        : (settings.splitChart?.indicators || settings.indicators);
 
     // Determine how many initial bars to load.
-    // Business rule: always fetch 150 candles via REST `limit` param.
-    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 150, []);
+    // Business rule: always fetch 1000 candles via REST `limit` param.
+    const getInitialBarsForTimeframe = useMemo(() => (_tf) => 1000, []);
 
     const { pricingBySymbol } = useMarketCacheStore();
     // Cursors for OHLC keyset pagination
     const olderCursorRef = useRef(null); // use next_before from last response to page older
+    // Background preload session + guard
+    const backgroundPreloadStartedRef = useRef(false);
+    const preloadSessionRef = useRef(0);
 
     // Apply cursor style based on settings
     useEffect(() => {
@@ -77,6 +107,12 @@ export const UnifiedChart = () => {
             chartContainer.style.cursor = settings.cursorType || "crosshair";
         }
     }, [settings.cursorType]);
+
+    // Reset background preload session on symbol/timeframe change
+    useEffect(() => {
+        preloadSessionRef.current += 1;
+        backgroundPreloadStartedRef.current = false;
+    }, [currentSymbol, currentTimeframe]);
 
     // Create lookup maps for better performance
     const indicatorMaps = useMemo(() => {
@@ -113,18 +149,17 @@ export const UnifiedChart = () => {
 
     // Get candles for display based on chart type
     const displayCandles = useMemo(() => {
-        if (settings.chartType === "candlestick") {
-            // Candlestick: use all candles (with pagination)
-            return candles;
-        } else {
-            // Line chart: only use the most recent 500 candles
-            const maxLineChartCandles = 500;
-            if (candles.length > maxLineChartCandles) {
-                return candles.slice(-maxLineChartCandles);
-            }
+        if (isKLineMode) {
+            // KLine modes (candlestick / line) use the same candle stream
             return candles;
         }
-    }, [candles, settings.chartType]);
+        // Non-KLine modes (if added in future) can still limit data for performance
+        const maxLineChartCandles = 500;
+        if (candles.length > maxLineChartCandles) {
+            return candles.slice(-maxLineChartCandles);
+        }
+        return candles;
+    }, [candles, isKLineMode]);
 
     // Format data for Recharts with proper indicator alignment (optimized)
     const chartData = useMemo(() => {
@@ -188,9 +223,9 @@ export const UnifiedChart = () => {
     // Performance optimized - removed debug logging for better performance
 
     // Calculate price information - use same data source as Trending Pairs for consistency
-    const currentSymbol = settings.symbol ? `${settings.symbol}m` : null;
-    const pricing = currentSymbol
-        ? pricingBySymbol.get(currentSymbol) || {}
+    const pricingSymbol = currentSymbol ? `${currentSymbol}m` : null;
+    const pricing = pricingSymbol
+        ? pricingBySymbol.get(pricingSymbol) || {}
         : {};
 
     // Use bid price from market cache (same as Trending Pairs) instead of candle close price
@@ -200,16 +235,6 @@ export const UnifiedChart = () => {
             : candles.length > 0
             ? candles[candles.length - 1].close
             : 0;
-    const dailyChangePct =
-        typeof pricing.daily_change_pct === "number"
-            ? pricing.daily_change_pct
-            : 0;
-    const dailyChange =
-        typeof pricing.daily_change === "number" ? pricing.daily_change : 0;
-
-    // Use backend daily change data instead of calculating from candles
-    const priceChange = dailyChange;
-    const priceChangePercent = dailyChangePct;
 
     // Initialize chart
     useEffect(() => {
@@ -219,85 +244,170 @@ export const UnifiedChart = () => {
 
     // Refresh line chart when switching to line chart type
     useEffect(() => {
-        if (settings.chartType !== "candlestick") {
+        if (!isKLineMode) {
             console.log("📊 Refreshing line chart area...");
-            // Force re-render of line chart components
+            // Force re-render of line chart components for non-KLine modes
             setLineChartKey((prev) => prev + 1);
         }
-    }, [settings.chartType]);
+    }, [isKLineMode]);
 
     // Load more historical data (pagination)
-    const loadMoreHistory = async () => {
-        if (isLoadingHistory || !hasMoreHistory) {
-            console.log("📊 loadMoreHistory: Skip", {
-                isLoadingHistory,
-                hasMoreHistory,
-            });
-            return;
+    // removed loadMoreHistory; background preloader now fetches slices inline
+
+    // Background preloading: after initial page is ready, wait 2s,
+    // then fetch additional older batches (up to 1000 candles each).
+    // NOTE: BACKGROUND_PRELOAD_BATCHES is currently 0, so we intentionally
+    // do NOT fetch any extra past data in the background while keeping
+    // the implementation intact for future re-enable.
+    useEffect(() => {
+        const BACKGROUND_PRELOAD_BATCHES = 0; // 0 = no background batches (temporary)
+        const MAX_TOTAL_PAGES = 1 + BACKGROUND_PRELOAD_BATCHES; // 1 initial page + N preload batches
+
+        // Only start after we have at least the first page
+        if (currentPage >= 1 && hasMoreHistory && !backgroundPreloadStartedRef.current) {
+            const sessionId = preloadSessionRef.current;
+
+            const timer = setTimeout(() => {
+                // Mark started only when the timer actually fires to avoid premature cancellation on re-renders
+                backgroundPreloadStartedRef.current = true;
+                (async () => {
+                    try {
+                        // Keep fetching older slices until limits reached or new session starts
+                        // eslint-disable-next-line no-constant-condition
+                        while (true) {
+                            // Stop if session changed (symbol/timeframe switched)
+                            if (preloadSessionRef.current !== sessionId) break;
+                            // Stop if we've reached max total pages (include the first page)
+                            const { currentPage: latestPage, hasMoreHistory: stillHasMore } = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState());
+                            if (latestPage >= MAX_TOTAL_PAGES) break;
+                            if (!stillHasMore) break;
+
+                            // Fetch one older slice inline
+                            try {
+                                setLoadingHistory(true);
+                                const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
+                                  currentSymbol,
+                                  currentTimeframe,
+                                  { limit: 1000, before: olderCursorRef.current }
+                                );
+                                if (slice.length > 0) {
+                                    // Merge candles and recalc indicators using latest store data
+                                    const existing = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState()).candles;
+                                    prependCandles(slice);
+                                    const allCandles = [...slice, ...existing].sort((a, b) => a.time - b.time);
+                                    const calculatedIndicators = calculateAllIndicators(allCandles);
+                                    setIndicators(calculatedIndicators);
+
+                                    const latest = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState()).currentPage;
+                                    setCurrentPage((latest || 1) + 1);
+                                    olderCursorRef.current = nextBefore || null;
+                                    setHasMoreHistory(Boolean(nextBefore && count > 0));
+                                } else {
+                                    setHasMoreHistory(false);
+                                    break;
+                                }
+                            } catch (e) {
+                                // eslint-disable-next-line no-console
+                                console.warn('⚠️ Preload slice failed:', e);
+                                break; // break on error to avoid tight loop
+                            } finally {
+                                setLoadingHistory(false);
+                            }
+                        }
+                    } catch (e) {
+                        // eslint-disable-next-line no-console
+                        console.warn("⚠️ Background preload stopped:", e);
+                    } finally {
+                        // Log a summary only if we're still in the same session
+                        try {
+                            if (preloadSessionRef.current === sessionId) {
+                                const state = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState());
+                                const all = Array.isArray(state.candles) ? [...state.candles] : [];
+                                if (all.length > 0) {
+                                    const sorted = all.sort((a, b) => a.time - b.time);
+                                    const first = sorted[0];
+                                    const last = sorted[sorted.length - 1];
+                                    const toIso = (t) => {
+                                        const ms = t < 946684800000 ? t * 1000 : t;
+                                        return new Date(ms).toISOString();
+                                    };
+                                    // eslint-disable-next-line no-console
+                                    console.log('[ChartSummary]', {
+                                        timeframe: currentTimeframe,
+                                        totalCandles: sorted.length,
+                                        firstCandle: first,
+                                        lastCandle: last,
+                                        startTime: toIso(first.time),
+                                        endTime: toIso(last.time)
+                                    });
+                                } else {
+                                    // eslint-disable-next-line no-console
+                                    console.log('[ChartSummary]', {
+                                        timeframe: currentTimeframe,
+                                        totalCandles: 0
+                                    });
+                                }
+                            }
+                        } catch (_e) {
+                            // ignore summary errors
+                        }
+                        // Guard remains set for this session; resets on symbol/timeframe change
+                    }
+                })();
+            }, 2000);
+
+            return () => {
+                clearTimeout(timer);
+            };
         }
-
-        try {
-            console.log("📊 loadMoreHistory: Loading older via cursor", olderCursorRef.current);
-            setLoadingHistory(true);
-            const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
-              settings.symbol,
-              settings.timeframe,
-              { limit: 150, before: olderCursorRef.current }
-            );
-
-            console.log("📊 loadMoreHistory: Received", slice.length, "candles");
-
-            if (slice.length > 0) {
-                // Prepend the new candles
-                prependCandles(slice);
-
-                // Recalculate indicators with all candles
-                const allCandles = [...slice, ...candles].sort(
-                    (a, b) => a.time - b.time
-                );
-                const calculatedIndicators = calculateAllIndicators(allCandles);
-                setIndicators(calculatedIndicators);
-
-                // Update pagination state
-                setCurrentPage(currentPage + 1); // retained for UI, though cursor-based now
-                olderCursorRef.current = nextBefore || null;
-                setHasMoreHistory(Boolean(nextBefore && count > 0));
-
-                console.log(
-                    "✅ loadMoreHistory: Success, now on page",
-                    currentPage + 1
-                );
-            } else {
-                setHasMoreHistory(false);
-                console.log("📊 loadMoreHistory: No more history");
-            }
-        } catch (err) {
-            console.error("❌ Error loading more history:", err);
-        } finally {
-            setLoadingHistory(false);
-        }
-    };
+        return undefined;
+    }, [currentPage, hasMoreHistory, currentSymbol, currentTimeframe, prependCandles, setIndicators, setCurrentPage, setHasMoreHistory, setLoadingHistory, realMarketService, isMainChart]);
 
     // Load historical data
     useEffect(() => {
         const loadHistoricalData = async () => {
             console.log("🚀 Starting to load historical data...");
             console.log("📊 Settings:", {
-                symbol: settings.symbol,
-                timeframe: settings.timeframe,
+                symbol: currentSymbol,
+                timeframe: currentTimeframe,
             });
 
-            setLoading(true);
-            setError(null);
-            resetPagination(); // Reset pagination when loading new data
+      // If candles are already loaded for this symbol/timeframe, reuse cache and skip REST
+      try {
+        const state = store;
+        const hasCached = Array.isArray(state.candles) && state.candles.length > 0
+          && state.candlesMeta
+          && state.candlesMeta.symbol === currentSymbol
+          && state.candlesMeta.timeframe === currentTimeframe;
+
+        if (hasCached) {
+          console.log('♻️ Using cached candles; skipping REST fetch');
+          // Ensure indicators align with cached candles
+          try {
+            const calc = calculateAllIndicators(state.candles);
+            setIndicators(calc);
+          } catch (_) {}
+          setLoading(false);
+          return;
+        }
+      } catch (_) {}
+
+      setLoading(true);
+      setError(null);
+      resetPagination(); // Reset pagination when loading new data
+      // Clear existing candles immediately to avoid showing stale/half-baked data
+      // Always pass symbol/timeframe to support split store metadata
+      try {
+        setCandles([], currentSymbol, currentTimeframe);
+      } catch (_) { /* fallback: main store ignores extra args */ setCandles([]); }
 
             try {
-                // Figure out how many bars to fetch initially (fixed at 150)
+                // Figure out how many bars to fetch initially (fixed at 1000)
                 const desiredBars = getInitialBarsForTimeframe(
-                    settings.timeframe
+                    currentTimeframe
                 );
-                // Always request 150 candles per REST call
-                const LIMIT_PER_CALL = 150;
+                // Always request 1000 candles per REST call
+                const LIMIT_PER_CALL = 1000;
                 const combined = [];
                 let before = null; // no cursor -> most recent slice
                 let hasMoreOlder = true;
@@ -305,8 +415,8 @@ export const UnifiedChart = () => {
                     const limit = LIMIT_PER_CALL;
                     // eslint-disable-next-line no-await-in-loop
                     const { candles: slice, nextBefore, count } = await realMarketService.fetchOhlcSlice(
-                        settings.symbol,
-                        settings.timeframe,
+                        currentSymbol,
+                        currentTimeframe,
                         { limit, before }
                     );
                     if (slice.length > 0) combined.push(...slice);
@@ -369,11 +479,14 @@ export const UnifiedChart = () => {
                 }
 
                 console.log("💾 Setting candles in store...");
-                setCandles(sliced);
+                // Set fresh candles for this selection (ensure split store gets metadata)
+                try {
+                  setCandles(sliced, currentSymbol, currentTimeframe);
+                } catch (_) { setCandles(sliced); }
                 console.log("✅ Candles set in store, length:", sliced.length);
 
                 // Update pagination counters to reflect how many pages we fetched
-                setCurrentPage(Math.ceil(combined.length / 150));
+                setCurrentPage(Math.max(1, Math.ceil(combined.length / LIMIT_PER_CALL)));
                 setHasMoreHistory(Boolean(olderCursorRef.current));
 
                 // Calculate indicators
@@ -420,18 +533,11 @@ export const UnifiedChart = () => {
         if (isInitialized) {
             loadHistoricalData();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         isInitialized,
-        settings.symbol,
-        settings.timeframe,
-        setCandles,
-        setIndicators,
-        setLoading,
-        setError,
-        resetPagination,
-        getInitialBarsForTimeframe,
-        setCurrentPage,
-        setHasMoreHistory,
+        currentSymbol,
+        currentTimeframe,
     ]);
 
     // WebSocket connection for real-time data (throttled)
@@ -442,8 +548,14 @@ export const UnifiedChart = () => {
 
         // Internal apply function that always uses the latest store state
         const applyCandle = (newCandle) => {
-            const store = useChartStore.getState();
-            const currentCandles = store.candles;
+            // Use the correct store based on chart index
+            const storeState = isMainChart ? useChartStore.getState() : useSplitChartStore.getState();
+            // While initial REST load is in progress for a new symbol/timeframe,
+            // ignore live websocket updates to avoid rendering partial candles
+            if (storeState.isLoading) {
+                return;
+            }
+            const currentCandles = storeState.candles;
             const lastCandle = currentCandles[currentCandles.length - 1];
 
             // Special handling for live tick updates (partial bar updates)
@@ -471,7 +583,7 @@ export const UnifiedChart = () => {
                             (Number(lastCandle.volume) || 0) +
                             (Number(newCandle.volume) || 0),
                     };
-                    store.updateLastCandle(merged);
+                    storeState.updateLastCandle(merged);
                 } else if (!lastCandle || lastCandle.time < time) {
                     // Start a new (live) bar for this timeframe bucket
                     const live = {
@@ -482,17 +594,17 @@ export const UnifiedChart = () => {
                         close: price,
                         volume: Number(newCandle.volume) || 0,
                     };
-                    store.addCandle(live);
+                    storeState.addCandle(live);
                 } else {
                     // Older tick than last candle's time — ignore to keep chart stable
                     return;
                 }
 
                 // Recalculate indicators with updated candles
-                const postUpdate = useChartStore.getState().candles;
+                const postUpdate = (isMainChart ? useChartStore.getState() : useSplitChartStore.getState()).candles;
                 const sorted = [...postUpdate].sort((a, b) => a.time - b.time);
                 const calculatedIndicators = calculateAllIndicators(sorted);
-                store.setIndicators(calculatedIndicators);
+                storeState.setIndicators(calculatedIndicators);
                 return;
             }
 
@@ -510,17 +622,17 @@ export const UnifiedChart = () => {
             }
 
             if (lastCandle && newCandle.time === lastCandle.time) {
-                store.updateLastCandle(newCandle);
+                storeState.updateLastCandle(newCandle);
             } else if (!lastCandle || newCandle.time > lastCandle.time) {
-                store.addCandle(newCandle);
+                storeState.addCandle(newCandle);
             } else {
                 const updatedCandles = [...currentCandles, newCandle].sort(
                     (a, b) => a.time - b.time
                 );
-                store.setCandles(updatedCandles);
+                storeState.setCandles(updatedCandles);
                 const calculatedIndicators =
                     calculateAllIndicators(updatedCandles);
-                store.setIndicators(calculatedIndicators);
+                storeState.setIndicators(calculatedIndicators);
                 return;
             }
 
@@ -532,7 +644,7 @@ export const UnifiedChart = () => {
                 (a, b) => a.time - b.time
             );
             const calculatedIndicators = calculateAllIndicators(sortedCandles);
-            store.setIndicators(calculatedIndicators);
+            storeState.setIndicators(calculatedIndicators);
         };
 
         // Tick handler (per-tick if throttle is 0, otherwise throttled)
@@ -582,8 +694,8 @@ export const UnifiedChart = () => {
 
         // Connect to WebSocket
         realMarketService.connectWebSocket(
-            settings.symbol,
-            settings.timeframe,
+            currentSymbol,
+            currentTimeframe,
             handleNewCandle,
             handleError,
             handleClose,
@@ -600,13 +712,14 @@ export const UnifiedChart = () => {
             setConnected(false);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isInitialized, settings.symbol, settings.timeframe]);
+    }, [isInitialized, currentSymbol, currentTimeframe]);
 
     // Initialize wishlist WebSocket (temporarily disabled to fix main chart)
 
-    if (isLoading) {
+    // For candlestick (KLineChart), let the inner component handle its own initial loader
+    if (isLoading && !isKLineMode) {
         return (
-            <div className="flex-1 bg-white flex items-start justify-center pt-16 h-screen">
+            <div className="flex-1 bg-white flex items-start justify-center pt-16 h-full">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
                     <p className="text-gray-600 text-sm">Loading Chart...</p>
@@ -630,42 +743,19 @@ export const UnifiedChart = () => {
     }
 
     return (
-        <div className="flex-1 bg-white flex flex-col h-full overflow-hidden">
-            {/* Price Info Bar */}
-            <div className="bg-white px-4 py-1 flex-shrink-0 sticky top-0 z-10 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 overflow-x-auto">
-                        <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
-                            ${latestPrice?.toFixed(5) || "0.00000"}
-                        </span>
-                        <span
-                            className={`text-sm font-medium whitespace-nowrap ${
-                                priceChange >= 0
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                            }`}
-                        >
-                            {priceChange >= 0 ? "+" : ""}
-                            {priceChange.toFixed(5)} (
-                            {priceChangePercent >= 0 ? "+" : ""}
-                            {priceChangePercent.toFixed(2)}%)
-                        </span>
-                    </div>
-                </div>
-            </div>
-
+        <div className="flex-1 min-h-0 bg-white flex flex-col h-full overflow-hidden">
             {/* Chart Container: candlestick uses container-sized chart, others can scroll */}
             <div
                 className={`unified-chart-container ${
-                    settings.chartType === "candlestick"
+                    isKLineMode
                         ? "flex-1 relative overflow-hidden"
                         : "flex-1 overflow-y-auto"
                 }`}
                 style={
-                    settings.chartType === "candlestick"
-                        ? { minHeight: "500px" }
+                    isKLineMode
+                        ? { minHeight: 0 }
                         : {
-                              minHeight: "400px",
+                              minHeight: 0,
                               maxHeight: "calc(100vh - 200px)",
                               scrollbarWidth: "thin",
                               scrollbarColor: "#d1d5db #f3f4f6",
@@ -673,20 +763,21 @@ export const UnifiedChart = () => {
                           }
                 }
             >
-                {settings.chartType === "candlestick" ? (
+                {isKLineMode ? (
                     // Show Enhanced Candlestick Chart with drawing tools, sized to container
                     <div
                         className="absolute"
                         style={{ top: 0, left: 0, right: 0, bottom: 0 }}
                     >
                         <EnhancedCandlestickChart
-                            key={`enhanced-candlestick-${settings.symbol}-${settings.timeframe}`}
+                            key={`enhanced-candlestick-${currentSymbol}-${currentTimeframe}-${chartIndex}`}
                             candles={displayCandles}
                             indicators={indicators}
-                            settings={settings}
-                            onLoadMoreHistory={loadMoreHistory}
+                            settings={{...settings, symbol: currentSymbol, timeframe: currentTimeframe, indicators: currentIndicators}}
                             isLoadingHistory={isLoadingHistory}
                             hasMoreHistory={hasMoreHistory}
+                            isFullscreen={isFullscreen}
+                            chartIndex={chartIndex}
                         />
                     </div>
                 ) : (
@@ -700,7 +791,7 @@ export const UnifiedChart = () => {
                                 {/* Price Chart - Always visible */}
                                 <div className="bg-white rounded-lg border border-gray-200 p-1 relative">
                                     <h4 className="text-xs font-medium text-gray-700 mb-0.5">
-                                        Price Chart - {settings.symbol}
+                                        Price Chart - {currentSymbol}
                                     </h4>
                                     <div className="text-[10px] text-gray-600 mb-0.5">
                                         Data: {chartData.length} points | Price:

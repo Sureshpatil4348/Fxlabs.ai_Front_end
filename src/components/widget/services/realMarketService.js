@@ -140,7 +140,9 @@ export class RealMarketService {
       '1h': '1H',
       '4h': '4H',
       '1d': '1D',
-      '1w': '1W'
+      '1w': '1W',
+      // 1 month (approximate timeframe; backend expects 1MN)
+      '1mo': '1MN'
     };
     return mapping[interval.toLowerCase()] || '5M'; // Default to 5M if not found
   }
@@ -157,7 +159,9 @@ export class RealMarketService {
       '1h': 3600,
       '4h': 14400,
       '1d': 86400,
-      '1w': 604800
+      '1w': 604800,
+      // Approximate 1 month as 30 days (in seconds) for bucketization
+      '1mo': 60 * 60 * 24 * 30
     };
     const key = (interval || '').toLowerCase();
     return intervals[key] || 60; // Default to 1 minute

@@ -1,545 +1,700 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useDrawingTools } from '../hooks/useDrawingTools';
 import { useChartStore } from '../stores/useChartStore';
+import { useSplitChartStore } from '../stores/useSplitChartStore';
 
 export const Sidebar = () => {
   const { 
     settings, 
-    setChartType,
     setCursorType,
-    klineChartRef
+    klineChartRef: mainChartRef,
+    setIndicatorsPreset,
+    isWorkspaceHidden,
+    setWorkspaceHidden,
+    activeChartIndex: _activeChartIndex
   } = useChartStore();
+  
+  const { klineChartRef: splitChartRef } = useSplitChartStore();
+  
+  // In split mode, drawing tools must activate on exactly ONE chart
+  // (the active chart) to avoid duplicate handling across charts.
   
   const {
     activeTool,
     setActiveTool,
     clearAllDrawings
   } = useDrawingTools();
-  
-  const [activeSection, setActiveSection] = useState(null);
-  
-  // Check if we're in candlestick mode
-  const isCandlestickMode = settings.chartType === 'candlestick';
 
-  const toggleSection = (section) => {
-    setActiveSection(activeSection === section ? null : section);
+  // Toast notification state
+  const [clickToast, setClickToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  // Show click toast helper
+  const showClickToast = (toolName, position) => {
+    // Clear any existing timeout
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    
+    setClickToast({ toolName, position });
+    
+    // Auto-dismiss after 2 seconds
+    toastTimeoutRef.current = setTimeout(() => {
+      setClickToast(null);
+    }, 2000);
   };
-  
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // KLine drawing tools handlers
-  const handleKLineToolSelect = (toolId) => {
-    if (klineChartRef && klineChartRef._handleDrawingToolChange) {
+  const handleKLineToolSelect = (toolId, toolName, event) => {
       try {
-        klineChartRef._handleDrawingToolChange(toolId);
-        console.log('📈 KLine Drawing tool activated:', toolId);
-        setActiveSection(null);
+        // Lazy arming: set a pending tool, and let the first chart click
+        // arm the tool on that chart only. This avoids ambiguity and fixes
+        // right-side activation without requiring pre-click.
+
+        // Clear any currently armed tool on both charts (best-effort)
+        try { if (mainChartRef && typeof mainChartRef._handleDrawingToolChange === 'function') mainChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+        try { if (splitChartRef && typeof splitChartRef._handleDrawingToolChange === 'function') splitChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+
+        // Mark pending tool in store so KLine chart can arm it on first click
+        try { if (typeof useChartStore.getState === 'function') useChartStore.getState().setPendingKLineTool?.(toolId); } catch (_) { /* ignore */ }
+
+        // Maintain UI highlight via drawing tools manager
+        setActiveTool(toolId);
+
+        console.log('📌 KLine Drawing tool pending; click a chart to arm:', toolId);
+        
+        // Show click toast positioned next to the clicked button
+        if (event && event.currentTarget) {
+          const rect = event.currentTarget.getBoundingClientRect();
+          showClickToast(toolName, {
+            top: rect.top + rect.height / 2,
+            left: rect.right + 12
+          });
+        } else {
+          showClickToast(toolName);
+        }
       } catch (error) {
         console.warn('📈 Error activating KLine drawing tool:', error);
+    }
+  };
+
+  // Toggle visibility for all KLine overlays and indicators (no confirmation)
+  const handleKLineToggleVisibility = () => {
+    try {
+      // Get all available charts
+      const charts = [];
+      if (mainChartRef) charts.push(mainChartRef);
+      if (settings.isSplitMode && splitChartRef) charts.push(splitChartRef);
+      
+      if (!isWorkspaceHidden) {
+        // 1) Hide all KLine overlays (best-effort via overrideOverlay visible: false)
+        charts.forEach(chart => {
+        if (chart) {
+          try {
+            const fetchOverlays = () => {
+              try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+              try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+              return [];
+            };
+            const overlays = fetchOverlays();
+            if (Array.isArray(overlays)) {
+              overlays.forEach((ov) => {
+                try { chart.overrideOverlay({ id: ov?.id, visible: false }); } catch (_) { /* ignore */ }
+              });
+            }
+            // Dismiss any custom inline UI/panels
+            try { if (typeof chart._dismissSelectedOverlayPanel === 'function') chart._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
+          } catch (_) { /* ignore */ }
+        }
+        });
+        // Also remove any stray inline editors or palettes injected in DOM
+        try {
+          document.querySelectorAll('.kv-inline-rect-editor,.kv-rect-color-palette').forEach((el) => {
+            try { el.remove(); } catch (_) { /* ignore */ }
+          });
+        } catch (_) { /* ignore */ }
+
+        // 2) Temporarily remove all indicators from the chart (without changing switches)
+        charts.forEach(chart => {
+        if (chart) {
+          try {
+            const tryRemoveByList = (list) => {
+              if (!Array.isArray(list)) return;
+              list.forEach((ind) => {
+                try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+                try { chart.removeIndicator({ name: ind?.name }); } catch (_) {}
+                try { chart.removeIndicator(ind?.id); } catch (_) {}
+              });
+            };
+            let inds = [];
+            try { inds = chart.getIndicators?.() || []; } catch (_) { inds = []; }
+            if (!Array.isArray(inds) || inds.length === 0) {
+              const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2', 'pane-rsiEnhanced', 'pane-atrEnhanced', 'pane-macdEnhanced'];
+              panes.forEach((pid) => {
+                try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+              });
+            } else {
+              tryRemoveByList(inds);
+            }
+          } catch (_) { /* ignore */ }
+        }
+        });
+
+        setWorkspaceHidden(true);
+        console.log('📈 Workspace hidden: overlays hidden, indicators temporarily removed (switches unchanged)');
+      } else {
+        // 1) Unhide all overlays
+        charts.forEach(chart => {
+        if (chart) {
+          try {
+            const fetchOverlays = () => {
+              try { if (typeof chart.getOverlays === 'function') return chart.getOverlays(); } catch (_) {}
+              try { if (typeof chart.getAllOverlays === 'function') return chart.getAllOverlays(); } catch (_) {}
+              return [];
+            };
+            const overlays = fetchOverlays();
+            if (Array.isArray(overlays)) {
+              overlays.forEach((ov) => {
+                try { chart.overrideOverlay({ id: ov?.id, visible: true }); } catch (_) { /* ignore */ }
+              });
+            }
+          } catch (_) { /* ignore */ }
+        }
+        });
+
+        // 2) Re-apply indicator instances by emitting a no-op preset (same switches) to trigger chart effect
+        try { setIndicatorsPreset({ ...(settings?.indicators || {}) }); } catch (_) { /* ignore */ }
+
+        setWorkspaceHidden(false);
+        console.log('📈 Workspace unhidden: overlays shown, indicators re-applied from switches');
       }
+    } catch (e) {
+      console.warn('📈 Error toggling workspace visibility:', e);
     }
   };
   
-  const handleKLineClearAll = () => {
-    if (!window.confirm('Clear all drawings? This cannot be undone.')) {
-      return;
-    }
-    if (klineChartRef) {
-      try {
-        const overlays = klineChartRef.getAllOverlays();
-        overlays.forEach(overlay => {
-          klineChartRef.removeOverlay(overlay.id);
-        });
-        console.log('📈 All KLine drawings cleared');
-        setActiveSection(null);
-      } catch (error) {
-        console.warn('📈 Error clearing KLine drawings:', error);
+  // Helper to clear a specific chart's drawings and indicators
+  const clearSpecificChart = (klineChartRef, isMainChart) => {
+    if (!klineChartRef) return;
+    
+    try {
+      // 1) Clear custom (Recharts) drawings if main chart
+      if (isMainChart) {
+        try { clearAllDrawings(); } catch (_) { /* ignore */ }
       }
+
+      // 2) Clear KLine overlays from this specific chart
+      try {
+        // Robustly collect overlays (support both APIs)
+        const fetchOverlays = () => {
+          try {
+            if (typeof klineChartRef.getOverlays === 'function') return klineChartRef.getOverlays();
+            if (typeof klineChartRef.getAllOverlays === 'function') return klineChartRef.getAllOverlays();
+          } catch (_) {}
+          return [];
+        };
+
+        let safetyCounter = 0;
+        while (safetyCounter < 10) {
+          safetyCounter += 1;
+          const overlays = fetchOverlays();
+          if (!Array.isArray(overlays) || overlays.length === 0) break;
+
+          let removedAny = false;
+          overlays.forEach((ov) => {
+            try { klineChartRef.removeOverlay({ id: ov?.id, paneId: ov?.paneId || ov?.pane?.id }); removedAny = true; } catch (_) {}
+            try { klineChartRef.removeOverlay({ id: ov?.id }); removedAny = true; } catch (_) {}
+            try { klineChartRef.removeOverlay(ov?.id); removedAny = true; } catch (_) {}
+            // As last resort, attempt by common names (may remove all instances by name depending on lib)
+            try { if (ov?.name) { klineChartRef.removeOverlay({ name: ov.name }); removedAny = true; } } catch (_) {}
+          });
+
+          // Extra pass for known overlay names in case id-based removal fails
+          const knownNames = [
+            'segment',
+            'horizontalStraightLine',
+            'verticalStraightLine',
+            'fibonacciRightLine',
+            'fibonacciTrendExtensionRight',
+            'rectangle',
+            'text',
+            'shortPosition',
+            'longPosition'
+          ];
+          knownNames.forEach((name) => {
+            try { klineChartRef.removeOverlay({ name }); removedAny = true; } catch (_) {}
+            try { klineChartRef.removeOverlay(name); removedAny = true; } catch (_) {}
+          });
+
+          if (!removedAny) break; // avoid infinite loop if API no-ops
+        }
+
+        console.log('📈 All KLine overlays cleared for', isMainChart ? 'main chart' : 'split chart');
+        try { if (typeof klineChartRef._dismissSelectedOverlayPanel === 'function') klineChartRef._dismissSelectedOverlayPanel(); } catch (_) { /* ignore */ }
+
+        // Try to remove all indicators immediately (best-effort)
+        try {
+          const tryRemoveByList = (list) => {
+            if (!Array.isArray(list)) return;
+            list.forEach((ind) => {
+              try { klineChartRef.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
+              try { klineChartRef.removeIndicator({ name: ind?.name }); } catch (_) {}
+              try { klineChartRef.removeIndicator(ind?.id); } catch (_) {}
+            });
+          };
+          let inds = [];
+          try { inds = klineChartRef.getIndicators?.() || []; } catch (_) { inds = []; }
+          if (!Array.isArray(inds) || inds.length === 0) {
+            const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2'];
+            panes.forEach((pid) => {
+              try { tryRemoveByList(klineChartRef.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+            });
+          } else {
+            tryRemoveByList(inds);
+          }
+        } catch (_) {}
+      } catch (error) {
+        console.warn('📈 Error clearing KLine overlays/indicators:', error);
+      }
+
+      // 3) Turn off indicator toggles via store (only for main chart indicators)
+      if (isMainChart) {
+        try {
+          const cleared = Object.keys(settings?.indicators || {}).reduce((acc, key) => {
+            acc[key] = false;
+            return acc;
+          }, {});
+          setIndicatorsPreset(cleared);
+        } catch (_) { /* ignore */ }
+      }
+
+      // 4) Deactivate any active drawing tools
+      try { setActiveTool(null); } catch (_) { /* ignore */ }
+      try { if (klineChartRef && typeof klineChartRef._handleDrawingToolChange === 'function') klineChartRef._handleDrawingToolChange(null); } catch (_) { /* ignore */ }
+    } catch (error) {
+      console.warn('📈 Error in clearSpecificChart:', error);
     }
   };
 
+  const handleKLineClearAll = () => {
+    // In split mode, show confirmation modal in EACH chart for per-chart clearing
+    if (settings.isSplitMode && mainChartRef && splitChartRef) {
+      // Open modal in Chart 1 (main)
+      if (typeof mainChartRef._openConfirmModal === 'function') {
+        mainChartRef._openConfirmModal({
+          title: 'Clear Chart 1',
+          message: 'Clear all indicators and drawings from Chart 1? This cannot be undone.',
+          confirmText: 'Clear',
+          cancelText: 'Cancel',
+          onConfirm: () => clearSpecificChart(mainChartRef, true),
+        });
+      }
+      
+      // Open modal in Chart 2 (split)
+      if (typeof splitChartRef._openConfirmModal === 'function') {
+        splitChartRef._openConfirmModal({
+          title: 'Clear Chart 2',
+          message: 'Clear all indicators and drawings from Chart 2? This cannot be undone.',
+          confirmText: 'Clear',
+          cancelText: 'Cancel',
+          onConfirm: () => clearSpecificChart(splitChartRef, false),
+        });
+      }
+      return;
+    }
+
+    // In non-split mode, clear all as before
+    const performClearAll = () => {
+      const charts = [];
+      if (mainChartRef) charts.push({ ref: mainChartRef, isMain: true });
+      if (settings.isSplitMode && splitChartRef) charts.push({ ref: splitChartRef, isMain: false });
+      
+      charts.forEach(({ ref, isMain }) => clearSpecificChart(ref, isMain));
+    };
+
+    // Prefer custom modal inside the KLine widget (use mainChartRef for modal)
+    if (mainChartRef && typeof mainChartRef._openConfirmModal === 'function') {
+      mainChartRef._openConfirmModal({
+        title: 'Clear Workspace',
+        message: 'Clear all indicators and drawings? This cannot be undone.',
+        confirmText: 'Clear',
+        cancelText: 'Cancel',
+        onConfirm: performClearAll,
+      });
+      return;
+    }
+
+    // Fallback for environments without chart ref
+    if (window.confirm('Clear all indicators and drawings? This cannot be undone.')) {
+      performClearAll();
+    }
+  };
+  
   return (
-    <div className="w-12 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 flex flex-col items-center py-4 space-y-2">
-      {/* Chart Type Button */}
-      <div className="relative">
-        <button
-          onClick={() => toggleSection('chartTypes')}
-          className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
-            activeSection === 'chartTypes'
-              ? 'text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-          title="Chart Types"
+    <div className="w-12 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-0.5 h-full min-h-0 overflow-y-auto overflow-x-hidden scrollbar-autohide">
+      {/* Click Toast Notification */}
+      {clickToast && (
+        <div 
+          className="fixed z-[9999] fade-in"
+          style={{
+            top: clickToast.position ? `${clickToast.position.top}px` : '112px',
+            left: clickToast.position ? `${clickToast.position.left}px` : '64px',
+            transform: clickToast.position ? 'translateY(-50%)' : undefined
+          }}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <span className="text-[10px] mt-1">Type</span>
-        </button>
-
-        {/* Chart Types Dropdown */}
-        {activeSection === 'chartTypes' && (
-          <div className="absolute left-12 top-0 ml-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
-            <div className="p-2">
-              <div className="text-xs font-semibold text-gray-500 px-3 py-2 mb-1">Chart Type</div>
-              
-              <button
-                onClick={() => { setChartType('candlestick'); setActiveSection(null); }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.chartType === 'candlestick' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span className="text-sm font-medium">Candlestick</span>
-                {settings.chartType === 'candlestick' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-
-              <button
-                onClick={() => { 
-                  console.log('🖱️ Sidebar: Line Chart button clicked'); 
-                  setChartType('line'); 
-                  setActiveSection(null); 
-                  console.log('✅ Sidebar: Chart type set to line');
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.chartType === 'line' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-                <span className="text-sm font-medium">Line Chart</span>
-                {settings.chartType === 'line' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-
-            </div>
+          <div className="bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 text-white px-4 py-1 rounded-lg shadow-md">
+            <span className="text-sm font-semibold">{clickToast.toolName}</span>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Cursor Types: moved to top; outlined icons, active = blue */}
+      <CursorMenu
+        current={settings.cursorType}
+        onSelect={(type) => setCursorType(type)}
+      />
+
+      {/* K-Line Tools: icon-only buttons with outlined grey icons; active = blue */}
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('trendLine', 'Trend Line', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'trendLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Trend Line"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20l8-8 4 4 4-4" />
+            <circle cx="4" cy="20" r="1.25" fill="currentColor" />
+            <circle cx="12" cy="12" r="1.25" fill="currentColor" />
+            <circle cx="16" cy="16" r="1.25" fill="currentColor" />
+            <circle cx="20" cy="12" r="1.25" fill="currentColor" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Trend Line
+        </div>
       </div>
 
-      {/* Drawing Tools Button */}
-      <div className="relative">
+      <div className="relative group">
         <button
-          onClick={() => toggleSection('drawing')}
-          className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
-            activeSection === 'drawing'
-              ? 'text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+          type="button"
+          onClick={(e) => handleKLineToolSelect('horizontalLine', 'Horizontal Line', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'horizontalLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
-          title="Drawing Tools"
+          title="Horizontal Line"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18" />
           </svg>
-          <span className="text-[10px] mt-1">Draw</span>
         </button>
-
-        {/* Drawing Tools Dropdown */}
-        {activeSection === 'drawing' && (
-          <div className="absolute left-12 top-0 ml-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] overflow-y-auto">
-            <div className="p-2">
-              <div className="flex items-center justify-between mb-2 sticky top-0 bg-white z-10 pb-1.5 border-b border-gray-100">
-                <h3 className="text-xs font-bold text-gray-900">
-                  {isCandlestickMode ? 'K-Line Tools' : 'Drawing Tools'}
-                </h3>
-                <button
-                  onClick={() => setActiveSection(null)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {isCandlestickMode ? (
-                // KLine-specific drawing tools
-                <div className="space-y-1">
-                  {/* Trend Line Tool */}
-                  <button
-                    onClick={() => handleKLineToolSelect('trendLine')}
-                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-md flex items-center justify-center shadow-sm">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Trend Line</p>
-                        <p className="text-[9px] text-gray-500">Draw trend lines</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Horizontal Line Tool */}
-                  <button
-                    onClick={() => handleKLineToolSelect('horizontalLine')}
-                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-700 rounded-md flex items-center justify-center shadow-sm">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h16" />
-                        </svg>
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Horizontal Line</p>
-                        <p className="text-[9px] text-gray-500">Support/resistance</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Fibonacci Tool */}
-                  <button
-                    onClick={() => handleKLineToolSelect('fibonacci')}
-                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-md flex items-center justify-center shadow-sm">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 12l3-3 3 3 4-4M3 4h18" />
-                        </svg>
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Fibonacci</p>
-                        <p className="text-[9px] text-gray-500">Retracement levels</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Rectangle Tool */}
-                  <button
-                    onClick={() => handleKLineToolSelect('rectangle')}
-                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-teal-700 rounded-md flex items-center justify-center shadow-sm">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4h16v16H4z" />
-                        </svg>
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Rectangle</p>
-                        <p className="text-[9px] text-gray-500">Draw zones</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Text Tool */}
-                  <button
-                    onClick={() => handleKLineToolSelect('text')}
-                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-pink-500 to-pink-700 rounded-md flex items-center justify-center shadow-sm">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Text</p>
-                        <p className="text-[9px] text-gray-500">Add annotations</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Arrow Tool */}
-                  <button
-                    onClick={() => handleKLineToolSelect('arrow')}
-                    className="w-full p-2 rounded-lg border transition-all hover:shadow-md border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-md flex items-center justify-center shadow-sm">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="text-[11px] font-semibold text-gray-900 leading-tight">Arrow</p>
-                        <p className="text-[9px] text-gray-500">Point directions</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Clear All KLine Drawings */}
-                  <div className="border-t border-gray-200 pt-1.5 mt-1.5">
-                    <button
-                      type="button"
-                      onClick={handleKLineClearAll}
-                      className="w-full p-1.5 rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-600 hover:from-red-100 hover:to-red-200 transition-all hover:shadow-md"
-                    >
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span className="text-[11px] font-semibold">Clear All</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // Original drawing tools for non-candlestick charts
-                <div className="space-y-1">
-                {/* Trend Line Tool */}
-                <button
-                  onClick={() => { 
-                    setActiveTool('TrendLine'); 
-                    setActiveSection(null);
-                    console.log('🎨 Drawing Tool: Trend Line selected');
-                  }}
-                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
-                    activeTool === 'TrendLine' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-md flex items-center justify-center shadow-sm">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Trend Line</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Horizontal Line Tool */}
-                <button
-                  onClick={() => { 
-                    setActiveTool('HorizontalLine'); 
-                    setActiveSection(null);
-                    console.log('🎨 Drawing Tool: Horizontal Line selected');
-                  }}
-                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
-                    activeTool === 'HorizontalLine' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-700 rounded-md flex items-center justify-center shadow-sm">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 12h16" />
-                      </svg>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Horizontal Line</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Rectangle Tool */}
-                <button
-                  onClick={() => { 
-                    setActiveTool('Rectangle');
-                    setActiveSection(null);
-                    console.log('🎨 Drawing Tool: Rectangle selected');
-                  }}
-                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
-                    activeTool === 'Rectangle' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-teal-500 to-teal-700 rounded-md flex items-center justify-center shadow-sm">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4h16v16H4z" />
-                      </svg>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Rectangle</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Fibonacci Tool */}
-                <button
-                  onClick={() => { 
-                    setActiveTool('Fibonacci'); 
-                    setActiveSection(null);
-                    console.log('🎨 Drawing Tool: Fibonacci selected');
-                  }}
-                  className={`w-full p-2 rounded-lg border transition-all hover:shadow-md ${
-                    activeTool === 'Fibonacci' ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-md flex items-center justify-center shadow-sm">
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 12l3-3 3 3 4-4M3 4h18" />
-                      </svg>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="text-[11px] font-semibold text-gray-900 leading-tight">Fibonacci</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Clear All Drawings */}
-                <div className="border-t border-gray-200 pt-1.5 mt-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!window.confirm('Clear all drawings? This cannot be undone.')) {
-                        return;
-                      }
-                      clearAllDrawings(); 
-                      setActiveSection(null);
-                      console.log('🎨 Drawing Tool: Clear all drawings');
-                    }}
-                    className="w-full p-1.5 rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-600 hover:from-red-100 hover:to-red-200 transition-all hover:shadow-md"
-                  >
-                    <div className="flex items-center justify-center space-x-1.5">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      <span className="text-[11px] font-semibold">Clear All</span>
-                    </div>
-                  </button>
-                </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Horizontal Line
+        </div>
       </div>
 
-      {/* Cursor Selector Button */}
-      <div className="relative">
+      <div className="relative group">
         <button
-          onClick={() => toggleSection('cursor')}
-          className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center transition-all ${
-            activeSection === 'cursor'
-              ? 'text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+          type="button"
+          onClick={(e) => handleKLineToolSelect('verticalLine', 'Vertical Line', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'verticalLine' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
           }`}
-          title="Cursor Type"
+          title="Vertical Line"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v18" />
           </svg>
-          <span className="text-[10px] mt-1">Cursor</span>
         </button>
-
-        {/* Cursor Selector Dropdown */}
-        {activeSection === 'cursor' && (
-          <div className="absolute left-12 top-0 ml-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
-            <div className="p-2">
-              <div className="text-xs font-semibold text-gray-500 px-3 py-2 mb-1">Cursor Type</div>
-              
-              <button
-                onClick={() => {
-                  setCursorType('crosshair');
-                  setActiveSection(null);
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.cursorType === 'crosshair' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                </svg>
-                <span className="text-sm font-medium">Crosshair</span>
-                {settings.cursorType === 'crosshair' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setCursorType('pointer');
-                  setActiveSection(null);
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.cursorType === 'pointer' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                </svg>
-                <span className="text-sm font-medium">Pointer</span>
-                {settings.cursorType === 'pointer' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setCursorType('grab');
-                  setActiveSection(null);
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.cursorType === 'grab' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-                </svg>
-                <span className="text-sm font-medium">Grab</span>
-                {settings.cursorType === 'grab' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setCursorType('text');
-                  setActiveSection(null);
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  settings.cursorType === 'text' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-                <span className="text-sm font-medium">Text</span>
-                {settings.cursorType === 'text' && (
-                  <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Vertical Line
+        </div>
       </div>
 
-      {/* Divider */}
-      <div className="w-8 h-px bg-gray-300 my-2"></div>
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('fibonacci', 'Fib Retracement', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'fibonacci' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Fib Retracement"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 5h4M6 9h8M6 13h10M6 17h12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16m16-16v16" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Fib Retracement
+        </div>
+      </div>
 
-      {/* Fullscreen Button */}
-      <button
-        onClick={() => {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-          } else {
-            document.exitFullscreen();
-          }
-        }}
-        className="w-10 h-10 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
-        title="Fullscreen"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-        </svg>
-        <span className="text-[10px] mt-1">Full</span>
-      </button>
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('fibExtension', 'Fib Extension (3pt)', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'fibExtension' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Fib Extension (3pt)"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12h6m0 0l3-3m-3 3l3 3M18 5v14" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Fib Extension (3pt)
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('rectangle', 'Rectangle', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'rectangle' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Rectangle"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="5" width="14" height="14" rx="1.5" ry="1.5" strokeWidth={2} />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Rectangle
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('shortPosition', 'Short Position', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'shortPosition' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Short Position"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 17l8-8 4 4 4-4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 13v4h4" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Short Position
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('longPosition', 'Long Position', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'longPosition' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Long Position"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8 8-4-4-4 4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 11V7h-4" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Long Position
+        </div>
+      </div>
+
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={(e) => handleKLineToolSelect('text', 'Text', e)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            activeTool === 'text' ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Text"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12M12 7v10m-5 0h10" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Text
+        </div>
+      </div>
+
+      {/* Hide/Unhide all overlays & indicators */}
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={handleKLineToggleVisibility}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isWorkspaceHidden ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}
+          title={isWorkspaceHidden ? 'Unhide All' : 'Hide All'}
+          aria-pressed={isWorkspaceHidden}
+        >
+          {isWorkspaceHidden ? (
+            // Eye with slash off -> show eye (unhide)
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+              <circle cx="12" cy="12" r="3" fill="currentColor" />
+            </svg>
+          ) : (
+            // Eye -> hide
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19C5 19 1 12 1 12s1.386-2.432 3.868-4.5M9.88 4.24A9.99 9.99 0 0112 5c7 0 11 7 11 7a19.741 19.741 0 01-3.256 3.977M1 1l22 22" />
+            </svg>
+          )}
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          {isWorkspaceHidden ? 'Unhide All' : 'Hide All'}
+        </div>
+      </div>
+
+      {/* Clear All drawings icon */}
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={handleKLineClearAll}
+          className="w-10 h-10 rounded-lg flex items-center justify-center transition-all text-gray-500 hover:text-gray-700"
+          title="Clear All"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          Clear All
+        </div>
+      </div>
+
+      {/* pointer menu moved above; divider removed */}
     </div>
   );
 };
 
+// Local inline component to keep file cohesion and avoid broad changes
+const CursorMenu = ({ current, onSelect }) => {
+  const [open, setOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!open) return;
+      const b = btnRef.current;
+      const m = menuRef.current;
+      if (b && b.contains(e.target)) return;
+      if (m && m.contains(e.target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.top + rect.height / 2, left: rect.right + 8 });
+    }
+  }, [open]);
+
+  const iconClass = `w-5 h-5`;
+  const renderIcon = (type) => {
+    if (type === 'grab') {
+      // Outlined hand/grab icon
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11v2a5 5 0 0010 0V9a1.5 1.5 0 00-3 0v2M7 11V8a1.5 1.5 0 013 0v3M7 11a1.5 1.5 0 00-3 0v2a7 7 0 0014 0V8a1.5 1.5 0 00-3 0" />
+        </svg>
+      );
+    }
+    if (type === 'pointer') {
+      // Outlined mouse pointer arrow
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3l10 5-6 2 4 8-3 1-4-8-4 2 3-10z" />
+        </svg>
+      );
+    }
+    // Crosshair: outlined cross with central mark
+    return (
+      <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" strokeWidth={2} />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+        <circle cx="12" cy="12" r="1.25" fill="currentColor" />
+      </svg>
+    );
+  };
+
+  const label = current === 'grab' ? 'Grab' : current === 'pointer' ? 'Pointer' : 'Crosshair';
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <div className="relative group">
+        <button
+          type="button"
+          ref={btnRef}
+          onClick={() => setOpen((v) => !v)}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            current ? 'text-emerald-600' : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title={`${label} (click to change)`}
+          aria-haspopup="menu"
+          aria-expanded={open}
+        >
+          {renderIcon(current)}
+        </button>
+        <div className="absolute left-12 top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-[13px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+          {label}
+        </div>
+      </div>
+
+      {open && (
+        <div
+          role="menu"
+          ref={menuRef}
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1"
+          style={{ top: menuPos.top, left: menuPos.left, transform: 'translateY(-50%)', zIndex: 1000 }}
+        >
+          {[
+            { id: 'crosshair', name: 'Crosshair' },
+            { id: 'pointer', name: 'Pointer' },
+            { id: 'grab', name: 'Grab' },
+          ].map((opt) => (
+            <button
+              key={opt.id}
+              role="menuitem"
+              type="button"
+              onClick={() => { onSelect(opt.id); setOpen(false); }}
+              className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm transition-colors ${
+                current === opt.id ? 'bg-emerald-100 text-emerald-700' : 'hover:bg-gray-50 text-gray-700'
+              }`}
+            >
+              <span className={`inline-flex ${current === opt.id ? 'text-emerald-500' : 'text-gray-500'}`}>
+                {renderIcon(opt.id)}
+              </span>
+              <span className="flex-1">{opt.name}</span>
+              {current === opt.id && (
+                <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Maximize2, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS, toBrokerSymbol } from '../constants/pairs';
 import widgetTabRetentionService from '../services/widgetTabRetentionService';
@@ -19,6 +21,7 @@ const LotSizeCalculator = () => {
 
   const [result, setResult] = useState(null);
   const [errors, setErrors] = useState({});
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isStateLoaded, setIsStateLoaded] = useState(false);
   const resultRef = useRef(null);
   const saveTimeoutRef = useRef(null);
@@ -58,12 +61,31 @@ const LotSizeCalculator = () => {
       },
       commodities: {
         name: 'Commodities',
-        pairs: PRECIOUS_METALS_PAIRS.map(pair => ({
-          symbol: toBrokerSymbol(pair),
-          pipValue: pair === 'XAUUSD' ? 100 : 50,
-          contractSize: pair === 'XAUUSD' ? 100 : 5000,
-          displayName: pair === 'XAUUSD' ? 'Gold (XAU/USD)' : 'Silver (XAG/USD)'
-        })),
+        pairs: PRECIOUS_METALS_PAIRS.map(pair => {
+          if (pair === 'XAUUSD') {
+            return {
+              symbol: toBrokerSymbol(pair),
+              pipValue: 100,
+              contractSize: 100,
+              displayName: 'Gold (XAU/USD)'
+            };
+          }
+          if (pair === 'XAGUSD') {
+            return {
+              symbol: toBrokerSymbol(pair),
+              pipValue: 50,
+              contractSize: 5000,
+              displayName: 'Silver (XAG/USD)'
+            };
+          }
+          // Default configuration for additional commodities like USOIL
+          return {
+            symbol: toBrokerSymbol(pair),
+            pipValue: 10,
+            contractSize: 1000,
+            displayName: 'Crude Oil (OIL/USD)'
+          };
+        }),
         stopLossUnit: 'price difference',
         resultUnit: 'contracts'
       },
@@ -268,6 +290,19 @@ const LotSizeCalculator = () => {
     }
   }, [isStateLoaded, result, formData.accountBalance, formData.riskPercentage, formData.stopLoss, formData.takeProfit, calculateLotSize]);
 
+  useEffect(() => {
+    if (!isDialogOpen) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsDialogOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDialogOpen]);
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -298,36 +333,50 @@ const LotSizeCalculator = () => {
     setErrors({});
   };
 
-
-
-  return (
+  const renderContent = ({ hideFullscreenButton = false, hideInnerTitle = false } = {}) => (
     <div className="space-y-3">
       {/* Header */}
       <div className="px-2 pt-3 pb-2">
         <div className="flex items-center justify-between gap-2 sm:gap-3">
-          <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
-            <svg className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            Lot Size Calculator
-          </CardTitle>
+          {!hideInnerTitle && (
+            <CardTitle className="text-lg font-bold text-[#19235d] dark:text-white flex items-start tools-heading">
+              <svg className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Lot Size Calculator
+            </CardTitle>
+          )}
           
           {/* Instrument Type Selection */}
-          <div className="inline-flex items-center bg-gray-100 dark:bg-[#19235d]/60 rounded-full p-0.5 border border-gray-200 dark:border-[#19235d] whitespace-nowrap shadow-sm flex-shrink-0">
-            {Object.entries(instrumentConfigs).map(([key, config], idx) => (
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="inline-flex items-center bg-gray-100 dark:bg-[#19235d]/60 rounded-full p-0.5 border border-gray-200 dark:border-[#19235d] whitespace-nowrap shadow-sm flex-shrink-0">
+              {Object.entries(instrumentConfigs).map(([key, config], idx) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleInputChange('instrumentType', key)}
+                  className={`${
+                    formData.instrumentType === key
+                      ? 'bg-white dark:bg-[#19235d] text-blue-700 dark:text-blue-300 shadow-sm'
+                      : 'bg-transparent text-[#19235d] dark:text-gray-300 hover:text-[#19235d] dark:hover:text-white'
+                  } px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
+                  title={`${config.name} (${config.resultUnit})`}
+                >
+                  {config.name}
+                </button>
+              ))}
+            </div>
+            {!hideFullscreenButton && (
               <button
-                key={key}
-                onClick={() => handleInputChange('instrumentType', key)}
-                className={`${
-                  formData.instrumentType === key
-                    ? 'bg-white dark:bg-[#19235d] text-blue-700 dark:text-blue-300 shadow-sm'
-                    : 'bg-transparent text-[#19235d] dark:text-gray-300 hover:text-[#19235d] dark:hover:text-white'
-                } px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 hover:scale-105 ${idx !== 0 ? 'ml-0.5' : ''}`}
-                title={`${config.name} (${config.resultUnit})`}
+                type="button"
+                onClick={() => setIsDialogOpen(true)}
+                className="ml-0.5 p-2 text-gray-600 hover:text-[#19235d] hover:bg-gray-100 rounded-md transition-colors"
+                title="Open Lot Size Calculator fullscreen"
+                aria-label="Open Lot Size Calculator fullscreen"
               >
-                {config.name}
+                <Maximize2 className="w-4 h-4" />
               </button>
-            ))}
+            )}
           </div>
         </div>
       </div>
@@ -361,7 +410,9 @@ const LotSizeCalculator = () => {
                 </div>
               </div>
               {errors.accountBalance && (
-                <p className="text-red-500 text-xs mt-1 ml-[132px]">{errors.accountBalance}</p>
+                <p className="text-red-500 text-xs mt-1 ml-[132px]">
+                  {errors.accountBalance}
+                </p>
               )}
             </div>
 
@@ -387,7 +438,9 @@ const LotSizeCalculator = () => {
                 </div>
               </div>
               {errors.riskPercentage && (
-                <p className="text-red-500 text-xs mt-1 ml-[132px]">{errors.riskPercentage}</p>
+                <p className="text-red-500 text-xs mt-1 ml-[132px]">
+                  {errors.riskPercentage}
+                </p>
               )}
             </div>
 
@@ -443,7 +496,9 @@ const LotSizeCalculator = () => {
                 </div>
               </div>
               {errors.stopLoss && (
-                <p className="text-red-500 text-xs mt-1 ml-[132px]">{errors.stopLoss}</p>
+                <p className="text-red-500 text-xs mt-1 ml-[132px]">
+                  {errors.stopLoss}
+                </p>
               )}
             </div>
 
@@ -470,7 +525,9 @@ const LotSizeCalculator = () => {
                 </div>
               </div>
               {errors.takeProfit && (
-                <p className="text-red-500 text-xs mt-1 ml-[132px]">{errors.takeProfit}</p>
+                <p className="text-red-500 text-xs mt-1 ml-[132px]">
+                  {errors.takeProfit}
+                </p>
               )}
             </div>
 
@@ -608,6 +665,50 @@ const LotSizeCalculator = () => {
             </div>
           </div>
     </div>
+  );
+
+  return (
+    <>
+      {renderContent()}
+      {isDialogOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9000] flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lot-size-dialog-title"
+          >
+            <div className="bg-white dark:bg-[#0b122f] rounded-xl shadow-2xl w-full max-w-5xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <h3
+                    id="lot-size-dialog-title"
+                    className="text-base sm:text-lg font-semibold text-[#19235d] dark:text-slate-100"
+                  >
+                    Lot Size Calculator
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#19235d] dark:text-slate-100 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 rounded-md"
+                  aria-label="Close Lot Size Calculator dialog"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-3 sm:p-4">
+                {renderContent({ hideFullscreenButton: true, hideInnerTitle: true })}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 };
 

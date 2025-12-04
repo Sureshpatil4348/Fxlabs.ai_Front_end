@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS } from '../../../constants/pairs';
+import { CORE_PAIRS, EXTENDED_PAIRS, PRECIOUS_METALS_PAIRS, CRYPTO_PAIRS, INDEX_PAIRS } from '../../../constants/pairs';
 import { formatSymbolDisplay } from '../../../utils/formatters';
 
-const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) => {
-  const [searchQuery, setSearchQuery] = useState(currentSymbol || '');
+const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol: _currentSymbol }) => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedSource, setSelectedSource] = useState('All sources');
-  const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const modalRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  // Reset search query when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery('');
+    }
+  }, [isOpen]);
 
   // Helper function to create symbol descriptions
   const getSymbolDescription = (symbol) => {
@@ -56,20 +61,25 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
       // CHF Crosses (1)
       'CHFJPY': 'Swiss Franc / Japanese Yen',
       
-      // Precious Metals (2)
+      // Commodities & Precious Metals
       'XAUUSD': 'Gold / U.S. Dollar',
       'XAGUSD': 'Silver / U.S. Dollar',
+      'USOIL': 'Crude Oil / U.S. Dollar',
       
       // Cryptocurrencies (2)
       'BTCUSD': 'Bitcoin / U.S. Dollar',
       'ETHUSD': 'Ethereum / U.S. Dollar',
+
+      // Indices
+      'DXY': 'U.S. Dollar Index',
     };
     return descriptions[symbol] || symbol;
   };
 
   // Helper function to get symbol type
   const getSymbolType = (symbol) => {
-    if (PRECIOUS_METALS_PAIRS.includes(symbol)) return 'precious metal';
+    if (INDEX_PAIRS.includes(symbol)) return 'index';
+    if (PRECIOUS_METALS_PAIRS.includes(symbol)) return 'commodity';
     if (CRYPTO_PAIRS.includes(symbol)) return 'cryptocurrency';
     return 'forex';
   };
@@ -80,8 +90,8 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
     return sources[Math.floor(Math.random() * sources.length)];
   };
 
-  // All available symbols from the system (32 total)
-  const ALL_SYMBOLS = [...CORE_PAIRS, ...EXTENDED_PAIRS, ...PRECIOUS_METALS_PAIRS, ...CRYPTO_PAIRS];
+  // All available symbols from the system (forex, commodities, crypto, indices)
+  const ALL_SYMBOLS = [...CORE_PAIRS, ...EXTENDED_PAIRS, ...PRECIOUS_METALS_PAIRS, ...CRYPTO_PAIRS, ...INDEX_PAIRS];
   
   // Generate symbols data from constants with proper categorization
   const symbolsData = {
@@ -97,11 +107,17 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
       source: getSymbolSource(symbol),
       type: 'forex'
     })),
-    CFD: PRECIOUS_METALS_PAIRS.map(symbol => ({
+    Commodity: PRECIOUS_METALS_PAIRS.map(symbol => ({
       symbol,
       description: getSymbolDescription(symbol),
       source: getSymbolSource(symbol),
-      type: 'precious metal'
+      type: 'commodity'
+    })),
+    Index: INDEX_PAIRS.map(symbol => ({
+      symbol,
+      description: getSymbolDescription(symbol),
+      source: getSymbolSource(symbol),
+      type: 'index'
     })),
     Crypto: CRYPTO_PAIRS.map(symbol => ({
       symbol,
@@ -111,8 +127,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
     })),
   };
 
-  const categories = ['All', 'Forex', 'CFD', 'Crypto'];
-  const sources = ['All sources', 'OANDA', 'FOREXCOM', 'FXCM', 'Pepperstone', 'FXOpen', 'Binance', 'Coinbase', 'Kraken', 'NASDAQ'];
+  const categories = ['All', 'Forex', 'Commodity', 'Index', 'Crypto'];
 
   // Focus search input when modal opens
   useEffect(() => {
@@ -166,7 +181,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[11000]">
       <div 
         ref={modalRef}
         className="bg-white rounded-lg shadow-2xl w-[90vw] max-w-4xl h-[80vh] max-h-[600px] flex flex-col"
@@ -225,44 +240,9 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
 
         {/* Results Header */}
         <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-              <span className="text-sm font-medium text-gray-500">SYMBOL</span>
-              <span className="text-sm font-medium text-gray-500">DESCRIPTION</span>
-            </div>
-            <div className="relative">
-              <button
-                onClick={() => setShowSourceDropdown(!showSourceDropdown)}
-                className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{selectedSource}</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              
-              {showSourceDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    {sources.map((source) => (
-                      <button
-                        key={source}
-                        onClick={() => {
-                          setSelectedSource(source);
-                          setShowSourceDropdown(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        {source}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="flex items-center space-x-8">
+            <span className="text-sm font-medium text-gray-500">SYMBOL</span>
+            <span className="text-sm font-medium text-gray-500">DESCRIPTION</span>
           </div>
         </div>
 
@@ -287,17 +267,7 @@ const SymbolSearchModal = ({ isOpen, onClose, onSymbolSelect, currentSymbol }) =
                   <div className="flex items-center space-x-8">
                     <span className="text-blue-600 font-medium text-sm">{formatSymbolDisplay(symbol.symbol)}</span>
                     <span className="text-gray-700 text-sm">{symbol.description}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
                     <span className="text-xs text-gray-500">{symbol.type}</span>
-                    <div className="flex items-center space-x-1">
-                      <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold text-gray-600">
-                          {symbol.source.charAt(0)}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-600">{symbol.source}</span>
-                    </div>
                   </div>
                 </div>
               ))

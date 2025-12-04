@@ -28,7 +28,8 @@ const TradingDashboardSection = () => {
     { symbol: 'GBP/USD', name: 'British Pound', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'G' },
     { symbol: 'SOL/USD', name: 'Solana', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'S' },
     { symbol: 'USD/JPY', name: 'US Dollar/Japanese Yen', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'U' },
-    { symbol: 'XAU/USD', name: 'Gold', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'forex', icon: 'X' },
+    { symbol: 'XAU/USD', name: 'Gold', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'commodity', icon: 'X' },
+    { symbol: 'OIL/USD', name: 'Crude Oil', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'commodity', icon: 'O' },
     { symbol: 'XRP/USD', name: 'Ripple', price: '0.00', change: '0.00%', trend: 'Neutral', probability: 50, type: 'crypto', icon: 'X' }
   ])
   const [dataInitialized, setDataInitialized] = useState(false)
@@ -68,7 +69,7 @@ const TradingDashboardSection = () => {
   useEffect(() => {
     if (isConnected) {
       // console.log('📡 TradingDashboardSection - Subscribing to market data...')
-      const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USDJPYm']
+      const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USOILm', 'USDJPYm']
       symbols.forEach(symbol => {
         subscribe(symbol, '1H', ['ticks', 'ohlc'])
       })
@@ -79,7 +80,7 @@ const TradingDashboardSection = () => {
 
   // Console log real data for TradingDashboardSection (tick-only)
   useEffect(() => {
-    const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USDJPYm']
+    const symbols = ['BTCUSDm', 'ETHUSDm', 'XRPUSDm', 'SOLUSDm', 'EURUSDm', 'GBPUSDm', 'XAUUSDm', 'USOILm', 'USDJPYm']
     symbols.forEach(symbol => {
       const tickSymbolData = tickData.get(symbol)
       if (tickSymbolData) {
@@ -114,7 +115,8 @@ const TradingDashboardSection = () => {
         'SOLUSDm': { symbol: 'SOL/USD', name: 'Solana', icon: 'S', type: 'crypto' },
         'EURUSDm': { symbol: 'EUR/USD', name: 'Euro', icon: 'E', type: 'forex' },
         'GBPUSDm': { symbol: 'GBP/USD', name: 'British Pound', icon: 'G', type: 'forex' },
-        'XAUUSDm': { symbol: 'XAU/USD', name: 'Gold', icon: 'X', type: 'forex' },
+        'XAUUSDm': { symbol: 'XAU/USD', name: 'Gold', icon: 'X', type: 'commodity' },
+        'USOILm': { symbol: 'OIL/USD', name: 'Crude Oil', icon: 'O', type: 'commodity' },
         'USDJPYm': { symbol: 'USD/JPY', name: 'US Dollar/Japanese Yen', icon: 'U', type: 'forex' }
       }
 
