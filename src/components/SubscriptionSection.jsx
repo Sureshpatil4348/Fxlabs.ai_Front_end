@@ -272,19 +272,19 @@ const SubscriptionSection = () => {
     const gridWidthClass = isTwoPlans ? "max-w-4xl" : "max-w-7xl";
 
     // Debug logging
-    if (process.env.NODE_ENV === "development") {
-        console.log("🔍 Debug Info:", {
-            userCountry: _userLocation?.country_code,
-            isIndianUser,
-            pricingPlansCount: pricingPlans.length,
-            pricingPlans: pricingPlans.map((p) => ({
-                id: p.id,
-                name: p.name,
-                price: p.price,
-            })),
-            timestamp: new Date().toISOString(),
-        });
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //     console.log("🔍 Debug Info:", {
+    //         userCountry: _userLocation?.country_code,
+    //         isIndianUser,
+    //         pricingPlansCount: pricingPlans.length,
+    //         pricingPlans: pricingPlans.map((p) => ({
+    //             id: p.id,
+    //             name: p.name,
+    //             price: p.price,
+    //         })),
+    //         timestamp: new Date().toISOString(),
+    //     });
+    // }
 
     return (
         <section className="py-12 md:py-16 px-4 md:px-6 w-full transition-colors duration-300">
