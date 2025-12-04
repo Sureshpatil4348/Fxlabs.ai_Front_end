@@ -12,7 +12,7 @@ const SubscriptionSection = () => {
     const [_selectedPlan, _setSelectedPlan] = useState(null);
 
     const isEmbeddedStripeEnabled =
-        process.env.REACT_APP_ENABLE_EMBEDDED_STRIPE === "true";
+        (process.env.REACT_APP_ENABLE_EMBEDDED_STRIPE || "false") === "true";
 
     const _handleStripeCheckout = async (plan) => {
         try {

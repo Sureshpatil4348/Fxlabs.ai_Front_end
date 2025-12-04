@@ -6,17 +6,10 @@ const SubscriptionVerificationModal = ({
     plan,
     onProceedToStripe,
 }) => {
-    const [userType, setUserType] = useState(null);
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [verificationResult, setVerificationResult] = useState(null);
     const [error, setError] = useState("");
-
-    const handleNewUser = () => {
-        // New user - proceed directly to Stripe
-        onProceedToStripe(plan);
-        resetModal();
-    };
 
     const handleExistingUserSubmit = async () => {
         if (!email.trim()) {
@@ -90,7 +83,6 @@ const SubscriptionVerificationModal = ({
     };
 
     const resetModal = () => {
-        setUserType(null);
         setEmail("");
         setIsLoading(false);
         setVerificationResult(null);
@@ -116,52 +108,8 @@ const SubscriptionVerificationModal = ({
                     </button>
                 </div>
 
-                {/* Step 1: User Type Selection */}
-                {userType === null && verificationResult === null && (
-                    <div className="space-y-4">
-                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
-                            Are you a new user or an existing subscriber?
-                        </p>
-
-                        <button
-                            onClick={handleNewUser}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300"
-                        >
-                            New User
-                        </button>
-
-                        <button
-                            onClick={() => setUserType("existing")}
-                            className="w-full py-3 px-4 border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg hover:bg-emerald-50 dark:hover:bg-[#19235d] transition-all duration-300"
-                        >
-                            Existing User
-                        </button>
-
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white dark:bg-[#19235d] text-gray-500 dark:text-gray-400">
-                                    or
-                                </span>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => {
-                                onProceedToStripe(plan);
-                                resetModal();
-                            }}
-                            className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
-                        >
-                            Skip to Checkout
-                        </button>
-                    </div>
-                )}
-
-                {/* Step 2: Email Verification for Existing Users */}
-                {userType === "existing" && verificationResult === null && (
+                {/* Combined Step: Email Verification & Skip */}
+                {verificationResult === null && (
                     <div className="space-y-4">
                         <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
                             Enter your email to verify your subscription status
@@ -189,53 +137,66 @@ const SubscriptionVerificationModal = ({
                             </div>
                         )}
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setUserType(null);
-                                    setEmail("");
-                                    setError("");
-                                }}
-                                disabled={isLoading}
-                                className="flex-1 py-3 px-4 border-2 border-gray-300 dark:border-[#19235d] text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-[#19235d] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Back
-                            </button>
+                        <button
+                            onClick={handleExistingUserSubmit}
+                            disabled={isLoading}
+                            className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <svg
+                                        className="animate-spin h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    <span>Verifying...</span>
+                                </>
+                            ) : (
+                                "Verify"
+                            )}
+                        </button>
 
-                            <button
-                                onClick={handleExistingUserSubmit}
-                                disabled={isLoading}
-                                className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <svg
-                                            className="animate-spin h-4 w-4"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            ></circle>
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                            ></path>
-                                        </svg>
-                                        <span>Verifying...</span>
-                                    </>
-                                ) : (
-                                    "Verify"
-                                )}
-                            </button>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white dark:bg-[#19235d] text-gray-500 dark:text-gray-400">
+                                    or
+                                </span>
+                            </div>
                         </div>
+
+                        <button
+                            onClick={() => {
+                                onProceedToStripe(plan);
+                                resetModal();
+                            }}
+                            className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
+                        >
+                            Skip to Checkout
+                        </button>
+
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2 italic">
+                            Note: During checkout, please use the email address
+                            intended for your FxLabs account. This email will be
+                            registered and receive login credentials.
+                        </p>
                     </div>
                 )}
 
@@ -296,7 +257,6 @@ const SubscriptionVerificationModal = ({
 
                                 <button
                                     onClick={() => {
-                                        setUserType(null);
                                         setEmail("");
                                         setVerificationResult(null);
                                     }}
@@ -326,7 +286,6 @@ const SubscriptionVerificationModal = ({
 
                                 <button
                                     onClick={() => {
-                                        setUserType(null);
                                         setEmail("");
                                         setVerificationResult(null);
                                     }}
