@@ -706,7 +706,7 @@ const SubscriptionSection = () => {
                                 "Debug: Redirecting to:",
                                 data.sessionUrl
                             );
-                            // Open Stripe Checkout URL in a new tab
+                            // Open Stripe Checkout URL in a new tab.
                             window.open(data.sessionUrl, "_blank");
                         } else {
                             console.error(
