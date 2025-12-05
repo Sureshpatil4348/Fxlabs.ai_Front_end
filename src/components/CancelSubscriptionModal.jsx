@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Loader } from 'lucide-react';
+import React, { useState } from "react";
+import { AlertTriangle, Loader } from "lucide-react";
 
 const CancelSubscriptionModal = ({ isOpen, onClose, onConfirm }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -11,43 +11,47 @@ const CancelSubscriptionModal = ({ isOpen, onClose, onConfirm }) => {
 
         try {
             // Get the current user session
-            const { data: { session }, error: sessionError } = await (
-                await import('../lib/supabaseClient')
+            const {
+                data: { session },
+                error: sessionError,
+            } = await (
+                await import("../lib/supabaseClient")
             ).supabase.auth.getSession();
 
             if (sessionError || !session) {
-                throw new Error('Not authenticated');
+                throw new Error("Not authenticated");
             }
 
             // Call the cancel subscription edge function
-            const cancelFunctionUrl = process.env.REACT_APP_CANCEL_SUBSCRIPTION_FUNCTION_URL;
+            const cancelFunctionUrl =
+                process.env.REACT_APP_CANCEL_SUBSCRIPTION_FUNCTION_URL;
 
             if (!cancelFunctionUrl) {
-                throw new Error('Cancel subscription endpoint not configured');
+                throw new Error("Cancel subscription endpoint not configured");
             }
 
             const response = await fetch(cancelFunctionUrl, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`,
                 },
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to cancel subscription');
+                throw new Error(data.error || "Failed to cancel subscription");
             }
 
             // Success
-            console.log('✅ Subscription cancelled:', data);
+            console.log("✅ Subscription cancelled:", data);
             onConfirm(data);
             setIsLoading(false);
             onClose();
         } catch (err) {
-            console.error('❌ Error cancelling subscription:', err);
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error("❌ Error cancelling subscription:", err);
+            setError(err instanceof Error ? err.message : "An error occurred");
             setIsLoading(false);
         }
     };
@@ -79,7 +83,10 @@ const CancelSubscriptionModal = ({ isOpen, onClose, onConfirm }) => {
                 {/* Warning Message */}
                 <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
                     <p className="text-sm text-red-700 dark:text-red-300">
-                        <strong>Warning:</strong> Cancelling your subscription will immediately stop your access to all FxLabs premium features. This action cannot be undone. Are you sure you want to proceed?
+                        <strong>Warning:</strong> Cancelling your subscription
+                        will immediately stop your access to all FxLabs premium
+                        features. This action cannot be undone. Are you sure you
+                        want to proceed?
                     </p>
                 </div>
 
@@ -112,14 +119,15 @@ const CancelSubscriptionModal = ({ isOpen, onClose, onConfirm }) => {
                                 <span>Cancelling...</span>
                             </>
                         ) : (
-                            'Yes, Cancel It'
+                            "Yes, Cancel It"
                         )}
                     </button>
                 </div>
 
                 {/* Info Text */}
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-                    If you have any feedback or concerns, please contact our support team.
+                    If you have any feedback or concerns, please contact our
+                    support team.
                 </p>
             </div>
         </div>
