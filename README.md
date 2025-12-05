@@ -189,6 +189,7 @@ When in split mode:
   - Chart 2 (right): Uses `useSplitChartStore` for state management
   - WebSocket updates are routed to the correct store based on chart index
   - Separate service instances ensure no interference between charts
+- Indicator overlay "Delete" controls on each chart now correctly toggle indicators only for that specific chart (left or right), preventing accidental activation/deactivation on the other pane when working in split view.
 
 **Drawing Tools in Split Mode:**
 - Drawing tools work independently per chart.

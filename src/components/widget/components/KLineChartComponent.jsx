@@ -268,7 +268,16 @@ export const KLineChartComponent = ({
   const setKLineChartRef = storeForRef.setKLineChartRef;
   
   // Always use main store for global settings
-  const { toggleIndicator, isWorkspaceHidden, updateIndicatorSettings, setActiveChartIndex, saveOverlaysForSymbol, getOverlaysForSymbol } = mainChartStore;
+  const {
+    toggleIndicator,
+    toggleSplitChartIndicator,
+    isWorkspaceHidden,
+    updateIndicatorSettings,
+    setActiveChartIndex,
+    saveOverlaysForSymbol,
+    getOverlaysForSymbol,
+  } = mainChartStore;
+  const toggleIndicatorForCurrentChart = isMainChart ? toggleIndicator : toggleSplitChartIndicator;
   
   // Overlay persistence state
   const overlayRestoreTriggeredRef = useRef(false);
@@ -7066,7 +7075,7 @@ export const KLineChartComponent = ({
                             title="Delete"
                             className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
                             aria-label="Delete indicator"
-                            onClick={() => toggleIndicator(key)}
+                            onClick={() => toggleIndicatorForCurrentChart(key)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -7462,7 +7471,7 @@ export const KLineChartComponent = ({
                         title="Delete"
                         className="w-6 h-6 grid place-items-center text-gray-600 hover:text-red-600"
                         aria-label={`Delete ${LABELS[key] || key}`}
-                        onClick={() => toggleIndicator(key)}
+                        onClick={() => toggleIndicatorForCurrentChart(key)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
