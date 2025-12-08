@@ -84,6 +84,11 @@ All chart state is automatically persisted to localStorage and restored on page 
 - The bottom zoom/pan/reload controls (`+`, `-`, left/right arrows, reload) are hidden by default and appear when you move the mouse over the center-bottom region of the chart where they sit.
 - Once visible, these controls fade out after 3 seconds of inactivity; moving the mouse within this bottom-center area brings them back and restarts the 3-second timer (mouse movement elsewhere on the chart no longer reveals them).
 
+### KLineChart Zoom Behavior with Indicators
+
+- The `+` and `-` zoom buttons now always anchor zoom operations to the **main price pane**, even when below-chart indicators such as **RSI Pro** or **MACD Pro** are enabled.
+- This prevents scenarios where repeated zooming caused only the indicator panes to visually zoom while the main price chart appeared stuck; horizontal zooming and auto-scaled price axes now stay in sync with indicator panes.
+
 ### KLineChart Indicator Presets
 
 The KLineChart component now includes a sophisticated preset system for quickly applying groups of technical indicators.

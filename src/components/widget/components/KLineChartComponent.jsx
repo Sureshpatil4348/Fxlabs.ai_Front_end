@@ -5387,11 +5387,24 @@ export const KLineChartComponent = ({
     const chart = chartRef.current;
     const el = chartContainerRef.current;
     if (!chart || !el) return;
+
     const width = el.clientWidth || 0;
-    const height = el.clientHeight || 0;
-    // Zoom in around center
-    chart.zoomAtCoordinate(1.2, { x: width / 2, y: height / 2 }, 120);
-  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
+    const totalHeight = el.clientHeight || 0;
+
+    // Always anchor zoom to the main price pane, not the center of all panes.
+    // This prevents cases where below-chart panes (RSI/MACD) keep zooming
+    // while the price pane appears "stuck".
+    const BELOW_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+    const activeBelowCount = BELOW_KEYS.reduce(
+      (acc, key) => acc + (settings?.indicators?.[key] ? 1 : 0),
+      0,
+    );
+    const belowHeight = activeBelowCount * 120;
+    const mainPaneHeight = Math.max(0, totalHeight - belowHeight);
+    const centerY = mainPaneHeight > 0 ? mainPaneHeight / 2 : totalHeight / 2;
+
+    chart.zoomAtCoordinate(1.2, { x: width / 2, y: centerY }, 120);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage, settings?.indicators]);
 
   const handleZoomOut = useCallback(() => {
     // Block interaction during initial background loading
@@ -5402,11 +5415,21 @@ export const KLineChartComponent = ({
     const chart = chartRef.current;
     const el = chartContainerRef.current;
     if (!chart || !el) return;
+
     const width = el.clientWidth || 0;
-    const height = el.clientHeight || 0;
-    // Zoom out around center
-    chart.zoomAtCoordinate(0.83, { x: width / 2, y: height / 2 }, 120);
-  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage]);
+    const totalHeight = el.clientHeight || 0;
+
+    const BELOW_KEYS = ['rsiEnhanced', 'atrEnhanced', 'macdEnhanced'];
+    const activeBelowCount = BELOW_KEYS.reduce(
+      (acc, key) => acc + (settings?.indicators?.[key] ? 1 : 0),
+      0,
+    );
+    const belowHeight = activeBelowCount * 120;
+    const mainPaneHeight = Math.max(0, totalHeight - belowHeight);
+    const centerY = mainPaneHeight > 0 ? mainPaneHeight / 2 : totalHeight / 2;
+
+    chart.zoomAtCoordinate(0.83, { x: width / 2, y: centerY }, 120);
+  }, [isInitialBackgroundLoadComplete, isLoadingHistory, showLoadingBlockMessage, settings?.indicators]);
 
   const handleScrollLeft = useCallback(() => {
     // Block interaction during initial background loading
