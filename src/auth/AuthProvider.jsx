@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
                             "get-subscription-status"
                         );
 
-                        // Re-fetch the current session to get fresh token
+                        /// Re-fetch the current session to get fresh token
                         const { data: s } = await supabase.auth.getSession();
                         const token = s?.session?.access_token;
 
