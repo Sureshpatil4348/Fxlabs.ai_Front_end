@@ -565,7 +565,7 @@ const SubscriptionSection = () => {
                                             </button>
                                         )}
 
-                                        {/* Money Back Guarantee .*/}
+                                        {/* Money Back Guarantee ..*/}
                                         {plan.id !== "free" && (
                                             <div className="text-center mt-3">
                                                 <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5">
