@@ -10,6 +10,7 @@ const SubscriptionVerificationModal = ({
     const [isLoading, setIsLoading] = useState(false);
     const [verificationResult, setVerificationResult] = useState(null);
     const [error, setError] = useState("");
+    const [isNewUser, setIsNewUser] = useState(false);
 
     const handleExistingUserSubmit = async () => {
         if (!email.trim()) {
@@ -68,9 +69,21 @@ const SubscriptionVerificationModal = ({
                 throw new Error("Unknown subscription status");
             }
         } catch (err) {
-            setError(
-                err.message || "Error verifying subscription. Please try again."
-            );
+            // Check if it's a "user not found" error - treat as new user
+            const errorMessage =
+                err.message ||
+                "Error verifying subscription. Please try again.";
+            if (
+                errorMessage.toLowerCase().includes("not found") ||
+                errorMessage.toLowerCase().includes("no user")
+            ) {
+                setIsNewUser(true);
+                setError(
+                    "You are a new user! Please register to FxLabs to get started."
+                );
+            } else {
+                setError(errorMessage);
+            }
             console.error("Subscription verification error:", err);
         } finally {
             setIsLoading(false);
@@ -130,69 +143,108 @@ const SubscriptionVerificationModal = ({
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                                <p className="text-red-600 dark:text-red-400 text-sm">
+                            <div
+                                className={`p-3 rounded-lg border ${
+                                    isNewUser
+                                        ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                                        : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                                }`}
+                            >
+                                <p
+                                    className={`text-sm ${
+                                        isNewUser
+                                            ? "text-blue-600 dark:text-blue-400"
+                                            : "text-red-600 dark:text-red-400"
+                                    }`}
+                                >
                                     {error}
                                 </p>
                             </div>
                         )}
 
-                        <button
-                            onClick={handleExistingUserSubmit}
-                            disabled={isLoading}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <svg
-                                        className="animate-spin h-4 w-4"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle
-                                            className="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                        ></circle>
-                                        <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                    <span>Verifying...</span>
-                                </>
-                            ) : (
-                                "Verify"
-                            )}
-                        </button>
+                        {!error ? (
+                            <>
+                                <button
+                                    onClick={handleExistingUserSubmit}
+                                    disabled={isLoading}
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <svg
+                                                className="animate-spin h-4 w-4"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                            </svg>
+                                            <span>Verifying...</span>
+                                        </>
+                                    ) : (
+                                        "Verify"
+                                    )}
+                                </button>
 
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white dark:bg-[#19235d] text-gray-500 dark:text-gray-400">
-                                    or
-                                </span>
-                            </div>
-                        </div>
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-2 bg-white dark:bg-[#19235d] text-gray-500 dark:text-gray-400">
+                                            or
+                                        </span>
+                                    </div>
+                                </div>
 
-                        <button
-                            onClick={() => {
-                                onProceedToStripe(plan);
-                                resetModal();
-                            }}
-                            className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
-                        >
-                            Skip to Checkout
-                        </button>
+                                <button
+                                    onClick={() => {
+                                        onProceedToStripe(plan);
+                                        resetModal();
+                                    }}
+                                    className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
+                                >
+                                    Skip to Checkout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        onProceedToStripe(plan);
+                                        resetModal();
+                                    }}
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300"
+                                >
+                                    Pay and Register
+                                </button>
 
-                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2 italic">
+                                <button
+                                    onClick={() => {
+                                        setEmail("");
+                                        setError("");
+                                        setIsNewUser(false);
+                                    }}
+                                    className="w-full py-3 px-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
+                                >
+                                    Go Back
+                                </button>
+                            </>
+                        )}
+
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4 italic">
                             <span className="block font-semibold text-gray-600 dark:text-gray-300 mb-1">
                                 📧 Important:
                             </span>
