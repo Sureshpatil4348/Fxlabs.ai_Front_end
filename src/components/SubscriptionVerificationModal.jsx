@@ -194,35 +194,16 @@ const SubscriptionVerificationModal = ({
                                             <span>Verifying...</span>
                                         </>
                                     ) : (
-                                        "Verify"
+                                        "Continue"
                                     )}
                                 </button>
 
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                                    </div>
-                                    <div className="relative flex justify-center text-sm">
-                                        <span className="px-2 bg-white dark:bg-[#19235d] text-gray-500 dark:text-gray-400">
-                                            or
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        onProceedToStripe(plan);
-                                        resetModal();
-                                    }}
-                                    className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
-                                >
-                                    Skip to Checkout
-                                </button>
                             </>
                         ) : (
                             <>
                                 <button
                                     onClick={() => {
+                                        sessionStorage.setItem('checkoutCompleted', 'true');
                                         onProceedToStripe(plan);
                                         resetModal();
                                     }}

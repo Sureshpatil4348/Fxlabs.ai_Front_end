@@ -10,6 +10,7 @@ import FAQSection from '../components/FAQSection'
 // import GetInTouchSection from '../components/GetInTouchSection'
 import HeroSection from '../components/HeroSection'
 import InteractiveFooter from '../components/InteractiveFooter'
+import LoginModal from '../components/LoginModal'
 import Navbar from '../components/Navbar'
 import PsychologicalBenefitsSection from '../components/PsychologicalBenefitsSection'
 import SubscriptionSection from '../components/SubscriptionSection'
@@ -24,8 +25,18 @@ const Home = () => {
   const navigate = useNavigate()
   const [_processingInvite, setProcessingInvite] = useState(false)
   const [shouldRedirectAfterInvite, setShouldRedirectAfterInvite] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   // Allow users to access home page even when logged in
+
+  // Check for checkout completion and open login modal
+  useEffect(() => {
+    const checkoutCompleted = sessionStorage.getItem('checkoutCompleted');
+    if (checkoutCompleted) {
+      setIsLoginModalOpen(true);
+      sessionStorage.removeItem('checkoutCompleted');
+    }
+  }, [])
 
   // On landing, fetch IP info (via Netlify Function) and print result
   useEffect(() => {
@@ -290,6 +301,12 @@ const Home = () => {
 
       {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100 dark:from-[#19235d] to-transparent transition-colors duration-300"></div>
+      
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
       
       {/* Matrix CSS Animations */}
       <style dangerouslySetInnerHTML={{
