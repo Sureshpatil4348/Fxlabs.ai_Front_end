@@ -197,30 +197,21 @@ const SubscriptionVerificationModal = ({
                                         "Continue"
                                     )}
                                 </button>
-
                             </>
                         ) : (
                             <>
                                 <button
                                     onClick={() => {
-                                        sessionStorage.setItem('checkoutCompleted', 'true');
+                                        sessionStorage.setItem(
+                                            "checkoutCompleted",
+                                            "true"
+                                        );
                                         onProceedToStripe(plan);
                                         resetModal();
                                     }}
                                     className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300"
                                 >
                                     Pay and Register
-                                </button>
-
-                                <button
-                                    onClick={() => {
-                                        setEmail("");
-                                        setError("");
-                                        setIsNewUser(false);
-                                    }}
-                                    className="w-full py-3 px-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
-                                >
-                                    Go Back
                                 </button>
                             </>
                         )}
@@ -229,7 +220,12 @@ const SubscriptionVerificationModal = ({
                             <span className="block font-semibold text-gray-600 dark:text-gray-300 mb-1">
                                 Important:
                             </span>
-                            During checkout, please use the email address intended for your FxLabs account. This will be your registered email. After successful payment, your invoice and login credentials will be sent to the same email. Please check your <strong>Inbox</strong> or <strong>Spam</strong> folder.
+                            During checkout, please use the email address
+                            intended for your FxLabs account. This will be your
+                            registered email. After successful payment, your
+                            invoice and login credentials will be sent to the
+                            same email. Please check your <strong>Inbox</strong>{" "}
+                            or <strong>Spam</strong> folder.
                         </p>
                     </div>
                 )}
