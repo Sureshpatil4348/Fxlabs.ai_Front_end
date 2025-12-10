@@ -1,324 +1,341 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { useAuth } from '../auth/AuthProvider'
-import AfterPurchaseSection from '../components/AfterPurchaseSection'
-import AutomationAlertsSection from '../components/AutomationAlert'
-import CommunitySection from '../components/CommunitySection'
-import CTASection from '../components/CTASection'
-import FAQSection from '../components/FAQSection'
+import { useAuth } from "../auth/AuthProvider";
+import AfterPurchaseSection from "../components/AfterPurchaseSection";
+import AutomationAlertsSection from "../components/AutomationAlert";
+import CommunitySection from "../components/CommunitySection";
+import CTASection from "../components/CTASection";
+import FAQSection from "../components/FAQSection";
 // import GetInTouchSection from '../components/GetInTouchSection'
-import HeroSection from '../components/HeroSection'
-import InteractiveFooter from '../components/InteractiveFooter'
-import LoginModal from '../components/LoginModal'
-import Navbar from '../components/Navbar'
-import PsychologicalBenefitsSection from '../components/PsychologicalBenefitsSection'
-import SubscriptionSection from '../components/SubscriptionSection'
-import SuccessStories from '../components/SuccessStories'
-import TradingToolsShowcase from '../components/TradingToolsShowcase'
-import VideoExplanationSection from '../components/VideoExplanationSection'
-import WhySystemWorks from '../components/WhySystemWorks'
-import { supabase } from '../lib/supabaseClient'
-import ipInfoService from '../services/ipInfoService'
+import HeroSection from "../components/HeroSection";
+import InteractiveFooter from "../components/InteractiveFooter";
+import LoginModal from "../components/LoginModal";
+import Navbar from "../components/Navbar";
+import PsychologicalBenefitsSection from "../components/PsychologicalBenefitsSection";
+import SubscriptionSection from "../components/SubscriptionSection";
+import SuccessStories from "../components/SuccessStories";
+import TradingToolsShowcase from "../components/TradingToolsShowcase";
+import VideoExplanationSection from "../components/VideoExplanationSection";
+import WhySystemWorks from "../components/WhySystemWorks";
+import { supabase } from "../lib/supabaseClient";
+import ipInfoService from "../services/ipInfoService";
 const Home = () => {
-  const { user: _user } = useAuth()
-  const navigate = useNavigate()
-  const [_processingInvite, setProcessingInvite] = useState(false)
-  const [shouldRedirectAfterInvite, setShouldRedirectAfterInvite] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+    const { user: _user } = useAuth();
+    const navigate = useNavigate();
+    const [_processingInvite, setProcessingInvite] = useState(false);
+    const [shouldRedirectAfterInvite, setShouldRedirectAfterInvite] =
+        useState(false);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // Allow users to access home page even when logged in
+    // Allow users to access home page even when logged in
 
-  // Check for checkout completion and open login modal
-  useEffect(() => {
-    const checkoutCompleted = sessionStorage.getItem('checkoutCompleted');
-    if (checkoutCompleted) {
-      setIsLoginModalOpen(true);
-      sessionStorage.removeItem('checkoutCompleted');
-    }
-  }, [])
-
-  // On landing, fetch IP info (via Netlify Function) and print result
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const data = await ipInfoService.fetchIpInfo()
-        if (cancelled) return
-        // Expose for debugging and print to console for now
-        if (typeof window !== 'undefined') {
-          window.__FX_IP_INFO__ = data
+    // Check for checkout completion and open login modal
+    useEffect(() => {
+        const checkoutCompleted = sessionStorage.getItem("checkoutCompleted");
+        if (checkoutCompleted) {
+            setIsLoginModalOpen(true);
+            sessionStorage.removeItem("checkoutCompleted");
         }
-        // Requirement: print the result (visible in DevTools)
-        console.log('[FxLabs Prime] IP info:', data)
-      } catch (err) {
-        if (!cancelled) {
-          console.warn('[FxLabs Prime] IP info fetch error:', err?.message || err)
+    }, []);
+
+    // On landing, fetch IP info (via Netlify Function) and print result
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const data = await ipInfoService.fetchIpInfo();
+                if (cancelled) return;
+                // Expose for debugging and print to console for now
+                if (typeof window !== "undefined") {
+                    window.__FX_IP_INFO__ = data;
+                }
+                // Requirement: print the result (visible in DevTools)
+                console.log("[FxLabs Prime] IP info:", data);
+            } catch (err) {
+                if (!cancelled) {
+                    console.warn(
+                        "[FxLabs Prime] IP info fetch error:",
+                        err?.message || err
+                    );
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // Handle Supabase invite/callback deep links and prepare redirect to dashboard post login
+    useEffect(() => {
+        let cancelled = false;
+        const handleInviteLogin = async () => {
+            try {
+                // Parse both search parameters and hash fragment
+                const searchParams = new URLSearchParams(
+                    window.location.search
+                );
+                const hashParams = new URLSearchParams(
+                    window.location.hash.substring(1)
+                ); // strip '#'
+
+                // Merge parameters with hash taking precedence
+                const urlParams = new URLSearchParams();
+                for (const [key, value] of searchParams.entries())
+                    urlParams.set(key, value);
+                for (const [key, value] of hashParams.entries())
+                    urlParams.set(key, value);
+
+                const type = urlParams.get("type");
+                const accessToken = urlParams.get("access_token");
+                const refreshToken = urlParams.get("refresh_token");
+                const code = urlParams.get("code");
+
+                // Only process known auth types that should land in dashboard
+                const isInviteFlow = type === "invite" || type === "signup";
+                if (!isInviteFlow) return;
+
+                setProcessingInvite(true);
+                let authError = null;
+                try {
+                    if (accessToken && refreshToken) {
+                        const { error } = await supabase.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken,
+                        });
+                        authError = error || null;
+                    } else if (code) {
+                        const { error } =
+                            await supabase.auth.exchangeCodeForSession(code);
+                        authError = error || null;
+                    } else {
+                        // If no tokens but invite/signup type is present, rely on auto detection.
+                        // We'll redirect once `user` becomes available below.
+                    }
+                } catch (e) {
+                    authError = e;
+                }
+                if (authError) {
+                    // If session exchange/set fails, keep user on home with no disruption
+                    // eslint-disable-next-line no-console
+                    console.warn(
+                        "[FxLabs Prime] Invite session error:",
+                        authError?.message || authError
+                    );
+                    return;
+                }
+
+                if (cancelled) return;
+
+                // Clean URL tokens
+                const cleanUrl = new URL(window.location.href);
+                cleanUrl.searchParams.delete("access_token");
+                cleanUrl.searchParams.delete("refresh_token");
+                cleanUrl.searchParams.delete("type");
+                cleanUrl.searchParams.delete("code");
+                cleanUrl.hash = "";
+                window.history.replaceState({}, "", cleanUrl.toString());
+                // Signal that we should navigate once user is definitely available
+                setShouldRedirectAfterInvite(true);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                    "[FxLabs Prime] Invite processing failed:",
+                    e?.message || e
+                );
+            } finally {
+                if (!cancelled) setProcessingInvite(false);
+            }
+        };
+
+        handleInviteLogin();
+        return () => {
+            cancelled = true;
+        };
+    }, [navigate]);
+
+    // After we process an invite/signup callback, navigate once user is ready
+    useEffect(() => {
+        if (shouldRedirectAfterInvite && _user) {
+            navigate("/dashboard", { replace: true });
         }
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
+    }, [shouldRedirectAfterInvite, _user, navigate]);
 
-  // Handle Supabase invite/callback deep links and prepare redirect to dashboard post login
-  useEffect(() => {
-    let cancelled = false
-    const handleInviteLogin = async () => {
-      try {
-        // Parse both search parameters and hash fragment
-        const searchParams = new URLSearchParams(window.location.search)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1)) // strip '#'
-
-        // Merge parameters with hash taking precedence
-        const urlParams = new URLSearchParams()
-        for (const [key, value] of searchParams.entries()) urlParams.set(key, value)
-        for (const [key, value] of hashParams.entries()) urlParams.set(key, value)
-
-        const type = urlParams.get('type')
-        const accessToken = urlParams.get('access_token')
-        const refreshToken = urlParams.get('refresh_token')
-        const code = urlParams.get('code')
-
-        // Only process known auth types that should land in dashboard
-        const isInviteFlow = type === 'invite' || type === 'signup'
-        if (!isInviteFlow) return
-
-        setProcessingInvite(true)
-        let authError = null
-        try {
-          if (accessToken && refreshToken) {
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken
-            })
-            authError = error || null
-          } else if (code) {
-            const { error } = await supabase.auth.exchangeCodeForSession(code)
-            authError = error || null
-          } else {
-            // If no tokens but invite/signup type is present, rely on auto detection.
-            // We'll redirect once `user` becomes available below.
-          }
-        } catch (e) {
-          authError = e
-        }
-        if (authError) {
-          // If session exchange/set fails, keep user on home with no disruption
-          // eslint-disable-next-line no-console
-          console.warn('[FxLabs Prime] Invite session error:', authError?.message || authError)
-          return
-        }
-
-        if (cancelled) return
-
-        // Clean URL tokens
-        const cleanUrl = new URL(window.location.href)
-        cleanUrl.searchParams.delete('access_token')
-        cleanUrl.searchParams.delete('refresh_token')
-        cleanUrl.searchParams.delete('type')
-        cleanUrl.searchParams.delete('code')
-        cleanUrl.hash = ''
-        window.history.replaceState({}, '', cleanUrl.toString())
-        // Signal that we should navigate once user is definitely available
-        setShouldRedirectAfterInvite(true)
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn('[FxLabs Prime] Invite processing failed:', e?.message || e)
-      } finally {
-        if (!cancelled) setProcessingInvite(false)
-      }
-    }
-
-    handleInviteLogin()
-    return () => {
-      cancelled = true
-    }
-  }, [navigate])
-
-  // After we process an invite/signup callback, navigate once user is ready
-  useEffect(() => {
-    if (shouldRedirectAfterInvite && _user) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [shouldRedirectAfterInvite, _user, navigate])
-
-  return (
-    <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] transition-colors duration-300">
-      {/* Matrix-Style Animated Background Elements */}
-      <div className="absolute inset-0">
-        
-        {/* Matrix Grid Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="w-full h-full" style={{
-            backgroundImage: `
+    return (
+        <div className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-gradient-to-br dark:from-[#19235d] dark:via-black dark:to-[#19235d] transition-colors duration-300">
+            {/* Matrix-Style Animated Background Elements */}
+            <div className="absolute inset-0">
+                {/* Matrix Grid Pattern */}
+                <div className="absolute inset-0 opacity-20">
+                    <div
+                        className="w-full h-full"
+                        style={{
+                            backgroundImage: `
               linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
               linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
             `,
-            backgroundSize: '50px 50px',
-            animation: 'gridMove 20s linear infinite'
-          }}></div>
-        </div>
-        
-        {/* Light Mode Matrix Grid Pattern */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-0">
-          <div className="w-full h-full" style={{
-            backgroundImage: `
+                            backgroundSize: "50px 50px",
+                            animation: "gridMove 20s linear infinite",
+                        }}
+                    ></div>
+                </div>
+
+                {/* Light Mode Matrix Grid Pattern */}
+                <div className="absolute inset-0 opacity-10 dark:opacity-0">
+                    <div
+                        className="w-full h-full"
+                        style={{
+                            backgroundImage: `
               linear-gradient(rgba(75, 85, 99, 0.1) 1px, transparent 1px),
               linear-gradient(90deg, rgba(75, 85, 99, 0.1) 1px, transparent 1px)
             `,
-            backgroundSize: '50px 50px',
-            animation: 'gridMove 20s linear infinite'
-          }}></div>
-        </div>
-        
-        {/* Matrix-Style Gradient Orbs - Dark Mode */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-full blur-3xl animate-pulse dark:block hidden"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000 dark:block hidden"></div>
-        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-yellow-500/5 to-orange-500/5 rounded-full blur-2xl animate-pulse delay-500 dark:block hidden"></div>
-        
-        {/* Matrix-Style Gradient Orbs - Light Mode */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-gray-300/20 to-gray-400/20 rounded-full blur-3xl animate-pulse block dark:hidden"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-gray-400/20 to-gray-500/20 rounded-full blur-3xl animate-pulse delay-1000 block dark:hidden"></div>
-        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-gray-300/15 to-gray-400/15 rounded-full blur-2xl animate-pulse delay-500 block dark:hidden"></div>
-        
-        {/* Matrix Code Rain Effect - Dark Mode */}
-        <div className="absolute inset-0 opacity-5 dark:block hidden">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-green-400 font-mono text-xs animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${3 + Math.random() * 4}s`
-              }}
-            >
-              {Math.random().toString(36).substring(2, 8)}
+                            backgroundSize: "50px 50px",
+                            animation: "gridMove 20s linear infinite",
+                        }}
+                    ></div>
+                </div>
+
+                {/* Matrix-Style Gradient Orbs - Dark Mode */}
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-full blur-3xl animate-pulse dark:block hidden"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000 dark:block hidden"></div>
+                <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-yellow-500/5 to-orange-500/5 rounded-full blur-2xl animate-pulse delay-500 dark:block hidden"></div>
+
+                {/* Matrix-Style Gradient Orbs - Light Mode */}
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-gray-300/20 to-gray-400/20 rounded-full blur-3xl animate-pulse block dark:hidden"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-gray-400/20 to-gray-500/20 rounded-full blur-3xl animate-pulse delay-1000 block dark:hidden"></div>
+                <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-gray-300/15 to-gray-400/15 rounded-full blur-2xl animate-pulse delay-500 block dark:hidden"></div>
+
+                {/* Matrix Code Rain Effect - Dark Mode */}
+                <div className="absolute inset-0 opacity-5 dark:block hidden">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute text-green-400 font-mono text-xs animate-pulse"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 5}s`,
+                                animationDuration: `${3 + Math.random() * 4}s`,
+                            }}
+                        >
+                            {Math.random().toString(36).substring(2, 8)}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Matrix Code Rain Effect - Light Mode */}
+                <div className="absolute inset-0 opacity-5 block dark:hidden">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute text-gray-500 font-mono text-xs animate-pulse"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 5}s`,
+                                animationDuration: `${3 + Math.random() * 4}s`,
+                            }}
+                        >
+                            {Math.random().toString(36).substring(2, 8)}
+                        </div>
+                    ))}
+                </div>
             </div>
-          ))}
-        </div>
-        
-        {/* Matrix Code Rain Effect - Light Mode */}
-        <div className="absolute inset-0 opacity-5 block dark:hidden">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-gray-500 font-mono text-xs animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${3 + Math.random() * 4}s`
-              }}
-            >
-              {Math.random().toString(36).substring(2, 8)}
-            </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="relative z-10 w-full">
-        <Navbar />
-        
-        {/* Hero Section */}
-        <div id="hero">
-          <HeroSection />
-        </div>
+            <div className="relative z-10 w-full">
+                <Navbar />
 
-        
-        {/* Trading Tools Showcase Section */}
-        <div id="trading-tools-showcase">
-          <TradingToolsShowcase />
-        </div>
+                {/* Hero Section */}
+                <div id="hero">
+                    <HeroSection />
+                </div>
 
-        {/* Automation Alerts Section */}
-        <div id="automation-alerts">
-          <AutomationAlertsSection />
-        </div>
+                {/* Trading Tools Showcase Section */}
+                <div id="trading-tools-showcase">
+                    <TradingToolsShowcase />
+                </div>
 
-        {/* Testimonials Section */}
-        <div id="testimonials">
-          <SuccessStories />
-        </div>
+                {/* Automation Alerts Section */}
+                <div id="automation-alerts">
+                    <AutomationAlertsSection />
+                </div>
 
+                {/* Testimonials Section */}
+                <div id="testimonials">
+                    <SuccessStories />
+                </div>
 
+                {/* Psychological Benefits Section */}
+                <div id="psychological-benefits">
+                    <PsychologicalBenefitsSection />
+                </div>
 
-        {/* Psychological Benefits Section */}
-        <div id="psychological-benefits">
-          <PsychologicalBenefitsSection />
-        </div>
+                {/* CTA Section */}
+                <div id="cta">
+                    <CTASection />
+                </div>
 
-        {/* CTA Section */}
-        <div id="cta">
-          <CTASection />
-        </div>
+                {/* Why System Works Section */}
+                <div id="why-system-works">
+                    <WhySystemWorks />
+                </div>
 
-        {/* Why System Works Section */}
-        <div id="why-system-works">
-          <WhySystemWorks />
-        </div>
+                {/* Video Explanation Section */}
+                <div id="video-explanation">
+                    <VideoExplanationSection />
+                </div>
 
+                {/* Subscription Section */}
+                <div id="subscription">
+                    <SubscriptionSection />
+                </div>
 
-        {/* Video Explanation Section */}
-        <div id="video-explanation">
-          <VideoExplanationSection />
-        </div>
+                {/* After Purchase Section */}
+                <div id="after-purchase">
+                    <AfterPurchaseSection />
+                </div>
 
-        {/* Subscription Section */}
-        <div id="subscription">
-          <SubscriptionSection />
-        </div>
+                {/* Community Section */}
+                <div id="community">
+                    <CommunitySection />
+                </div>
 
+                {/* FAQ Section */}
+                <div id="faq">
+                    <FAQSection />
+                </div>
 
-
-          {/* After Purchase Section */}
-          <div id="after-purchase">
-            <AfterPurchaseSection />
-          </div>
-
-        {/* Community Section */}
-        <div id="community">
-          <CommunitySection />
-        </div>
-
-
-        {/* FAQ Section */}
-        <div id="faq">
-          <FAQSection />
-        </div>
-
-        {/* Get in Touch Section */}
-        {/* <div id="contact">
+                {/* Get in Touch Section */}
+                {/* <div id="contact">
           <GetInTouchSection />
         </div> */}
 
-        {/* Interactive Footer */}
-        <InteractiveFooter />
-      </div>
+                {/* Interactive Footer */}
+                <InteractiveFooter />
+            </div>
 
-      {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100 dark:from-[#19235d] to-transparent transition-colors duration-300"></div>
-      
-      {/* Login Modal */}
-      <LoginModal 
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
-      
-      {/* Matrix CSS Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+            {/* Bottom Gradient Fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100 dark:from-[#19235d] to-transparent transition-colors duration-300"></div>
+
+            {/* Login Modal */}
+            <LoginModal
+                isOpen={isLoginModalOpen}
+                onClose={() => setIsLoginModalOpen(false)}
+            />
+
+            {/* Matrix CSS Animations */}
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
           @keyframes gridMove {
             0% { transform: translate(0, 0); }
             100% { transform: translate(50px, 50px); }
           }
-        `
-      }} />
-    </div>
-  )
-}
+        `,
+                }}
+            />
+        </div>
+    );
+};
 
-export default Home
+export default Home;
