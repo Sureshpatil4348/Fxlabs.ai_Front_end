@@ -225,17 +225,11 @@ const SubscriptionVerificationModal = ({
                             </>
                         )}
 
-                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4 italic">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
                             <span className="block font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                                📧 Important:
+                                Important:
                             </span>
-                            During checkout, please use the email address
-                            intended for your FxLabs account. This email will be
-                            registered and receive your login credentials. After
-                            successful payment, your invoice and login
-                            credentials will be sent to your email. Please check
-                            your <strong>Inbox</strong> or <strong>Spam</strong>{" "}
-                            folder.
+                            During checkout, please use the email address intended for your FxLabs account. This will be your registered email. After successful payment, your invoice and login credentials will be sent to the same email. Please check your <strong>Inbox</strong> or <strong>Spam</strong> folder.
                         </p>
                     </div>
                 )}
