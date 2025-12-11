@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [subscriptionExpired, setSubscriptionExpired] = useState(false);
+    const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const navigate = useNavigate();
     const subscriptionCheckTimerRef = useRef(null);
 
@@ -67,6 +68,61 @@ export const AuthProvider = ({ children }) => {
             if (event === "SIGNED_IN") {
                 // Reset any previous expired state to keep behavior stateless
                 setSubscriptionExpired(false);
+
+                // Fetch subscription status for dropdown using verification API
+                const fetchSubscriptionStatus = async () => {
+                    try {
+                        if (!session?.user?.email) {
+                            console.warn("No user email available");
+                            return;
+                        }
+
+                        const verificationApiUrl =
+                            process.env
+                                .REACT_APP_SUBSCRIPTION_VERIFICATION_API_URL;
+                        const authToken =
+                            process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+                        if (!verificationApiUrl) {
+                            console.warn("Verification API URL not configured");
+                            return;
+                        }
+
+                        const response = await fetch(verificationApiUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${authToken}`,
+                            },
+                            body: JSON.stringify({ email: session.user.email }),
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            console.error(
+                                "Subscription status fetch error:",
+                                data.error
+                            );
+                            return;
+                        }
+
+                        // Store the subscription status (trial, paid, or expired)
+                        console.log(
+                            "✅ Subscription status fetched:",
+                            data.subscription_status
+                        );
+                        setSubscriptionStatus(data.subscription_status);
+                    } catch (err) {
+                        console.error(
+                            "Error fetching subscription status:",
+                            err
+                        );
+                    }
+                };
+
+                // Fetch subscription status immediately
+                fetchSubscriptionStatus();
 
                 // Start the periodic subscription check
                 const checkSubscription = async () => {
@@ -193,6 +249,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         subscriptionExpired,
         setSubscriptionExpired,
+        subscriptionStatus,
+        setSubscriptionStatus,
     };
 
     return (
