@@ -85,6 +85,7 @@ export const KLineChartComponent = ({
   // RSI enhanced UI state
   const [_rsiValue, setRsiValue] = useState(null);
   const [_rsiStatus, setRsiStatus] = useState('NEUTRAL');
+  const [_rsiTrend, setRsiTrend] = useState('NEUTRAL');
   const [rsiAlert, setRsiAlert] = useState(null); // { type: 'overbought'|'oversold', ts }
   const [showRsiSettings, setShowRsiSettings] = useState(false);
   const rsiPrevRef = useRef(null);
@@ -505,8 +506,9 @@ export const KLineChartComponent = ({
       const maxSignals = 50;
       const buy = Array.isArray(stStats.buySignals) ? stStats.buySignals.slice(-maxSignals) : [];
       const sell = Array.isArray(stStats.sellSignals) ? stStats.sellSignals.slice(-maxSignals) : [];
-      buy.forEach((s) => addBadge(s.ts, s.price, 'BUY', { bg: 'rgba(38,166,154,0.20)', color: '#0b5f56' }));
-      sell.forEach((s) => addBadge(s.ts, s.price, 'SELL', { bg: 'rgba(239,83,80,0.20)', color: '#7a1f1f' }));
+      // Match "Supertrend" label style: solid badges with white text
+      buy.forEach((s) => addBadge(s.ts, s.price, 'Buy', { bg: 'rgba(34,197,94,0.95)', color: '#ffffff' }));
+      sell.forEach((s) => addBadge(s.ts, s.price, 'Sell', { bg: 'rgba(239,68,68,0.95)', color: '#ffffff' }));
     } catch (_) { /* ignore */ }
   }, [settings?.indicators?.stEnhanced, stStats]);
 
@@ -1039,6 +1041,9 @@ export const KLineChartComponent = ({
       const os = Number(cfg.oversold ?? 30);
       const status = last >= ob ? 'OVERBOUGHT' : last <= os ? 'OVERSOLD' : 'NEUTRAL';
       setRsiStatus(status);
+      // Compute trend: compare current vs previous RSI value
+      const trend = last > prev ? 'RISING' : last < prev ? 'FALLING' : 'NEUTRAL';
+      setRsiTrend(trend);
       const p = rsiPrevRef.current;
       rsiPrevRef.current = last;
       if (Number.isFinite(p)) {
@@ -1623,7 +1628,9 @@ export const KLineChartComponent = ({
           precision: 5,
           calcParams: [10, 3.0], // atrPeriod, atrMultiplier
           figures: [
-            { key: 'st', title: 'ST: ', type: 'line' },
+            // Split into two lines so we can color trends independently (green up / red down)
+            { key: 'stUp', title: 'ST: ', type: 'line' },
+            { key: 'stDown', title: '', type: 'line' },
           ],
           calc: (dataList, indicator) => {
             const [len, mult] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [10, 3.0];
@@ -1657,8 +1664,64 @@ export const KLineChartComponent = ({
               prevFinalUpper = finalUpper;
               prevFinalLower = finalLower;
               prevTrend = trend;
-              return { st };
+              return {
+                st,
+                trend,
+                stUp: trend === 1 ? st : NaN,
+                stDown: trend === -1 ? st : NaN,
+              };
             });
+          },
+          // Trend shading (like reference screenshot): fill between ST and close by trend segment
+          draw: ({ ctx, visibleRange, indicator, xAxis, yAxis }) => {
+            try {
+              if (!ctx || !visibleRange || !indicator || !xAxis || !yAxis) return;
+              const results = indicator.result || [];
+              const raw = indicator.data || [];
+              const from = Math.max(0, visibleRange.from ?? 0);
+              const to = Math.min(visibleRange.to ?? 0, results.length);
+              if (to - from < 2) return;
+
+              let i = from;
+              while (i < to) {
+                const r0 = results[i];
+                const c0 = raw[i];
+                const t0 = r0?.trend;
+                if ((t0 !== 1 && t0 !== -1) || !Number.isFinite(r0?.st) || !c0 || !Number.isFinite(c0.close)) {
+                  i += 1;
+                  continue;
+                }
+
+                const top = [];
+                const bottom = [];
+                let j = i;
+                while (j < to) {
+                  const r = results[j];
+                  const c = raw[j];
+                  if (!r || r.trend !== t0 || !Number.isFinite(r.st) || !c || !Number.isFinite(c.close)) break;
+                  const x = xAxis.convertToPixel(j);
+                  top.push({ x, y: yAxis.convertToPixel(r.st) });
+                  bottom.push({ x, y: yAxis.convertToPixel(c.close) });
+                  j += 1;
+                }
+
+                if (top.length >= 2) {
+                  ctx.save();
+                  ctx.beginPath();
+                  ctx.moveTo(top[0].x, top[0].y);
+                  for (let k = 1; k < top.length; k++) ctx.lineTo(top[k].x, top[k].y);
+                  for (let k = bottom.length - 1; k >= 0; k--) ctx.lineTo(bottom[k].x, bottom[k].y);
+                  ctx.closePath();
+                  ctx.fillStyle = t0 === 1 ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)';
+                  ctx.fill();
+                  ctx.restore();
+                }
+
+                i = j;
+              }
+            } catch (_) {
+              // ignore draw errors
+            }
           },
         });
       }
@@ -1860,7 +1923,7 @@ export const KLineChartComponent = ({
             });
           },
         });
-      // Register RSI_BOUNDS (Overbought/Oversold constant lines) for RSI pane
+      // Register RSI_BOUNDS (Overbought/Oversold constant lines + midline) for RSI pane
       if (Array.isArray(supported) && !supported.includes('RSI_BOUNDS')) {
         registerIndicator({
           name: 'RSI_BOUNDS',
@@ -1871,12 +1934,63 @@ export const KLineChartComponent = ({
           figures: [
             { key: 'ob', title: 'OB: ', type: 'line' },
             { key: 'os', title: 'OS: ', type: 'line' },
+            { key: 'mid', title: 'Mid: ', type: 'line' },
           ],
           calc: (dataList, indicator) => {
             const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [70, 30];
             const ob = Math.max(0, Math.min(100, Number(p[0]) || 70));
             const os = Math.max(0, Math.min(100, Number(p[1]) || 30));
-            return dataList.map(() => ({ ob, os }));
+            return dataList.map(() => ({ ob, os, mid: 50 }));
+          }
+        });
+      }
+      
+      // Register RSI_ZONES (background shading for overbought/oversold zones)
+      if (Array.isArray(supported) && !supported.includes('RSI_ZONES')) {
+        registerIndicator({
+          name: 'RSI_ZONES',
+          shortName: 'RSI Zones',
+          precision: 2,
+          calcParams: [70, 30],
+          shouldOhlc: false,
+          shouldFormatBigNumber: false,
+          visible: false,
+          zLevel: 0,
+          figures: [
+            { key: 'obZone', title: '', type: 'rect' },
+            { key: 'osZone', title: '', type: 'rect' },
+          ],
+          calc: (dataList, indicator) => {
+            const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [70, 30];
+            const ob = Math.max(0, Math.min(100, Number(p[0]) || 70));
+            const os = Math.max(0, Math.min(100, Number(p[1]) || 30));
+            return dataList.map(() => ({ 
+              obZone: { from: ob, to: 100 },
+              osZone: { from: 0, to: os }
+            }));
+          },
+          draw: ({ ctx, barSpace: _barSpace, visibleRange, indicator, xAxis, yAxis }) => {
+            const { from, to } = visibleRange;
+            const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [70, 30];
+            const ob = Number(p[0]) || 70;
+            const os = Number(p[1]) || 30;
+            
+            const obY = yAxis.convertToPixel(ob);
+            const osY = yAxis.convertToPixel(os);
+            const topY = yAxis.convertToPixel(100);
+            const bottomY = yAxis.convertToPixel(0);
+            
+            const startX = xAxis.convertToPixel(from);
+            const endX = xAxis.convertToPixel(to);
+            const width = endX - startX;
+            
+            // Draw overbought zone (top)
+            ctx.fillStyle = 'rgba(239, 83, 80, 0.08)';
+            ctx.fillRect(startX, topY, width, obY - topY);
+            
+            // Draw oversold zone (bottom)
+            ctx.fillStyle = 'rgba(38, 166, 154, 0.08)';
+            ctx.fillRect(startX, osY, width, bottomY - osY);
           }
         });
       }
@@ -3180,8 +3294,8 @@ export const KLineChartComponent = ({
             ];
           }
 
-          // Use common extension ratios
-          const ratios = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0, 1.272, 1.618, 2.0, 2.618];
+          // Use requested extension ratios
+          const ratios = [0, 0.618, 1.0, 1.618, 2.0, 2.618, 3.0];
 
           // Leg AB in price and pixels
           const v0 = Number(points?.[0]?.value);
@@ -4531,6 +4645,52 @@ export const KLineChartComponent = ({
     }
   }, [candles, isInitialLoad, settings.showGrid, settings.chartType]);
 
+  // SuperTrend: prevent "ghost" line while switching symbol/timeframe (placeholder/empty data)
+  // When candles are empty (or workspace hidden), remove ST indicator; re-add once real candles arrive.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    const wantSt = Boolean(settings?.indicators?.stEnhanced);
+    const hasRealCandles = Array.isArray(candles) && candles.length > 0;
+
+    const removeStIfPresent = () => {
+      try { chart.removeIndicator({ name: 'ST_ENH' }); } catch (_) {}
+    };
+
+    // During loading/empty datasets, ensure ST is not visible (avoids rendering on placeholder axes data)
+    if (!wantSt || !hasRealCandles || isWorkspaceHidden) {
+      removeStIfPresent();
+      return;
+    }
+
+    // Ensure ST exists once we have real candles (this runs on symbol/timeframe changes too)
+    try {
+      const existing = typeof chart.getIndicators === 'function' ? chart.getIndicators({ name: 'ST_ENH' }) : [];
+      const hasSt = Array.isArray(existing) && existing.length > 0;
+      if (hasSt) return;
+
+      const stCfg = settings?.indicatorSettings?.stEnhanced || {};
+      const atrLen = Math.max(1, Number(stCfg.atrPeriod) || 10);
+      const atrMult = Math.max(0.5, Number(stCfg.atrMultiplier) || 3.0);
+      const stStyles = {
+        lines: [
+          { color: '#22C55E', size: 2, style: 'solid' }, // Uptrend ST
+          { color: '#EF4444', size: 2, style: 'solid' }, // Downtrend ST
+        ],
+      };
+      chart.createIndicator({ name: 'ST_ENH', calcParams: [atrLen, atrMult], styles: stStyles }, true, { id: 'candle_pane' });
+    } catch (_) {
+      // ignore
+    }
+  }, [
+    candles,
+    isInitialLoad,
+    isWorkspaceHidden,
+    settings?.indicators?.stEnhanced,
+    settings?.indicatorSettings?.stEnhanced,
+  ]);
+
   // Handle indicator visibility changes
   useEffect(() => {
     if (!chartRef.current) return;
@@ -4751,7 +4911,8 @@ export const KLineChartComponent = ({
         const wantSt = Boolean(settings.indicators?.stEnhanced);
         const stStyles = {
           lines: [
-            { color: '#26A69A', size: 2 }, // ST line (will be static color; dynamic color requires style callbacks)
+            { color: '#22C55E', size: 2, style: 'solid' }, // Uptrend ST
+            { color: '#EF4444', size: 2, style: 'solid' }, // Downtrend ST
           ],
         };
         const existingSt = typeof chartRef.current.getIndicators === 'function'
@@ -4840,7 +5001,18 @@ export const KLineChartComponent = ({
                   calcParams: config.params.calcParams,
                   styles: {
                     lines: [
-                      { color: lineColor, size: 1 }
+                      { 
+                        color: lineColor, 
+                        size: 2,
+                        style: 'solid'
+                      }
+                    ],
+                    circles: [
+                      {
+                        noChange: { show: false },
+                        up: { show: false },
+                        down: { show: false }
+                      }
                     ]
                   }
                 };
@@ -4883,31 +5055,43 @@ export const KLineChartComponent = ({
               chartRef.current.createIndicator(indicatorArg, isOverlayOnMain, paneOptions);
               console.log(`✅ KLineChart: ${key} indicator added`);
 
-              // If RSI Enhanced is enabled, overlay persistent OB/OS lines on the same pane
+              // If RSI Enhanced is enabled, overlay persistent OB/OS lines + zones on the same pane
               if (key === 'rsiEnhanced') {
                 try {
                   const paneId = `pane-${key}`;
-                  // Remove previous bounds lines if any
+                  // Remove previous bounds/zones if any
                   try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId }); } catch (_) {}
+                  try { chartRef.current.removeIndicator({ name: 'RSI_ZONES', paneId }); } catch (_) {}
+                  
                   const ob = Math.max(0, Math.min(100, Number(rsiCfg.overbought ?? 70)));
                   const os = Math.max(0, Math.min(100, Number(rsiCfg.oversold ?? 30)));
-                  const obColor = rsiCfg.obLineColor || 'rgba(242,54,69,0.6)';
-                  const osColor = rsiCfg.osLineColor || 'rgba(8,153,129,0.6)';
+                  const obColor = rsiCfg.obLineColor || 'rgba(239, 83, 80, 0.8)';
+                  const osColor = rsiCfg.osLineColor || 'rgba(38, 166, 154, 0.8)';
+                  const midColor = 'rgba(120, 120, 120, 0.3)';
+                  
+                  // Add background zones first (rendered behind)
+                  const zonesArg = {
+                    name: 'RSI_ZONES',
+                    calcParams: [ob, os]
+                  };
+                  chartRef.current.createIndicator(zonesArg, true, { id: paneId });
+                  
+                  // Then add boundary lines (rendered on top)
                   const boundsArg = {
                     name: 'RSI_BOUNDS',
                     calcParams: [ob, os],
-                      styles: {
-                        lines: [
-                         { color: obColor, size: 1, style: 'dashed', dashedValue: [4, 12], dashValue: [4, 12] },
-                         { color: osColor, size: 1, style: 'dashed', dashedValue: [4, 12], dashValue: [4, 12] },
-                        ]
-                      }
+                    styles: {
+                      lines: [
+                        { color: obColor, size: 1, style: 'dashed', dashedValue: [4, 4], dashValue: [4, 4] },
+                        { color: osColor, size: 1, style: 'dashed', dashedValue: [4, 4], dashValue: [4, 4] },
+                        { color: midColor, size: 1, style: 'dashed', dashedValue: [2, 2], dashValue: [2, 2] },
+                      ]
+                    }
                   };
-                  // Stack within the RSI pane
                   chartRef.current.createIndicator(boundsArg, true, { id: paneId });
-                  console.log('✅ KLineChart: RSI_BOUNDS overlay added to RSI pane');
+                  console.log('✅ KLineChart: RSI_ZONES and RSI_BOUNDS overlays added to RSI pane');
                 } catch (e) {
-                  console.warn('📈 KLineChart: Error adding RSI_BOUNDS:', e);
+                  console.warn('📈 KLineChart: Error adding RSI overlays:', e);
                 }
               }
             } else {
@@ -4926,9 +5110,10 @@ export const KLineChartComponent = ({
                 chartRef.current.removeIndicator({ name: indicatorName });
               }
               console.log(`📈 KLineChart: ${key} indicator removed`);
-              // Also remove RSI_BOUNDS when RSI is disabled
+              // Also remove RSI_BOUNDS and RSI_ZONES when RSI is disabled
               if (key === 'rsiEnhanced') {
                 try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId: `pane-${key}` }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ name: 'RSI_ZONES', paneId: `pane-${key}` }); } catch (_) {}
               }
             }
             
@@ -5745,7 +5930,7 @@ export const KLineChartComponent = ({
                     const startX = Math.min(c2.x, c3.x);
                     const endX = Math.max(c2.x, c3.x);
                     const deltaY = (c2.y - c1.y);
-                    const ratios = [0.618, 1.0, 1.272, 1.618, 2.0, 2.618];
+                    const ratios = [0, 0.618, 1.0, 1.618, 2.0, 2.618, 3.0];
 
                     // Horizontal extension levels projected from the third anchor
                     ratios.forEach((r) => {
@@ -7104,6 +7289,36 @@ export const KLineChartComponent = ({
                           </button>
                         </div>
                       </div>
+                      
+                      {/* RSI - Pro: stats table (top-right of RSI pane) */}
+                      {isFullscreen && key === 'rsiEnhanced' && _rsiValue !== null && (
+                        <div className="absolute pointer-events-none" style={{ right: '88px', top: '2px' }}>
+                          <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                            <table className="text-[11px] text-gray-700">
+                              <tbody>
+                                {(() => {
+                                  const rsiText = Number.isFinite(_rsiValue) ? _rsiValue.toFixed(2) : '--';
+                                  const statusBg = _rsiStatus === 'OVERBOUGHT' ? 'rgba(239,83,80,0.35)' : _rsiStatus === 'OVERSOLD' ? 'rgba(38,166,154,0.35)' : 'rgba(255,193,7,0.25)';
+                                  const trendText = _rsiTrend === 'RISING' ? 'RISING ▲' : _rsiTrend === 'FALLING' ? 'FALLING ▼' : 'NEUTRAL ●';
+                                  const trendBg = _rsiTrend === 'RISING' ? 'rgba(38,166,154,0.25)' : _rsiTrend === 'FALLING' ? 'rgba(239,83,80,0.25)' : 'rgba(158,158,158,0.15)';
+                                  const rows = [
+                                    { label: 'RSI', value: rsiText, cellBg: undefined },
+                                    { label: 'Status', value: _rsiStatus, cellBg: statusBg },
+                                    { label: 'Trend', value: trendText, cellBg: trendBg },
+                                  ];
+                                  return rows.map((r) => (
+                                    <tr key={r.label}>
+                                      <td className="px-2 py-1 whitespace-nowrap">{r.label}</td>
+                                      <td className="px-2 py-1 text-right whitespace-nowrap" style={r.cellBg ? { backgroundColor: r.cellBg } : undefined}>{r.value}</td>
+                                    </tr>
+                                  ));
+                                })()}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+
                       {/* ATR - Pro: stats table (top-right of ATR pane) */}
                       {isFullscreen && key === 'atrEnhanced' && atrProStats && (
                         <div className="absolute pointer-events-none" style={{ right: '88px', top: '2px' }}>

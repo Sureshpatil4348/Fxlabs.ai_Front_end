@@ -755,7 +755,7 @@ useEffect(() => {
                 const mcState = useMarketCacheStore.getState();
                 const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
-                return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
+                return [...new Set(supportedTfs)].filter(tf => tf !== '1W' && tf !== '1MN').map((timeframe) => (
                 <tr key={timeframe} className="border-b border-slate-100/50 dark:border-[#19235d]/50">
                   <td className="py-0.5 pr-0.5 font-medium text-[#19235d] dark:text-gray-200 text-sm w-14">
                     <div className="flex items-center space-x-0.5">
@@ -1147,7 +1147,7 @@ useEffect(() => {
                 const mcState = useMarketCacheStore.getState();
                 const supportedTfs = Array.isArray(mcState.supportedTimeframes) && mcState.supportedTimeframes.length > 0 ? mcState.supportedTimeframes : ['1M','5M','15M','30M','1H','4H','1D'];
                 const perTf = (mcState.quantumBySymbol.get(currentSymbol) || {}).per_timeframe || {};
-                return [...new Set(supportedTfs)].filter(tf => tf !== '1W').map((timeframe) => (
+                return [...new Set(supportedTfs)].filter(tf => tf !== '1W' && tf !== '1MN').map((timeframe) => (
                 <tr key={timeframe} className="border-b border-slate-100/50 dark:border-[#19235d]/50">
                   <td className="py-0.5 pr-0.5 font-medium text-[#19235d] dark:text-gray-200 text-sm w-14">
                     <div className="flex items-center space-x-0.5">
