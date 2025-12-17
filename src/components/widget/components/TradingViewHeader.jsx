@@ -50,7 +50,7 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
 
   // Indicator groups and limits
   // Note: 'emaTouch' (Trend Strategy) implementation is kept for future use but removed from dropdown
-  const ON_CHART_KEYS = ['bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+  const ON_CHART_KEYS = ['bbPro','maEnhanced','orbEnhanced','stEnhanced'];
   const BELOW_CHART_KEYS = ['rsiEnhanced','atrEnhanced','macdEnhanced'];
   const ON_CHART_LIMIT = 3;
   const BELOW_CHART_LIMIT = 2;
@@ -986,20 +986,6 @@ export const TradingViewHeader = ({ onFullscreenToggle, isFullscreen = false }) 
                 }`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.indicators.stEnhanced ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
-              </div>
-
-              {/* Support/Resistance Enhanced */}
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center">
-                  <p className="text-xs font-medium text-gray-900">Support Resitance - Pro</p>
-                </div>
-                <button onClick={() => handleToggleIndicator('srEnhanced')} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.indicators.srEnhanced ? 'bg-emerald-500' : 'bg-gray-300'
-                }`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    settings.indicators.srEnhanced ? 'translate-x-6' : 'translate-x-1'
                   }`} />
                 </button>
               </div>
