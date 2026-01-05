@@ -17,6 +17,11 @@ const MA_COLORS_BY_INDEX = {
   4: '#9C27B0',
 };
 
+// Bar space limits matching klinecharts internal BarSpaceLimitConstants
+// Used to prevent zoom operations that would be silently rejected by the library
+const MIN_BAR_SPACE = 1;
+const MAX_BAR_SPACE = 50;
+
 // Helper to build placeholder K-line data used to render axes while real candles are loading.
 // Uses arbitrary timestamps and flat prices so only axes/grid are visible.
 const createPlaceholderKlineData = (barCount = 60) => {
@@ -259,15 +264,15 @@ export const KLineChartComponent = ({
       tp3Multiplier: Number(cfg.tp3Multiplier ?? 4.0),
     });
   }, [showEmaTouchSettings, settings?.indicatorSettings?.emaTouch]);
-  
+
   // Get the setters from the correct store based on chartIndex
   const mainChartStore = useChartStore();
   const splitChartStore = useSplitChartStore();
-  
+
   // Store ref in the correct store based on chart index
   const storeForRef = isMainChart ? mainChartStore : splitChartStore;
   const setKLineChartRef = storeForRef.setKLineChartRef;
-  
+
   // Always use main store for global settings
   const {
     toggleIndicator,
@@ -279,13 +284,13 @@ export const KLineChartComponent = ({
     getOverlaysForSymbol,
   } = mainChartStore;
   const toggleIndicatorForCurrentChart = isMainChart ? toggleIndicator : toggleSplitChartIndicator;
-  
+
   // Overlay persistence state
   const overlayRestoreTriggeredRef = useRef(false);
   const overlaySaveTimerRef = useRef(null);
   const lastSavedOverlayCountRef = useRef(-1); // Track last saved count (-1 = not initialized yet)
   const justRemovedOverlayRef = useRef(false); // Track if we just removed an overlay (allow saving 0)
-  
+
   // Sync local MA settings when opening the modal
   useEffect(() => {
     if (!showMaSettings) return;
@@ -473,8 +478,8 @@ export const KLineChartComponent = ({
       try {
         const ids = Array.isArray(stLabelOverlayIdsRef.current) ? stLabelOverlayIdsRef.current : [];
         ids.forEach((id) => {
-          try { chart.removeOverlay({ id }); } catch (_) {}
-          try { chart.removeOverlay(id); } catch (_) {}
+          try { chart.removeOverlay({ id }); } catch (_) { }
+          try { chart.removeOverlay(id); } catch (_) { }
         });
       } catch (_) { /* ignore */ }
       stLabelOverlayIdsRef.current = [];
@@ -582,7 +587,7 @@ export const KLineChartComponent = ({
       return null;
     }
   }, [candles, settings?.indicatorSettings?.bbPro]);
-  
+
   // ORB (Opening Range Breakout) computed stats for top-right table and badges
   const orbStats = useMemo(() => {
     try {
@@ -751,7 +756,7 @@ export const KLineChartComponent = ({
       return null;
     }
   }, [candles, settings?.indicatorSettings?.orbEnhanced, settings?.timeframe]);
-  
+
   // ATR Pro stats (percent-of-close for classification, pips for display)
   const atrProStats = useMemo(() => {
     try {
@@ -936,7 +941,7 @@ export const KLineChartComponent = ({
       return null;
     }
   }, [candles, settings?.indicatorSettings?.macdEnhanced]);
-  
+
   // Keep track of previous candle count and scroll position
   const prevCandleCountRef = useRef(0);
   const currentScrollIndexRef = useRef(null);
@@ -965,7 +970,7 @@ export const KLineChartComponent = ({
     currentScrollIndexRef.current = null;
     setIsInitialLoad(true);
   }, [settings.symbol, settings.timeframe]);
-  
+
   // Keep latest candles for event handlers
   const candlesRef = useRef(candles);
   useEffect(() => { candlesRef.current = candles; }, [candles]);
@@ -975,12 +980,12 @@ export const KLineChartComponent = ({
     if (chartRef.current) {
       chartRef.current.setStyles({
         grid: {
-          horizontal: { 
+          horizontal: {
             show: settings.showGrid !== false,
             color: '#e5e7eb',
             size: 1
           },
-          vertical: { 
+          vertical: {
             show: settings.showGrid !== false,
             color: '#e5e7eb',
             size: 1
@@ -989,14 +994,14 @@ export const KLineChartComponent = ({
       });
     }
   }, [settings.showGrid]);
-  
+
   // Update current OHLC data when candles change
   useEffect(() => {
     if (candles.length > 0) {
       const latestCandle = candles[candles.length - 1];
       // Ensure timestamp is in milliseconds
       const timestamp = latestCandle.time < 946684800000 ? latestCandle.time * 1000 : latestCandle.time;
-      
+
       setCurrentOHLC({
         open: Number(latestCandle.open),
         high: Number(latestCandle.high),
@@ -1298,7 +1303,7 @@ export const KLineChartComponent = ({
               const tsMs = rawTime < 946684800000 ? rawTime * 1000 : rawTime; // if < year 2000 in ms, treat as seconds
               const d = new Date(tsMs);
               const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-              
+
               if (dayKey !== lastDay) {
                 // reset for new day
                 lastDay = dayKey;
@@ -1414,17 +1419,17 @@ export const KLineChartComponent = ({
             for (let i = 0; i < results.length; i++) {
               const data = results[i];
               const prev = i > 0 ? results[i - 1] : null;
-              
+
               // Detect buy entry
-              if (data?.buyEntry && isFinite(data.buyEntry) && 
-                  (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
+              if (data?.buyEntry && isFinite(data.buyEntry) &&
+                (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
                 buyEntryBar = i;
                 _buyEntryPrice = data.buyEntry;
               }
-              
+
               // Detect sell entry
-              if (data?.sellEntry && isFinite(data.sellEntry) && 
-                  (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
+              if (data?.sellEntry && isFinite(data.sellEntry) &&
+                (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
                 sellEntryBar = i;
                 _sellEntryPrice = data.sellEntry;
               }
@@ -1461,8 +1466,8 @@ export const KLineChartComponent = ({
               const prev = i > 0 ? results[i - 1] : null;
 
               // Buy entry marker (triangle up)
-              if (data.buyEntry && isFinite(data.buyEntry) && 
-                  (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
+              if (data.buyEntry && isFinite(data.buyEntry) &&
+                (!prev || !prev.buyEntry || !isFinite(prev.buyEntry))) {
                 const y = yAxis.convertToPixel(data.buyEntry);
                 ctx.fillStyle = '#26a69a';
                 ctx.beginPath();
@@ -1479,8 +1484,8 @@ export const KLineChartComponent = ({
               }
 
               // Sell entry marker (triangle down)
-              if (data.sellEntry && isFinite(data.sellEntry) && 
-                  (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
+              if (data.sellEntry && isFinite(data.sellEntry) &&
+                (!prev || !prev.sellEntry || !isFinite(prev.sellEntry))) {
                 const y = yAxis.convertToPixel(data.sellEntry);
                 ctx.fillStyle = '#ef5350';
                 ctx.beginPath();
@@ -1859,70 +1864,70 @@ export const KLineChartComponent = ({
       // Register/re-register MACD_ENH (below-chart) every mount to ensure latest styles/params apply
       // (The library allows overriding existing indicator definitions by name.)
       registerIndicator({
-          name: 'MACD_ENH',
-          shortName: 'MACD',
-          precision: 4,
-          calcParams: [12, 26, 9, 'close'], // fast, slow, signal, source
-          figures: [
-            { key: 'macd', title: 'MACD: ', type: 'line' },
-            { key: 'signal', title: 'SIGNAL: ', type: 'line' },
-            { key: 'zero', title: '', type: 'line' }, // zero line for reference
-            // Single histogram series anchored to zero with dynamic color (strong/weak bull/bear)
-            {
-              key: 'hist',
-              title: 'HIST: ',
-              type: 'bar',
-              baseValue: 0,
-              styles: ({ data }) => {
-                const prev = (data?.prev?.hist ?? 0);
-                const cur = (data?.current?.hist ?? 0);
-                let color = 'rgba(107,114,128,0.5)'; // neutral when zero/undefined
-                if (cur > 0) {
-                  // bullish: strong if growing vs previous, weak if fading
-                  color = cur > prev ? '#26A69A' : 'rgba(38,166,154,0.5)';
-                } else if (cur < 0) {
-                  // bearish: strong if expanding further below zero, weak if recovering
-                  color = cur < prev ? '#EF5350' : 'rgba(239,83,80,0.5)';
-                }
-                return { color, borderColor: color };
+        name: 'MACD_ENH',
+        shortName: 'MACD',
+        precision: 4,
+        calcParams: [12, 26, 9, 'close'], // fast, slow, signal, source
+        figures: [
+          { key: 'macd', title: 'MACD: ', type: 'line' },
+          { key: 'signal', title: 'SIGNAL: ', type: 'line' },
+          { key: 'zero', title: '', type: 'line' }, // zero line for reference
+          // Single histogram series anchored to zero with dynamic color (strong/weak bull/bear)
+          {
+            key: 'hist',
+            title: 'HIST: ',
+            type: 'bar',
+            baseValue: 0,
+            styles: ({ data }) => {
+              const prev = (data?.prev?.hist ?? 0);
+              const cur = (data?.current?.hist ?? 0);
+              let color = 'rgba(107,114,128,0.5)'; // neutral when zero/undefined
+              if (cur > 0) {
+                // bullish: strong if growing vs previous, weak if fading
+                color = cur > prev ? '#26A69A' : 'rgba(38,166,154,0.5)';
+              } else if (cur < 0) {
+                // bearish: strong if expanding further below zero, weak if recovering
+                color = cur < prev ? '#EF5350' : 'rgba(239,83,80,0.5)';
               }
-            },
-          ],
-          calc: (dataList, indicator) => {
-            const [fastLen, slowLen, sigLen, src] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [12, 26, 9, 'close'];
-            const fl = Math.max(1, Number(fastLen) || 12);
-            const sl = Math.max(1, Number(slowLen) || 26);
-            const sg = Math.max(1, Number(sigLen) || 9);
-            const source = String(src || 'close').toLowerCase();
-            let emaFast = null;
-            let emaSlow = null;
-            let emaSignal = null;
-            const kf = 2 / (fl + 1);
-            const ks = 2 / (sl + 1);
-            const ks2 = 2 / (sg + 1);
-            return dataList.map((k) => {
-              const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
-              let price = c;
-              if (source === 'open') price = o;
-              else if (source === 'high') price = h;
-              else if (source === 'low') price = l;
-              else if (source === 'hl2') price = (h + l) / 2;
-              else if (source === 'hlc3') price = (h + l + c) / 3;
-              else if (source === 'ohlc4') price = (o + h + l + c) / 4;
-              emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
-              emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
-              const macd = (emaFast - emaSlow);
-              emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
-              const hist = macd - emaSignal;
-              return {
-                macd,
-                signal: emaSignal,
-                zero: 0,
-                hist,
-              };
-            });
+              return { color, borderColor: color };
+            }
           },
-        });
+        ],
+        calc: (dataList, indicator) => {
+          const [fastLen, slowLen, sigLen, src] = Array.isArray(indicator.calcParams) ? indicator.calcParams : [12, 26, 9, 'close'];
+          const fl = Math.max(1, Number(fastLen) || 12);
+          const sl = Math.max(1, Number(slowLen) || 26);
+          const sg = Math.max(1, Number(sigLen) || 9);
+          const source = String(src || 'close').toLowerCase();
+          let emaFast = null;
+          let emaSlow = null;
+          let emaSignal = null;
+          const kf = 2 / (fl + 1);
+          const ks = 2 / (sl + 1);
+          const ks2 = 2 / (sg + 1);
+          return dataList.map((k) => {
+            const o = Number(k.open), h = Number(k.high), l = Number(k.low), c = Number(k.close);
+            let price = c;
+            if (source === 'open') price = o;
+            else if (source === 'high') price = h;
+            else if (source === 'low') price = l;
+            else if (source === 'hl2') price = (h + l) / 2;
+            else if (source === 'hlc3') price = (h + l + c) / 3;
+            else if (source === 'ohlc4') price = (o + h + l + c) / 4;
+            emaFast = emaFast == null ? price : (price - emaFast) * kf + emaFast;
+            emaSlow = emaSlow == null ? price : (price - emaSlow) * ks + emaSlow;
+            const macd = (emaFast - emaSlow);
+            emaSignal = emaSignal == null ? macd : (macd - emaSignal) * ks2 + emaSignal;
+            const hist = macd - emaSignal;
+            return {
+              macd,
+              signal: emaSignal,
+              zero: 0,
+              hist,
+            };
+          });
+        },
+      });
       // Register RSI_BOUNDS (Overbought/Oversold constant lines + midline) for RSI pane
       if (Array.isArray(supported) && !supported.includes('RSI_BOUNDS')) {
         registerIndicator({
@@ -1944,7 +1949,7 @@ export const KLineChartComponent = ({
           }
         });
       }
-      
+
       // Register RSI_ZONES (background shading for overbought/oversold zones)
       if (Array.isArray(supported) && !supported.includes('RSI_ZONES')) {
         registerIndicator({
@@ -1964,7 +1969,7 @@ export const KLineChartComponent = ({
             const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [70, 30];
             const ob = Math.max(0, Math.min(100, Number(p[0]) || 70));
             const os = Math.max(0, Math.min(100, Number(p[1]) || 30));
-            return dataList.map(() => ({ 
+            return dataList.map(() => ({
               obZone: { from: ob, to: 100 },
               osZone: { from: 0, to: os }
             }));
@@ -1974,20 +1979,20 @@ export const KLineChartComponent = ({
             const p = Array.isArray(indicator.calcParams) ? indicator.calcParams : [70, 30];
             const ob = Number(p[0]) || 70;
             const os = Number(p[1]) || 30;
-            
+
             const obY = yAxis.convertToPixel(ob);
             const osY = yAxis.convertToPixel(os);
             const topY = yAxis.convertToPixel(100);
             const bottomY = yAxis.convertToPixel(0);
-            
+
             const startX = xAxis.convertToPixel(from);
             const endX = xAxis.convertToPixel(to);
             const width = endX - startX;
-            
+
             // Draw overbought zone (top)
             ctx.fillStyle = 'rgba(239, 83, 80, 0.08)';
             ctx.fillRect(startX, topY, width, obY - topY);
-            
+
             // Draw oversold zone (bottom)
             ctx.fillStyle = 'rgba(38, 166, 154, 0.08)';
             ctx.fillRect(startX, osY, width, bottomY - osY);
@@ -2010,9 +2015,9 @@ export const KLineChartComponent = ({
             attrs: {
               coordinates: [coordinates[0], coordinates[1]],
             },
-              styles: {
-                color: '#2962FF',
-                size: 2,
+            styles: {
+              color: '#2962FF',
+              size: 2,
             },
           },
         ];
@@ -2033,8 +2038,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -2079,8 +2084,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -2125,8 +2130,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -2155,7 +2160,7 @@ export const KLineChartComponent = ({
             px = chart.convertToPixel(pts) || [];
           }
         } catch (_) { px = []; }
-        
+
         const c0 = px[0] || coordinates?.[0]; // entry
         if (!c0) return figures;
         const width = (typeof overlay?.widthPx === 'number' && overlay.widthPx > 0) ? overlay.widthPx : POSITION_OVERLAY_WIDTH_PX;
@@ -2230,7 +2235,7 @@ export const KLineChartComponent = ({
             },
             styles: { color: '#ef4444', size: 1 },
           });
-          
+
           // Risk-side badges (above red rectangle)
           // entryVal already resolved above in this block
           let stopVal = NaN;
@@ -2264,10 +2269,10 @@ export const KLineChartComponent = ({
                 baseline: 'bottom',
               },
               styles: {
-              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
-              borderSize: 1,
-              borderColor: '#991b1b',
-              text: { color: '#ffffff', size: 11, weight: '600' },
+                backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
+                borderSize: 1,
+                borderColor: '#991b1b',
+                text: { color: '#ffffff', size: 11, weight: '600' },
                 paddingLeft: 4,
                 paddingRight: 4,
                 paddingTop: 2,
@@ -2401,10 +2406,10 @@ export const KLineChartComponent = ({
                 baseline: 'top',
               },
               styles: {
-              backgroundColor: 'rgba(16,185,129,0.92)', // dark green (matches candle green)
-              borderSize: 1,
-              borderColor: '#065f46',
-              text: { color: '#ffffff', size: 11, weight: '600' },
+                backgroundColor: 'rgba(16,185,129,0.92)', // dark green (matches candle green)
+                borderSize: 1,
+                borderColor: '#065f46',
+                text: { color: '#ffffff', size: 11, weight: '600' },
                 paddingLeft: 4,
                 paddingRight: 4,
                 paddingTop: 2,
@@ -2435,7 +2440,7 @@ export const KLineChartComponent = ({
             // Auto-add a second point at the same location to complete the overlay
             return { points: [pts[0], { ...pts[0] }] };
           }
-        } catch (_) {}
+        } catch (_) { }
         return {};
       },
       onDrawEnd: ({ overlay }) => {
@@ -2445,16 +2450,16 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
             }
           }
-          
+
           console.log('📉 Short Position onDrawEnd called for overlay:', overlay?.id, 'name:', overlay?.name);
-          
+
           // CRITICAL: Auto-deactivate the tool after drawing completes
           // This allows clicking the tool button again to create a NEW instance
           // instead of replacing the current one
@@ -2467,7 +2472,7 @@ export const KLineChartComponent = ({
           } catch (e) {
             console.warn('Error deactivating tool:', e);
           }
-          
+
           // DEBUG: Check overlays after drawing completes
           try {
             const chart = chartRef.current;
@@ -2578,7 +2583,7 @@ export const KLineChartComponent = ({
             },
             styles: { color: '#ef4444', size: 1 },
           });
-          
+
           // Risk-side badges (below red rectangle)
           const entryVal = Number(pts?.[0]?.value);
           let stopVal = (typeof overlay?.stopValue === 'number') ? overlay.stopValue : NaN;
@@ -2612,10 +2617,10 @@ export const KLineChartComponent = ({
                 baseline: 'top',
               },
               styles: {
-              backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
-              borderSize: 1,
-              borderColor: '#991b1b',
-              text: { color: '#ffffff', size: 11, weight: '600' },
+                backgroundColor: 'rgba(239,68,68,0.92)', // dark red (matches candle red)
+                borderSize: 1,
+                borderColor: '#991b1b',
+                text: { color: '#ffffff', size: 11, weight: '600' },
                 paddingLeft: 4,
                 paddingRight: 4,
                 paddingTop: 2,
@@ -2623,7 +2628,7 @@ export const KLineChartComponent = ({
               },
             });
           }
-          
+
           // TP symmetric above entry by fixed pixels
           const yTP = tpY; // ensure TP is above entry
           const rewardTop = Math.min(c0.y, yTP);
@@ -2698,10 +2703,10 @@ export const KLineChartComponent = ({
                 baseline: 'bottom',
               },
               styles: {
-              backgroundColor: 'rgba(16,185,129,0.92)', // dark green (matches candle green)
-              borderSize: 1,
-              borderColor: '#065f46',
-              text: { color: '#ffffff', size: 11, weight: '600' },
+                backgroundColor: 'rgba(16,185,129,0.92)', // dark green (matches candle green)
+                borderSize: 1,
+                borderColor: '#065f46',
+                text: { color: '#ffffff', size: 11, weight: '600' },
                 paddingLeft: 4,
                 paddingRight: 4,
                 paddingTop: 2,
@@ -2732,7 +2737,7 @@ export const KLineChartComponent = ({
             // Auto-add a second point at the same location to complete the overlay
             return { points: [pts[0], { ...pts[0] }] };
           }
-        } catch (_) {}
+        } catch (_) { }
         return {};
       },
       onDrawEnd: ({ overlay }) => {
@@ -2742,16 +2747,16 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
             }
           }
-          
+
           console.log('📈 Long Position onDrawEnd called for overlay:', overlay?.id, 'name:', overlay?.name);
-          
+
           // CRITICAL: Auto-deactivate the tool after drawing completes
           // This allows clicking the tool button again to create a NEW instance
           // instead of replacing the current one
@@ -2764,7 +2769,7 @@ export const KLineChartComponent = ({
           } catch (e) {
             console.warn('Error deactivating tool:', e);
           }
-          
+
           // DEBUG: Check overlays after drawing completes
           try {
             const chart = chartRef.current;
@@ -2962,8 +2967,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -3066,8 +3071,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -3078,7 +3083,7 @@ export const KLineChartComponent = ({
       },
     });
 
-    
+
 
     // Register a custom Fibonacci overlay that extends levels to the RIGHT only
     // (instead of both left and right like the built-in 'fibonacciLine')
@@ -3131,7 +3136,7 @@ export const KLineChartComponent = ({
         const texts = [];
         // Get color from overlay styles, fallback to default
         const lineColor = overlay?.styles?.line?.color || overlay?.color || '#9C27B0';
-        
+
         // Custom colors for specific levels as requested
         // Levels: 14.60 (pink), 23.60 (pink), 38.20, 50.00, 61.80, 78.60 (red), 85.40 (red)
         const fibConfig = [
@@ -3154,7 +3159,7 @@ export const KLineChartComponent = ({
           const labelOffsetPx = 6;
           const yDif = c0.y - c1.y;
           const valueDif = (points[0].value ?? 0) - (points[1].value ?? 0);
-          
+
           // Group lines by color to create separate primitives
           const linesByColor = {};
 
@@ -3169,12 +3174,12 @@ export const KLineChartComponent = ({
             } catch (_e) {
               displayValue = rawValue.toFixed(precision);
             }
-            
+
             const levelColor = color || lineColor;
             if (!linesByColor[levelColor]) {
               linesByColor[levelColor] = [];
             }
-            
+
             linesByColor[levelColor].push({ coordinates: [{ x: startX, y }, { x: endX, y }] });
             texts.push({
               x: endX + labelOffsetPx,
@@ -3222,8 +3227,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -3365,8 +3370,8 @@ export const KLineChartComponent = ({
           if (paneId && paneId !== 'candle_pane') {
             const chart = chartRef.current;
             if (chart && overlay?.id) {
-              try { chart.removeOverlay({ id: overlay.id }); } catch (_) { 
-                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ } 
+              try { chart.removeOverlay({ id: overlay.id }); } catch (_) {
+                try { chart.removeOverlay(overlay.id); } catch (_) { /* ignore */ }
               }
               console.warn('🚫 Drawing tool blocked on indicator pane:', paneId);
               return;
@@ -3385,7 +3390,7 @@ export const KLineChartComponent = ({
 
     try {
       setError(null);
-      
+
       // Initialize chart with timezone awareness
       const tz = settings.timezone || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
       const chart = init(container, { timezone: tz });
@@ -3403,12 +3408,12 @@ export const KLineChartComponent = ({
       // Configure chart styles using setStyles (not setStyleOptions)
       chart.setStyles({
         grid: {
-          horizontal: { 
+          horizontal: {
             show: settings.showGrid !== false,
             color: '#e5e7eb',
             size: 1
           },
-          vertical: { 
+          vertical: {
             show: settings.showGrid !== false,
             color: '#e5e7eb',
             size: 1
@@ -3589,7 +3594,7 @@ export const KLineChartComponent = ({
       } catch (_e) {
         // no-op: optional API
       }
-      
+
       // Register chart ref with store for sidebar access
       setKLineChartRef(chart);
 
@@ -3614,7 +3619,7 @@ export const KLineChartComponent = ({
       console.log('💾 [DEBUG] Installing overlay wrapper EARLY (before handleDrawingToolChange)');
       const originalCreateOverlayEarly = chart.createOverlay;
       if (typeof originalCreateOverlayEarly === 'function') {
-        chart.createOverlay = function(...args) {
+        chart.createOverlay = function (...args) {
           console.log('💾 [WRAPPER] createOverlay called with args:', args);
           const result = originalCreateOverlayEarly.apply(this, args);
           console.log('💾 [WRAPPER] createOverlay result:', result);
@@ -3643,8 +3648,8 @@ export const KLineChartComponent = ({
               const existing = chart.getOverlays?.() || chart.getAllOverlays?.() || [];
               const positionOverlays = existing.filter(o => o && (o.name === 'shortPosition' || o.name === 'longPosition'));
               console.log('📊 Existing position overlays BEFORE creation:', positionOverlays.length, positionOverlays.map(o => ({ id: o.id, name: o.name })));
-            } catch (_) {}
-            
+            } catch (_) { }
+
             // Prefer built-in, battle-tested overlays where available
             const overlayMap = {
               trendLine: 'segment', // 2-point segment
@@ -3657,11 +3662,11 @@ export const KLineChartComponent = ({
               verticalLine: 'verticalStraightLine',
             };
             const name = overlayMap[toolType] || toolType;
-            
+
             // SIMPLE FIX: Just pass name and paneId, let KlineChart handle IDs
             const overlayConfig = { name, paneId: 'candle_pane' };
             console.log('📈 Creating overlay:', toolType, '→', name);
-            
+
             try {
               // Preferred signature (v10+) - ALWAYS restrict to candle_pane only
               chart.createOverlay(overlayConfig);
@@ -3674,14 +3679,14 @@ export const KLineChartComponent = ({
                 chart.createOverlay(name);
               }
             }
-            
+
             // DEBUG: Log overlays immediately after creation
             setTimeout(() => {
               try {
                 const after = chart.getOverlays?.() || chart.getAllOverlays?.() || [];
                 const positionOverlays = after.filter(o => o && (o.name === 'shortPosition' || o.name === 'longPosition'));
                 console.log('📊 Existing position overlays AFTER creation:', positionOverlays.length, positionOverlays.map(o => ({ id: o.id, name: o.name })));
-              } catch (_) {}
+              } catch (_) { }
             }, 100);
           }
         } catch (err) {
@@ -3716,7 +3721,7 @@ export const KLineChartComponent = ({
       // Wrap removeOverlay to trigger persistence saves (done here since it's not used in closures above)
       const originalRemoveOverlay = chart.removeOverlay;
       if (typeof originalRemoveOverlay === 'function') {
-        chart.removeOverlay = function(...args) {
+        chart.removeOverlay = function (...args) {
           console.log('💾 [WRAPPER] removeOverlay called');
           // CRITICAL: Set flag to allow saving 0 overlays (user intentionally deleted)
           justRemovedOverlayRef.current = true;
@@ -3737,7 +3742,7 @@ export const KLineChartComponent = ({
       // Wrap overrideOverlay to trigger persistence saves (for visibility changes, color updates, text edits, etc.)
       const originalOverrideOverlay = chart.overrideOverlay;
       if (typeof originalOverrideOverlay === 'function') {
-        chart.overrideOverlay = function(...args) {
+        chart.overrideOverlay = function (...args) {
           const updateData = args[0];
           const isVisibilityChange = updateData && typeof updateData.visible === 'boolean';
           console.log('💾 [WRAPPER] overrideOverlay called with:', args, isVisibilityChange ? `[VISIBILITY: ${updateData.visible}]` : '');
@@ -3755,26 +3760,26 @@ export const KLineChartComponent = ({
         };
       }
 
-          // Handle resize - FORCE FULL WIDTH
-          const handleResize = () => {
-            if (container && chart) {
-              const width = container.clientWidth;
-              const height = container.clientHeight;
-              
-              if (width > 0 && height > 0) {
-                // Force chart to use full container width
-                chart.resize(width, height);
-                // Force chart to fill entire container
-                chart.setStyles({
-                  width: '100%',
-                  height: '100%'
-                });
-              }
-            }
-          };
+      // Handle resize - FORCE FULL WIDTH
+      const handleResize = () => {
+        if (container && chart) {
+          const width = container.clientWidth;
+          const height = container.clientHeight;
+
+          if (width > 0 && height > 0) {
+            // Force chart to use full container width
+            chart.resize(width, height);
+            // Force chart to fill entire container
+            chart.setStyles({
+              width: '100%',
+              height: '100%'
+            });
+          }
+        }
+      };
 
       window.addEventListener('resize', handleResize);
-      
+
       // Initial resize
       setTimeout(() => handleResize(), 100);
 
@@ -3837,14 +3842,14 @@ export const KLineChartComponent = ({
       if (!symbol || !timeframe) return;
 
       const persistedOverlays = getOverlaysForSymbol(symbol, timeframe, chartIndex);
-      
+
       // CRITICAL: Initialize the counter from persisted data to prevent overwriting
       const persistedCount = persistedOverlays?.length || 0;
       if (lastSavedOverlayCountRef.current === -1) {
         lastSavedOverlayCountRef.current = persistedCount;
         console.log('💾 [INIT] Set lastSavedCount to', persistedCount, 'from persisted data for chart', chartIndex);
       }
-      
+
       if (!persistedOverlays || persistedOverlays.length === 0) {
         console.log('💾 No persisted overlays to restore for', symbol, '(timeframe-agnostic)', 'chart', chartIndex);
         return;
@@ -3890,7 +3895,7 @@ export const KLineChartComponent = ({
     const symbol = settings?.symbol;
     const timeframe = settings?.timeframe;
     if (!symbol || !timeframe) return;
-    
+
     // CRITICAL: Reset counter and flags when symbol or timeframe changes to read fresh persisted data
     console.log('💾 [INIT] Resetting lastSavedCount for', symbol, '(timeframe-agnostic)', 'chart', chartIndex);
     lastSavedOverlayCountRef.current = -1;
@@ -3901,7 +3906,7 @@ export const KLineChartComponent = ({
       try {
         // Try multiple methods to get overlays
         let overlays = [];
-        
+
         if (typeof chart.getOverlays === 'function') {
           overlays = chart.getOverlays();
           console.log('💾 [DEBUG] Got overlays via getOverlays():', overlays);
@@ -3911,7 +3916,7 @@ export const KLineChartComponent = ({
         } else {
           console.error('💾 [DEBUG] No overlay getter method available!');
         }
-        
+
         // Also check if overlays might be in a different location
         console.log('💾 [DEBUG] Chart structure check:', {
           hasOverlayStore: !!chart._overlayStore,
@@ -3948,18 +3953,18 @@ export const KLineChartComponent = ({
           }
           const name = overlay.name || '';
           // Exclude system-generated overlays (like labels from indicators)
-          const isSystemGenerated = 
+          const isSystemGenerated =
             name.toLowerCase().includes('label') ||
             name.toLowerCase().includes('marker') ||
             overlay.locked === true ||
             overlay.id?.includes('_system_');
-          
+
           if (isSystemGenerated) {
             console.log('💾 [DEBUG] Filtered system overlay:', name, 'locked:', overlay.locked);
           } else {
             console.log('💾 [DEBUG] Keeping user overlay:', name);
           }
-          
+
           return !isSystemGenerated;
         });
 
@@ -3994,13 +3999,13 @@ export const KLineChartComponent = ({
         const currentCount = serializedOverlays.length;
         const lastCount = lastSavedOverlayCountRef.current;
         const justRemoved = justRemovedOverlayRef.current;
-        
+
         // Initialize lastCount from persisted data on first save attempt
         if (lastCount === -1) {
           const persistedCount = getOverlaysForSymbol(symbol, timeframe, chartIndex)?.length || 0;
           lastSavedOverlayCountRef.current = persistedCount;
           console.log('💾 [PROTECTION] Initialized lastSavedCount from localStorage:', persistedCount, 'for chart', chartIndex);
-          
+
           // If trying to save 0 but we have persisted data, BLOCK IT (unless user just deleted)
           if (currentCount === 0 && persistedCount > 0 && !justRemoved) {
             console.warn('💾 [PROTECTION] BLOCKING save on initial mount - would overwrite', persistedCount, 'persisted overlays with 0!');
@@ -4182,28 +4187,28 @@ export const KLineChartComponent = ({
         if (scrollDebounceTimerRef.current) {
           clearTimeout(scrollDebounceTimerRef.current);
         }
-        
+
         // Debounce the load request - only trigger after user stops scrolling for 300ms
         scrollDebounceTimerRef.current = setTimeout(() => {
           const currentTime = Date.now();
           const timeSinceLastLoad = currentTime - lastLoadRequestTimeRef.current;
-          
+
           // Trigger load more when we're within 20 candles of the start
           // and we're not already loading
           // and at least 2 seconds have passed since last load request
-          if (visibleRange && visibleRange.from <= 20 && 
-              hasMoreHistory && 
-              !isLoadingHistory && 
-              !isLoadingRef.current &&
-              timeSinceLastLoad > 2000 &&
-              onLoadMoreHistory) {
+          if (visibleRange && visibleRange.from <= 20 &&
+            hasMoreHistory &&
+            !isLoadingHistory &&
+            !isLoadingRef.current &&
+            timeSinceLastLoad > 2000 &&
+            onLoadMoreHistory) {
             console.log('📊 Near left edge, loading more history...', {
               from: visibleRange.from,
               to: visibleRange.to,
               currentCandles: candlesRef.current.length,
               timeSinceLastLoad
             });
-            
+
             isLoadingRef.current = true;
             lastLoadRequestTimeRef.current = currentTime;
             onLoadMoreHistory();
@@ -4238,13 +4243,13 @@ export const KLineChartComponent = ({
 
     try {
       setError(null);
-      
+
       // Filter and sort candles
-      const validCandles = candles.filter(candle => 
-        !isNaN(candle.time) && 
-        !isNaN(candle.open) && 
-        !isNaN(candle.high) && 
-        !isNaN(candle.low) && 
+      const validCandles = candles.filter(candle =>
+        !isNaN(candle.time) &&
+        !isNaN(candle.open) &&
+        !isNaN(candle.high) &&
+        !isNaN(candle.low) &&
         !isNaN(candle.close) &&
         candle.time > 0
       );
@@ -4256,7 +4261,7 @@ export const KLineChartComponent = ({
         // Ensure timestamp is in milliseconds (KLineChart requirement)
         // If timestamp is less than year 2000 in milliseconds (946684800000), it's likely in seconds
         const timestamp = candle.time < 946684800000 ? candle.time * 1000 : candle.time;
-        
+
         return {
           timestamp: timestamp,
           open: Number(candle.open),
@@ -4371,8 +4376,8 @@ export const KLineChartComponent = ({
         } else {
           // Normal incremental path
           safeLatestCandles.forEach((candle) => {
-          chartRef.current.updateData(candle);
-        });
+            chartRef.current.updateData(candle);
+          });
         }
 
         if (chartRef.current.setOptions) {
@@ -4388,11 +4393,11 @@ export const KLineChartComponent = ({
         if (appendedCount > 0 && shouldAutoFollow) {
           // Check if user's visible range (before update) included the latest candle
           const prevDataLength = prevCandleCountRef.current;
-          const wasViewingLatest = previousVisibleRange && 
+          const wasViewingLatest = previousVisibleRange &&
             typeof previousVisibleRange.to === 'number' &&
             prevDataLength > 0 &&
             previousVisibleRange.to >= prevDataLength - 2; // Within 2 candles of the end
-          
+
           console.log('📊 New candle formed - checking auto-scroll:', {
             appendedCount,
             prevDataLength,
@@ -4400,7 +4405,7 @@ export const KLineChartComponent = ({
             wasViewingLatest,
             willAutoScroll: wasViewingLatest
           });
-          
+
           if (wasViewingLatest) {
             // User was viewing the latest area, safe to auto-scroll
             markProgrammaticScroll();
@@ -4440,7 +4445,7 @@ export const KLineChartComponent = ({
         maybeTriggerLeftEdgeBackfill();
       } else if (isPaginationLoad) {
         const newCandlesCount = appendedCount;
-        
+
         console.log('📊 Pagination load detected:', {
           newCandles: newCandlesCount,
           totalCandles: klineData.length,
@@ -4448,7 +4453,7 @@ export const KLineChartComponent = ({
         });
 
         chartRef.current.applyNewData(klineData);
-        
+
         if (chartRef.current.setOptions) {
           chartRef.current.setOptions({
             yAxis: {
@@ -4456,7 +4461,7 @@ export const KLineChartComponent = ({
             }
           });
         }
-        
+
         setTimeout(() => {
           if (!chartRef.current) return;
 
@@ -4478,7 +4483,7 @@ export const KLineChartComponent = ({
         }, 100);
       } else {
         chartRef.current.applyNewData(klineData);
-        
+
         if (chartRef.current.setOptions) {
           chartRef.current.setOptions({
             yAxis: {
@@ -4486,7 +4491,7 @@ export const KLineChartComponent = ({
             }
           });
         }
-        
+
         if (isInitialLoad && klineData.length > 0) {
           setTimeout(() => {
             if (!chartRef.current) return;
@@ -4566,12 +4571,12 @@ export const KLineChartComponent = ({
         // IMPORTANT: Preserve grid configuration to ensure vertical lines render in production
         chart.setStyles({
           grid: {
-            horizontal: { 
+            horizontal: {
               show: settings.showGrid !== false,
               color: '#e5e7eb',
               size: 1
             },
-            vertical: { 
+            vertical: {
               show: settings.showGrid !== false,
               color: '#e5e7eb',
               size: 1
@@ -4599,12 +4604,12 @@ export const KLineChartComponent = ({
         // IMPORTANT: Preserve grid configuration to ensure vertical lines render in production
         chart.setStyles({
           grid: {
-            horizontal: { 
+            horizontal: {
               show: settings.showGrid !== false,
               color: '#e5e7eb',
               size: 1
             },
-            vertical: { 
+            vertical: {
               show: settings.showGrid !== false,
               color: '#e5e7eb',
               size: 1
@@ -4655,7 +4660,7 @@ export const KLineChartComponent = ({
     const hasRealCandles = Array.isArray(candles) && candles.length > 0;
 
     const removeStIfPresent = () => {
-      try { chart.removeIndicator({ name: 'ST_ENH' }); } catch (_) {}
+      try { chart.removeIndicator({ name: 'ST_ENH' }); } catch (_) { }
     };
 
     // During loading/empty datasets, ensure ST is not visible (avoids rendering on placeholder axes data)
@@ -4703,9 +4708,9 @@ export const KLineChartComponent = ({
           const tryRemoveByList = (list) => {
             if (!Array.isArray(list)) return;
             list.forEach((ind) => {
-              try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) {}
-              try { chart.removeIndicator({ name: ind?.name }); } catch (_) {}
-              try { chart.removeIndicator(ind?.id); } catch (_) {}
+              try { chart.removeIndicator({ id: ind?.id, name: ind?.name, paneId: ind?.paneId }); } catch (_) { }
+              try { chart.removeIndicator({ name: ind?.name }); } catch (_) { }
+              try { chart.removeIndicator(ind?.id); } catch (_) { }
             });
           };
           let inds = [];
@@ -4713,7 +4718,7 @@ export const KLineChartComponent = ({
           if (!Array.isArray(inds) || inds.length === 0) {
             const panes = ['candle_pane', 'pane_0', 'pane_1', 'pane_2', 'pane-rsiEnhanced', 'pane-atrEnhanced', 'pane-macdEnhanced'];
             panes.forEach((pid) => {
-              try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) {}
+              try { tryRemoveByList(chart.getIndicators?.({ paneId: pid }) || []); } catch (_) { }
             });
           } else {
             tryRemoveByList(inds);
@@ -4752,12 +4757,12 @@ export const KLineChartComponent = ({
         const wantBoll = Boolean(settings.indicators?.bbPro);
         const proStyles = settings.indicators?.bbPro
           ? {
-              lines: [
-                { color: '#2962FF', size: 1 }, // Upper
-                { color: '#FF6D00', size: 1 }, // Middle
-                { color: '#2962FF', size: 1 }, // Lower
-              ],
-            }
+            lines: [
+              { color: '#2962FF', size: 1 }, // Upper
+              { color: '#FF6D00', size: 1 }, // Middle
+              { color: '#2962FF', size: 1 }, // Lower
+            ],
+          }
           : undefined;
         const bbCfg = settings?.indicatorSettings?.bbPro || {};
         const bbLen = Math.max(1, Number(bbCfg.length) || 20);
@@ -4787,7 +4792,7 @@ export const KLineChartComponent = ({
       } catch (e) {
         console.warn('📈 KLineChart: Error handling BOLL overlay:', e);
       }
-      
+
       // Trend Strategy (EMA Touch) — targets only; no Bollinger lines drawn here
       try {
         const existingTouch = typeof chartRef.current.getIndicators === 'function'
@@ -4805,20 +4810,22 @@ export const KLineChartComponent = ({
           if (hasTouch && typeof chartRef.current.removeIndicator === 'function') {
             chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
           }
-          chartRef.current.createIndicator({ name: 'EMA_TOUCH_ENH', calcParams: [bbLen, bbMult, atrLen, tp1, tp2, tp3, 1.5, 25], styles: {
-            lines: [
-              { color: '#EF4444', size: 2 }, // buy SL (red)
-              { color: '#3B82F6', size: 1 }, // buy ENTRY (blue)
-              { color: '#22C55E', size: 1 }, // buy TP1 (green)
-              { color: '#22C55E', size: 1 }, // buy TP2 (green)
-              { color: '#22C55E', size: 1 }, // buy TP3 (green)
-              { color: '#EF4444', size: 2 }, // sell SL (red)
-              { color: '#3B82F6', size: 1 }, // sell ENTRY (blue)
-              { color: '#22C55E', size: 1 }, // sell TP1 (green)
-              { color: '#22C55E', size: 1 }, // sell TP2 (green)
-              { color: '#22C55E', size: 1 }, // sell TP3 (green)
-            ]
-          } }, true, { id: 'candle_pane' });
+          chartRef.current.createIndicator({
+            name: 'EMA_TOUCH_ENH', calcParams: [bbLen, bbMult, atrLen, tp1, tp2, tp3, 1.5, 25], styles: {
+              lines: [
+                { color: '#EF4444', size: 2 }, // buy SL (red)
+                { color: '#3B82F6', size: 1 }, // buy ENTRY (blue)
+                { color: '#22C55E', size: 1 }, // buy TP1 (green)
+                { color: '#22C55E', size: 1 }, // buy TP2 (green)
+                { color: '#22C55E', size: 1 }, // buy TP3 (green)
+                { color: '#EF4444', size: 2 }, // sell SL (red)
+                { color: '#3B82F6', size: 1 }, // sell ENTRY (blue)
+                { color: '#22C55E', size: 1 }, // sell TP1 (green)
+                { color: '#22C55E', size: 1 }, // sell TP2 (green)
+                { color: '#22C55E', size: 1 }, // sell TP3 (green)
+              ]
+            }
+          }, true, { id: 'candle_pane' });
           console.log('✅ KLineChart: EMA Touch targets overlay added');
         } else if (hasTouch) {
           chartRef.current.removeIndicator({ name: 'EMA_TOUCH_ENH' });
@@ -4846,9 +4853,9 @@ export const KLineChartComponent = ({
         const existingCustom = typeof chartRef.current.getIndicators === 'function' ? chartRef.current.getIndicators({ name: 'MA_ENH' }) : [];
         const hasCustom = Array.isArray(existingCustom) && existingCustom.length > 0;
         const removeIfExists = () => {
-          try { chartRef.current.removeIndicator({ name: 'MA_ENH' }); } catch (_) {}
-          try { chartRef.current.removeIndicator({ name: 'EMA' }); } catch (_) {}
-          try { chartRef.current.removeIndicator({ name: 'MA' }); } catch (_) {}
+          try { chartRef.current.removeIndicator({ name: 'MA_ENH' }); } catch (_) { }
+          try { chartRef.current.removeIndicator({ name: 'EMA' }); } catch (_) { }
+          try { chartRef.current.removeIndicator({ name: 'MA' }); } catch (_) { }
         };
         if (wantMa && hasAny) {
           removeIfExists();
@@ -4993,16 +5000,16 @@ export const KLineChartComponent = ({
               }
               if (key === 'rsiEnhanced') {
                 // Remove any existing RSI pane before re-adding to avoid duplicates on settings change
-                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) {}
-                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) { }
+                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) { }
                 const lineColor = rsiCfg.rsiLineColor || '#2962FF';
                 indicatorArg = {
                   name: indicatorName,
                   calcParams: config.params.calcParams,
                   styles: {
                     lines: [
-                      { 
-                        color: lineColor, 
+                      {
+                        color: lineColor,
                         size: 2,
                         style: 'solid'
                       }
@@ -5019,8 +5026,8 @@ export const KLineChartComponent = ({
               }
               if (key === 'atrEnhanced') {
                 // Remove any existing ATR pane before re-adding to avoid duplicates on settings change
-                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) {}
-                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) { }
+                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) { }
                 const lineColor = atrCfg.atrLineColor || '#2962FF';
                 indicatorArg = {
                   name: indicatorName,
@@ -5034,8 +5041,8 @@ export const KLineChartComponent = ({
               }
               if (key === 'macdEnhanced') {
                 // Remove any existing MACD pane/instance first to avoid duplicates or stale styles
-                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) {}
-                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ paneId: `pane-${key}` }); } catch (_) { }
+                try { chartRef.current.removeIndicator({ name: indicatorName }); } catch (_) { }
                 indicatorArg = {
                   name: indicatorName,
                   calcParams: config.params.calcParams,
@@ -5060,22 +5067,22 @@ export const KLineChartComponent = ({
                 try {
                   const paneId = `pane-${key}`;
                   // Remove previous bounds/zones if any
-                  try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId }); } catch (_) {}
-                  try { chartRef.current.removeIndicator({ name: 'RSI_ZONES', paneId }); } catch (_) {}
-                  
+                  try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId }); } catch (_) { }
+                  try { chartRef.current.removeIndicator({ name: 'RSI_ZONES', paneId }); } catch (_) { }
+
                   const ob = Math.max(0, Math.min(100, Number(rsiCfg.overbought ?? 70)));
                   const os = Math.max(0, Math.min(100, Number(rsiCfg.oversold ?? 30)));
                   const obColor = rsiCfg.obLineColor || 'rgba(239, 83, 80, 0.8)';
                   const osColor = rsiCfg.osLineColor || 'rgba(38, 166, 154, 0.8)';
                   const midColor = 'rgba(120, 120, 120, 0.3)';
-                  
+
                   // Add background zones first (rendered behind)
                   const zonesArg = {
                     name: 'RSI_ZONES',
                     calcParams: [ob, os]
                   };
                   chartRef.current.createIndicator(zonesArg, true, { id: paneId });
-                  
+
                   // Then add boundary lines (rendered on top)
                   const boundsArg = {
                     name: 'RSI_BOUNDS',
@@ -5112,11 +5119,11 @@ export const KLineChartComponent = ({
               console.log(`📈 KLineChart: ${key} indicator removed`);
               // Also remove RSI_BOUNDS and RSI_ZONES when RSI is disabled
               if (key === 'rsiEnhanced') {
-                try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId: `pane-${key}` }); } catch (_) {}
-                try { chartRef.current.removeIndicator({ name: 'RSI_ZONES', paneId: `pane-${key}` }); } catch (_) {}
+                try { chartRef.current.removeIndicator({ name: 'RSI_BOUNDS', paneId: `pane-${key}` }); } catch (_) { }
+                try { chartRef.current.removeIndicator({ name: 'RSI_ZONES', paneId: `pane-${key}` }); } catch (_) { }
               }
             }
-            
+
           } catch (_error) {
             // Silently ignore if indicator doesn't exist
           }
@@ -5148,8 +5155,8 @@ export const KLineChartComponent = ({
       try {
         const ids = Array.isArray(orbLabelOverlayIdsRef.current) ? orbLabelOverlayIdsRef.current : [];
         ids.forEach((id) => {
-          try { chart.removeOverlay({ id }); } catch (_) {}
-          try { chart.removeOverlay(id); } catch (_) {}
+          try { chart.removeOverlay({ id }); } catch (_) { }
+          try { chart.removeOverlay(id); } catch (_) { }
         });
       } catch (_) { /* ignore */ }
       orbLabelOverlayIdsRef.current = [];
@@ -5165,8 +5172,8 @@ export const KLineChartComponent = ({
       try {
         const ids = Array.isArray(orbPositionOverlayIdsRef.current) ? orbPositionOverlayIdsRef.current : [];
         ids.forEach((id) => {
-          try { chart.removeOverlay({ id }); } catch (_) {}
-          try { chart.removeOverlay(id); } catch (_) {}
+          try { chart.removeOverlay({ id }); } catch (_) { }
+          try { chart.removeOverlay(id); } catch (_) { }
         });
       } catch (_) { /* ignore */ }
       orbPositionOverlayIdsRef.current = [];
@@ -5311,8 +5318,8 @@ export const KLineChartComponent = ({
       try {
         const ids = Array.isArray(srLabelOverlayIdsRef.current) ? srLabelOverlayIdsRef.current : [];
         ids.forEach((id) => {
-          try { chart.removeOverlay({ id }); } catch (_) {}
-          try { chart.removeOverlay(id); } catch (_) {}
+          try { chart.removeOverlay({ id }); } catch (_) { }
+          try { chart.removeOverlay(id); } catch (_) { }
         });
       } catch (_) { /* ignore */ }
       srLabelOverlayIdsRef.current = [];
@@ -5573,6 +5580,18 @@ export const KLineChartComponent = ({
     const el = chartContainerRef.current;
     if (!chart || !el) return;
 
+    // Check if already at maximum bar space limit to prevent desync
+    try {
+      if (typeof chart.getBarSpace === 'function') {
+        const bs = chart.getBarSpace();
+        const currentBarSpace = bs?.bar ?? bs;
+        if (typeof currentBarSpace === 'number' && currentBarSpace >= MAX_BAR_SPACE) {
+          console.log('📊 Zoom in limit reached (max bar space:', MAX_BAR_SPACE, ')');
+          return;
+        }
+      }
+    } catch (_) { /* ignore */ }
+
     const width = el.clientWidth || 0;
     const totalHeight = el.clientHeight || 0;
 
@@ -5600,6 +5619,19 @@ export const KLineChartComponent = ({
     const chart = chartRef.current;
     const el = chartContainerRef.current;
     if (!chart || !el) return;
+
+    // Check if already at minimum bar space limit to prevent desync
+    // Use a small buffer (1.1) to prevent attempts that will definitely fail
+    try {
+      if (typeof chart.getBarSpace === 'function') {
+        const bs = chart.getBarSpace();
+        const currentBarSpace = bs?.bar ?? bs;
+        if (typeof currentBarSpace === 'number' && currentBarSpace <= MIN_BAR_SPACE * 1.1) {
+          console.log('📊 Zoom out limit reached (min bar space:', MIN_BAR_SPACE, ')');
+          return;
+        }
+      }
+    } catch (_) { /* ignore */ }
 
     const width = el.clientWidth || 0;
     const totalHeight = el.clientHeight || 0;
@@ -5712,13 +5744,12 @@ export const KLineChartComponent = ({
         {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
           ref={chartContainerRef}
-          className={`absolute inset-0 ${
-            settings?.cursorType === 'grab'
+          className={`absolute inset-0 ${settings?.cursorType === 'grab'
               ? 'kline-cursor-grab'
               : settings?.cursorType === 'pointer'
-              ? 'kline-cursor-pointer'
-              : 'kline-cursor-crosshair'
-          }`}
+                ? 'kline-cursor-pointer'
+                : 'kline-cursor-crosshair'
+            }`}
           style={{
             backgroundColor: '#ffffff',
             height: '100%',
@@ -5758,7 +5789,7 @@ export const KLineChartComponent = ({
             try {
               // Set this chart as active for drawing tools
               setActiveChartIndex(chartIndex);
-              
+
               const chart = chartRef.current;
               const container = chartContainerRef.current;
               if (!chart || !container) return;
@@ -5791,7 +5822,7 @@ export const KLineChartComponent = ({
               try {
                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-              } catch (_) {}
+              } catch (_) { }
               if (!Array.isArray(overlays) || overlays.length === 0) {
                 setSelectedOverlayPanel(null);
                 return;
@@ -6031,7 +6062,7 @@ export const KLineChartComponent = ({
               } else {
                 setSelectedOverlayPanel(null);
               }
-            } catch (_) {}
+            } catch (_) { }
           }}
           onMouseDown={(e) => {
             // Start drag for long/short overlays when pressing inside their area
@@ -6054,7 +6085,7 @@ export const KLineChartComponent = ({
               try {
                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-              } catch (_) {}
+              } catch (_) { }
               overlays = Array.isArray(overlays) ? overlays : [];
               const posOverlays = overlays.filter((ov) => ov && (ov.name === 'longPosition' || ov.name === 'shortPosition'));
               let found = null;
@@ -6144,13 +6175,13 @@ export const KLineChartComponent = ({
                   try {
                     if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                     else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                  } catch (_) {}
-                  
+                  } catch (_) { }
+
                   // For position overlays (long/short), ALWAYS use proximity search instead of ID lookup
                   // because left-handle drags update both points and widthPx, which causes KLineChart
                   // to recreate the overlay with a new ID.
                   const isPositionOverlay = dragInfo.name === 'longPosition' || dragInfo.name === 'shortPosition';
-                  
+
                   if (isPositionOverlay) {
                     // Always search by proximity for position overlays
                     try {
@@ -6220,15 +6251,15 @@ export const KLineChartComponent = ({
                     } catch (_) { /* ignore */ }
                   } else {
                     // For non-position overlays, use ID lookup as before
-                  const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === dragInfo.id) : null;
-                  if (ov) {
-                    setSelectedOverlayPanel({
-                      id: ov.id,
-                      name: ov.name,
-                      paneId: ov.paneId || ov.pane?.id,
-                      x: mouseX,
-                      y: mouseY
-                    });
+                    const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === dragInfo.id) : null;
+                    if (ov) {
+                      setSelectedOverlayPanel({
+                        id: ov.id,
+                        name: ov.name,
+                        paneId: ov.paneId || ov.pane?.id,
+                        x: mouseX,
+                        y: mouseY
+                      });
                     }
                   }
                 }
@@ -6256,7 +6287,7 @@ export const KLineChartComponent = ({
               const rect = container.getBoundingClientRect();
               const curX = e.clientX - rect.left;
               const curY = e.clientY - rect.top;
-              
+
               // Check if pending drag should activate based on distance threshold
               if (drag && drag.pending && !drag.active) {
                 const dx = curX - drag.startMouseX;
@@ -6268,7 +6299,7 @@ export const KLineChartComponent = ({
                 }
                 return; // Don't process drag yet, wait for activation
               }
-              
+
               // Drag move/resize for position overlays (long/short)
               if (drag && drag.active) {
                 const dx = curX - drag.startMouseX;
@@ -6391,12 +6422,12 @@ export const KLineChartComponent = ({
               const hovering = belowHeight > 0 && y >= Math.max(0, totalHeight - belowHeight - HOVER_EXTEND_TOP);
               if (hovering !== isHoveringBelowPanes) setIsHoveringBelowPanes(hovering);
               // On-chart overlay hover detection (approximate: any hover in main pane and any on-chart overlay active)
-              const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+              const ON_CHART_KEYS = ['emaTouch', 'bbPro', 'maEnhanced', 'orbEnhanced', 'stEnhanced', 'srEnhanced'];
               const hasOnChart = ON_CHART_KEYS.some((k) => settings?.indicators?.[k]);
               const mainPaneHeight = Math.max(0, totalHeight - belowHeight);
               const hoveringMain = hasOnChart && y >= 0 && y < mainPaneHeight;
               if (hoveringMain !== isHoveringOnChartOverlays) setIsHoveringOnChartOverlays(hoveringMain);
-            } catch (_) {}
+            } catch (_) { }
           }}
           onMouseLeave={() => { setIsHoveringBelowPanes(false); setIsHoveringOnChartOverlays(false); if (positionDragRef.current?.active || positionDragRef.current?.pending) { positionDragRef.current = { active: false, pending: false, type: 'move', id: null, paneId: null, name: null, startMouseX: 0, startMouseY: 0, startEntryX: 0, startEntryY: 0, lastEndTime: 0 }; } }}
         >
@@ -6415,113 +6446,113 @@ export const KLineChartComponent = ({
               />
             </div>
           )}
-          
-        {/* Loading Block Message Toast */}
-        {loadingBlockMessage && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[60] animate-fade-in">
-            <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span className="font-medium text-sm">{loadingBlockMessage}</span>
-            </div>
-          </div>
-        )}
 
-        {/* MACD - Pro Settings Modal */}
-        {showMacdSettings && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-            <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-[#19235d]">MACD Settings</h3>
-                <button
-                  type="button"
-                  className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
-                  onClick={() => setShowMacdSettings(false)}
-                >
-                  Close
-                </button>
-              </div>
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label htmlFor="macd-fast" className="block text-sm text-gray-700 mb-1">Fast Length</label>
-                    <NumericInput
-                      id="macd-fast"
-                      min={1}
-                      value={localMacdSettings.fastLength}
-                      onChange={(n) => setLocalMacdSettings((p) => ({ ...p, fastLength: Math.max(1, Math.floor(n)) }))}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="macd-slow" className="block text-sm text-gray-700 mb-1">Slow Length</label>
-                    <NumericInput
-                      id="macd-slow"
-                      min={1}
-                      value={localMacdSettings.slowLength}
-                      onChange={(n) => setLocalMacdSettings((p) => ({ ...p, slowLength: Math.max(1, Math.floor(n)) }))}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="macd-signal" className="block text-sm text-gray-700 mb-1">Signal Length</label>
-                    <NumericInput
-                      id="macd-signal"
-                      min={1}
-                      value={localMacdSettings.signalLength}
-                      onChange={(n) => setLocalMacdSettings((p) => ({ ...p, signalLength: Math.max(1, Math.floor(n)) }))}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="macd-source" className="block text-sm text-gray-700 mb-1">Source</label>
-                  <select
-                    id="macd-source"
-                    value={localMacdSettings.source}
-                    onChange={(e) => setLocalMacdSettings((p) => ({ ...p, source: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="close">Close</option>
-                    <option value="open">Open</option>
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                    <option value="hl2">HL2 (H+L)/2</option>
-                    <option value="hlc3">HLC3 (H+L+C)/3</option>
-                    <option value="ohlc4">OHLC4 (O+H+L+C)/4</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
-                  onClick={() => setShowMacdSettings(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
-                  onClick={() => {
-                    const payload = {
-                      fastLength: Math.max(1, Number(localMacdSettings.fastLength) || 12),
-                      slowLength: Math.max(1, Number(localMacdSettings.slowLength) || 26),
-                      signalLength: Math.max(1, Number(localMacdSettings.signalLength) || 9),
-                      source: String(localMacdSettings.source || 'close'),
-                    };
-                    try { updateIndicatorSettings('macdEnhanced', payload); } catch (_) {}
-                    setShowMacdSettings(false);
-                  }}
-                >
-                  Save
-                </button>
-              </div>
+          {/* Loading Block Message Toast */}
+          {loadingBlockMessage && (
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[60] animate-fade-in">
+              <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span className="font-medium text-sm">{loadingBlockMessage}</span>
               </div>
             </div>
           )}
-          
+
+          {/* MACD - Pro Settings Modal */}
+          {showMacdSettings && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+              <div className="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-[#19235d]">MACD Settings</h3>
+                  <button
+                    type="button"
+                    className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setShowMacdSettings(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label htmlFor="macd-fast" className="block text-sm text-gray-700 mb-1">Fast Length</label>
+                      <NumericInput
+                        id="macd-fast"
+                        min={1}
+                        value={localMacdSettings.fastLength}
+                        onChange={(n) => setLocalMacdSettings((p) => ({ ...p, fastLength: Math.max(1, Math.floor(n)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="macd-slow" className="block text-sm text-gray-700 mb-1">Slow Length</label>
+                      <NumericInput
+                        id="macd-slow"
+                        min={1}
+                        value={localMacdSettings.slowLength}
+                        onChange={(n) => setLocalMacdSettings((p) => ({ ...p, slowLength: Math.max(1, Math.floor(n)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="macd-signal" className="block text-sm text-gray-700 mb-1">Signal Length</label>
+                      <NumericInput
+                        id="macd-signal"
+                        min={1}
+                        value={localMacdSettings.signalLength}
+                        onChange={(n) => setLocalMacdSettings((p) => ({ ...p, signalLength: Math.max(1, Math.floor(n)) }))}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="macd-source" className="block text-sm text-gray-700 mb-1">Source</label>
+                    <select
+                      id="macd-source"
+                      value={localMacdSettings.source}
+                      onChange={(e) => setLocalMacdSettings((p) => ({ ...p, source: e.target.value }))}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="close">Close</option>
+                      <option value="open">Open</option>
+                      <option value="high">High</option>
+                      <option value="low">Low</option>
+                      <option value="hl2">HL2 (H+L)/2</option>
+                      <option value="hlc3">HLC3 (H+L+C)/3</option>
+                      <option value="ohlc4">OHLC4 (O+H+L+C)/4</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md"
+                    onClick={() => setShowMacdSettings(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+                    onClick={() => {
+                      const payload = {
+                        fastLength: Math.max(1, Number(localMacdSettings.fastLength) || 12),
+                        slowLength: Math.max(1, Number(localMacdSettings.slowLength) || 26),
+                        signalLength: Math.max(1, Number(localMacdSettings.signalLength) || 9),
+                        source: String(localMacdSettings.source || 'close'),
+                      };
+                      try { updateIndicatorSettings('macdEnhanced', payload); } catch (_) { }
+                      setShowMacdSettings(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* SuperTrend - Pro Settings Modal */}
           {showStSettings && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
@@ -6575,7 +6606,7 @@ export const KLineChartComponent = ({
                         atrPeriod: Math.max(1, Number(localStSettings.atrPeriod) || 10),
                         atrMultiplier: Math.max(0.5, Number(localStSettings.atrMultiplier) || 3.0),
                       };
-                      try { updateIndicatorSettings('stEnhanced', payload); } catch (_) {}
+                      try { updateIndicatorSettings('stEnhanced', payload); } catch (_) { }
                       setShowStSettings(false);
                     }}
                   >
@@ -6585,7 +6616,7 @@ export const KLineChartComponent = ({
               </div>
             </div>
           )}
-          
+
           {/* Breakout Strategy (ORB) Settings Modal */}
           {showOrbSettings && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
@@ -6681,7 +6712,7 @@ export const KLineChartComponent = ({
                         return;
                       }
                       setOrbValidationError('');
-                      try { updateIndicatorSettings('orbEnhanced', payload); } catch (_) {}
+                      try { updateIndicatorSettings('orbEnhanced', payload); } catch (_) { }
                       setShowOrbSettings(false);
                     }}
                   >
@@ -6768,7 +6799,7 @@ export const KLineChartComponent = ({
                         source: String(localBbSettings.source || 'close'),
                         stdDev: Math.max(0.1, Number(localBbSettings.stdDev) || 2.0),
                       };
-                      try { updateIndicatorSettings('bbPro', payload); } catch (_) {}
+                      try { updateIndicatorSettings('bbPro', payload); } catch (_) { }
                       setShowBbSettings(false);
                     }}
                   >
@@ -6938,7 +6969,7 @@ export const KLineChartComponent = ({
                         ma4Enabled: Boolean(localMaSettings.ma4Enabled),
                         ma4Length: Math.max(1, Number(localMaSettings.ma4Length) || 100),
                       };
-                      try { updateIndicatorSettings('maEnhanced', payload); } catch (_) {}
+                      try { updateIndicatorSettings('maEnhanced', payload); } catch (_) { }
                       setShowMaSettings(false);
                     }}
                   >
@@ -6948,7 +6979,7 @@ export const KLineChartComponent = ({
               </div>
             </div>
           )}
-          
+
           {!isInitialLoad && error && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4 z-10">
               <div className="text-center mb-4">
@@ -6956,7 +6987,7 @@ export const KLineChartComponent = ({
                 <p className="text-red-700 mt-4 text-lg font-medium">Chart Error</p>
                 <p className="text-red-500 text-sm mt-1">{error}</p>
               </div>
-              
+
               <button
                 onClick={() => {
                   setError(null);
@@ -6969,7 +7000,7 @@ export const KLineChartComponent = ({
               </button>
             </div>
           )}
-          
+
           {/* RSI Enhanced alerts (top-right) */}
           {settings?.indicators?.rsiEnhanced && (
             <div className="absolute top-2 right-2 z-50 space-y-1 pointer-events-none">
@@ -7076,31 +7107,33 @@ export const KLineChartComponent = ({
                 { label: 'Range High', value: orbStats.openingHigh != null ? formatPrice(orbStats.openingHigh, pricePrecision) : '--' },
                 { label: 'Range Low', value: orbStats.openingLow != null ? formatPrice(orbStats.openingLow, pricePrecision) : '--' },
                 { label: 'Range Size', value: orbStats.rangeSize != null ? formatPrice(orbStats.rangeSize, pricePrecision) : '--' },
-                { label: 'Trade Status', value: (() => {
-                  if (orbStats.buyTaken) {
-                    if (orbStats.buyTPHit) return 'BUY TP HIT';
-                    if (orbStats.buySLHit) return 'BUY SL HIT';
-                    return 'BUY ACTIVE';
-                  }
-                  if (orbStats.sellTaken) {
-                    if (orbStats.sellTPHit) return 'SELL TP HIT';
-                    if (orbStats.sellSLHit) return 'SELL SL HIT';
-                    return 'SELL ACTIVE';
-                  }
-                  return 'Waiting';
-                })(), cellBg: (() => {
-                  if (orbStats.buyTaken) {
-                    if (orbStats.buyTPHit) return 'rgba(38,166,154,0.30)';
-                    if (orbStats.buySLHit) return 'rgba(239,83,80,0.30)';
-                    return 'rgba(38,166,154,0.20)';
-                  }
-                  if (orbStats.sellTaken) {
-                    if (orbStats.sellTPHit) return 'rgba(239,83,80,0.30)';
-                    if (orbStats.sellSLHit) return 'rgba(38,166,154,0.30)';
-                    return 'rgba(239,83,80,0.20)';
-                  }
-                  return undefined;
-                })() },
+                {
+                  label: 'Trade Status', value: (() => {
+                    if (orbStats.buyTaken) {
+                      if (orbStats.buyTPHit) return 'BUY TP HIT';
+                      if (orbStats.buySLHit) return 'BUY SL HIT';
+                      return 'BUY ACTIVE';
+                    }
+                    if (orbStats.sellTaken) {
+                      if (orbStats.sellTPHit) return 'SELL TP HIT';
+                      if (orbStats.sellSLHit) return 'SELL SL HIT';
+                      return 'SELL ACTIVE';
+                    }
+                    return 'Waiting';
+                  })(), cellBg: (() => {
+                    if (orbStats.buyTaken) {
+                      if (orbStats.buyTPHit) return 'rgba(38,166,154,0.30)';
+                      if (orbStats.buySLHit) return 'rgba(239,83,80,0.30)';
+                      return 'rgba(38,166,154,0.20)';
+                    }
+                    if (orbStats.sellTaken) {
+                      if (orbStats.sellTPHit) return 'rgba(239,83,80,0.30)';
+                      if (orbStats.sellSLHit) return 'rgba(38,166,154,0.30)';
+                      return 'rgba(239,83,80,0.20)';
+                    }
+                    return undefined;
+                  })()
+                },
                 { label: 'Entry', value: (orbStats.buyTaken && orbStats.buyEntry != null) ? formatPrice(orbStats.buyEntry, pricePrecision) : (orbStats.sellTaken && orbStats.sellEntry != null) ? formatPrice(orbStats.sellEntry, pricePrecision) : '--' },
                 { label: 'Target', value: (orbStats.buyTaken && orbStats.buyTP != null) ? formatPrice(orbStats.buyTP, pricePrecision) : (orbStats.sellTaken && orbStats.sellTP != null) ? formatPrice(orbStats.sellTP, pricePrecision) : '--' },
                 { label: 'Stop Loss', value: (orbStats.buyTaken && orbStats.buySL != null) ? formatPrice(orbStats.buySL, pricePrecision) : (orbStats.sellTaken && orbStats.sellSL != null) ? formatPrice(orbStats.sellSL, pricePrecision) : '--' },
@@ -7152,7 +7185,7 @@ export const KLineChartComponent = ({
                 className="w-7 h-7 grid place-items-center rounded-lg bg-white bg-opacity-50 border border-gray-200 shadow-sm hover:bg-gray-50 hover:bg-opacity-70 active:bg-gray-100 active:bg-opacity-70 text-gray-700 transition-all duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14" /></svg>
               </button>
 
               {/* Zoom in card */}
@@ -7163,7 +7196,7 @@ export const KLineChartComponent = ({
                 className="w-7 h-7 grid place-items-center rounded-lg bg-white bg-opacity-50 border border-gray-200 shadow-sm hover:bg-gray-50 hover:bg-opacity-70 active:bg-gray-100 active:bg-opacity-70 text-gray-700 transition-all duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14M5 12h14"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14M5 12h14" /></svg>
               </button>
 
               {/* Pan left card */}
@@ -7174,7 +7207,7 @@ export const KLineChartComponent = ({
                 className="w-7 h-7 grid place-items-center rounded-lg bg-white bg-opacity-50 border border-gray-200 shadow-sm hover:bg-gray-50 hover:bg-opacity-70 active:bg-gray-100 active:bg-opacity-70 text-gray-700 transition-all duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
               </button>
 
               {/* Pan right card */}
@@ -7185,7 +7218,7 @@ export const KLineChartComponent = ({
                 className="w-7 h-7 grid place-items-center rounded-lg bg-white bg-opacity-50 border border-gray-200 shadow-sm hover:bg-gray-50 hover:bg-opacity-70 active:bg-gray-100 active:bg-opacity-70 text-gray-700 transition-all duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
               </button>
 
               {/* Reload / reset card */}
@@ -7196,7 +7229,7 @@ export const KLineChartComponent = ({
                 className="w-7 h-7 grid place-items-center rounded-lg bg-white bg-opacity-50 border border-gray-200 shadow-sm hover:bg-gray-50 hover:bg-opacity-70 active:bg-gray-100 active:bg-opacity-70 text-gray-700 transition-all duration-200"
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 00-14.906-2M4 16a8 8 0 0014.906 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 00-14.906-2M4 16a8 8 0 0014.906 2" /></svg>
               </button>
             </div>
           </div>
@@ -7230,45 +7263,45 @@ export const KLineChartComponent = ({
                         className={`absolute top-0 left-0 transition-opacity duration-150 ${isHoveringBelowPanes ? 'opacity-100' : 'opacity-0'}`}
                         style={{ pointerEvents: isHoveringBelowPanes ? 'auto' : 'none', top: '-20px', left: '8px' }}
                       >
-            <div className="flex items-center gap-1.5 text-gray-700">
-              {/* Indicator name (plain text, no extra badge/dot) */}
-              <span className="text-[11px] text-gray-700 whitespace-nowrap">{label}</span>
-              {key === 'rsiEnhanced' && (
-                <label
-                  className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"
-                  title="RSI Line Color"
-                >
-                  <input
-                    type="color"
-                    value={settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF'}
-                    onChange={(e) => { try { updateIndicatorSettings('rsiEnhanced', { rsiLineColor: e.target.value }); } catch (_) {} }}
-                    className="w-0 h-0 opacity-0 absolute"
-                    aria-label="RSI Line Color"
-                  />
-                  <span
-                    className="block w-4 h-4"
-                    style={{ backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF' }}
-                  />
-                </label>
-              )}
-              {key === 'atrEnhanced' && (
-                <label
-                  className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"
-                  title="ATR Line Color"
-                >
-                  <input
-                    type="color"
-                    value={settings?.indicatorSettings?.atrEnhanced?.atrLineColor || '#2962FF'}
-                    onChange={(e) => { try { updateIndicatorSettings('atrEnhanced', { atrLineColor: e.target.value }); } catch (_) {} }}
-                    className="w-0 h-0 opacity-0 absolute"
-                    aria-label="ATR Line Color"
-                  />
-                  <span
-                    className="block w-4 h-4"
-                    style={{ backgroundColor: settings?.indicatorSettings?.atrEnhanced?.atrLineColor || '#2962FF' }}
-                  />
-                </label>
-              )}
+                        <div className="flex items-center gap-1.5 text-gray-700">
+                          {/* Indicator name (plain text, no extra badge/dot) */}
+                          <span className="text-[11px] text-gray-700 whitespace-nowrap">{label}</span>
+                          {key === 'rsiEnhanced' && (
+                            <label
+                              className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"
+                              title="RSI Line Color"
+                            >
+                              <input
+                                type="color"
+                                value={settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF'}
+                                onChange={(e) => { try { updateIndicatorSettings('rsiEnhanced', { rsiLineColor: e.target.value }); } catch (_) { } }}
+                                className="w-0 h-0 opacity-0 absolute"
+                                aria-label="RSI Line Color"
+                              />
+                              <span
+                                className="block w-4 h-4"
+                                style={{ backgroundColor: settings?.indicatorSettings?.rsiEnhanced?.rsiLineColor || '#2962FF' }}
+                              />
+                            </label>
+                          )}
+                          {key === 'atrEnhanced' && (
+                            <label
+                              className="w-4 h-4 rounded border border-gray-200 overflow-hidden cursor-pointer"
+                              title="ATR Line Color"
+                            >
+                              <input
+                                type="color"
+                                value={settings?.indicatorSettings?.atrEnhanced?.atrLineColor || '#2962FF'}
+                                onChange={(e) => { try { updateIndicatorSettings('atrEnhanced', { atrLineColor: e.target.value }); } catch (_) { } }}
+                                className="w-0 h-0 opacity-0 absolute"
+                                aria-label="ATR Line Color"
+                              />
+                              <span
+                                className="block w-4 h-4"
+                                style={{ backgroundColor: settings?.indicatorSettings?.atrEnhanced?.atrLineColor || '#2962FF' }}
+                              />
+                            </label>
+                          )}
                           <button
                             type="button"
                             title="Configure"
@@ -7289,7 +7322,7 @@ export const KLineChartComponent = ({
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* RSI - Pro: stats table (top-right of RSI pane) */}
                       {isFullscreen && key === 'rsiEnhanced' && _rsiValue !== null && (
                         <div className="absolute pointer-events-none" style={{ right: '88px', top: '2px' }}>
@@ -7374,8 +7407,8 @@ export const KLineChartComponent = ({
                           </div>
                         </div>
                       )}
-    </div>
-    
+                    </div>
+
                   );
                 })}
               </div>
@@ -7450,7 +7483,7 @@ export const KLineChartComponent = ({
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-              {/* Line color moved to pane color picker; width setting removed */}
+                    {/* Line color moved to pane color picker; width setting removed */}
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
@@ -7473,7 +7506,7 @@ export const KLineChartComponent = ({
                         rsiLineColor: localRsiSettings.rsiLineColor || '#2962FF',
                         rsiLineWidth: Math.max(1, Number(localRsiSettings.rsiLineWidth) || 2),
                       };
-                      try { updateIndicatorSettings('rsiEnhanced', payload); } catch (_) {}
+                      try { updateIndicatorSettings('rsiEnhanced', payload); } catch (_) { }
                       setShowRsiSettings(false);
                     }}
                   >
@@ -7540,7 +7573,7 @@ export const KLineChartComponent = ({
                         length: Math.max(1, Number(localAtrSettings.length) || 14),
                         smoothingMethod: String(localAtrSettings.smoothingMethod || 'RMA'),
                       };
-                      try { updateIndicatorSettings('atrEnhanced', payload); } catch (_) {}
+                      try { updateIndicatorSettings('atrEnhanced', payload); } catch (_) { }
                       setShowAtrSettings(false);
                     }}
                   >
@@ -7657,7 +7690,7 @@ export const KLineChartComponent = ({
                         tp2Multiplier: Math.max(0.1, Number(localEmaTouchSettings.tp2Multiplier) || 2.5),
                         tp3Multiplier: Math.max(0.1, Number(localEmaTouchSettings.tp3Multiplier) || 4.0),
                       };
-                      try { updateIndicatorSettings('emaTouch', payload); } catch (_) {}
+                      try { updateIndicatorSettings('emaTouch', payload); } catch (_) { }
                       setShowEmaTouchSettings(false);
                     }}
                   >
@@ -7670,7 +7703,7 @@ export const KLineChartComponent = ({
 
           {/* Hover actions for on-chart overlay indicators (main price pane) */}
           {(() => {
-            const ON_CHART_KEYS = ['emaTouch','bbPro','maEnhanced','orbEnhanced','stEnhanced','srEnhanced'];
+            const ON_CHART_KEYS = ['emaTouch', 'bbPro', 'maEnhanced', 'orbEnhanced', 'stEnhanced', 'srEnhanced'];
             const LABELS = {
               emaTouch: 'Trend Strategy',
               bbPro: 'Bollinger Bands - Pro',
@@ -7756,7 +7789,7 @@ export const KLineChartComponent = ({
                               try {
                                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
+                              } catch (_) { }
                               const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
                               const hex = ov?.styles?.rect?.borderColor || ov?.borderColor;
                               if (typeof hex === 'string') return hex;
@@ -7768,40 +7801,42 @@ export const KLineChartComponent = ({
                         onChange={(e) => {
                           try {
                             e.stopPropagation();
-                          } catch (_) {}
+                          } catch (_) { }
                           try {
                             const hex = e.target.value;
                             const chart = chartRef.current;
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
-                            const r = parseInt(hex.slice(1,3),16);
-                            const g = parseInt(hex.slice(3,5),16);
-                            const b = parseInt(hex.slice(5,7),16);
+                            const r = parseInt(hex.slice(1, 3), 16);
+                            const g = parseInt(hex.slice(3, 5), 16);
+                            const b = parseInt(hex.slice(5, 7), 16);
                             const fill = `rgba(${r},${g},${b},0.3)`;
                             chart.overrideOverlay({ id, styles: { rect: { color: fill, borderColor: hex } } });
-                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) { }
                           } catch (_) { /* ignore */ }
                         }}
                       />
                       <span
                         className="block w-[18px] h-[18px]"
-                        style={{ backgroundColor: (() => {
-                          try {
-                            const chart = chartRef.current;
-                            const id = selectedOverlayPanel?.id;
-                            if (chart && id) {
-                              let overlays = [];
-                              try {
-                                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
-                              const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
-                              const hex = ov?.styles?.rect?.borderColor || ov?.borderColor;
-                              if (typeof hex === 'string') return hex;
-                            }
-                          } catch (_) { /* ignore */ }
-                          return '#4ECDC4';
-                        })() }}
+                        style={{
+                          backgroundColor: (() => {
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (chart && id) {
+                                let overlays = [];
+                                try {
+                                  if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                                  else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                                } catch (_) { }
+                                const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                                const hex = ov?.styles?.rect?.borderColor || ov?.borderColor;
+                                if (typeof hex === 'string') return hex;
+                              }
+                            } catch (_) { /* ignore */ }
+                            return '#4ECDC4';
+                          })()
+                        }}
                       />
                     </label>
                   </div>
@@ -7826,7 +7861,7 @@ export const KLineChartComponent = ({
                               try {
                                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
+                              } catch (_) { }
                               const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
                               const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
                               if (typeof hex === 'string') return hex;
@@ -7836,36 +7871,38 @@ export const KLineChartComponent = ({
                         })()}
                         onClick={(e) => { e.stopPropagation(); }}
                         onChange={(e) => {
-                          try { e.stopPropagation(); } catch (_) {}
+                          try { e.stopPropagation(); } catch (_) { }
                           try {
                             const hex = e.target.value;
                             const chart = chartRef.current;
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
-                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) { }
                           } catch (_) { /* ignore */ }
                         }}
                       />
                       <span
                         className="block w-[18px] h-[18px]"
-                        style={{ backgroundColor: (() => {
-                          try {
-                            const chart = chartRef.current;
-                            const id = selectedOverlayPanel?.id;
-                            if (chart && id) {
-                              let overlays = [];
-                              try {
-                                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
-                              const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
-                              const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
-                              if (typeof hex === 'string') return hex;
-                            }
-                          } catch (_) { /* ignore */ }
-                          return '#2962FF';
-                        })() }}
+                        style={{
+                          backgroundColor: (() => {
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (chart && id) {
+                                let overlays = [];
+                                try {
+                                  if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                                  else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                                } catch (_) { }
+                                const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                                const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                                if (typeof hex === 'string') return hex;
+                              }
+                            } catch (_) { /* ignore */ }
+                            return '#2962FF';
+                          })()
+                        }}
                       />
                     </label>
                   </div>
@@ -7890,7 +7927,7 @@ export const KLineChartComponent = ({
                               try {
                                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
+                              } catch (_) { }
                               const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
                               const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
                               if (typeof hex === 'string') return hex;
@@ -7900,36 +7937,38 @@ export const KLineChartComponent = ({
                         })()}
                         onClick={(e) => { e.stopPropagation(); }}
                         onChange={(e) => {
-                          try { e.stopPropagation(); } catch (_) {}
+                          try { e.stopPropagation(); } catch (_) { }
                           try {
                             const hex = e.target.value;
                             const chart = chartRef.current;
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
-                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) { }
                           } catch (_) { /* ignore */ }
                         }}
                       />
                       <span
                         className="block w-[18px] h-[18px]"
-                        style={{ backgroundColor: (() => {
-                          try {
-                            const chart = chartRef.current;
-                            const id = selectedOverlayPanel?.id;
-                            if (chart && id) {
-                              let overlays = [];
-                              try {
-                                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
-                              const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
-                              const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
-                              if (typeof hex === 'string') return hex;
-                            }
-                          } catch (_) { /* ignore */ }
-                          return '#f97316';
-                        })() }}
+                        style={{
+                          backgroundColor: (() => {
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (chart && id) {
+                                let overlays = [];
+                                try {
+                                  if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                                  else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                                } catch (_) { }
+                                const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                                const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                                if (typeof hex === 'string') return hex;
+                              }
+                            } catch (_) { /* ignore */ }
+                            return '#f97316';
+                          })()
+                        }}
                       />
                     </label>
                   </div>
@@ -7954,7 +7993,7 @@ export const KLineChartComponent = ({
                               try {
                                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
+                              } catch (_) { }
                               const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
                               const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
                               if (typeof hex === 'string') return hex;
@@ -7964,36 +8003,38 @@ export const KLineChartComponent = ({
                         })()}
                         onClick={(e) => { e.stopPropagation(); }}
                         onChange={(e) => {
-                          try { e.stopPropagation(); } catch (_) {}
+                          try { e.stopPropagation(); } catch (_) { }
                           try {
                             const hex = e.target.value;
                             const chart = chartRef.current;
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
-                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) { }
                           } catch (_) { /* ignore */ }
                         }}
                       />
                       <span
                         className="block w-[18px] h-[18px]"
-                        style={{ backgroundColor: (() => {
-                          try {
-                            const chart = chartRef.current;
-                            const id = selectedOverlayPanel?.id;
-                            if (chart && id) {
-                              let overlays = [];
-                              try {
-                                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
-                              const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
-                              const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
-                              if (typeof hex === 'string') return hex;
-                            }
-                          } catch (_) { /* ignore */ }
-                          return '#f97316';
-                        })() }}
+                        style={{
+                          backgroundColor: (() => {
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (chart && id) {
+                                let overlays = [];
+                                try {
+                                  if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                                  else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                                } catch (_) { }
+                                const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                                const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                                if (typeof hex === 'string') return hex;
+                              }
+                            } catch (_) { /* ignore */ }
+                            return '#f97316';
+                          })()
+                        }}
                       />
                     </label>
                   </div>
@@ -8018,7 +8059,7 @@ export const KLineChartComponent = ({
                               try {
                                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
+                              } catch (_) { }
                               const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
                               const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
                               if (typeof hex === 'string') return hex;
@@ -8028,36 +8069,38 @@ export const KLineChartComponent = ({
                         })()}
                         onClick={(e) => { e.stopPropagation(); }}
                         onChange={(e) => {
-                          try { e.stopPropagation(); } catch (_) {}
+                          try { e.stopPropagation(); } catch (_) { }
                           try {
                             const hex = e.target.value;
                             const chart = chartRef.current;
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
-                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) { }
                           } catch (_) { /* ignore */ }
                         }}
                       />
                       <span
                         className="block w-[18px] h-[18px]"
-                        style={{ backgroundColor: (() => {
-                          try {
-                            const chart = chartRef.current;
-                            const id = selectedOverlayPanel?.id;
-                            if (chart && id) {
-                              let overlays = [];
-                              try {
-                                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
-                              const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
-                              const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
-                              if (typeof hex === 'string') return hex;
-                            }
-                          } catch (_) { /* ignore */ }
-                          return '#9C27B0';
-                        })() }}
+                        style={{
+                          backgroundColor: (() => {
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (chart && id) {
+                                let overlays = [];
+                                try {
+                                  if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                                  else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                                } catch (_) { }
+                                const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                                const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                                if (typeof hex === 'string') return hex;
+                              }
+                            } catch (_) { /* ignore */ }
+                            return '#9C27B0';
+                          })()
+                        }}
                       />
                     </label>
                   </div>
@@ -8082,7 +8125,7 @@ export const KLineChartComponent = ({
                               try {
                                 if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
                                 else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
+                              } catch (_) { }
                               const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
                               const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
                               if (typeof hex === 'string') return hex;
@@ -8092,36 +8135,38 @@ export const KLineChartComponent = ({
                         })()}
                         onClick={(e) => { e.stopPropagation(); }}
                         onChange={(e) => {
-                          try { e.stopPropagation(); } catch (_) {}
+                          try { e.stopPropagation(); } catch (_) { }
                           try {
                             const hex = e.target.value;
                             const chart = chartRef.current;
                             const id = selectedOverlayPanel?.id;
                             if (!chart || !id) return;
                             chart.overrideOverlay({ id, styles: { line: { color: hex } } });
-                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) {}
+                            try { setSelectedOverlayPanel(prev => (prev ? { ...prev } : prev)); } catch (_) { }
                           } catch (_) { /* ignore */ }
                         }}
                       />
                       <span
                         className="block w-[18px] h-[18px]"
-                        style={{ backgroundColor: (() => {
-                          try {
-                            const chart = chartRef.current;
-                            const id = selectedOverlayPanel?.id;
-                            if (chart && id) {
-                              let overlays = [];
-                              try {
-                                if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                                else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                              } catch (_) {}
-                              const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
-                              const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
-                              if (typeof hex === 'string') return hex;
-                            }
-                          } catch (_) { /* ignore */ }
-                          return '#9C27B0';
-                        })() }}
+                        style={{
+                          backgroundColor: (() => {
+                            try {
+                              const chart = chartRef.current;
+                              const id = selectedOverlayPanel?.id;
+                              if (chart && id) {
+                                let overlays = [];
+                                try {
+                                  if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                                  else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                                } catch (_) { }
+                                const ov = Array.isArray(overlays) ? overlays.find(o => o && o.id === id) : null;
+                                const hex = ov?.styles?.line?.color || ov?.color || ov?.styles?.color;
+                                if (typeof hex === 'string') return hex;
+                              }
+                            } catch (_) { /* ignore */ }
+                            return '#9C27B0';
+                          })()
+                        }}
                       />
                     </label>
                   </div>
@@ -8141,7 +8186,7 @@ export const KLineChartComponent = ({
                       const id = selectedOverlayPanel?.id;
                       const paneId = selectedOverlayPanel?.paneId;
                       const name = selectedOverlayPanel?.name;
-                      
+
                       if (!chart || !id) {
                         setSelectedOverlayPanel(null);
                         return;
@@ -8151,12 +8196,12 @@ export const KLineChartComponent = ({
                       // When left-handle drag updates overlay.points, KLineChart's internal registry
                       // gets corrupted and removeOverlay(id) silently fails. We force visibility=false instead.
                       let removed = false;
-                      
+
                       // For position overlays, HIDE instead of remove to avoid deleting all instances
                       // KlineChart bug: removeOverlay() with totalStep:2 overlays removes ALL instances with same name
                       if (name === 'longPosition' || name === 'shortPosition') {
                         console.log('🗑️ Hiding position overlay with ID:', id);
-                        
+
                         try {
                           // Hide this specific overlay instead of removing it
                           chart.overrideOverlay({ id, visible: false });
@@ -8171,7 +8216,7 @@ export const KLineChartComponent = ({
                           chart.removeOverlay({ id, paneId });
                           console.log('✅ removeOverlay({ id, paneId }) succeeded');
                           removed = true;
-                        } catch (err) { 
+                        } catch (err) {
                           console.log('❌ removeOverlay({ id, paneId }) failed:', err.message);
                         }
                         if (!removed) {
@@ -8179,7 +8224,7 @@ export const KLineChartComponent = ({
                             chart.removeOverlay({ id });
                             console.log('✅ removeOverlay({ id }) succeeded');
                             removed = true;
-                          } catch (err) { 
+                          } catch (err) {
                             console.log('❌ removeOverlay({ id }) failed:', err.message);
                           }
                         }
@@ -8188,82 +8233,82 @@ export const KLineChartComponent = ({
                             chart.removeOverlay(id);
                             console.log('✅ removeOverlay(id) succeeded');
                             removed = true;
-                          } catch (err) { 
+                          } catch (err) {
                             console.log('❌ removeOverlay(id) failed:', err.message);
                           }
                         }
                       }
-                  // Fallback: if removal by id failed (can happen after left-handle drag),
-                  // locate nearest matching overlay at the action panel coords and remove it.
-                  if (!removed) {
-                    try {
-                      const container = chartContainerRef.current;
-                      const name = selectedOverlayPanel?.name;
-                      if (container && name && (name === 'longPosition' || name === 'shortPosition')) {
-                        const x = Math.max(0, Math.min(selectedOverlayPanel.x, container.clientWidth || 0));
-                        const y = Math.max(0, Math.min(selectedOverlayPanel.y, container.clientHeight || 0));
-                        let overlays = [];
+                      // Fallback: if removal by id failed (can happen after left-handle drag),
+                      // locate nearest matching overlay at the action panel coords and remove it.
+                      if (!removed) {
                         try {
-                          if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                          else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                        } catch (_) {}
-                        const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
-                          o && o.name === name && Array.isArray(o.points) && o.points.length > 0
-                        );
-                        let best = { dist: Infinity, ov: null };
-                        candidates.forEach((o) => {
-                          try {
-                            const pts = Array.isArray(o.points) ? o.points : [];
-                            const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
-                            const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
-                            if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
-                            const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
-                            const xLeft = c1.x;
-                            const xRight = xLeft + width;
-                            const entryY = c1.y;
-                            let stopY = name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
-                            let yTP = name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                          const container = chartContainerRef.current;
+                          const name = selectedOverlayPanel?.name;
+                          if (container && name && (name === 'longPosition' || name === 'shortPosition')) {
+                            const x = Math.max(0, Math.min(selectedOverlayPanel.x, container.clientWidth || 0));
+                            const y = Math.max(0, Math.min(selectedOverlayPanel.y, container.clientHeight || 0));
+                            let overlays = [];
                             try {
-                              const refPoint = (pts && pts[0]) ? pts[0] : null;
-                              if (refPoint && typeof o.stopValue === 'number') {
-                                const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
-                                if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
-                              }
-                              if (refPoint && typeof o.targetValue === 'number') {
-                                const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
-                                if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
-                              }
-                        } catch (_) { /* ignore */ }
-                            const yTop = Math.min(entryY, stopY, yTP);
-                            const yBottom = Math.max(entryY, stopY, yTP);
-                            const inside = (x >= xLeft && x <= xRight && y >= yTop && y <= yBottom);
-                            const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
-                              const dx = x2 - x1;
-                              const dy = y2 - y1;
-                              if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
-                              const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
-                              const cx = x1 + t * dx;
-                              const cy = y1 + t * dy;
-                              return Math.hypot(px - cx, py - cy);
-                            };
-                            let dist = inside ? 0 : Infinity;
-                            if (!inside) {
-                              const lines = [entryY, stopY];
-                              if (typeof yTP === 'number') lines.push(yTP);
-                              dist = Math.min(...lines
-                                .filter((ly) => typeof ly === 'number')
-                                .map((ly) => distancePointToSegment(x, y, xLeft, ly, xRight, ly)));
+                              if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                              else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                            } catch (_) { }
+                            const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
+                              o && o.name === name && Array.isArray(o.points) && o.points.length > 0
+                            );
+                            let best = { dist: Infinity, ov: null };
+                            candidates.forEach((o) => {
+                              try {
+                                const pts = Array.isArray(o.points) ? o.points : [];
+                                const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                                const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
+                                if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
+                                const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
+                                const xLeft = c1.x;
+                                const xRight = xLeft + width;
+                                const entryY = c1.y;
+                                let stopY = name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
+                                let yTP = name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                                try {
+                                  const refPoint = (pts && pts[0]) ? pts[0] : null;
+                                  if (refPoint && typeof o.stopValue === 'number') {
+                                    const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
+                                    if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
+                                  }
+                                  if (refPoint && typeof o.targetValue === 'number') {
+                                    const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
+                                    if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
+                                  }
+                                } catch (_) { /* ignore */ }
+                                const yTop = Math.min(entryY, stopY, yTP);
+                                const yBottom = Math.max(entryY, stopY, yTP);
+                                const inside = (x >= xLeft && x <= xRight && y >= yTop && y <= yBottom);
+                                const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
+                                  const dx = x2 - x1;
+                                  const dy = y2 - y1;
+                                  if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+                                  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+                                  const cx = x1 + t * dx;
+                                  const cy = y1 + t * dy;
+                                  return Math.hypot(px - cx, py - cy);
+                                };
+                                let dist = inside ? 0 : Infinity;
+                                if (!inside) {
+                                  const lines = [entryY, stopY];
+                                  if (typeof yTP === 'number') lines.push(yTP);
+                                  dist = Math.min(...lines
+                                    .filter((ly) => typeof ly === 'number')
+                                    .map((ly) => distancePointToSegment(x, y, xLeft, ly, xRight, ly)));
+                                }
+                                if (dist < best.dist) best = { dist, ov: o };
+                              } catch (_) { /* ignore */ }
+                            });
+                            if (best.ov && best.dist <= 24) {
+                              try { chart.removeOverlay({ id: best.ov.id, paneId: best.ov.paneId || best.ov.pane?.id }); removed = true; } catch (_) { }
+                              if (!removed) { try { chart.removeOverlay({ id: best.ov.id }); removed = true; } catch (_) { } }
+                              if (!removed) { try { chart.removeOverlay(best.ov.id); removed = true; } catch (_) { } }
                             }
-                            if (dist < best.dist) best = { dist, ov: o };
-                          } catch (_) { /* ignore */ }
-                        });
-                        if (best.ov && best.dist <= 24) {
-                          try { chart.removeOverlay({ id: best.ov.id, paneId: best.ov.paneId || best.ov.pane?.id }); removed = true; } catch (_) {}
-                          if (!removed) { try { chart.removeOverlay({ id: best.ov.id }); removed = true; } catch (_) {} }
-                          if (!removed) { try { chart.removeOverlay(best.ov.id); removed = true; } catch (_) {} }
-                        }
-                      }
-                    } catch (_) { /* ignore */ }
+                          }
+                        } catch (_) { /* ignore */ }
                       }
                     } catch (_) { /* ignore */ }
                     // Also remove any inline editor if open
@@ -8285,97 +8330,97 @@ export const KLineChartComponent = ({
                       const id = selectedOverlayPanel?.id;
                       const paneId = selectedOverlayPanel?.paneId;
                       const name = selectedOverlayPanel?.name;
-                      
+
                       if (!chart || !id) {
                         setSelectedOverlayPanel(null);
                         return;
                       }
-                      
+
                       let removed = false;
-                      
+
                       // For position overlays, HIDE instead of remove (same as onMouseDown)
                       if (name === 'longPosition' || name === 'shortPosition') {
                         try {
                           chart.overrideOverlay({ id, visible: false });
                           removed = true;
-                        } catch (_) {}
+                        } catch (_) { }
                       } else {
                         // For other overlays, use ID
-                        try { chart.removeOverlay({ id, paneId }); removed = true; } catch (_) {}
-                        if (!removed) { try { chart.removeOverlay({ id }); removed = true; } catch (_) {} }
-                        if (!removed) { try { chart.removeOverlay(id); removed = true; } catch (_) {} }
+                        try { chart.removeOverlay({ id, paneId }); removed = true; } catch (_) { }
+                        if (!removed) { try { chart.removeOverlay({ id }); removed = true; } catch (_) { } }
+                        if (!removed) { try { chart.removeOverlay(id); removed = true; } catch (_) { } }
                       }
-                  // Fallback: attempt proximity-based deletion if id-based removal failed
-                  if (!removed) {
-                    try {
-                      const container = chartContainerRef.current;
-                      const name = selectedOverlayPanel?.name;
-                      if (container && name && (name === 'longPosition' || name === 'shortPosition')) {
-                        const x = Math.max(0, Math.min(selectedOverlayPanel.x, container.clientWidth || 0));
-                        const y = Math.max(0, Math.min(selectedOverlayPanel.y, container.clientHeight || 0));
-                        let overlays = [];
+                      // Fallback: attempt proximity-based deletion if id-based removal failed
+                      if (!removed) {
                         try {
-                          if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
-                          else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
-                        } catch (_) {}
-                        const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
-                          o && o.name === name && Array.isArray(o.points) && o.points.length > 0
-                        );
-                        let best = { dist: Infinity, ov: null };
-                        candidates.forEach((o) => {
-                          try {
-                            const pts = Array.isArray(o.points) ? o.points : [];
-                            const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
-                            const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
-                            if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
-                            const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
-                            const xLeft = c1.x;
-                            const xRight = xLeft + width;
-                            const entryY = c1.y;
-                            let stopY = name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
-                            let yTP = name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                          const container = chartContainerRef.current;
+                          const name = selectedOverlayPanel?.name;
+                          if (container && name && (name === 'longPosition' || name === 'shortPosition')) {
+                            const x = Math.max(0, Math.min(selectedOverlayPanel.x, container.clientWidth || 0));
+                            const y = Math.max(0, Math.min(selectedOverlayPanel.y, container.clientHeight || 0));
+                            let overlays = [];
                             try {
-                              const refPoint = (pts && pts[0]) ? pts[0] : null;
-                              if (refPoint && typeof o.stopValue === 'number') {
-                                const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
-                                if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
-                              }
-                              if (refPoint && typeof o.targetValue === 'number') {
-                                const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
-                                if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
-                              }
-                            } catch (_) { /* ignore */ }
-                            const yTop = Math.min(entryY, stopY, yTP);
-                            const yBottom = Math.max(entryY, stopY, yTP);
-                            const inside = (x >= xLeft && x <= xRight && y >= yTop && y <= yBottom);
-                            const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
-                              const dx = x2 - x1;
-                              const dy = y2 - y1;
-                              if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
-                              const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
-                              const cx = x1 + t * dx;
-                              const cy = y1 + t * dy;
-                              return Math.hypot(px - cx, py - cy);
-                            };
-                            let dist = inside ? 0 : Infinity;
-                            if (!inside) {
-                              const lines = [entryY, stopY];
-                              if (typeof yTP === 'number') lines.push(yTP);
-                              dist = Math.min(...lines
-                                .filter((ly) => typeof ly === 'number')
-                                .map((ly) => distancePointToSegment(x, y, xLeft, ly, xRight, ly)));
+                              if (typeof chart.getOverlays === 'function') overlays = chart.getOverlays();
+                              else if (typeof chart.getAllOverlays === 'function') overlays = chart.getAllOverlays();
+                            } catch (_) { }
+                            const candidates = (Array.isArray(overlays) ? overlays : []).filter(o =>
+                              o && o.name === name && Array.isArray(o.points) && o.points.length > 0
+                            );
+                            let best = { dist: Infinity, ov: null };
+                            candidates.forEach((o) => {
+                              try {
+                                const pts = Array.isArray(o.points) ? o.points : [];
+                                const pxPts = Array.isArray(pts) && pts.length > 0 ? chart.convertToPixel(pts) : [];
+                                const c1 = Array.isArray(pxPts) && pxPts[0] ? pxPts[0] : null;
+                                if (!c1 || typeof c1.x !== 'number' || typeof c1.y !== 'number') return;
+                                const width = (typeof o?.widthPx === 'number' && o.widthPx > 0) ? o.widthPx : POSITION_OVERLAY_WIDTH_PX;
+                                const xLeft = c1.x;
+                                const xRight = xLeft + width;
+                                const entryY = c1.y;
+                                let stopY = name === 'shortPosition' ? (entryY - POSITION_OVERLAY_RISK_PX) : (entryY + POSITION_OVERLAY_RISK_PX);
+                                let yTP = name === 'shortPosition' ? (entryY + POSITION_OVERLAY_RISK_PX) : (entryY - POSITION_OVERLAY_RISK_PX);
+                                try {
+                                  const refPoint = (pts && pts[0]) ? pts[0] : null;
+                                  if (refPoint && typeof o.stopValue === 'number') {
+                                    const arr = chart.convertToPixel([{ ...refPoint, value: o.stopValue }]) || [];
+                                    if (arr[0] && Number.isFinite(arr[0].y)) stopY = arr[0].y;
+                                  }
+                                  if (refPoint && typeof o.targetValue === 'number') {
+                                    const arr2 = chart.convertToPixel([{ ...refPoint, value: o.targetValue }]) || [];
+                                    if (arr2[0] && Number.isFinite(arr2[0].y)) yTP = arr2[0].y;
+                                  }
+                                } catch (_) { /* ignore */ }
+                                const yTop = Math.min(entryY, stopY, yTP);
+                                const yBottom = Math.max(entryY, stopY, yTP);
+                                const inside = (x >= xLeft && x <= xRight && y >= yTop && y <= yBottom);
+                                const distancePointToSegment = (px, py, x1, y1, x2, y2) => {
+                                  const dx = x2 - x1;
+                                  const dy = y2 - y1;
+                                  if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+                                  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+                                  const cx = x1 + t * dx;
+                                  const cy = y1 + t * dy;
+                                  return Math.hypot(px - cx, py - cy);
+                                };
+                                let dist = inside ? 0 : Infinity;
+                                if (!inside) {
+                                  const lines = [entryY, stopY];
+                                  if (typeof yTP === 'number') lines.push(yTP);
+                                  dist = Math.min(...lines
+                                    .filter((ly) => typeof ly === 'number')
+                                    .map((ly) => distancePointToSegment(x, y, xLeft, ly, xRight, ly)));
+                                }
+                                if (dist < best.dist) best = { dist, ov: o };
+                              } catch (_) { /* ignore */ }
+                            });
+                            if (best.ov && best.dist <= 24) {
+                              try { chart.removeOverlay({ id: best.ov.id, paneId: best.ov.paneId || best.ov.pane?.id }); removed = true; } catch (_) { }
+                              if (!removed) { try { chart.removeOverlay({ id: best.ov.id }); removed = true; } catch (_) { } }
+                              if (!removed) { try { chart.removeOverlay(best.ov.id); removed = true; } catch (_) { } }
                             }
-                            if (dist < best.dist) best = { dist, ov: o };
-                          } catch (_) { /* ignore */ }
-                        });
-                        if (best.ov && best.dist <= 24) {
-                          try { chart.removeOverlay({ id: best.ov.id, paneId: best.ov.paneId || best.ov.pane?.id }); removed = true; } catch (_) {}
-                          if (!removed) { try { chart.removeOverlay({ id: best.ov.id }); removed = true; } catch (_) {} }
-                          if (!removed) { try { chart.removeOverlay(best.ov.id); removed = true; } catch (_) {} }
-                        }
+                          }
+                        } catch (_) { /* ignore */ }
                       }
-                    } catch (_) { /* ignore */ }
-                  }
                     } catch (_) { /* ignore */ }
                     try {
                       const container = chartContainerRef.current;
@@ -8397,8 +8442,8 @@ export const KLineChartComponent = ({
         {/* Custom center modal for confirmations */}
         {confirmModal && (
           <div className="absolute inset-0 z-[90] flex items-center justify-center" role="dialog" aria-modal="true">
-            <div 
-              className="absolute inset-0 bg-black bg-opacity-40" 
+            <div
+              className="absolute inset-0 bg-black bg-opacity-40"
               onClick={() => setConfirmModal(null)}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
