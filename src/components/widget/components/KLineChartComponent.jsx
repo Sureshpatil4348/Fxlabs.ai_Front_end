@@ -17,9 +17,10 @@ const MA_COLORS_BY_INDEX = {
   4: '#9C27B0',
 };
 
-// Bar space limits matching klinecharts internal BarSpaceLimitConstants
-// Used to prevent zoom operations that would be silently rejected by the library
-const MIN_BAR_SPACE = 1;
+// Bar space limits - Raised MIN from 1 to 3 to prevent the "desync zone"
+// where chart rendering stops but indicators continue scaling
+// (klinecharts has an internal rendering threshold higher than its limit)
+const MIN_BAR_SPACE = 3;
 const MAX_BAR_SPACE = 50;
 
 // Helper to build placeholder K-line data used to render axes while real candles are loading.
@@ -3405,6 +3406,73 @@ export const KLineChartComponent = ({
         // best effort; fall back to defaults if API not available
       }
 
+      // Monkey-patch zoomAtCoordinate to enforce limits globally
+      // This catches zoom attempts from mouse wheel, touch, and other sources
+      const originalZoomAtCoordinate = chart.zoomAtCoordinate;
+      chart.zoomAtCoordinate = function (scale, coordinate, animationDuration) {
+        try {
+          if (typeof chart.getBarSpace === 'function') {
+            const bs = chart.getBarSpace();
+            const currentBarSpace = bs?.bar ?? bs;
+
+            // Zoom out limit check (scale < 1 decreases bar space)
+            if (scale < 1 && typeof currentBarSpace === 'number' && currentBarSpace <= MIN_BAR_SPACE * 1.1) {
+              console.log('📊 [Blocked] Zoom out blocked by global guard (bar space:', currentBarSpace, ')');
+              return;
+            }
+
+            // Zoom in limit check (scale > 1 increases bar space)
+            if (scale > 1 && typeof currentBarSpace === 'number' && currentBarSpace >= MAX_BAR_SPACE) {
+              console.log('📊 [Blocked] Zoom in blocked by global guard (bar space:', currentBarSpace, ')');
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Error in zoom guard:', e);
+        }
+        return originalZoomAtCoordinate.call(this, scale, coordinate, animationDuration);
+      };
+
+      // Also patch setBarSpace for good measure, as it's the low-level setter
+      const originalSetBarSpace = chart.setBarSpace;
+      chart.setBarSpace = function (barSpace, adjustBeforeFunc) {
+        // Verbose logging to help debug why chart stops zooming
+        // console.log('📊 setBarSpace request:', barSpace);
+
+        if (barSpace < MIN_BAR_SPACE) {
+          console.log('📊 [Blocked] setBarSpace blocked (value:', barSpace, '< MIN:', MIN_BAR_SPACE, ')');
+          return;
+        }
+        if (barSpace > MAX_BAR_SPACE) {
+          console.log('📊 [Blocked] setBarSpace blocked (value:', barSpace, '> MAX:', MAX_BAR_SPACE, ')');
+          return;
+        }
+        return originalSetBarSpace.call(this, barSpace, adjustBeforeFunc);
+      };
+
+      // Debug monitor for bar space state to catch the desync condition
+      if (window._chartDebugInterval) clearInterval(window._chartDebugInterval);
+      window._chartDebugInterval = setInterval(() => {
+        try {
+          // Check if chart is still mounted
+          if (!chartContainerRef.current) return;
+
+          let bs = null;
+          if (typeof chart.getBarSpace === 'function') {
+            const res = chart.getBarSpace();
+            bs = res?.bar ?? res;
+          }
+
+          const vr = typeof chart.getVisibleRange === 'function' ? chart.getVisibleRange() : null;
+          const list = typeof chart.getDataList === 'function' ? chart.getDataList() : null;
+
+          // Only log if bar space is small (zoom out scenario)
+          if (typeof bs === 'number' && bs < 3) {
+            console.log('📊 [Telemetry] BarSpace:', bs.toFixed(3), 'VisibleRange:', vr, 'DataCount:', list?.length);
+          }
+        } catch (_) { }
+      }, 2000);
+
       // Configure chart styles using setStyles (not setStyleOptions)
       chart.setStyles({
         grid: {
@@ -5745,10 +5813,10 @@ export const KLineChartComponent = ({
         <div
           ref={chartContainerRef}
           className={`absolute inset-0 ${settings?.cursorType === 'grab'
-              ? 'kline-cursor-grab'
-              : settings?.cursorType === 'pointer'
-                ? 'kline-cursor-pointer'
-                : 'kline-cursor-crosshair'
+            ? 'kline-cursor-grab'
+            : settings?.cursorType === 'pointer'
+              ? 'kline-cursor-pointer'
+              : 'kline-cursor-crosshair'
             }`}
           style={{
             backgroundColor: '#ffffff',
