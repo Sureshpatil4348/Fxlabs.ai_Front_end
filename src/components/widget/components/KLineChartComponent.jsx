@@ -17,10 +17,10 @@ const MA_COLORS_BY_INDEX = {
   4: '#9C27B0',
 };
 
-// Bar space limits - Raised MIN from 1 to 3 to prevent the "desync zone"
+// Bar space limits - Raised MIN from 1 to 6 to prevent the "desync zone"
 // where chart rendering stops but indicators continue scaling
 // (klinecharts has an internal rendering threshold higher than its limit)
-const MIN_BAR_SPACE = 3;
+const MIN_BAR_SPACE = 6;
 const MAX_BAR_SPACE = 50;
 
 // Helper to build placeholder K-line data used to render axes while real candles are loading.
