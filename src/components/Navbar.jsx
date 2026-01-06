@@ -37,8 +37,8 @@ const Navbar = ({ activeTab, onChangeTab }) => {
       <header className={`fixed z-50 transition-all duration-300 ${isOnDashboard ? 'top-4 left-0 right-0' : 'top-4 left-4 right-4'}`}>
         <div className={isOnDashboard ? 'px-2 sm:px-3' : 'max-w-7xl mx-auto'}>
           <div className={`bg-white/80 backdrop-blur-xl border border-white/20 rounded-full ${isOnDashboard ? 'shadow-md' : 'shadow-2xl'} shadow-black/10`}>
-            <div className="px-4 sm:px-6 lg:px-8 relative">
-              <div className="flex justify-between items-center h-[45px] sm:h-[55px] gap-2 sm:gap-4 lg:gap-8">
+            <div className="px-2 sm:px-4 md:px-6 lg:px-8 relative">
+              <div className="flex justify-between items-center h-[45px] sm:h-[55px] gap-1 sm:gap-2 md:gap-4 lg:gap-8">
                 {/* Logo Section - Raw Logo */}
                 <div className="flex items-center flex-shrink-0">
                   <a 
@@ -49,11 +49,11 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                     <img 
                       src={require('../assets/blacklogo.png')} 
                       alt="FxLabs Prime Logo" 
-                      className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain transition-all duration-300 group-hover:scale-105"
+                      className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-all duration-300 group-hover:scale-105"
                     />
                   </a>
                   <span
-                    className="ml-2 sm:ml-3 text-base sm:text-base md:text-xl text-emerald-700"
+                    className="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base lg:text-xl text-emerald-700 hidden sm:inline"
                     style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive', transform: 'translateY(6px)' }}
                   >
                     by Hextech 
@@ -63,34 +63,34 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                 <div className="flex flex-1 justify-center items-center">
                   {/* Show landing links when NOT on dashboard - All screen sizes */}
                   {!isOnDashboard && (
-                    <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6 xl:space-x-8">
+                    <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 lg:space-x-6 xl:space-x-8 overflow-x-auto scrollbar-hide">
                       {/* About Us */}
                       <button
                         onClick={() => scrollToSection('why-system-works')}
-                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-1 sm:px-2 md:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/50 flex-shrink-0"
                         title="About Us"
                       >
-                        <Users className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-xs sm:text-sm hidden sm:inline">About Us</span>
                       </button>
 
                       {/* Technology */}
                       <button
                         onClick={() => scrollToSection('video-explanation')}
-                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-1 sm:px-2 md:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/50 flex-shrink-0"
                         title="Technology"
                       >
-                        <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                        <Cpu className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-xs sm:text-sm hidden sm:inline">Technology</span>
                       </button>
 
                       {/* Pricing */}
                       <button
                         onClick={() => scrollToSection('subscription')}
-                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-1 sm:px-2 md:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/50 flex-shrink-0"
                         title="Pricing"
                       >
-                        <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                        <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-xs sm:text-sm hidden sm:inline">Pricing</span>
                       </button>
 
@@ -99,10 +99,10 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         href="https://blog.fxlabsprime.com/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-1 sm:px-2 md:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/50 flex-shrink-0"
                         title="Blog"
                       >
-                        <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                        <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-xs sm:text-sm hidden sm:inline">Blog</span>
                       </a>
 
@@ -110,10 +110,10 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                       {user && (
                         <Link
                           to="/dashboard"
-                          className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                          className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-1 sm:px-2 md:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/50 flex-shrink-0"
                           title="Dashboard"
                         >
-                          <BarChart3 className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                          <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform duration-300" />
                           <span className="font-medium text-xs sm:text-sm hidden sm:inline">Dashboard</span>
                         </Link>
                       )}

@@ -212,6 +212,16 @@
   scrollbar-color: #475569 #19235d;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 /* Webkit browsers (Chrome, Safari, Edge) */
 .scrollbar-autohide::-webkit-scrollbar {
   width: 6px;
