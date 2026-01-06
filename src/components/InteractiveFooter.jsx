@@ -338,7 +338,7 @@ const InteractiveFooter = () => {
                 <Linkedin className="w-4 h-4" />
               </a>
               <a 
-                href="https://www.youtube.com/@fx-labs" 
+                href="https://www.youtube.com/@fxlabsPrime" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 ${
@@ -401,12 +401,14 @@ const InteractiveFooter = () => {
                   </button>
                 </li>
                 <li>
-                  <Link 
-                    to="/contact" 
+                  <a 
+                    href="https://blog.fxlabsprime.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`transition-colors duration-200 text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-[#19235d]'}`}
                   >
-                    
-                  </Link>
+                    Blog
+                  </a>
                 </li>
               </ul>
             </div>

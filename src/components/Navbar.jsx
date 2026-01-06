@@ -1,4 +1,4 @@
-import { LogIn, BarChart3, Cpu, Users, DollarSign } from 'lucide-react'
+import { LogIn, BarChart3, Cpu, Users, DollarSign, BookOpen } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -93,6 +93,18 @@ const Navbar = ({ activeTab, onChangeTab }) => {
                         <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                         <span className="font-medium text-xs sm:text-sm hidden sm:inline">Pricing</span>
                       </button>
+
+                      {/* Blog */}
+                      <a
+                        href="https://blog.fxlabsprime.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-emerald-600 transition-all duration-300 group px-2 sm:px-3 py-2 rounded-lg hover:bg-white/50"
+                        title="Blog"
+                      >
+                        <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                        <span className="font-medium text-xs sm:text-sm hidden sm:inline">Blog</span>
+                      </a>
 
                       {/* Dashboard (for logged in users) */}
                       {user && (
