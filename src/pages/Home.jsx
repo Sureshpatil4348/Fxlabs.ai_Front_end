@@ -19,7 +19,7 @@ import TradingToolsShowcase from "../components/TradingToolsShowcase";
 import VideoExplanationSection from "../components/VideoExplanationSection";
 import WhySystemWorks from "../components/WhySystemWorks";
 import { supabase } from "../lib/supabaseClient";
-import ipInfoService from "../services/ipInfoService";
+
 const Home = () => {
     const { user: _user } = useAuth();
     const navigate = useNavigate();
@@ -37,33 +37,6 @@ const Home = () => {
             setIsLoginModalOpen(true);
             sessionStorage.removeItem("checkoutCompleted");
         }
-    }, []);
-
-    // On landing, fetch IP info (via Netlify Function) and print result
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                const data = await ipInfoService.fetchIpInfo();
-                if (cancelled) return;
-                // Expose for debugging and print to console for now
-                if (typeof window !== "undefined") {
-                    window.__FX_IP_INFO__ = data;
-                }
-                // Requirement: print the result (visible in DevTools)
-                console.log("[FxLabs Prime] IP info:", data);
-            } catch (err) {
-                if (!cancelled) {
-                    console.warn(
-                        "[FxLabs Prime] IP info fetch error:",
-                        err?.message || err
-                    );
-                }
-            }
-        })();
-        return () => {
-            cancelled = true;
-        };
     }, []);
 
     // Handle Supabase invite/callback deep links and prepare redirect to dashboard post login
