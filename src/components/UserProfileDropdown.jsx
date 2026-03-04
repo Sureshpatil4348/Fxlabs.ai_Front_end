@@ -640,7 +640,7 @@ const UserProfileDropdown = () => {
                                                     : "text-[#19235d]"
                                             }`}
                                         >
-                                            $199
+                                            $30
                                         </span>
                                         <span
                                             className={`text-sm ml-2 ${
@@ -707,7 +707,7 @@ const UserProfileDropdown = () => {
                                         <span
                                             className={`text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent`}
                                         >
-                                            $499
+                                            $99
                                         </span>
                                         <span
                                             className={`text-sm ml-2 ${
