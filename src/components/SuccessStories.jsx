@@ -6,17 +6,20 @@ import { useTheme } from '../contexts/ThemeContext'
 
 const testimonials = [
   {
-    quote: 'FxLabs Prime unifies my 7-in-1 indicator analysis so every timeframe agrees, making it the best forex trading platform for precise execution.',
+    quote:
+      "I lost ₹14,000 in 30 seconds because a UK news release dropped while I was in a GBPUSD trade. I didn't even know it was coming. Since I started checking FXLabs economic calendar and AI news summary before every session, I haven't been caught off guard once.",
     name: 'Muzamil A.',
     firm: 'Professional Trader'
   },
   {
-    quote: 'Real-time news and smart alerts from this Top forex trading platform hit my inbox before the market moves, so I never miss high-impact events.',
+    quote:
+      'I was monitoring 12 pairs at once and trading none of them properly. Always second guessing, always switching charts, always missing entries. The Currency Strength Meter showed me the strongest vs weakest pair in 2 minutes. I closed everything else and just focused on that. My results improved just from having focus',
     name: 'Marcus.',
     firm: 'Prop Trader'
   },
   {
-    quote: 'Smart money management tools and currency strength data keep my trading disciplined and confident across sessions.',
+    quote:
+      "I'm a software engineer with a full time job and a family. I cannot spend 3 hours on analysis every day — something always suffers. Now I open FXLabs for 15 minutes before I leave for office, set my alerts, identify one or two pairs and close the app. The alerts do the rest. I haven't missed a solid setup since and my work hasn't suffered either.",
     name: 'Prajwla Naik.',
     firm: 'Portfolio Manager'
   }

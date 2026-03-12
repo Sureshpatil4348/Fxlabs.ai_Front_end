@@ -214,7 +214,7 @@ const HeroSection = () => {
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               <span className="text-[#19235d] dark:text-white transition-colors duration-300">
-                Trade With The Power Of{' '}
+                All In One Trading Intelligence{' '}
               </span>
               <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 dark:from-emerald-400 dark:via-green-400 dark:to-emerald-500 bg-clip-text text-transparent animate-gradient">
                 AI
@@ -223,7 +223,7 @@ const HeroSection = () => {
 
             {/* Subheadline */}
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-              Experience seamless, all-in-one Forex Trading Analysis intelligence—every tool and insight you need, unified in a single world-class platform.
+            The average trader switches between 5 tools before every trade. FXLabs Prime replaces all of them — one platform, complete analysis, minutes not hours.
             </p>
 
             {/* Premium Feature Highlights */}
