@@ -214,7 +214,7 @@ const HeroSection = () => {
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               <span className="text-[#19235d] dark:text-white transition-colors duration-300">
-                All In One Trading Intelligence{' '}
+              Analysis Done.In Minutes.Not Hours.With{' '}
               </span>
               <span className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 dark:from-emerald-400 dark:via-green-400 dark:to-emerald-500 bg-clip-text text-transparent animate-gradient">
                 AI
